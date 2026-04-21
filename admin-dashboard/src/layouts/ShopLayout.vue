@@ -162,8 +162,7 @@ const menuOptions: MenuOption[] = [
     key: 'products-group',
     icon: () => h(NIcon, null, { default: () => h(BagHandleOutline) }),
     children: [
-      { label: '实体商品', key: '/shop/products' },
-      { label: '虚拟商品', key: '/shop/products/virtual' },
+      { label: '商品', key: '/shop/products' },
       { label: '库存管理', key: '/shop/products/inventory' },
     ]
   },

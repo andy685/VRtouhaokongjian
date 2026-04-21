@@ -18,6 +18,7 @@ import Members from '../views/shop/Members.vue'
 import Devices from '../views/shop/Devices.vue'
 import ReportsShop from '../views/shop/Reports.vue'
 import Products from '../views/shop/Products.vue'
+import ProductDetail from '../views/shop/ProductDetail.vue'
 import Marketing from '../views/shop/Marketing.vue'
 import Settings from '../views/shop/Settings.vue'
 import Recharge from '../views/shop/Recharge.vue'
@@ -99,8 +100,9 @@ const routes: RouteRecordRaw[] = [
       { path: 'workbench/devices', name: 'ShopWorkbenchDevices', component: Workbench, meta: { title: '设备监控' } },
       { path: 'workbench/revenue', name: 'ShopWorkbenchRevenue', component: Workbench, meta: { title: '营收概览' } },
       // 商品管理
-      { path: 'products', name: 'ShopProducts', component: Products, meta: { title: '实体商品' } },
-      { path: 'products/virtual', name: 'ShopProductsVirtual', component: Products, meta: { title: '虚拟商品' } },
+      { path: 'products', name: 'ShopProducts', component: Products, meta: { title: '商品' } },
+      { path: 'products/add', name: 'ShopProductAdd', component: ProductDetail, meta: { title: '添加商品' } },
+      { path: 'products/:id', name: 'ShopProductDetail', component: ProductDetail, meta: { title: '编辑商品' } },
       { path: 'products/inventory', name: 'ShopProductsInventory', component: Products, meta: { title: '库存管理' } },
       // 运营管理
       { path: 'recharge', name: 'ShopRecharge', component: Recharge, meta: { title: '充值套餐' } },

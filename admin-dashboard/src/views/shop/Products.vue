@@ -2,77 +2,23 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <h1>商品管理</h1>
-      <n-button type="primary">+ 添加商品</n-button>
+      <n-button type="primary" @click="router.push('/shop/products/add')">+ 添加商品</n-button>
     </div>
 
     <!-- Tab切换 -->
     <n-tabs type="line" animated v-model:value="activeTab">
-      <n-tab-pane name="virtual" tab="🎫 虚拟商品">
+      <n-tab-pane name="physical" tab="📦 商品">
         <div class="tab-content">
-          <div class="tab-desc">
-            <n-icon :component="InformationCircleOutline" size="16" />
-            <span>虚拟商品 = 收银系统的「单次消费」+「充值活动」+「套票」三个Tab，支持多种定价模式和有效期设置</span>
-          </div>
-          
-          <!-- 子分类 -->
-          <n-tabs size="small" type="card" v-model:value="subTab">
-            <n-tab-pane name="single" tab="按次体验券">
-              <div class="sub-content">
-                <div class="sub-header">
-                  <span class="sub-title">按次体验券列表</span>
-                  <n-button size="small" type="primary">+ 添加体验券</n-button>
-                </div>
-                <n-data-table :columns="virtualColumns" :data="singleData" :pagination="{ pageSize: 8 }" striped />
-              </div>
-            </n-tab-pane>
-            <n-tab-pane name="recharge" tab="储值会员卡">
-              <div class="sub-content">
-                <div class="sub-header">
-                  <span class="sub-title">储值会员卡列表</span>
-                  <n-button size="small" type="primary">+ 添加储值卡</n-button>
-                </div>
-                <n-data-table :columns="rechargeColumns" :data="rechargeData" :pagination="{ pageSize: 8 }" striped />
-              </div>
-            </n-tab-pane>
-            <n-tab-pane name="package" tab="次数套餐">
-              <div class="sub-content">
-                <div class="sub-header">
-                  <span class="sub-title">次数套餐列表</span>
-                  <n-button size="small" type="primary">+ 添加套餐</n-button>
-                </div>
-                <n-data-table :columns="packageColumns" :data="packageData" :pagination="{ pageSize: 8 }" striped />
-              </div>
-            </n-tab-pane>
-            <n-tab-pane name="timecard" tab="时间卡">
-              <div class="sub-content">
-                <div class="sub-header">
-                  <span class="sub-title">时间卡列表</span>
-                  <n-button size="small" type="primary">+ 添加时间卡</n-button>
-                </div>
-                <n-data-table :columns="timecardColumns" :data="timecardData" :pagination="{ pageSize: 8 }" striped />
-              </div>
-            </n-tab-pane>
-          </n-tabs>
-        </div>
-      </n-tab-pane>
-      
-      <n-tab-pane name="physical" tab="📦 实体商品">
-        <div class="tab-content">
-          <div class="tab-desc">
-            <n-icon :component="InformationCircleOutline" size="16" />
-            <span>实体商品 = 收销系统的「商品」Tab，支持库存管理和供应链设置</span>
-          </div>
-          
           <div class="physical-actions">
-            <n-input placeholder="搜索商品名称..." size="small" style="width: 200px;">
+            <n-input v-model:value="searchText" placeholder="搜索商品名称..." size="small" style="width: 200px;">
               <template #prefix><n-icon :component="SearchOutline" /></template>
             </n-input>
-            <n-select placeholder="商品分类" :options="categoryOptions" size="small" style="width: 140px;" />
-            <n-select placeholder="库存状态" :options="stockStatusOptions" size="small" style="width: 120px;" />
-            <n-button size="small">筛选</n-button>
+            <n-select v-model:value="filterCategory" placeholder="商品分类" :options="categoryOptions" size="small" style="width: 140px;" clearable />
+            <n-select v-model:value="filterStock" placeholder="库存状态" :options="stockStatusOptions" size="small" style="width: 120px;" clearable />
+            <n-select v-model:value="filterStatus" placeholder="上架状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
           </div>
 
-          <n-data-table :columns="physicalColumns" :data="physicalData" :pagination="{ pageSize: 8 }" striped />
+          <n-data-table :columns="physicalColumns" :data="filteredData" :pagination="{ pageSize: 8 }" striped />
         </div>
       </n-tab-pane>
 
@@ -111,24 +57,82 @@
         </div>
       </n-tab-pane>
     </n-tabs>
+
+    <!-- 补货弹窗 -->
+    <n-modal v-model:show="showRestock" preset="card" title="商品补货" style="width: 420px;" :bordered="false">
+      <div v-if="restockProduct" style="margin-bottom: 16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:24px;">{{ restockProduct.icon }}</span>
+          <div>
+            <div style="font-weight:600;">{{ restockProduct.name }}</div>
+            <div style="font-size:12px;color:#94a3b8;">当前库存: {{ restockProduct.stock }}</div>
+          </div>
+        </div>
+        <n-form label-placement="left" label-width="80">
+          <n-form-item label="补货数量">
+            <n-input-number v-model:value="restockQty" :min="1" placeholder="请输入补货数量" style="width: 100%;" />
+          </n-form-item>
+          <n-form-item label="补货备注">
+            <n-input v-model:value="restockRemark" placeholder="如：供应商补货" />
+          </n-form-item>
+        </n-form>
+      </div>
+      <template #footer>
+        <div style="display:flex;justify-content:flex-end;gap:12px;">
+          <n-button @click="showRestock = false">取消</n-button>
+          <n-button type="primary" @click="confirmRestock">确认补货</n-button>
+        </div>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { ref, h, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   NButton, NTabs, NTabPane, NDataTable, NTag, NSpace, NInput,
-  NSelect, NIcon
+  NSelect, NIcon, NModal, NInputNumber, NForm, NFormItem, useMessage
 } from 'naive-ui'
 import {
-  InformationCircleOutline, SearchOutline, AddOutline
+  SearchOutline
 } from '@vicons/ionicons5'
 
-const activeTab = ref('virtual')
-const subTab = ref('single')
+const router = useRouter()
+const message = useMessage()
+const activeTab = ref('physical')
+
+// 补货弹窗
+const showRestock = ref(false)
+const restockProduct = ref<any>(null)
+const restockQty = ref(1)
+const restockRemark = ref('')
+
+function openRestock(row: any) {
+  restockProduct.value = row
+  restockQty.value = 1
+  restockRemark.value = ''
+  showRestock.value = true
+}
+
+function confirmRestock() {
+  if (restockQty.value <= 0) {
+    message.warning('补货数量必须大于0')
+    return
+  }
+  const product = restockProduct.value
+  const before = parseInt(product.stock)
+  product.stock = String(before + restockQty.value)
+  message.success(`已补货 ${restockQty.value} 件，库存更新为 ${product.stock}`)
+  showRestock.value = false
+}
+
+function toggleStatus(row: any) {
+  row.status = row.status === 'on' ? 'off' : 'on'
+  message.success(row.status === 'on' ? '已上架' : '已下架')
+}
 
 const categoryOptions = [
-  { label: '全部分类', value: 'all' },
   { label: '消耗品', value: 'consumable' },
   { label: '配件', value: 'accessory' },
   { label: '周边', value: 'merchandise' },
@@ -136,80 +140,21 @@ const categoryOptions = [
 ]
 
 const stockStatusOptions = [
-  { label: '全部', value: 'all' },
   { label: '低库存', value: 'low' },
   { label: '正常', value: 'normal' },
   { label: '充足', value: 'enough' },
 ]
 
-const virtualColumns = [
-  { title: '商品名称', key: 'name' },
-  { title: '游戏', key: 'game' },
-  { title: '原价', key: 'originalPrice', render: (row: any) => row.originalPrice ? `¥${row.originalPrice}` : '-' },
-  { title: '售价', key: 'price', render: (row: any) => `¥${row.price}` },
-  { title: '有效期', key: 'validity' },
-  { title: '销量', key: 'sales' },
-  { title: '状态', key: 'status', render: (row: any) => h(NTag, { type: row.status === 'active' ? 'success' : 'default', size: 'small', bordered: true }, () => row.status === 'active' ? '上架' : '下架') },
-  { title: '操作', key: 'actions', render: () => h(NSpace, null, { default: () => [h(NButton, { size: 'tiny', secondary: true }, () => '编辑'), h(NButton, { size: 'tiny', quaternary: true }, () => '禁用')] }) },
+const statusOptions = [
+  { label: '已上架', value: 'on' },
+  { label: '已下架', value: 'off' },
 ]
 
-const singleData = [
-  { name: '单次VR体验券 - 过山车', game: '过山车VR', originalPrice: 49, price: 39, validity: '永久', sales: 1256, status: 'active' },
-  { name: '单次VR体验券 - 恐怖医院', game: '恐怖医院', originalPrice: 59, price: 49, validity: '永久', sales: 892, status: 'active' },
-  { name: '单次VR体验券 - 极速赛车', game: '极速赛车', originalPrice: 45, price: 35, validity: '永久', sales: 756, status: 'active' },
-  { name: '单次VR体验券 - 海洋世界', game: '海洋世界', originalPrice: 55, price: 45, validity: '永久', sales: 543, status: 'active' },
-]
-
-const rechargeColumns = [
-  { title: '卡名称', key: 'name' },
-  { title: '充值金额', key: 'amount', render: (row: any) => `¥${row.amount}` },
-  { title: '赠送金额', key: 'gift', render: (row: any) => row.gift > 0 ? `+¥${row.gift}` : '-' },
-  { title: '有效期', key: 'validity' },
-  { title: '销量', key: 'sales' },
-  { title: '状态', key: 'status', render: (row: any) => h(NTag, { type: row.status === 'active' ? 'success' : 'default', size: 'small', bordered: true }, () => row.status === 'active' ? '上架' : '下架') },
-  { title: '操作', key: 'actions', render: () => h(NSpace, null, { default: () => [h(NButton, { size: 'tiny', secondary: true }, () => '编辑')] }) },
-]
-
-const rechargeData = [
-  { name: '充值 ¥100', amount: 100, gift: 0, validity: '永久', sales: 2580, status: 'active' },
-  { name: '充值 ¥300', amount: 300, gift: 30, validity: '永久', sales: 1865, status: 'active' },
-  { name: '充值 ¥500', amount: 500, gift: 80, validity: '永久', sales: 1234, status: 'active' },
-  { name: '充值 ¥1000', amount: 1000, gift: 200, validity: '永久', sales: 568, status: 'active' },
-]
-
-const packageColumns = [
-  { title: '套餐名称', key: 'name' },
-  { title: '次数', key: 'count' },
-  { title: '原价', key: 'originalPrice', render: (row: any) => `¥${row.originalPrice}` },
-  { title: '售价', key: 'price', render: (row: any) => `¥${row.price}` },
-  { title: '有效期', key: 'validity' },
-  { title: '销量', key: 'sales' },
-  { title: '状态', key: 'status', render: (row: any) => h(NTag, { type: row.status === 'active' ? 'success' : 'default', size: 'small', bordered: true }, () => row.status === 'active' ? '上架' : '下架') },
-  { title: '操作', key: 'actions', render: () => h(NSpace, null, { default: () => [h(NButton, { size: 'tiny', secondary: true }, () => '编辑')] }) },
-]
-
-const packageData = [
-  { name: '3次VR畅玩卡', count: 3, originalPrice: 150, price: 99, validity: '30天', sales: 856, status: 'active' },
-  { name: '5次VR畅玩卡', count: 5, originalPrice: 250, price: 149, validity: '30天', sales: 632, status: 'active' },
-  { name: '10次VR畅玩卡', count: 10, originalPrice: 500, price: 299, validity: '60天', sales: 328, status: 'active' },
-]
-
-const timecardColumns = [
-  { title: '卡名称', key: 'name' },
-  { title: '时长', key: 'duration' },
-  { title: '原价', key: 'originalPrice', render: (row: any) => `¥${row.originalPrice}` },
-  { title: '售价', key: 'price', render: (row: any) => `¥${row.price}` },
-  { title: '有效期', key: 'validity' },
-  { title: '销量', key: 'sales' },
-  { title: '状态', key: 'status', render: (row: any) => h(NTag, { type: row.status === 'active' ? 'success' : 'default', size: 'small', bordered: true }, () => row.status === 'active' ? '上架' : '下架') },
-  { title: '操作', key: 'actions', render: () => h(NSpace, null, { default: () => [h(NButton, { size: 'tiny', secondary: true }, () => '编辑')] }) },
-]
-
-const timecardData = [
-  { name: '月卡 - 无限畅玩', duration: '30天', originalPrice: 299, price: 199, validity: '30天', sales: 245, status: 'active' },
-  { name: '季卡 - 无限畅玩', duration: '90天', originalPrice: 799, price: 499, validity: '90天', sales: 128, status: 'active' },
-  { name: '年卡 - 无限畅玩', duration: '365天', originalPrice: 2599, price: 1599, validity: '365天', sales: 56, status: 'active' },
-]
+// 筛选条件
+const searchText = ref('')
+const filterCategory = ref<string | null>(null)
+const filterStock = ref<string | null>(null)
+const filterStatus = ref<string | null>(null)
 
 const physicalColumns = [
   { title: '商品', key: 'info', render(row: any) {
@@ -232,16 +177,37 @@ const physicalColumns = [
   }},
   { title: '销量', key: 'sales' },
   { title: '状态', key: 'status', render: (row: any) => h(NTag, { type: row.status === 'on' ? 'success' : 'default', size: 'small', bordered: true }, () => row.status === 'on' ? '上架' : '下架') },
-  { title: '操作', key: 'actions', render: () => h(NSpace, null, { default: () => [h(NButton, { size: 'tiny', secondary: true }, () => '编辑'), h(NButton, { size: 'tiny', quaternary: true }, () => '补货')] }) },
+  { title: '操作', key: 'actions', width: 200, render: (row: any) => h(NSpace, null, { default: () => [
+    h(NButton, { size: 'tiny', secondary: true, onClick: () => router.push(`/shop/products/${row.id}`) }, () => '编辑'),
+    h(NButton, { size: 'tiny', type: 'primary', quaternary: true, onClick: () => openRestock(row) }, () => '补货'),
+    h(NButton, { size: 'tiny', quaternary: true, type: row.status === 'on' ? 'warning' : 'success', onClick: () => toggleStatus(row) }, () => row.status === 'on' ? '下架' : '上架')
+  ] }) },
 ]
 
 const physicalData = [
-  { name: '一次性眼罩', icon: '😷', category: '消耗品', cost: '0.8', price: '3.0', stock: '200', sales: 1256, status: 'on' },
-  { name: 'VR手柄保护套', icon: '🧤', category: '配件', cost: '12', price: '29.0', stock: '15', sales: 328, status: 'on' },
-  { name: '恐怖医院限定玩偶', icon: '🧸', category: '周边', cost: '35', price: '68.0', stock: '52', sales: 156, status: 'on' },
-  { name: '恐龙王国钥匙扣', icon: '🔑', category: '周边', cost: '8', price: '18.0', stock: '3', sales: 289, status: 'on' },
-  { name: '可乐330ml', icon: '🥤', category: '饮品', cost: '2', price: '5.0', stock: '30', sales: 856, status: 'on' },
+  { id: '1', name: '一次性眼罩', icon: '😷', category: '消耗品', cost: '0.8', price: '3.0', stock: '200', sales: 1256, status: 'on' },
+  { id: '2', name: 'VR手柄保护套', icon: '🧤', category: '配件', cost: '12', price: '29.0', stock: '15', sales: 328, status: 'on' },
+  { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', category: '周边', cost: '35', price: '68.0', stock: '52', sales: 156, status: 'on' },
+  { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', category: '周边', cost: '8', price: '18.0', stock: '3', sales: 289, status: 'off' },
+  { id: '5', name: '可乐330ml', icon: '🥤', category: '饮品', cost: '2', price: '5.0', stock: '30', sales: 856, status: 'on' },
 ]
+
+const categoryValueMap: Record<string, string> = { consumable: '消耗品', accessory: '配件', merchandise: '周边', drink: '饮品' }
+
+const filteredData = computed(() => {
+  return physicalData.filter(item => {
+    if (searchText.value && !item.name.includes(searchText.value)) return false
+    if (filterCategory.value && categoryValueMap[filterCategory.value] !== item.category) return false
+    if (filterStock.value) {
+      const num = parseInt(item.stock)
+      if (filterStock.value === 'low' && num > 10) return false
+      if (filterStock.value === 'normal' && (num <= 10 || num > 50)) return false
+      if (filterStock.value === 'enough' && num <= 50) return false
+    }
+    if (filterStatus.value && item.status !== filterStatus.value) return false
+    return true
+  })
+})
 
 const stockColumns = [
   { title: '时间', key: 'time', width: 160 },
@@ -266,17 +232,6 @@ const stockData = [
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
 
 .tab-content { padding-top: 16px; }
-
-.tab-desc {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: #3B82F6;
-  background: #EFF6FF; padding: 12px 16px; border-radius: 8px;
-  margin-bottom: 16px; border-left: 3px solid #3B82F6;
-}
-
-.sub-content { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); }
-.sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.sub-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
 .physical-actions { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
 
