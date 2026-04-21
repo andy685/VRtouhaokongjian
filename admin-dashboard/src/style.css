@@ -1,0 +1,125 @@
+:root {
+  /* ===== 品牌色系 - VR科技感 ===== */
+  --color-primary: #3B82F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #60A5FA;
+  --color-primary-bg: rgba(59, 130, 246, 0.08);
+  
+  /* ===== 深空主题 ===== */
+  --color-bg-base: #F0F4F8;
+  --color-bg-white: #FFFFFF;
+  --color-sidebar: #0A0E1A;
+  --color-sidebar-hover: #141933;
+  --color-sidebar-active: #1E2750;
+  
+  /* ===== 文字 ===== */
+  --text-primary: #1A2332;
+  --text-secondary: #5C6B7F;
+  --text-muted: #8FA3BF;
+  
+  /* ===== 边框与阴影 ===== */
+  --border-color: #E2E8F0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  
+  /* ===== 渐变 ===== */
+  --gradient-brand: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  --gradient-glow: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(139,92,246,0.15) 100%);
+  --gradient-card: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+}
+
+/* ===== 全局重置 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  background: var(--color-bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+/* ===== 滚动条美化 ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ===== 动画 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.4); }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.5s ease-out both;
+}
+.animate-slide-in {
+  animation: slideInLeft 0.4s ease-out both;
+}
+
+/* ===== Naive UI 主题覆盖 ===== */
+.n-config-provider {
+  --n-color: var(--color-bg-base) !important;
+}
+
+/* 卡片悬浮效果 */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* VR风格装饰元素 */
+.vr-glow {
+  position: relative;
+}
+.vr-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: var(--gradient-brand);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+}
+.vr-glow:hover::before {
+  opacity: 1;
+}
