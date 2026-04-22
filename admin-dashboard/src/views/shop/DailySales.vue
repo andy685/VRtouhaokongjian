@@ -76,8 +76,8 @@
     <n-drawer v-model:show="showFilterDrawer" width="360" placement="right">
       <n-drawer-content title="筛选条件" closable>
         <n-form label-placement="left" :label-width="80">
-          <n-form-item label="查看日期">
-            <n-date-picker v-model:value="filterDate" type="date" style="width: 100%;" clearable />
+          <n-form-item label="日期范围">
+            <n-date-picker v-model:value="filterDateRange" type="daterange" style="width: 100%;" clearable />
           </n-form-item>
           <n-form-item label="门店">
             <n-select placeholder="请选择门店" :options="storeOptions" clearable />
@@ -117,24 +117,32 @@ const storeOptions = [
 ]
 
 // ===== 日期相关 =====
+const today = new Date()
 const displayDateStr = computed(() => {
-  const d = new Date(displayDate.value)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
+  if (displayDateRange.value) {
+    const s = new Date(displayDateRange.value[0])
+    const e = new Date(displayDateRange.value[1])
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return `${fmt(s)} ~ ${fmt(e)}`
+  }
+  const y = today.getFullYear()
+  const m = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
   const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  return `${y}-${m}-${day} ${weekDays[d.getDay()]}`
+  return `${y}-${m}-${day} ${weekDays[today.getDay()]}`
 })
 
 function handleSearch() {
-  if (filterDate.value) {
-    displayDate.value = filterDate.value
+  if (filterDateRange.value) {
+    displayDateRange.value = [...filterDateRange.value]
+  } else {
+    displayDateRange.value = null
   }
   showFilterDrawer.value = false
 }
 
 function handleResetFilter() {
-  filterDate.value = null
+  filterDateRange.value = null
 }
 
 // ===== 模拟每日数据生成 =====
@@ -191,7 +199,55 @@ function getDayData(dateStr: string) {
 
 // ===== 响应式数据 =====
 const currentData = computed(() => {
-  const d = new Date(displayDate.value)
+  // 如果有日期范围，汇总范围内所有天数据
+  if (displayDateRange.value) {
+    const start = new Date(displayDateRange.value[0])
+    const end = new Date(displayDateRange.value[1])
+    let totalOverview: any = null
+    let totalBusiness: any[] = []
+    let totalPayment: any[] = []
+    const cur = new Date(start)
+    while (cur <= end) {
+      const ds = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`
+      const dayData = getDayData(ds)
+      if (!totalOverview) {
+        totalOverview = dayData.overview.map(o => ({ ...o }))
+      } else {
+        for (let i = 0; i < totalOverview.length - 1; i++) {
+          totalOverview[i].revenueTotal += dayData.overview[i].revenueTotal
+          totalOverview[i].costTotal += dayData.overview[i].costTotal
+          totalOverview[i].orderCount += dayData.overview[i].orderCount
+          totalOverview[i].grossProfit += dayData.overview[i].grossProfit
+        }
+        // 合计行也累加
+        const ti = totalOverview.length - 1
+        totalOverview[ti].revenueTotal += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.revenueTotal || 0
+        totalOverview[ti].costTotal += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.costTotal || 0
+        totalOverview[ti].orderCount += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.orderCount || 0
+        totalOverview[ti].grossProfit += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.grossProfit || 0
+      }
+      totalBusiness.push(...dayData.business.filter((b: any) => !b.isTotal))
+      totalPayment.push(...dayData.payment.filter((p: any) => !p.isTotal))
+      cur.setDate(cur.getDate() + 1)
+    }
+    // 汇总业务和支付合计行
+    const bizTotal = { id: 999, store: '合计', business: '', revenueAmount: 0, refundAmount: 0, isTotal: true }
+    const payTotal = { id: 999, store: '合计', payMethod: '', count: 0, actualAmount: 0, refundAmount: 0, netAmount: 0, isTotal: true }
+    for (const b of totalBusiness) {
+      bizTotal.revenueAmount += b.revenueAmount
+      bizTotal.refundAmount += b.refundAmount
+    }
+    for (const p of totalPayment) {
+      payTotal.count += p.count
+      payTotal.actualAmount += p.actualAmount
+      payTotal.refundAmount += p.refundAmount
+      payTotal.netAmount += p.netAmount
+    }
+    return { overview: totalOverview, business: [...totalBusiness, bizTotal], payment: [...totalPayment, payTotal] }
+  }
+
+  // 默认显示今天
+  const d = today
   const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   return getDayData(dateStr)
 })
