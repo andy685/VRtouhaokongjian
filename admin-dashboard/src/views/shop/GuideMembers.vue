@@ -46,7 +46,7 @@
         </div>
         <div class="stat-content">
           <span class="label">会员等级</span>
-          <span class="value">VIP</span>
+          <span class="value">黄金</span>
         </div>
       </div>
     </div>
@@ -82,7 +82,7 @@ const columns: DataTableColumns = [
   { title: '手机号', key: 'phone', width: 130 },
   { title: '所属导购', key: 'guide', width: 100 },
   { title: '会员等级', key: 'level', width: 100, render: (row) =>
-    h(NTag, { type: row.level === 'VIP' ? 'error' : row.level === '银卡' ? 'info' : 'default', size: 'small' },
+    h(NTag, { type: row.level === '黄金' ? 'warning' : row.level === '白银' ? 'info' : 'default', size: 'small' },
       { default: () => row.level })
   },
   { title: '余额', key: 'balance', width: 100, render: (row) => `¥${row.balance}` },
@@ -99,11 +99,11 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, name: '张小明', phone: '138****1234', guide: '张三', level: 'VIP', balance: 580, points: 5600, totalConsume: 12800, lastConsume: '2026-04-18' },
-  { id: 2, name: '李小红', phone: '139****5678', guide: '李四', level: '金卡', balance: 320, points: 3200, totalConsume: 8600, lastConsume: '2026-04-15' },
-  { id: 3, name: '王小强', phone: '137****9012', guide: '张三', level: '银卡', balance: 150, points: 1500, totalConsume: 4500, lastConsume: '2026-04-10' },
-  { id: 4, name: '陈小芳', phone: '136****3456', guide: '王五', level: 'VIP', balance: 890, points: 8900, totalConsume: 15600, lastConsume: '2026-04-19' },
-  { id: 5, name: '刘小丽', phone: '135****7890', guide: '李四', level: '普卡', balance: 80, points: 800, totalConsume: 2200, lastConsume: '2026-04-05' },
+  { id: 1, name: '张小明', phone: '13801231234', guide: '张三', level: '黄金', balance: 580, points: 5600, totalConsume: 12800, lastConsume: '2026-04-18' },
+  { id: 2, name: '李小红', phone: '13905675678', guide: '李四', level: '白银', balance: 320, points: 3200, totalConsume: 8600, lastConsume: '2026-04-15' },
+  { id: 3, name: '王小强', phone: '13709019012', guide: '张三', level: '青铜', balance: 150, points: 1500, totalConsume: 4500, lastConsume: '2026-04-10' },
+  { id: 4, name: '陈小芳', phone: '13603453456', guide: '王五', level: '黄金', balance: 890, points: 8900, totalConsume: 15600, lastConsume: '2026-04-19' },
+  { id: 5, name: '刘小丽', phone: '13507897890', guide: '李四', level: '普通会员', balance: 80, points: 800, totalConsume: 2200, lastConsume: '2026-04-05' },
 ])
 </script>
 

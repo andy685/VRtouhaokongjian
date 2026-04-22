@@ -123,11 +123,11 @@ const columns: DataTableColumns = [
 const pagination = { pageSize: 10 }
 
 const allUsers = ref([
-  { username: 'admin', name: '王小丫', phone: '138****8888', role: 'admin', status: true, lastLogin: '2026-04-20 22:00' },
-  { username: 'cashier01', name: '张丽', phone: '139****6666', role: 'cashier', status: true, lastLogin: '2026-04-20 21:30' },
-  { username: 'cashier02', name: '李娜', phone: '137****5555', role: 'cashier', status: true, lastLogin: '2026-04-20 20:15' },
-  { username: 'reception01', name: '王芳', phone: '136****4444', role: 'reception', status: true, lastLogin: '2026-04-20 18:45' },
-  { username: 'maintenance01', name: '赵强', phone: '135****3333', role: 'maintenance', status: false, lastLogin: '2026-04-19 10:00' },
+  { username: 'admin', name: '王小丫', phone: '13808888888', role: 'admin', status: true, lastLogin: '2026-04-20 22:00' },
+  { username: 'cashier01', name: '张丽', phone: '13906666666', role: 'cashier', status: true, lastLogin: '2026-04-20 21:30' },
+  { username: 'cashier02', name: '李娜', phone: '13705555555', role: 'cashier', status: true, lastLogin: '2026-04-20 20:15' },
+  { username: 'reception01', name: '王芳', phone: '13604444444', role: 'reception', status: true, lastLogin: '2026-04-20 18:45' },
+  { username: 'maintenance01', name: '赵强', phone: '13503333333', role: 'maintenance', status: false, lastLogin: '2026-04-19 10:00' },
 ])
 
 const adminUsers = computed(() => allUsers.value.filter(u => u.role === 'admin'))

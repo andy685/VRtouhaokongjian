@@ -59,9 +59,9 @@ const timeOptions = [
 const pagination = { pageSize: 10 }
 
 const topMembers = ref([
-  { id: 1, name: '张小明', phone: '138****1234', totalConsume: 15800, visitCount: 56 },
-  { id: 2, name: '李小红', phone: '139****5678', totalConsume: 12800, visitCount: 48 },
-  { id: 3, name: '王小强', phone: '137****9012', totalConsume: 9800, visitCount: 38 },
+  { id: 1, name: '张小明', phone: '13801231234', totalConsume: 15800, visitCount: 56 },
+  { id: 2, name: '李小红', phone: '13905675678', totalConsume: 12800, visitCount: 48 },
+  { id: 3, name: '王小强', phone: '13709019012', totalConsume: 9800, visitCount: 38 },
 ])
 
 const columns: DataTableColumns = [
@@ -74,7 +74,7 @@ const columns: DataTableColumns = [
   { title: '会员姓名', key: 'name', width: 120 },
   { title: '手机号', key: 'phone', width: 130 },
   { title: '会员等级', key: 'level', width: 100, render: (row) =>
-    h(NTag, { type: row.level === 'VIP' ? 'error' : row.level === '金卡' ? 'warning' : 'info', size: 'small' },
+    h(NTag, { type: row.level === '黄金' ? 'warning' : row.level === '白银' ? 'info' : 'default', size: 'small' },
       { default: () => row.level })
   },
   { title: '累计消费', key: 'totalConsume', width: 130, render: (row) => `¥${row.totalConsume.toLocaleString()}` },
@@ -87,13 +87,13 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { rank: 1, name: '张小明', phone: '138****1234', level: 'VIP', totalConsume: 15800, visitCount: 56, lastConsume: '2026-04-18', activity: 95 },
-  { rank: 2, name: '李小红', phone: '139****5678', level: '金卡', totalConsume: 12800, visitCount: 48, lastConsume: '2026-04-15', activity: 88 },
-  { rank: 3, name: '王小强', phone: '137****9012', level: '金卡', totalConsume: 9800, visitCount: 38, lastConsume: '2026-04-12', activity: 82 },
-  { rank: 4, name: '陈小芳', phone: '136****3456', level: '银卡', totalConsume: 6500, visitCount: 28, lastConsume: '2026-04-10', activity: 75 },
-  { rank: 5, name: '刘小丽', phone: '135****7890', level: '银卡', totalConsume: 5200, visitCount: 22, lastConsume: '2026-04-08', activity: 68 },
-  { rank: 6, name: '赵小军', phone: '134****2345', level: '普卡', totalConsume: 3800, visitCount: 16, lastConsume: '2026-04-05', activity: 55 },
-  { rank: 7, name: '孙小娟', phone: '133****6789', level: '普卡', totalConsume: 2800, visitCount: 12, lastConsume: '2026-04-02', activity: 45 },
+  { rank: 1, name: '张小明', phone: '13801231234', level: '黄金', totalConsume: 15800, visitCount: 56, lastConsume: '2026-04-18', activity: 95 },
+  { rank: 2, name: '李小红', phone: '13905675678', level: '黄金', totalConsume: 12800, visitCount: 48, lastConsume: '2026-04-15', activity: 88 },
+  { rank: 3, name: '王小强', phone: '13709019012', level: '白银', totalConsume: 9800, visitCount: 38, lastConsume: '2026-04-12', activity: 82 },
+  { rank: 4, name: '陈小芳', phone: '13603453456', level: '白银', totalConsume: 6500, visitCount: 28, lastConsume: '2026-04-10', activity: 75 },
+  { rank: 5, name: '刘小丽', phone: '13507897890', level: '青铜', totalConsume: 5200, visitCount: 22, lastConsume: '2026-04-08', activity: 68 },
+  { rank: 6, name: '赵小军', phone: '13402342345', level: '普通会员', totalConsume: 3800, visitCount: 16, lastConsume: '2026-04-05', activity: 55 },
+  { rank: 7, name: '孙小娟', phone: '13306786789', level: '普通会员', totalConsume: 2800, visitCount: 12, lastConsume: '2026-04-02', activity: 45 },
 ])
 
 function exportData() {

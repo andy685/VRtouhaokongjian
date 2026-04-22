@@ -1,90 +1,65 @@
 <template>
   <div class="page-container animate-fade-in">
+    <!-- 页面标题 -->
     <div class="page-header">
-      <h1>会员级别</h1>
-      <n-button type="primary" @click="showAddModal = true">+ 添加级别</n-button>
+      <h2>会员等级</h2>
+      <n-space>
+        <n-button type="primary" @click="handleAdd">
+          <template #icon><n-icon :component="AddOutline" /></template>
+          添加
+        </n-button>
+        <n-button secondary @click="handleApply">
+          <template #icon><n-icon :component="RefreshOutline" /></template>
+          等级立刻生效
+        </n-button>
+      </n-space>
     </div>
 
-    <!-- 级别列表 -->
-    <div class="level-grid">
-      <div v-for="level in levelData" :key="level.id" class="level-card" :class="level.class">
-        <div class="level-header">
-          <div class="level-icon">
-            <n-icon :component="StarOutline" size="28" />
-          </div>
-          <div class="level-info">
-            <span class="level-name">{{ level.name }}</span>
-            <span class="level-desc">{{ level.description }}</span>
-          </div>
-          <n-tag :type="level.type" size="small">{{ level.count }}人</n-tag>
-        </div>
-        <div class="level-rules">
-          <div class="rule-item">
-            <span class="rule-label">升级条件</span>
-            <span class="rule-value">{{ level.upgradeCondition }}</span>
-          </div>
-          <div class="rule-item">
-            <span class="rule-label">折扣</span>
-            <span class="rule-value highlight">{{ level.discount }}</span>
-          </div>
-          <div class="rule-item">
-            <span class="rule-label">积分倍数</span>
-            <span class="rule-value">{{ level.pointRate }}</span>
-          </div>
-        </div>
-        <div class="level-actions">
-          <n-button size="small" @click="handleEdit(level)">编辑</n-button>
-          <n-button size="small" text type="error">删除</n-button>
-        </div>
-      </div>
+    <!-- 数据表格 -->
+    <div class="table-wrapper">
+      <n-data-table
+        :columns="columns"
+        :data="tableData"
+        :pagination="{ pageSize: 15 }"
+        :row-key="(row: any) => row.id"
+        striped
+        size="small"
+        :scroll-x="900"
+      />
     </div>
 
-    <!-- 添加级别弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" title="添加会员级别" style="width: 500px;">
-      <n-form :model="formData" label-placement="top">
-        <n-form-item label="级别名称">
-          <n-input v-model:value="formData.name" placeholder="如：银卡会员" />
+    <!-- 新增/编辑弹窗 -->
+    <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 520px;" :bordered="false">
+      <n-form ref="formRef" :model="formData" :rules="formRules" label-placement="left" :label-width="110">
+        <n-form-item label="等级名称：" path="name">
+          <n-input v-model:value="formData.name" placeholder="请输入等级名称" />
         </n-form-item>
-        <n-form-item label="级别描述">
-          <n-input v-model:value="formData.description" placeholder="简要描述该级别" />
-        </n-form-item>
-        <n-form-item label="升级条件（累计消费）">
-          <n-input-number v-model:value="formData.upgradeAmount" :min="0" style="width: 100%;">
-            <template #prefix>累计消费满</template>
-            <template #suffix>元</template>
+        <n-form-item label="累计消费金额：" path="consumeAmount">
+          <n-input-number v-model:value="formData.consumeAmount" :min="0" placeholder="" style="flex:1;">
+            <template #prefix>¥</template>
           </n-input-number>
         </n-form-item>
-        <n-grid :cols="2" :x-gap="16">
-          <n-gi>
-            <n-form-item label="会员折扣">
-              <n-input-number v-model:value="formData.discount" :min="0" :max="10" :precision="1" style="width: 100%;">
-                <template #suffix>折</template>
-              </n-input-number>
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item label="积分倍数">
-              <n-input-number v-model:value="formData.pointRate" :min="1" style="width: 100%;">
-                <template #suffix>倍</template>
-              </n-input-number>
-            </n-form-item>
-          </n-gi>
-        </n-grid>
-        <n-form-item label="享受权益">
-          <n-checkbox-group v-model:value="formData.benefits">
-            <n-space vertical>
-              <n-checkbox value="discount" label="消费折扣" />
-              <n-checkbox value="points" label="积分加速" />
-              <n-checkbox value="gift" label="生日礼包" />
-              <n-checkbox value="priority" label="优先体验" />
-            </n-space>
-          </n-checkbox-group>
+        <n-form-item label="消费折扣：" path="consumeDiscount">
+          <n-input-number v-model:value="formData.consumeDiscount" :min="0" :max="100" placeholder="" style="flex:1;">
+            <template #suffix>%</template>
+          </n-input-number>
+        </n-form-item>
+        <n-form-item label="积分兑换折扣：" path="pointsDiscount">
+          <n-input-number v-model:value="formData.pointsDiscount" :min="0" :max="100" placeholder="" style="flex:1;">
+            <template #suffix>%</template>
+          </n-input-number>
+        </n-form-item>
+        <n-form-item label="状态：" path="status">
+          <n-radio-group v-model:value="formData.status">
+            <n-radio value="enabled">启用</n-radio>
+            <n-radio value="disabled">禁用</n-radio>
+          </n-radio-group>
         </n-form-item>
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">取消</n-button>
-          <n-button type="primary" @click="handleSubmit">确定添加</n-button>
+          <n-button @click="showModal = false">取消</n-button>
+          <n-button type="primary" @click="handleSubmit">确定</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -92,53 +67,241 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, h } from 'vue'
 import {
-  NButton, NIcon, NTag, NModal, NForm, NFormItem, NInput, NInputNumber,
-  NGrid, NGi, NCheckbox, NCheckboxGroup, NSpace
+  NButton, NIcon, NDataTable, NTag,
+  NModal, NForm, NFormItem, NInput, NInputNumber, NSpace,
+  NRadioGroup, NRadio, NPopconfirm,
 } from 'naive-ui'
-import { StarOutline } from '@vicons/ionicons5'
+import { AddOutline, RefreshOutline } from '@vicons/ionicons5'
 
-const showAddModal = ref(false)
+const showModal = ref(false)
+const formRef = ref()
+const isEditing = ref(false)
+const editId = ref<number | null>(null)
+
+// 表单数据
 const formData = ref({
-  name: '', description: '', upgradeAmount: 0, discount: 10, pointRate: 1, benefits: []
+  name: '',
+  consumeAmount: null as number | null,
+  consumeDiscount: null as number | null,
+  pointsDiscount: null as number | null,
+  status: 'enabled' as string,
 })
 
-const levelData = ref([
-  { id: 1, name: '普卡会员', description: '注册即送', upgradeCondition: '注册即可', discount: '无', pointRate: '1倍', count: 2856, type: 'default', class: 'level-normal' },
-  { id: 2, name: '银卡会员', description: '消费满500', upgradeCondition: '累计消费满500元', discount: '9.5折', pointRate: '1.2倍', count: 628, type: 'info', class: 'level-silver' },
-  { id: 3, name: '金卡会员', description: '消费满2000', upgradeCondition: '累计消费满2000元', discount: '9折', pointRate: '1.5倍', count: 286, type: 'warning', class: 'level-gold' },
-  { id: 4, name: 'VIP会员', description: '消费满5000', upgradeCondition: '累计消费满5000元', discount: '8折', pointRate: '2倍', count: 86, type: 'error', class: 'level-vip' },
-])
-
-function handleEdit(level: any) {
-  console.log(level)
+// 校验规则
+const formRules = {
+  name: { required: true, message: '请输入等级名称', trigger: 'blur' },
+  consumeAmount: { required: true, type: 'number' as const, message: '请输入累计消费金额', trigger: 'blur' },
+  consumeDiscount: { required: true, type: 'number' as const, message: '请输入消费折扣', trigger: 'blur' },
+  pointsDiscount: { required: true, type: 'number' as const, message: '请输入积分兑换折扣', trigger: 'blur' },
 }
 
-function handleSubmit() {
-  showAddModal.value = false
+const modalTitle = computed(() => isEditing.value ? '编辑会员等级' : '添加会员等级')
+
+// 表格列配置
+const columns = [
+  {
+    title: '',
+    key: 'checkbox',
+    width: 50,
+    render(row: any) {
+      return h('span')
+    }
+  },
+  {
+    title: '等级名',
+    key: 'name',
+    width: 120,
+  },
+  {
+    title: '累计消费金额（¥）',
+    key: 'consumeAmount',
+    width: 160,
+    render(row: any) {
+      return row.consumeAmount !== null ? row.consumeAmount : 0
+    }
+  },
+  {
+    title: '消费折扣（%）',
+    key: 'consumeDiscount',
+    width: 130,
+  },
+  {
+    title: '积分兑换折扣（%）',
+    key: 'pointsDiscount',
+    width: 150,
+  },
+  {
+    title: '创建时间',
+    key: 'createTime',
+    width: 160,
+    render(row: any) {
+      return row.createTime || '--'
+    }
+  },
+  {
+    title: '状态',
+    key: 'status',
+    width: 70,
+    align: 'center' as const,
+    render(row: any) {
+      if (row.status === 'enabled') {
+        return h(NTag, { type: 'success', size: 'small', bordered: false }, () => '启用')
+      }
+      if (row.status === 'disabled') {
+        return h(NTag, { type: 'default', size: 'small', bordered: false }, () => '禁用')
+      }
+      return h(NTag, { size: 'small', bordered: false }, () => '--')
+    }
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 120,
+    render(row: any) {
+      if (row.name === '普通会员') {
+        return h('span', {}, '--')
+      }
+      return h('div', { style: { display: 'inline-flex', gap: '4px' } }, [
+        h(NButton, { size: 'tiny', quaternary: true, type: 'info', onClick: () => handleEdit(row) }, () => '编辑'),
+        h(NPopconfirm, {
+          onPositiveClick: () => handleDelete(row.id),
+        }, {
+          trigger: () => h(NButton, { size: 'tiny', quaternary: true, type: 'error' }, () => '删除'),
+          default: () => '确认删除该等级？'
+        }),
+      ])
+    }
+  },
+]
+
+// 示例数据
+const tableData = ref([
+  {
+    id: 1,
+    name: '黄金',
+    consumeAmount: 1000,
+    consumeDiscount: 85,
+    pointsDiscount: 85,
+    createTime: '2021-11-27 17:27',
+    status: 'enabled',
+  },
+  {
+    id: 2,
+    name: '白银',
+    consumeAmount: 800,
+    consumeDiscount: 90,
+    pointsDiscount: 90,
+    createTime: '2021-11-27 17:27',
+    status: 'enabled',
+  },
+  {
+    id: 3,
+    name: '青铜',
+    consumeAmount: 500,
+    consumeDiscount: 95,
+    pointsDiscount: 95,
+    createTime: '2021-11-27 17:26',
+    status: 'enabled',
+  },
+  {
+    id: 4,
+    name: '普通会员',
+    consumeAmount: 0,
+    consumeDiscount: 100,
+    pointsDiscount: 100,
+    createTime: '',
+    status: 'enabled',
+  },
+])
+
+function resetForm() {
+  formData.value = {
+    name: '',
+    consumeAmount: null,
+    consumeDiscount: null,
+    pointsDiscount: null,
+    status: 'enabled',
+  }
+}
+
+function handleAdd() {
+  isEditing.value = false
+  editId.value = null
+  resetForm()
+  showModal.value = true
+}
+
+function handleEdit(row: any) {
+  isEditing.value = true
+  editId.value = row.id
+  formData.value = {
+    name: row.name,
+    consumeAmount: row.consumeAmount,
+    consumeDiscount: row.consumeDiscount,
+    pointsDiscount: row.pointsDiscount,
+    status: row.status || 'enabled',
+  }
+  showModal.value = true
+}
+
+function handleApply() {
+  console.log('等级立刻生效')
+}
+
+function handleDelete(id: number) {
+  const idx = tableData.value.findIndex(r => r.id === id)
+  if (idx >= 0) {
+    tableData.value.splice(idx, 1)
+  }
+}
+
+async function handleSubmit() {
+  try {
+    await formRef.value?.validate()
+    if (isEditing.value && editId.value) {
+      const idx = tableData.value.findIndex(r => r.id === editId.value)
+      if (idx >= 0) {
+        Object.assign(tableData.value[idx], formData.value)
+      }
+    } else {
+      tableData.value.push({
+        id: Date.now(),
+        ...formData.value,
+        createTime: new Date().toLocaleString(),
+        status: 'enabled',
+      })
+    }
+    showModal.value = false
+  } catch (e) {
+    // 校验失败
+  }
 }
 </script>
 
 <style scoped>
-.page-container { padding: 24px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h1 { font-size: 20px; font-weight: 600; color: #333; margin: 0; }
-.level-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.level-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-.level-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-.level-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; }
-.level-normal .level-icon { background: linear-gradient(135deg, #9CA3AF, #6B7280); }
-.level-silver .level-icon { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); }
-.level-gold .level-icon { background: linear-gradient(135deg, #F59E0B, #D97706); }
-.level-vip .level-icon { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
-.level-info { flex: 1; }
-.level-name { display: block; font-size: 18px; font-weight: 600; color: #333; }
-.level-desc { display: block; font-size: 13px; color: #999; margin-top: 2px; }
-.level-rules { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-.rule-item { display: flex; justify-content: space-between; align-items: center; }
-.rule-label { font-size: 14px; color: #666; }
-.rule-value { font-size: 14px; font-weight: 500; color: #333; }
-.rule-value.highlight { color: #F59E0B; font-weight: 600; }
-.level-actions { display: flex; gap: 12px; border-top: 1px solid #f0f0f0; padding-top: 16px; }
+.page-container {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.table-wrapper {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
 </style>

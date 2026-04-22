@@ -27,6 +27,8 @@ import ShopCoupons from '../views/shop/ShopCoupons.vue'
 import Promotions from '../views/shop/Promotions.vue'
 import Gifts from '../views/shop/Gifts.vue'
 import Sms from '../views/shop/Sms.vue'
+import SmsCreate from '../views/shop/SmsCreate.vue'
+import SmsTemplates from '../views/shop/SmsTemplates.vue'
 import GuideMembers from '../views/shop/GuideMembers.vue'
 import Guides from '../views/shop/Guides.vue'
 import MemberLevels from '../views/shop/MemberLevels.vue'
@@ -48,6 +50,12 @@ import FilmGenres from '../views/shop/FilmGenres.vue'
 import PointsSettings from '../views/shop/PointsSettings.vue'
 import CashierSettings from '../views/shop/CashierSettings.vue'
 import ShopUsers from '../views/shop/Users.vue'
+import MemberDiscount from '../views/shop/MemberDiscount.vue'
+import MemberEdit from '../views/shop/MemberEdit.vue'
+import MemberPointsQuery from '../views/shop/MemberPointsQuery.vue'
+import MemberPointsAdjustLog from '../views/shop/MemberPointsAdjustLog.vue'
+import MemberPrepaidTimesQuery from '../views/shop/MemberPrepaidTimesQuery.vue'
+import TimesAdjustLog from '../views/shop/TimesAdjustLog.vue'
 
 const routes: RouteRecordRaw[] = [
   // ===== 总运营后台（平台超管） =====
@@ -110,14 +118,22 @@ const routes: RouteRecordRaw[] = [
       { path: 'coupons', name: 'ShopCoupons', component: ShopCoupons, meta: { title: '优惠券' } },
       { path: 'promotions', name: 'ShopPromotions', component: Promotions, meta: { title: '促销' } },
       { path: 'gifts', name: 'ShopGifts', component: Gifts, meta: { title: '活动赠送' } },
-      { path: 'sms', name: 'ShopSms', component: Sms, meta: { title: '短信管理' } },
+      { path: 'sms-templates', name: 'ShopSmsTemplates', component: SmsTemplates, meta: { title: '短信模板' } },
+      { path: 'sms', name: 'ShopSms', component: Sms, meta: { title: '短信服务' } },
+      { path: 'sms/create', name: 'ShopSmsCreate', component: SmsCreate, meta: { title: '添加发送任务' } },
       { path: 'guide-members', name: 'ShopGuideMembers', component: GuideMembers, meta: { title: '会员管理' } },
       { path: 'guides', name: 'ShopGuides', component: Guides, meta: { title: '导购管理' } },
       // 会员管理
       { path: 'members', name: 'ShopMembers', component: Members, meta: { title: '会员列表' } },
+      { path: 'member-discount', name: 'ShopMemberDiscount', component: MemberDiscount, meta: { title: '设置会员折扣' } },
+      { path: 'member-edit', name: 'ShopMemberEdit', component: MemberEdit, meta: { title: '编辑会员信息' } },
       { path: 'member-levels', name: 'ShopMemberLevels', component: MemberLevels, meta: { title: '会员级别' } },
       { path: 'member-ranking', name: 'ShopMemberRanking', component: MemberRanking, meta: { title: '会员消费排行' } },
       { path: 'member-balance', name: 'ShopMemberBalance', component: MemberBalance, meta: { title: '会员储值变更' } },
+      { path: 'member-points-query', name: 'ShopMemberPointsQuery', component: MemberPointsQuery, meta: { title: '会员积分查询' } },
+      { path: 'member-points-adjust-log', name: 'ShopMemberPointsAdjustLog', component: MemberPointsAdjustLog, meta: { title: '积分调整有效期查询' } },
+      { path: 'member-prepaid-times-query', name: 'ShopMemberPrepaidTimesQuery', component: MemberPrepaidTimesQuery, meta: { title: '会员预存次数查询' } },
+      { path: 'times-adjust-log', name: 'ShopTimesAdjustLog', component: TimesAdjustLog, meta: { title: '次数调整有效期查询' } },
       // 数据报表
       { path: 'daily-sales', name: 'ShopDailySales', component: DailySales, meta: { title: '门店销售日报' } },
       { path: 'historical-revenue', name: 'ShopHistoricalRevenue', component: HistoricalRevenue, meta: { title: '历史营收统计' } },

@@ -61,13 +61,13 @@
         <n-tab name="refund">退款</n-tab>
         <n-tab name="adjust">调整</n-tab>
       </n-tabs>
-      <n-data-table :columns="columns" :data="tableData" :pagination="pagination" />
+      <n-data-table :columns="columns" :data="filteredTableData" :pagination="pagination" />
     </n-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { ref, computed, h } from 'vue'
 import {
   NCard, NDataTable, NButton, NSpace, NInput, NIcon, NTabs, NTab,
   NDatePicker, NSelect, NTag
@@ -111,17 +111,23 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, changeTime: '2026-04-20 14:30:00', name: '张小明', phone: '138****1234', type: 'recharge', amount: 500, balanceBefore: 280, balanceAfter: 780, operator: '系统', remark: '会员卡充值' },
-  { id: 2, changeTime: '2026-04-20 11:20:00', name: '李小红', phone: '139****5678', type: 'consume', amount: -68, balanceBefore: 388, balanceAfter: 320, operator: '系统', remark: 'VR游戏消费' },
-  { id: 3, changeTime: '2026-04-20 10:15:00', name: '王小强', phone: '137****9012', type: 'recharge', amount: 200, balanceBefore: 50, balanceAfter: 250, operator: '张三', remark: '前台充值' },
-  { id: 4, changeTime: '2026-04-19 16:45:00', name: '陈小芳', phone: '136****3456', type: 'consume', amount: -118, balanceBefore: 468, balanceAfter: 350, operator: '系统', remark: '套票消费' },
-  { id: 5, changeTime: '2026-04-19 14:00:00', name: '刘小丽', phone: '135****7890', type: 'adjust', amount: -20, balanceBefore: 100, balanceAfter: 80, operator: '管理员', remark: '余额调整' },
-  { id: 6, changeTime: '2026-04-19 10:30:00', name: '赵小军', phone: '134****2345', type: 'refund', amount: 50, balanceBefore: 80, balanceAfter: 130, operator: '系统', remark: '退款返还' },
+  { id: 1, changeTime: '2026-04-20 14:30:00', name: '张小明', phone: '13801231234', type: 'recharge', amount: 500, balanceBefore: 280, balanceAfter: 780, operator: '系统', remark: '会员卡充值' },
+  { id: 2, changeTime: '2026-04-20 11:20:00', name: '李小红', phone: '13905675678', type: 'consume', amount: -68, balanceBefore: 388, balanceAfter: 320, operator: '系统', remark: 'VR游戏消费' },
+  { id: 3, changeTime: '2026-04-20 10:15:00', name: '王小强', phone: '13709019012', type: 'recharge', amount: 200, balanceBefore: 50, balanceAfter: 250, operator: '张三', remark: '前台充值' },
+  { id: 4, changeTime: '2026-04-19 16:45:00', name: '陈小芳', phone: '13603453456', type: 'consume', amount: -118, balanceBefore: 468, balanceAfter: 350, operator: '系统', remark: '套票消费' },
+  { id: 5, changeTime: '2026-04-19 14:00:00', name: '刘小丽', phone: '13507897890', type: 'adjust', amount: -20, balanceBefore: 100, balanceAfter: 80, operator: '管理员', remark: '余额调整' },
+  { id: 6, changeTime: '2026-04-19 10:30:00', name: '赵小军', phone: '13402342345', type: 'refund', amount: 50, balanceBefore: 80, balanceAfter: 130, operator: '系统', remark: '退款返还' },
 ])
 
 function exportData() {
   console.log('导出数据')
 }
+
+// 根据 Tab 筛选表格数据
+const filteredTableData = computed(() => {
+  if (activeTab.value === 'all') return tableData.value
+  return tableData.value.filter(item => item.type === activeTab.value)
+})
 </script>
 
 <style scoped>

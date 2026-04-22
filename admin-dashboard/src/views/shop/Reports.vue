@@ -155,12 +155,12 @@ const orderColumns = [
 ]
 
 const orderData = [
-  { orderNo: 'VR20260420001', type: 'VR体验', member: '张三 (金卡)', amount: 128, payment: '微信', time: '15:30:25', status: 'completed', statusText: '已完成' },
-  { orderNo: 'VR20260420002', type: '会员充值', member: '李四 (银卡)', amount: 500, payment: '支付宝', time: '15:25:10', status: 'completed', statusText: '已完成' },
+  { orderNo: 'VR20260420001', type: 'VR体验', member: '张三 (黄金)', amount: 128, payment: '微信', time: '15:30:25', status: 'completed', statusText: '已完成' },
+  { orderNo: 'VR20260420002', type: '会员充值', member: '李四 (白银)', amount: 500, payment: '支付宝', time: '15:25:10', status: 'completed', statusText: '已完成' },
   { orderNo: 'VR20260420003', type: 'VR体验', member: '散客', amount: 49, payment: '现金', time: '15:20:33', status: 'completed', statusText: '已完成' },
-  { orderNo: 'VR20260420004', type: '商品购买', member: '王五 (普通)', amount: 29, payment: '微信', time: '15:15:42', status: 'refunded', statusText: '已退款' },
-  { orderNo: 'VR20260420005', type: 'VR体验', member: '赵六 (金卡)', amount: 128, payment: '微信', time: '15:10:18', status: 'completed', statusText: '已完成' },
-  { orderNo: 'VR20260420006', type: '次数卡购买', member: '孙七 (普通)', amount: 99, payment: '支付宝', time: '14:58:55', status: 'completed', statusText: '已完成' },
+  { orderNo: 'VR20260420004', type: '商品购买', member: '王五 (普通会员)', amount: 29, payment: '微信', time: '15:15:42', status: 'refunded', statusText: '已退款' },
+  { orderNo: 'VR20260420005', type: 'VR体验', member: '赵六 (黄金)', amount: 128, payment: '微信', time: '15:10:18', status: 'completed', statusText: '已完成' },
+  { orderNo: 'VR20260420006', type: '次数卡购买', member: '孙七 (青铜)', amount: 99, payment: '支付宝', time: '14:58:55', status: 'completed', statusText: '已完成' },
 ]
 
 function initCharts() {

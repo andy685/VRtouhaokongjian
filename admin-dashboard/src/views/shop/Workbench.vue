@@ -220,14 +220,14 @@ const yAxisLabels = computed(() => {
 
 // 会员消费排行
 const memberRanking = ref([
-  { name: '张伟', phone: '138****8888', amount: 2580 },
-  { name: '李娜', phone: '139****6666', amount: 1860 },
-  { name: '王芳', phone: '137****5555', amount: 1580 },
-  { name: '赵强', phone: '136****4444', amount: 1320 },
-  { name: '陈静', phone: '135****3333', amount: 980 },
-  { name: '刘洋', phone: '134****2222', amount: 860 },
-  { name: '周涛', phone: '133****1111', amount: 720 },
-  { name: '吴敏', phone: '132****0000', amount: 580 },
+  { name: '张伟', phone: '13808888888', amount: 2580 },
+  { name: '李娜', phone: '13906666666', amount: 1860 },
+  { name: '王芳', phone: '13705555555', amount: 1580 },
+  { name: '赵强', phone: '13604444444', amount: 1320 },
+  { name: '陈静', phone: '13503333333', amount: 980 },
+  { name: '刘洋', phone: '13402222222', amount: 860 },
+  { name: '周涛', phone: '13301111111', amount: 720 },
+  { name: '吴敏', phone: '13200000000', amount: 580 },
 ])
 
 // 售品销售额占比 TOP10

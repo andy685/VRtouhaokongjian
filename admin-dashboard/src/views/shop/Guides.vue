@@ -123,11 +123,11 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, name: '张三', employeeId: 'A001', phone: '138****1234', newMembers: 28, performance: 28600, totalMembers: 328, rank: 1, status: true },
-  { id: 2, name: '李四', employeeId: 'A002', phone: '139****5678', newMembers: 22, performance: 22800, totalMembers: 286, rank: 2, status: true },
-  { id: 3, name: '王五', employeeId: 'A003', phone: '137****9012', newMembers: 18, performance: 18600, totalMembers: 245, rank: 3, status: true },
-  { id: 4, name: '赵六', employeeId: 'A004', phone: '136****3456', newMembers: 12, performance: 12500, totalMembers: 168, rank: 4, status: true },
-  { id: 5, name: '钱七', employeeId: 'A005', phone: '135****7890', newMembers: 6, performance: 6800, totalMembers: 92, rank: 5, status: false },
+  { id: 1, name: '张三', employeeId: 'A001', phone: '13801231234', newMembers: 28, performance: 28600, totalMembers: 328, rank: 1, status: true },
+  { id: 2, name: '李四', employeeId: 'A002', phone: '13905675678', newMembers: 22, performance: 22800, totalMembers: 286, rank: 2, status: true },
+  { id: 3, name: '王五', employeeId: 'A003', phone: '13709019012', newMembers: 18, performance: 18600, totalMembers: 245, rank: 3, status: true },
+  { id: 4, name: '赵六', employeeId: 'A004', phone: '13603453456', newMembers: 12, performance: 12500, totalMembers: 168, rank: 4, status: true },
+  { id: 5, name: '钱七', employeeId: 'A005', phone: '13507897890', newMembers: 6, performance: 6800, totalMembers: 92, rank: 5, status: false },
 ])
 
 function handleSubmit() {

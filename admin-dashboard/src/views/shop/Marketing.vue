@@ -174,20 +174,16 @@ const levels = ref([
     benefits: ['享受会员价', '生日赠券', '积分抵现']
   },
   { 
-    name: '银卡会员', gradient: 'linear-gradient(135deg, #94A3B8, #94A3B8)', ratio: '28%', threshold: '500',
-    benefits: ['9.5折优惠', '积分2倍', '专属客服', '优先预约']
+    name: '青铜', gradient: 'linear-gradient(135deg, #CD7F32, #B87333)', ratio: '25%', threshold: '500',
+    benefits: ['95折优惠', '积分1.5倍', '专属客服']
   },
   { 
-    name: '金卡会员', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)', ratio: '13%', threshold: '2000',
-    benefits: ['9折优惠', '积分3倍', '免费体验券', '专属休息区', '优先预约']
+    name: '白银', gradient: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)', ratio: '15%', threshold: '800',
+    benefits: ['90折优惠', '积分2倍', '专属客服', '优先预约']
   },
   { 
-    name: '钻石会员', gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)', ratio: '3.5%', threshold: '8000',
-    benefits: ['8.5折优惠', '积分4倍', '免费月卡', '定制礼品', '专属管家', '全年不限次']
-  },
-  { 
-    name: '黑金会员', gradient: 'linear-gradient(135deg, #1A2332, #0D1117)', ratio: '0.5%', threshold: '20000',
-    benefits: ['8折优惠', '积分5倍', '年卡赠送', '高端定制服务', '专属会客厅', '全年不限次']
+    name: '黄金', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)', ratio: '5%', threshold: '1000',
+    benefits: ['85折优惠', '积分3倍', '免费体验券', '专属休息区']
   },
 ])
 

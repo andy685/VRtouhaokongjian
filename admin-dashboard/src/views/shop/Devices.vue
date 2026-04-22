@@ -246,17 +246,17 @@ const statusMap: Record<string, { type: string, label: string }> = {
 }
 
 const devices = ref([
-  { id: 'A01', zone: 'A区', status: 'running', currentGame: '过山车VR', timeLeft: '05:23', progress: 45, member: '张三 (金卡)', faultReason: '', todayUsage: 28, temp: '36.8' },
-  { id: 'A02', zone: 'A区', status: 'running', currentGame: '恐怖医院', timeLeft: '12:45', progress: 72, member: '李四 (银卡)', faultReason: '', todayUsage: 22, temp: '38.2' },
+  { id: 'A01', zone: 'A区', status: 'running', currentGame: '过山车VR', timeLeft: '05:23', progress: 45, member: '张三 (黄金)', faultReason: '', todayUsage: 28, temp: '36.8' },
+  { id: 'A02', zone: 'A区', status: 'running', currentGame: '恐怖医院', timeLeft: '12:45', progress: 72, member: '李四 (白银)', faultReason: '', todayUsage: 22, temp: '38.2' },
   { id: 'A03', zone: 'A区', status: 'running', currentGame: '极速赛车', timeLeft: '03:12', progress: 28, member: '散客', faultReason: '', todayUsage: 18, temp: '35.9' },
   { id: 'A04', zone: 'A区', status: 'idle', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '', todayUsage: 25, temp: '34.5' },
   { id: 'A05', zone: 'A区', status: 'fault', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '控制器异常', todayUsage: 12, temp: '42.1' },
-  { id: 'A06', zone: 'B区', status: 'running', currentGame: '海洋世界', timeLeft: '08:56', progress: 58, member: '王五 (普通)', faultReason: '', todayUsage: 30, temp: '37.2' },
-  { id: 'A07', zone: 'B区', status: 'running', currentGame: '恐龙王国', timeLeft: '06:34', progress: 48, member: '赵六 (钻石)', faultReason: '', todayUsage: 26, temp: '36.5' },
+  { id: 'A06', zone: 'B区', status: 'running', currentGame: '海洋世界', timeLeft: '08:56', progress: 58, member: '王五 (普通会员)', faultReason: '', todayUsage: 30, temp: '37.2' },
+  { id: 'A07', zone: 'B区', status: 'running', currentGame: '恐龙王国', timeLeft: '06:34', progress: 48, member: '赵六 (黄金)', faultReason: '', todayUsage: 26, temp: '36.5' },
   { id: 'A08', zone: 'B区', status: 'idle', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '', todayUsage: 20, temp: '33.8' },
-  { id: 'A09', zone: 'B区', status: 'running', currentGame: '太空漫步', timeLeft: '04:21', progress: 35, member: '孙七 (金卡)', faultReason: '', todayUsage: 24, temp: '37.8' },
+  { id: 'A09', zone: 'B区', status: 'running', currentGame: '太空漫步', timeLeft: '04:21', progress: 35, member: '孙七 (黄金)', faultReason: '', todayUsage: 24, temp: '37.8' },
   { id: 'A10', zone: 'B区', status: 'running', currentGame: 'CS对战', timeLeft: '02:58', progress: 22, member: '散客', faultReason: '', todayUsage: 32, temp: '39.1' },
-  { id: 'A11', zone: 'C区', status: 'running', currentGame: '音乐节VR', timeLeft: '11:33', progress: 68, member: '钱八 (银卡)', faultReason: '', todayUsage: 15, temp: '36.2' },
+  { id: 'A11', zone: 'C区', status: 'running', currentGame: '音乐节VR', timeLeft: '11:33', progress: 68, member: '钱八 (白银)', faultReason: '', todayUsage: 15, temp: '36.2' },
   { id: 'A12', zone: 'C区', status: 'idle', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '', todayUsage: 18, temp: '34.0' },
 ])
 

@@ -176,9 +176,14 @@ const menuOptions: MenuOption[] = [
       { label: '优惠券', key: '/shop/coupons' },
       { label: '促销', key: '/shop/promotions' },
       { label: '活动赠送', key: '/shop/gifts' },
-      { label: '短信管理', key: '/shop/sms' },
-      { label: '会员管理', key: '/shop/guide-members' },
-      { label: '导购管理', key: '/shop/guides' },
+      {
+        label: '短信管理',
+        key: 'sms-group',
+        children: [
+          { label: '短信模板', key: '/shop/sms-templates' },
+          { label: '短信服务', key: '/shop/sms' },
+        ]
+      },
     ]
   },
   {
@@ -190,6 +195,10 @@ const menuOptions: MenuOption[] = [
       { label: '会员级别', key: '/shop/member-levels' },
       { label: '会员消费排行', key: '/shop/member-ranking' },
       { label: '会员储值变更', key: '/shop/member-balance' },
+      { label: '会员积分查询', key: '/shop/member-points-query' },
+      { label: '积分调整有效期查询', key: '/shop/member-points-adjust-log' },
+      { label: '会员预存次数查询', key: '/shop/member-prepaid-times-query' },
+      { label: '次数调整有效查询', key: '/shop/times-adjust-log' },
     ]
   },
   {
@@ -361,6 +370,7 @@ function renderMenuLabel(option: MenuOption) {
   --n-item-color-active: rgba(16, 185, 129, 0.2) !important;
   --n-item-icon-color: rgba(255, 255, 255, 0.6) !important;
   --n-item-icon-color-active: #60A5FA !important;
+  --n-item-icon-color-hover: #ffffff !important;
   --n-item-text-color-hover: rgba(255,255,255,0.9) !important;
   --n-item-color-hover: rgba(255,255,255,0.06) !important;
   --n-border-color: transparent !important;
