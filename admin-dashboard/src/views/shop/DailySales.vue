@@ -12,6 +12,17 @@
       </div>
     </div>
 
+    <!-- 筛选标签 -->
+    <div v-if="hasActiveFilter" class="filter-tags">
+      <span class="filter-label">当前筛选：</span>
+      <n-tag v-if="displayDateRange" closable @close="clearDateFilter" size="small" type="info">
+        {{ displayDateStr }}
+      </n-tag>
+      <n-tag v-if="displayStore" closable @close="clearStoreFilter" size="small" type="info">
+        {{ displayStoreLabel }}
+      </n-tag>
+    </div>
+
     <!-- 一、营业概况 -->
     <div class="section-card">
       <div class="section-title">
@@ -80,7 +91,7 @@
             <n-date-picker v-model:value="filterDateRange" type="daterange" style="width: 100%;" clearable />
           </n-form-item>
           <n-form-item label="门店">
-            <n-select placeholder="请选择门店" :options="storeOptions" clearable />
+            <n-select v-model:value="filterStore" placeholder="请选择门店" :options="storeOptions" clearable />
           </n-form-item>
         </n-form>
         <template #footer>
@@ -99,15 +110,17 @@ import { ref, h, computed } from 'vue'
 import {
   NButton, NIcon, NDataTable,
   NDrawer, NDrawerContent, NForm, NFormItem, NSelect,
-  NDatePicker, NSpace,
+  NDatePicker, NSpace, NTag,
 } from 'naive-ui'
 import { FilterOutline } from '@vicons/ionicons5'
 
 const showFilterDrawer = ref(false)
 const filterDateRange = ref<[number, number] | null>(null)
+const filterStore = ref<string | null>(null)
 
 // 当前展示的日报（默认今天）
 const displayDateRange = ref<[number, number] | null>(null)
+const displayStore = ref<string | null>(null)
 
 const storeOptions = [
   { label: '卓远萝岗区店', value: '1' },
@@ -115,6 +128,25 @@ const storeOptions = [
   { label: '卓远亚运城店', value: '3' },
   { label: '卓远文鼎路店', value: '4' },
 ]
+
+const displayStoreLabel = computed(() => {
+  if (!displayStore.value) return ''
+  return storeOptions.find(o => o.value === displayStore.value)?.label || ''
+})
+
+const hasActiveFilter = computed(() => {
+  return !!displayDateRange.value || !!displayStore.value
+})
+
+function clearDateFilter() {
+  displayDateRange.value = null
+  filterDateRange.value = null
+}
+
+function clearStoreFilter() {
+  displayStore.value = null
+  filterStore.value = null
+}
 
 // ===== 日期相关 =====
 const today = new Date()
@@ -138,11 +170,13 @@ function handleSearch() {
   } else {
     displayDateRange.value = null
   }
+  displayStore.value = filterStore.value || null
   showFilterDrawer.value = false
 }
 
 function handleResetFilter() {
   filterDateRange.value = null
+  filterStore.value = null
 }
 
 // ===== 模拟每日数据生成 =====
@@ -199,58 +233,145 @@ function getDayData(dateStr: string) {
 
 // ===== 响应式数据 =====
 const currentData = computed(() => {
-  // 如果有日期范围，汇总范围内所有天数据
+  let result: { overview: any[]; business: any[]; payment: any[] }
+
   if (displayDateRange.value) {
     const start = new Date(displayDateRange.value[0])
     const end = new Date(displayDateRange.value[1])
-    let totalOverview: any = null
-    let totalBusiness: any[] = []
-    let totalPayment: any[] = []
+    // 累加用 map
+    const overviewMap = new Map<string, any>()
+    const businessMap = new Map<string, any>()
+    const paymentMap = new Map<string, any>()
+    const overviewOrder: string[] = []
     const cur = new Date(start)
     while (cur <= end) {
       const ds = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`
       const dayData = getDayData(ds)
-      if (!totalOverview) {
-        totalOverview = dayData.overview.map(o => ({ ...o }))
-      } else {
-        for (let i = 0; i < totalOverview.length - 1; i++) {
-          totalOverview[i].revenueTotal += dayData.overview[i].revenueTotal
-          totalOverview[i].costTotal += dayData.overview[i].costTotal
-          totalOverview[i].orderCount += dayData.overview[i].orderCount
-          totalOverview[i].grossProfit += dayData.overview[i].grossProfit
+
+      // 营业概况按门店累加
+      for (const o of dayData.overview) {
+        if (o.isTotal) continue
+        if (!overviewMap.has(o.store)) {
+          overviewMap.set(o.store, { ...o })
+          overviewOrder.push(o.store)
+        } else {
+          const existing = overviewMap.get(o.store)
+          existing.revenueTotal += o.revenueTotal
+          existing.costTotal += o.costTotal
+          existing.orderCount += o.orderCount
+          existing.grossProfit += o.grossProfit
         }
-        // 合计行也累加
-        const ti = totalOverview.length - 1
-        totalOverview[ti].revenueTotal += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.revenueTotal || 0
-        totalOverview[ti].costTotal += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.costTotal || 0
-        totalOverview[ti].orderCount += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.orderCount || 0
-        totalOverview[ti].grossProfit += dayData.overview[ti === dayData.overview.length - 1 ? ti : 0]?.grossProfit || 0
       }
-      totalBusiness.push(...dayData.business.filter((b: any) => !b.isTotal))
-      totalPayment.push(...dayData.payment.filter((p: any) => !p.isTotal))
+
+      // 业务数据按 门店+业务 分组累加
+      for (const b of dayData.business) {
+        if (b.isTotal) continue
+        const key = `${b.store}|${b.business}`
+        if (!businessMap.has(key)) {
+          businessMap.set(key, { ...b })
+        } else {
+          const existing = businessMap.get(key)
+          existing.revenueAmount += b.revenueAmount
+          existing.refundAmount += b.refundAmount
+        }
+      }
+
+      // 支付数据按 门店+支付方式 分组累加
+      for (const p of dayData.payment) {
+        if (p.isTotal) continue
+        const key = `${p.store}|${p.payMethod}`
+        if (!paymentMap.has(key)) {
+          paymentMap.set(key, { ...p })
+        } else {
+          const existing = paymentMap.get(key)
+          existing.count += p.count
+          existing.actualAmount += p.actualAmount
+          existing.refundAmount += p.refundAmount
+          existing.netAmount += p.netAmount
+        }
+      }
       cur.setDate(cur.getDate() + 1)
     }
-    // 汇总业务和支付合计行
+
+    // 构建结果
+    const overviewResult = overviewOrder.map(store => overviewMap.get(store))
+    const overviewTotal = {
+      isTotal: true, store: '合计',
+      revenueTotal: 0, costTotal: 0, orderCount: 0, grossProfit: 0, grossRate: '0',
+    }
+    for (const o of overviewResult) {
+      overviewTotal.revenueTotal += o.revenueTotal
+      overviewTotal.costTotal += o.costTotal
+      overviewTotal.orderCount += o.orderCount
+      overviewTotal.grossProfit += o.grossProfit
+    }
+    overviewTotal.grossRate = overviewTotal.revenueTotal > 0
+      ? ((overviewTotal.grossProfit / overviewTotal.revenueTotal) * 100).toFixed(1)
+      : '0.0'
+
+    const businessResult = Array.from(businessMap.values())
     const bizTotal = { id: 999, store: '合计', business: '', revenueAmount: 0, refundAmount: 0, isTotal: true }
-    const payTotal = { id: 999, store: '合计', payMethod: '', count: 0, actualAmount: 0, refundAmount: 0, netAmount: 0, isTotal: true }
-    for (const b of totalBusiness) {
+    for (const b of businessResult) {
       bizTotal.revenueAmount += b.revenueAmount
       bizTotal.refundAmount += b.refundAmount
     }
-    for (const p of totalPayment) {
+
+    const paymentResult = Array.from(paymentMap.values())
+    const payTotal = { id: 999, store: '合计', payMethod: '', count: 0, actualAmount: 0, refundAmount: 0, netAmount: 0, isTotal: true }
+    for (const p of paymentResult) {
       payTotal.count += p.count
       payTotal.actualAmount += p.actualAmount
       payTotal.refundAmount += p.refundAmount
       payTotal.netAmount += p.netAmount
     }
-    return { overview: totalOverview, business: [...totalBusiness, bizTotal], payment: [...totalPayment, payTotal] }
+
+    result = {
+      overview: [...overviewResult, overviewTotal],
+      business: [...businessResult, bizTotal],
+      payment: [...paymentResult, payTotal],
+    }
+  } else {
+    const d = today
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    result = getDayData(dateStr)
   }
 
-  // 默认显示今天
-  const d = today
-  const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  return getDayData(dateStr)
+  // 门店筛选
+  if (displayStore.value) {
+    const storeName = storeOptions.find(o => o.value === displayStore.value)?.label || ''
+    result.overview = result.overview.filter((r: any) => r.store === storeName || r.isTotal)
+    result.business = result.business.filter((r: any) => r.store === storeName || r.isTotal)
+    result.payment = result.payment.filter((r: any) => r.store === storeName || r.isTotal)
+    // 重新计算合计行
+    recalcTotal(result, 'business', ['revenueAmount', 'refundAmount'])
+    recalcTotal(result, 'payment', ['count', 'actualAmount', 'refundAmount', 'netAmount'])
+    recalcOverviewTotal(result.overview)
+  }
+
+  return result
 })
+
+function recalcTotal(data: { overview: any[]; business: any[]; payment: any[] }, key: 'business' | 'payment', fields: string[]) {
+  const rows = data[key]
+  const totalRow = rows.find((r: any) => r.isTotal)
+  if (!totalRow) return
+  for (const f of fields) {
+    totalRow[f] = rows.filter((r: any) => !r.isTotal).reduce((sum: number, r: any) => sum + (r[f] || 0), 0)
+  }
+}
+
+function recalcOverviewTotal(overviewRows: any[]) {
+  const totalRow = overviewRows.find((r: any) => r.isTotal)
+  if (!totalRow) return
+  const dataRows = overviewRows.filter((r: any) => !r.isTotal)
+  totalRow.revenueTotal = dataRows.reduce((s: number, r: any) => s + r.revenueTotal, 0)
+  totalRow.costTotal = dataRows.reduce((s: number, r: any) => s + r.costTotal, 0)
+  totalRow.orderCount = dataRows.reduce((s: number, r: any) => s + r.orderCount, 0)
+  totalRow.grossProfit = dataRows.reduce((s: number, r: any) => s + r.grossProfit, 0)
+  totalRow.grossRate = totalRow.revenueTotal > 0
+    ? ((totalRow.grossProfit / totalRow.revenueTotal) * 100).toFixed(1)
+    : '0.0'
+}
 
 const overviewData = computed(() => currentData.value.overview)
 const businessData = computed(() => currentData.value.business)
@@ -268,7 +389,7 @@ const overviewColumns = [
   { title: '成本总额（元）', key: 'costTotal', width: 130, align: 'center' as const,
     render(row: any) { const v = Number(row.costTotal); return Number.isFinite(v) ? v.toLocaleString('zh-CN') : row.costTotal }
   },
-  { title: '总单数（元）', key: 'orderCount', width: 110, align: 'center' as const },
+  { title: '总单数', key: 'orderCount', width: 110, align: 'center' as const },
   { title: '毛利润（元）', key: 'grossProfit', width: 120, align: 'center' as const,
     render(row: any) { const v = Number(row.grossProfit); return Number.isFinite(v) ? v.toLocaleString('zh-CN') : row.grossProfit }
   },
@@ -326,6 +447,22 @@ const paymentColumns = [
 .header-actions {
   display: flex;
   gap: 8px;
+}
+
+.filter-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: #f6f8fa;
+  border-radius: 6px;
+}
+
+.filter-label {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
 }
 
 .section-card {

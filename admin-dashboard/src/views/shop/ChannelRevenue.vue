@@ -1,111 +1,446 @@
 <template>
   <div class="page-container animate-fade-in">
+    <!-- 页面标题 -->
     <div class="page-header">
-      <h1>渠道营收统计</h1>
-      <n-space>
-        <n-select v-model:value="shopId" :options="shopOptions" size="small" style="width: 160px;" />
-        <n-date-picker type="daterange" clearable size="small" v-model:value="dateRange" />
-        <n-button secondary @click="exportData">导出</n-button>
-      </n-space>
-    </div>
-
-    <!-- 渠道统计 -->
-    <div class="stats-row">
-      <div v-for="channel in channelStats" :key="channel.id" class="stat-card">
-        <div class="channel-info">
-          <n-icon :component="channel.icon" size="24" :color="channel.color" />
-          <div class="channel-detail">
-            <span class="channel-name">{{ channel.name }}</span>
-            <span class="channel-desc">{{ channel.description }}</span>
-          </div>
-        </div>
-        <div class="stat-value">
-          <span class="value">¥{{ channel.revenue.toLocaleString() }}</span>
-          <span class="percent">{{ channel.percent }}%</span>
-        </div>
+      <h2>渠道营收分析</h2>
+      <div class="header-actions">
+        <n-button type="primary" @click="showFilterDrawer = true">
+          <template #icon><n-icon :component="FilterOutline" /></template>
+          筛选
+        </n-button>
+        <n-button type="primary">
+          <template #icon><n-icon :component="DownloadOutline" /></template>
+          导出
+        </n-button>
       </div>
     </div>
 
-    <!-- 渠道占比图 -->
-    <n-card class="chart-card">
-      <template #header>
-        <div class="card-title">渠道营收占比</div>
-      </template>
-      <div class="chart-placeholder">
-        <n-icon :component="PieChartOutline" size="48" color="#ccc" />
-        <span>饼图展示渠道占比</span>
-      </div>
-    </n-card>
+    <!-- 提示信息 -->
+    <n-alert type="warning" :show-icon="false" class="notice-bar">
+      注意:该报表只统计收入数据，不会减去退款数据
+    </n-alert>
 
-    <!-- 渠道明细 -->
-    <n-card class="table-card">
-      <n-data-table :columns="columns" :data="tableData" :pagination="pagination" />
-    </n-card>
+    <!-- 数据说明 -->
+    <n-alert v-if="showDataExplain" type="info" :show-icon="false" class="notice-bar">
+      <div class="data-explain-content">
+        <p>营收总额 = 线下营收 + 小程序营收</p>
+        <p>线下营收 = 线下-预存款 + 线下-套票 + 线下-设备项目 + 线下-商品 + 线下-直接点播</p>
+        <p>小程序营收 = 小程序-预存款 + 小程序-套票 + 小程序-设备项目</p>
+      </div>
+    </n-alert>
+
+    <!-- 筛选标签 -->
+    <div v-if="hasActiveFilter" class="filter-tags">
+      <span class="filter-label">当前筛选：</span>
+      <n-tag v-if="displayDateRange" closable @close="clearDateFilter" size="small" type="info">
+        {{ displayDateStr }}
+      </n-tag>
+      <n-tag v-if="displayStore" closable @close="clearStoreFilter" size="small" type="info">
+        {{ displayStoreLabel }}
+      </n-tag>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="section-card">
+      <div class="scroll-hint" v-if="showScrollHint && !hasScrolled">
+        <n-icon :component="ChevronForwardOutline" size="16" />
+        <span>左右滑动查看所有数据</span>
+        <n-icon :component="ChevronForwardOutline" size="16" />
+      </div>
+      <div
+        class="table-wrapper"
+        ref="tableWrapperRef"
+        @scroll="handleTableScroll"
+      >
+        <n-data-table
+          :columns="columns"
+          :data="tableData"
+          :pagination="pagination"
+          striped
+          size="small"
+          :scroll-x="1500"
+          :row-class-name="(row: any) => row.isTotal ? 'total-row' : ''"
+        />
+      </div>
+    </div>
+
+    <!-- 筛选抽屉 -->
+    <n-drawer v-model:show="showFilterDrawer" width="360" placement="right">
+      <n-drawer-content title="筛选条件" closable>
+        <n-form label-placement="left" :label-width="80">
+          <n-form-item label="日期范围">
+            <n-date-picker v-model:value="filterDateRange" type="daterange" style="width: 100%;" clearable />
+          </n-form-item>
+          <n-form-item label="门店">
+            <n-select v-model:value="filterStore" placeholder="请选择门店" :options="storeOptions" clearable />
+          </n-form-item>
+        </n-form>
+        <template #footer>
+          <n-space>
+            <n-button @click="handleResetFilter">重置</n-button>
+            <n-button type="primary" block @click="handleSearch">搜索</n-button>
+          </n-space>
+        </template>
+      </n-drawer-content>
+    </n-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, h, computed } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NIcon, NDatePicker, NSelect
+  NButton, NIcon, NDataTable, NDrawer, NDrawerContent,
+  NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag, NAlert,
 } from 'naive-ui'
-import type { DataTableColumns } from 'naive-ui'
-import { GameControllerOutline, CardOutline, PhonePortraitOutline, CartOutline, PieChartOutline } from '@vicons/ionicons5'
+import { FilterOutline, DownloadOutline, ChevronForwardOutline } from '@vicons/ionicons5'
 
-const shopId = ref('futian')
-const shopOptions = [
-  { label: '深圳福田旗舰店', value: 'futian' },
-  { label: '南山科技园店', value: 'nanshan' }
+const showFilterDrawer = ref(false)
+const filterDateRange = ref<[number, number] | null>(null)
+const filterStore = ref<string | null>(null)
+const tableWrapperRef = ref<HTMLDivElement | null>(null)
+const hasScrolled = ref(false)
+const showDataExplain = ref(true)
+const showScrollHint = ref(false)
+
+function handleTableScroll() {
+  if (tableWrapperRef.value && tableWrapperRef.value.scrollLeft > 10) {
+    hasScrolled.value = true
+  }
+}
+
+function checkScrollable() {
+  if (tableWrapperRef.value) {
+    showScrollHint.value = tableWrapperRef.value.scrollWidth > tableWrapperRef.value.clientWidth
+  }
+}
+
+const displayDateRange = ref<[number, number] | null>(null)
+const displayStore = ref<string | null>(null)
+
+const storeOptions = [
+  { label: '卓远萝岗区店', value: '1' },
+  { label: '卓远萧山区店', value: '2' },
+  { label: '卓远亚运城店', value: '3' },
+  { label: '卓远文鼎路店', value: '4' },
+  { label: '卓远天河路店', value: '5' },
+  { label: '卓远白云路店', value: '6' },
 ]
-const dateRange = ref<[number, number] | null>(null)
-const pagination = { pageSize: 10 }
 
-const channelStats = ref([
-  { id: 1, name: 'VR设备', description: 'VR游戏点播', icon: GameControllerOutline, color: '#3B82F6', revenue: 89600, percent: 58 },
-  { id: 2, name: '会员卡', description: '会员充值', icon: CardOutline, color: '#10B981', revenue: 35800, percent: 23 },
-  { id: 3, name: '小程序', description: '线上预约', icon: PhonePortraitOutline, color: '#8B5CF6', revenue: 18600, percent: 12 },
-  { id: 4, name: '商品', description: '周边商品', icon: CartOutline, color: '#F59E0B', revenue: 10800, percent: 7 },
-])
+const displayStoreLabel = computed(() => {
+  if (!displayStore.value) return ''
+  return storeOptions.find(o => o.value === displayStore.value)?.label || ''
+})
 
-const columns: DataTableColumns = [
-  { title: '渠道', key: 'name', width: 150 },
-  { title: '描述', key: 'description', width: 150 },
-  { title: '订单数', key: 'orders', width: 100 },
-  { title: '营收', key: 'revenue', width: 140, render: (row) => `¥${row.revenue.toLocaleString()}` },
-  { title: '占比', key: 'percent', width: 100, render: (row) => `${row.percent}%` },
-  { title: '环比', key: 'mom', width: 100, render: (row) =>
-    h('span', { style: { color: row.mom > 0 ? '#10B981' : '#EF4444' } },
-      row.mom > 0 ? `+${row.mom}%` : `${row.mom}%`)
+const hasActiveFilter = computed(() => {
+  return !!displayDateRange.value || !!displayStore.value
+})
+
+function clearDateFilter() {
+  displayDateRange.value = null
+  filterDateRange.value = null
+}
+
+function clearStoreFilter() {
+  displayStore.value = null
+  filterStore.value = null
+}
+
+const today = new Date()
+const displayDateStr = computed(() => {
+  if (displayDateRange.value) {
+    const s = new Date(displayDateRange.value[0])
+    const e = new Date(displayDateRange.value[1])
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return `${fmt(s)} ~ ${fmt(e)}`
+  }
+  const y = today.getFullYear()
+  const m = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+})
+
+function handleSearch() {
+  if (filterDateRange.value) {
+    displayDateRange.value = [...filterDateRange.value]
+  } else {
+    displayDateRange.value = null
+  }
+  displayStore.value = filterStore.value || null
+  showFilterDrawer.value = false
+}
+
+function handleResetFilter() {
+  filterDateRange.value = null
+  filterStore.value = null
+}
+
+/**
+ * 数据生成说明：
+ * 当前各字段（营收总额、线下营收、小程序营收、各细分渠道）均为独立随机生成，
+ * 它们之间没有真实的加总关系。即：
+ *   revenueTotal ≠ offlineRevenue + wechatRevenue
+ *   offlineRevenue ≠ 线下各细分渠道之和
+ * 这是模拟数据的简化处理，实际业务中应从底层渠道往上汇总。
+ */
+
+// 模拟数据：生成最近7天、6个门店的数据
+function generateMockData() {
+  const stores = ['卓远萝岗区店', '卓远萧山区店', '卓远亚运城店', '卓远文鼎路店', '卓远天河路店', '卓远白云路店']
+  const result: { id: number; store: string; date: string }[] = []
+  let id = 1
+  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
+    const d = new Date()
+    d.setDate(d.getDate() - dayOffset)
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    for (const store of stores) {
+      result.push({ id: id++, store, date: dateStr })
+    }
+  }
+  return result
+}
+
+const allStores = generateMockData()
+
+function seedRandom(storeId: number, index: number, dateStr: string): number {
+  let hash = storeId * 31 + index * 17
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = ((hash << 5) - hash) + dateStr.charCodeAt(i)
+  }
+  hash = Math.abs(hash)
+  return (hash % 10000) / 100
+}
+
+function getStoreData(store: typeof allStores[0]) {
+  const s = seedRandom(store.id, 1, store.date)
+  const s2 = seedRandom(store.id, 2, store.date)
+  return {
+    ...store,
+    revenueTotal: Math.round(s * 12860) / 100,
+    offlineRevenue: Math.round(s * 8560) / 100,
+    wechatRevenue: Math.round(s2 * 2860) / 100,
+    offlinePrepaid: Math.round(s * 3560) / 100,
+    offlinePackage: Math.round(s * 2120) / 100,
+    offlineDevice: Math.round(s * 1680) / 100,
+    offlineGoods: Math.round(s * 860) / 100,
+    offlineLive: Math.round(s2 * 340) / 100,
+    wechatPrepaid: Math.round(s2 * 1260) / 100,
+    wechatPackage: Math.round(s2 * 860) / 100,
+    wechatDevice: Math.round(s2 * 560) / 100,
+  }
+}
+
+const tableData = computed(() => {
+  let data = allStores.map(getStoreData)
+  // 数据计算完成后检查是否需要横向滚动提示
+  setTimeout(checkScrollable, 100)
+
+  // 门店筛选
+  if (displayStore.value) {
+    const storeName = storeOptions.find(o => o.value === displayStore.value)?.label || ''
+    data = data.filter(d => d.store === storeName)
+  }
+
+  // 日期范围筛选
+  if (displayDateRange.value) {
+    const start = new Date(displayDateRange.value[0])
+    const end = new Date(displayDateRange.value[1])
+    const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`
+    const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`
+    data = data.filter(d => d.date >= startStr && d.date <= endStr)
+  }
+
+  // 合计行
+  const total = {
+    id: 999,
+    store: '合计',
+    date: '',
+    revenueTotal: 0,
+    offlineRevenue: 0,
+    wechatRevenue: 0,
+    offlinePrepaid: 0,
+    offlinePackage: 0,
+    offlineDevice: 0,
+    offlineGoods: 0,
+    offlineLive: 0,
+    wechatPrepaid: 0,
+    wechatPackage: 0,
+    wechatDevice: 0,
+    isTotal: true,
+  }
+  for (const d of data) {
+    total.revenueTotal += d.revenueTotal
+    total.offlineRevenue += d.offlineRevenue
+    total.wechatRevenue += d.wechatRevenue
+    total.offlinePrepaid += d.offlinePrepaid
+    total.offlinePackage += d.offlinePackage
+    total.offlineDevice += d.offlineDevice
+    total.offlineGoods += d.offlineGoods
+    total.offlineLive += d.offlineLive
+    total.wechatPrepaid += d.wechatPrepaid
+    total.wechatPackage += d.wechatPackage
+    total.wechatDevice += d.wechatDevice
+  }
+
+  return [...data, total]
+})
+
+function fmtMoney(val: number) {
+  return val.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const columns = [
+  { title: '店铺', key: 'store', width: 120, fixed: 'left' as const,
+    render(row: any) { return row.isTotal ? h('b', {}, row.store) : row.store }
+  },
+  { title: '日期', key: 'date', width: 100, fixed: 'left' as const },
+  { title: '营收总额', key: 'revenueTotal', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.revenueTotal) }
+  },
+  { title: '线下营收', key: 'offlineRevenue', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.offlineRevenue) }
+  },
+  { title: '小程序营收', key: 'wechatRevenue', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.wechatRevenue) }
+  },
+  { title: '线下-预存款', key: 'offlinePrepaid', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.offlinePrepaid) }
+  },
+  { title: '线下-套票', key: 'offlinePackage', width: 100, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.offlinePackage) }
+  },
+  { title: '线下-设备项目', key: 'offlineDevice', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.offlineDevice) }
+  },
+  { title: '线下-商品', key: 'offlineGoods', width: 100, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.offlineGoods) }
+  },
+  { title: '线下-直接点播', key: 'offlineLive', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.offlineLive) }
+  },
+  { title: '小程序-预存款', key: 'wechatPrepaid', width: 120, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.wechatPrepaid) }
+  },
+  { title: '小程序-套票', key: 'wechatPackage', width: 110, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.wechatPackage) }
+  },
+  { title: '小程序-设备项目', key: 'wechatDevice', width: 120, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.wechatDevice) }
   },
 ]
 
-const tableData = ref([
-  { name: 'VR设备', description: 'VR游戏点播', orders: 586, revenue: 89600, percent: 58, mom: 12.5 },
-  { name: '会员卡', description: '会员充值', orders: 156, revenue: 35800, percent: 23, mom: 8.2 },
-  { name: '小程序', description: '线上预约', orders: 286, revenue: 18600, percent: 12, mom: -3.5 },
-  { name: '商品', description: '周边商品', orders: 68, revenue: 10800, percent: 7, mom: 5.8 },
-])
-</script>
-
-<script lang="ts">
-import { h } from 'vue'
+const pagination = { pageSize: 10 }
 </script>
 
 <style scoped>
-.page-container { padding: 24px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h1 { font-size: 20px; font-weight: 600; color: #333; margin: 0; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: #fff; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-.channel-info { display: flex; align-items: center; gap: 12px; }
-.channel-detail { display: flex; flex-direction: column; }
-.channel-name { font-size: 15px; font-weight: 600; color: #333; }
-.channel-desc { font-size: 12px; color: #999; }
-.stat-value { display: flex; justify-content: space-between; align-items: baseline; }
-.stat-value .value { font-size: 20px; font-weight: 700; color: #333; }
-.stat-value .percent { font-size: 14px; color: #999; }
-.chart-card { margin-bottom: 24px; border-radius: 12px; }
-.card-title { font-size: 16px; font-weight: 600; color: #333; }
-.chart-placeholder { height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #999; background: #fafafa; border-radius: 8px; }
-.table-card { border-radius: 12px; }
+.page-container {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notice-bar {
+  margin-bottom: 16px;
+}
+
+.filter-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: #f6f8fa;
+  border-radius: 6px;
+}
+
+.filter-label {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.section-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.table-wrapper {
+  padding: 12px 16px;
+  overflow-x: auto;
+  cursor: grab;
+}
+
+.table-wrapper:active {
+  cursor: grabbing;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.scroll-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  font-size: 12px;
+  color: #999;
+  background: linear-gradient(90deg, transparent, #fff8e6, transparent);
+  border-bottom: 1px dashed #f0e6c8;
+  animation: hint-pulse 2s ease-in-out infinite;
+}
+
+.data-explain-content {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.8;
+}
+
+.data-explain-content p {
+  margin: 0;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+::deep(.total-row td) {
+  font-weight: 600;
+  background-color: #fafafa !important;
+}
 </style>

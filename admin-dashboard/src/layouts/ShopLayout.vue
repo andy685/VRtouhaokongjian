@@ -171,6 +171,7 @@ const menuOptions: MenuOption[] = [
     key: 'marketing-group',
     icon: () => h(NIcon, null, { default: () => h(GiftOutline) }),
     children: [
+      { label: '单次消费', key: '/shop/single-consumption' },
       { label: '充值套餐', key: '/shop/recharge' },
       { label: '套票', key: '/shop/packages' },
       { label: '优惠券', key: '/shop/coupons' },
@@ -213,8 +214,28 @@ const menuOptions: MenuOption[] = [
       { label: '账户金额统计', key: '/shop/account-stats' },
       { label: '交接班记录', key: '/shop/shifts' },
       { label: '员工点播', key: '/shop/staff-orders' },
-      { label: '点播数据', key: '/shop/on-demand-data' },
-      { label: '订单查询', key: '/shop/order-search' },
+      {
+        label: '点播数据',
+        key: 'on-demand-group',
+        children: [
+          { label: '点播游戏记录', key: '/shop/on-demand-game-record' },
+          { label: '点播消费记录', key: '/shop/on-demand-film-record' },
+          { label: '点播设备汇总', key: '/shop/on-demand-device-summary' },
+          { label: '点播游戏汇总', key: '/shop/on-demand-game-summary' },
+        ]
+      },
+      {
+        label: '订单查询',
+        key: 'order-group',
+        children: [
+          { label: '收银订单', key: '/shop/cashier-order' },
+          { label: '点播系统订单', key: '/shop/ondemand-order' },
+          { label: '手动扣费订单', key: '/shop/manual-deduct-order' },
+          { label: '修改储值订单', key: '/shop/edit-balance-order' },
+          { label: '积分兑换订单', key: '/shop/points-exchange-order' },
+          { label: '活动赠送订单', key: '/shop/gift-order' },
+        ]
+      },
       { label: '影片分成明细', key: '/shop/film-revenue' },
     ]
   },
@@ -248,7 +269,11 @@ const userMenuOptions = [
 ]
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
-function handleMenuUpdate(key: string) { router.push(key) }
+function handleMenuUpdate(key: string) {
+  if (key.startsWith('/')) {
+    router.push(key)
+  }
+}
 
 function switchToPlatform() {
   showRoleModal.value = false
@@ -374,6 +399,7 @@ function renderMenuLabel(option: MenuOption) {
   --n-item-text-color-hover: rgba(255,255,255,0.9) !important;
   --n-item-color-hover: rgba(255,255,255,0.06) !important;
   --n-border-color: transparent !important;
+  --n-arrow-color: #666 !important;
   padding: 0;
 }
 
@@ -382,8 +408,8 @@ function renderMenuLabel(option: MenuOption) {
   margin: 2px 0 !important;
 }
 
-::deep(.n-menu-item-content__arrow) {
-  color: rgba(255, 255, 255, 0.6) !important;
+:deep(.n-menu-item-content__arrow) {
+  color: #666 !important;
 }
 
 .menu-item-custom {

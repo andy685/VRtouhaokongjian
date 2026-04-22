@@ -115,6 +115,7 @@ const pagination = { pageSize: 10 }
 
 const columns: DataTableColumns = [
   { title: '订单编号', key: 'orderId', width: 180 },
+  { title: '所属店铺', key: 'shop', width: 120 },
   { title: '会员', key: 'member', width: 120 },
   { title: '类型', key: 'type', width: 100, render: (row) =>
     h(NTag, { size: 'small', type: row.type === 'VR点播' ? 'info' : row.type === '会员充值' ? 'success' : 'warning' },
@@ -137,10 +138,10 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, orderId: 'VR2026042000001', member: '张小明', type: 'VR点播', amount: 88, paid: 88, payment: '会员卡', createTime: '2026-04-20 14:30:00', payTime: '2026-04-20 14:30:05', status: '已完成' },
-  { id: 2, orderId: 'CZ2026042000002', member: '李小红', type: '会员充值', amount: 500, paid: 500, payment: '微信', createTime: '2026-04-20 11:20:00', payTime: '2026-04-20 11:20:08', status: '已完成' },
-  { id: 3, orderId: 'SP2026042000003', member: '王小强', type: '商品购买', amount: 68, paid: 68, payment: '支付宝', createTime: '2026-04-20 10:15:00', payTime: '2026-04-20 10:15:03', status: '已完成' },
-  { id: 4, orderId: 'VR2026041900004', member: '陈小芳', type: 'VR点播', amount: 128, paid: 0, payment: '-', createTime: '2026-04-19 16:45:00', payTime: '-', status: '已退款' },
+  { id: 1, orderId: 'VR2026042000001', shop: '利民街小展厅', member: '张小明', type: 'VR点播', amount: 88, paid: 88, payment: '会员卡', createTime: '2026-04-20 14:30:00', payTime: '2026-04-20 14:30:05', status: '已完成' },
+  { id: 2, orderId: 'CZ2026042000002', shop: '利民街小展厅', member: '李小红', type: '会员充值', amount: 500, paid: 500, payment: '微信', createTime: '2026-04-20 11:20:00', payTime: '2026-04-20 11:20:08', status: '已完成' },
+  { id: 3, orderId: 'SP2026042000003', shop: '利民街小展厅', member: '王小强', type: '商品购买', amount: 68, paid: 68, payment: '支付宝', createTime: '2026-04-20 10:15:00', payTime: '2026-04-20 10:15:03', status: '已完成' },
+  { id: 4, orderId: 'VR2026041900004', shop: '利民街小展厅', member: '陈小芳', type: 'VR点播', amount: 128, paid: 0, payment: '-', createTime: '2026-04-19 16:45:00', payTime: '-', status: '已退款' },
 ])
 
 function showDetail(row: any) {

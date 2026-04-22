@@ -1,0 +1,55 @@
+{
+  "name": "order-pages",
+  "leadAgentId": "0409aec1639b42f9b9d9cdf432dfd5b6",
+  "workspacePath": "/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian",
+  "createdAt": "2026-04-22T16:35:16.379Z",
+  "options": {
+    "workspacePath": "/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian",
+    "isAutoTeam": false
+  },
+  "members": [
+    {
+      "memberId": "team-lead@order-pages",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    },
+    {
+      "memberId": "cashier-order@order-pages",
+      "name": "cashier-order",
+      "role": "创建收银订单页面"
+    },
+    {
+      "memberId": "points-exchange@order-pages",
+      "name": "points-exchange",
+      "role": "创建积分兑换订单页面"
+    },
+    {
+      "memberId": "gift-order@order-pages",
+      "name": "gift-order",
+      "role": "创建活动赠送订单页面"
+    }
+  ],
+  "isAutoTeam": false
+}it-balance@order-pages",
+      "name": "edit-balance",
+      "role": "创建修改储值订单页面"
+    }
+  ],
+  "isAutoTeam": false
+}nual-deduct@order-pages",
+      "name": "manual-deduct",
+      "role": "创建手动扣费订单页面"
+    },
+    {
+      "memberId": "ondemand-order@order-pages",
+      "name": "ondemand-order",
+      "role": "创建点播系统订单页面"
+    },
+    {
+      "memberId": "other-income@order-pages",
+      "name": "other-income",
+      "role": "创建其他收支订单页面"
+    }
+  ],
+  "isAutoTeam": false
+}

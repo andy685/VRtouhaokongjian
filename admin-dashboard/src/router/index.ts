@@ -42,7 +42,17 @@ import AccountStats from '../views/shop/AccountStats.vue'
 import Shifts from '../views/shop/Shifts.vue'
 import StaffOrders from '../views/shop/StaffOrders.vue'
 import OnDemandData from '../views/shop/OnDemandData.vue'
+import OnDemandGameRecord from '../views/shop/OnDemandGameRecord.vue'
+import OnDemandFilmRecord from '../views/shop/OnDemandFilmRecord.vue'
+import OnDemandDeviceSummary from '../views/shop/OnDemandDeviceSummary.vue'
+import OnDemandGameSummary from '../views/shop/OnDemandGameSummary.vue'
 import OrderSearch from '../views/shop/OrderSearch.vue'
+import CashierOrder from '../views/shop/CashierOrder.vue'
+import OnDemandOrder from '../views/shop/OnDemandOrder.vue'
+import ManualDeductOrder from '../views/shop/ManualDeductOrder.vue'
+import EditBalanceOrder from '../views/shop/EditBalanceOrder.vue'
+import PointsExchangeOrder from '../views/shop/PointsExchangeOrder.vue'
+import GiftOrder from '../views/shop/GiftOrder.vue'
 import FilmRevenue from '../views/shop/FilmRevenue.vue'
 import ShopStoreList from '../views/shop/ShopStoreList.vue'
 import OnDemandSettings from '../views/shop/OnDemandSettings.vue'
@@ -50,6 +60,7 @@ import FilmGenres from '../views/shop/FilmGenres.vue'
 import PointsSettings from '../views/shop/PointsSettings.vue'
 import CashierSettings from '../views/shop/CashierSettings.vue'
 import ShopUsers from '../views/shop/Users.vue'
+import SingleConsumption from '../views/shop/SingleConsumption.vue'
 import MemberDiscount from '../views/shop/MemberDiscount.vue'
 import MemberEdit from '../views/shop/MemberEdit.vue'
 import MemberPointsQuery from '../views/shop/MemberPointsQuery.vue'
@@ -115,6 +126,7 @@ const routes: RouteRecordRaw[] = [
       // 运营管理
       { path: 'recharge', name: 'ShopRecharge', component: Recharge, meta: { title: '充值套餐' } },
       { path: 'packages', name: 'ShopPackages', component: Packages, meta: { title: '套票' } },
+      { path: 'single-consumption', name: 'ShopSingleConsumption', component: SingleConsumption, meta: { title: '单次消费' } },
       { path: 'coupons', name: 'ShopCoupons', component: ShopCoupons, meta: { title: '优惠券' } },
       { path: 'promotions', name: 'ShopPromotions', component: Promotions, meta: { title: '促销' } },
       { path: 'gifts', name: 'ShopGifts', component: Gifts, meta: { title: '活动赠送' } },
@@ -142,8 +154,18 @@ const routes: RouteRecordRaw[] = [
       { path: 'account-stats', name: 'ShopAccountStats', component: AccountStats, meta: { title: '账户金额统计' } },
       { path: 'shifts', name: 'ShopShifts', component: Shifts, meta: { title: '交接班记录' } },
       { path: 'staff-orders', name: 'ShopStaffOrders', component: StaffOrders, meta: { title: '员工点播' } },
-      { path: 'on-demand-data', name: 'ShopOnDemandData', component: OnDemandData, meta: { title: '点播数据' } },
+      { path: 'on-demand-data', name: 'ShopOnDemandData', component: OnDemandData, meta: { title: '数据概览' } },
+      { path: 'on-demand-game-record', name: 'ShopOnDemandGameRecord', component: OnDemandGameRecord, meta: { title: '点播游戏记录' } },
+      { path: 'on-demand-film-record', name: 'ShopOnDemandFilmRecord', component: OnDemandFilmRecord, meta: { title: '点播影片记录' } },
+      { path: 'on-demand-device-summary', name: 'ShopOnDemandDeviceSummary', component: OnDemandDeviceSummary, meta: { title: '点播设备汇总' } },
+      { path: 'on-demand-game-summary', name: 'ShopOnDemandGameSummary', component: OnDemandGameSummary, meta: { title: '点播游戏汇总' } },
       { path: 'order-search', name: 'ShopOrderSearch', component: OrderSearch, meta: { title: '订单查询' } },
+      { path: 'cashier-order', name: 'ShopCashierOrder', component: CashierOrder, meta: { title: '收银订单' } },
+      { path: 'ondemand-order', name: 'ShopOnDemandOrder', component: OnDemandOrder, meta: { title: '点播系统订单' } },
+      { path: 'manual-deduct-order', name: 'ShopManualDeductOrder', component: ManualDeductOrder, meta: { title: '手动扣费订单' } },
+      { path: 'edit-balance-order', name: 'ShopEditBalanceOrder', component: EditBalanceOrder, meta: { title: '修改储值订单' } },
+      { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: PointsExchangeOrder, meta: { title: '积分兑换订单' } },
+      { path: 'gift-order', name: 'ShopGiftOrder', component: GiftOrder, meta: { title: '活动赠送订单' } },
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: FilmRevenue, meta: { title: '影片分成明细' } },
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: ShopStoreList, meta: { title: '店铺列表' } },
@@ -161,6 +183,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: '/platform/dashboard'
+  },
+  // 404 兜底
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/shop/order-search'
   }
 ]
 
