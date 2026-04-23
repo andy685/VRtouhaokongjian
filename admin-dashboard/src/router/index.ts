@@ -59,6 +59,8 @@ import OnDemandSettings from '../views/shop/OnDemandSettings.vue'
 import FilmGenres from '../views/shop/FilmGenres.vue'
 import PointsSettings from '../views/shop/PointsSettings.vue'
 import CashierSettings from '../views/shop/CashierSettings.vue'
+import CashierTerminal from '../views/shop/CashierTerminal.vue'
+import CashierReceiptSettings from '../views/shop/CashierReceiptSettings.vue'
 import ShopUsers from '../views/shop/Users.vue'
 import SingleConsumption from '../views/shop/SingleConsumption.vue'
 import MemberDiscount from '../views/shop/MemberDiscount.vue'
@@ -173,9 +175,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'devices', name: 'ShopDevices', component: Devices, meta: { title: '设备列表' } },
       { path: 'devices/control', name: 'ShopDevicesControl', component: Devices, meta: { title: '远程控制' } },
       { path: 'film-genres', name: 'ShopFilmGenres', component: FilmGenres, meta: { title: '影片题材' } },
-      { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '收银设置' } },
+      { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: CashierTerminal, meta: { title: '收银终端' } },
+      { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置' } },
+      { path: 'cashier-receipt', name: 'ShopCashierReceipt', component: CashierReceiptSettings, meta: { title: '小票设置' } },
       { path: 'points-settings', name: 'ShopPointsSettings', component: PointsSettings, meta: { title: '积分设置' } },
-      { path: 'users', name: 'ShopUsers', component: ShopUsers, meta: { title: '用户管理' } },
+      { path: 'users', name: 'ShopUsers', component: ShopUsers, meta: { title: '用户列表' } },
+      { path: 'roles', name: 'ShopRoles', component: () => import('../views/shop/Roles.vue'), meta: { title: '角色列表' } },
     ]
   },
 

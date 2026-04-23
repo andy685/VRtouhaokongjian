@@ -23,7 +23,7 @@
 
     <!-- 添加第三方设备弹窗 -->
     <n-modal v-model:show="showAddModal" preset="card" title="增加第三方设备" style="width: 520px;" :bordered="false">
-      <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="120">
+      <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="140">
         <n-form-item label="门店选择" path="shop">
           <n-select v-model:value="addForm.shop" :options="shopOptions.filter(s => s.value !== 'all')" placeholder="请选择" />
         </n-form-item>
@@ -33,8 +33,25 @@
         <n-form-item label="播放影片单价" path="price">
           <n-input-number v-model:value="addForm.price" :min="0" :precision="2" placeholder="请输入单价" style="width: 100%;" />
         </n-form-item>
-        <n-form-item label="播放影片币数" path="coins">
-          <n-input-number v-model:value="addForm.coins" :min="0" placeholder="请输入币数" style="width: 100%;" />
+        <n-form-item label="播放影片积分" path="coins">
+          <n-input-number v-model:value="addForm.coins" :min="0" placeholder="请输入积分" style="width: 100%;" />
+        </n-form-item>
+        <n-form-item label="设备状态" path="status">
+          <n-radio-group v-model:value="addForm.status">
+            <n-space>
+              <n-radio value="disabled">禁用</n-radio>
+              <n-radio value="enabled">启用</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item label="支付方式" path="payMethods">
+          <n-checkbox-group v-model:value="addForm.payMethods">
+            <n-space>
+              <n-checkbox value="member">会员储值支付</n-checkbox>
+              <n-checkbox value="wechat">平台支付（微信）</n-checkbox>
+              <n-checkbox value="staff">员工扫码</n-checkbox>
+            </n-space>
+          </n-checkbox-group>
         </n-form-item>
         <n-form-item label="描述" path="desc">
           <n-input
@@ -55,50 +72,92 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="设备详情" style="width: 520px;" :bordered="false">
+    <n-modal v-model:show="showDetailModal" preset="card" title="设备详情" style="width: 640px;" :bordered="false">
       <n-descriptions v-if="currentDevice" label-placement="left" :column="2" bordered>
-        <n-descriptions-item label="门店">{{ currentDevice.shop }}</n-descriptions-item>
-        <n-descriptions-item label="设备类型">{{ currentDevice.type }}</n-descriptions-item>
         <n-descriptions-item label="设备名称">{{ currentDevice.name }}</n-descriptions-item>
-        <n-descriptions-item label="设备Token">{{ currentDevice.token }}</n-descriptions-item>
+        <n-descriptions-item label="第三方设备">{{ currentDevice.isThirdParty ? '是' : '否' }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentDevice.status === 'enabled' ? 'success' : 'error'" size="small">
             {{ currentDevice.status === 'enabled' ? '启用' : '禁用' }}
           </n-tag>
         </n-descriptions-item>
-        <n-descriptions-item label="第三方设备">
-          <n-tag :type="currentDevice.isThirdParty ? 'error' : 'default'" size="small">
-            {{ currentDevice.isThirdParty ? '是' : '否' }}
-          </n-tag>
-        </n-descriptions-item>
-        <n-descriptions-item label="是否过保">
-          <n-tag :type="currentDevice.isExpired ? 'success' : 'default'" size="small">
-            {{ currentDevice.isExpired ? '是' : '否' }}
-          </n-tag>
-        </n-descriptions-item>
-        <n-descriptions-item label="试用状态">{{ currentDevice.trialStatus || '--' }}</n-descriptions-item>
+        <n-descriptions-item label="播放影片单价">{{ currentDevice.price }}</n-descriptions-item>
+        <n-descriptions-item label="播放影片积分">{{ currentDevice.points }}</n-descriptions-item>
+        <template v-if="!currentDevice.isThirdParty">
+          <n-descriptions-item label="设备类型">{{ currentDevice.type }}</n-descriptions-item>
+          <n-descriptions-item label="主机配置参数">{{ currentDevice.hostConfig || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="驱动器参数">{{ currentDevice.driverConfig || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="运动卡参数">{{ currentDevice.motionCard || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="线路机参数">{{ currentDevice.lineMachine || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="电动杠参数">{{ currentDevice.electricBar || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="出厂日期">{{ currentDevice.factoryDate || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="刷机类型">{{ currentDevice.flashType || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="安装日期">{{ currentDevice.installDate || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="安装人">{{ currentDevice.installer || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="安装人电话">{{ currentDevice.installerPhone || '--' }}</n-descriptions-item>
+          <n-descriptions-item label="安装地址">{{ currentDevice.installAddress || '--' }}</n-descriptions-item>
+        </template>
+        <n-descriptions-item label="备注" :span="2">{{ currentDevice.desc || '--' }}</n-descriptions-item>
       </n-descriptions>
     </n-modal>
 
+    <!-- 删除确认弹窗 -->
+    <n-modal v-model:show="showDeleteModal" preset="card" title="提示" style="width: 420px;" :bordered="false" :closable="false">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: #FBBF24; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <span style="color: #fff; font-size: 16px; font-weight: bold;">!</span>
+        </div>
+        <span style="font-size: 15px; color: #333;">确定删除当前设备，是否继续？</span>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showDeleteModal = false">取消</n-button>
+          <n-button type="primary" @click="confirmDelete">确定</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
     <!-- 编辑弹窗 -->
-    <n-modal v-model:show="showEditModal" preset="card" title="编辑设备" style="width: 480px;" :bordered="false">
-      <n-form v-if="currentDevice" label-placement="left" label-width="100">
+    <n-modal v-model:show="showEditModal" preset="card" title="编辑设备" style="width: 520px;" :bordered="false">
+      <n-form v-if="currentDevice" label-placement="left" label-width="140">
+        <n-form-item label="门店选择">
+          <n-select v-model:value="editForm.shop" :options="shopOptions.filter(s => s.value !== 'all')" placeholder="请选择" />
+        </n-form-item>
         <n-form-item label="设备名称">
-          <n-input v-model:value="editForm.name" />
+          <n-input v-model:value="editForm.name" placeholder="请输入设备名称" />
         </n-form-item>
-        <n-form-item label="设备类型">
-          <n-input v-model:value="editForm.type" />
+        <n-form-item label="播放影片单价">
+          <n-input-number v-model:value="editForm.price" :min="0" :precision="2" placeholder="请输入单价" style="width: 100%;" />
         </n-form-item>
-        <n-form-item label="状态">
+        <n-form-item label="播放影片积分">
+          <n-input-number v-model:value="editForm.points" :min="0" placeholder="请输入积分" style="width: 100%;" />
+        </n-form-item>
+        <n-form-item label="设备状态">
           <n-radio-group v-model:value="editForm.status">
             <n-space>
-              <n-radio value="enabled">启用</n-radio>
               <n-radio value="disabled">禁用</n-radio>
+              <n-radio value="enabled">启用</n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
-        <n-form-item label="第三方设备">
-          <n-switch v-model:value="editForm.isThirdParty" />
+        <n-form-item label="支付方式">
+          <n-checkbox-group v-model:value="editForm.payMethods">
+            <n-space>
+              <n-checkbox value="member">会员储值支付</n-checkbox>
+              <n-checkbox value="wechat">平台支付（微信）</n-checkbox>
+              <n-checkbox value="staff">员工扫码</n-checkbox>
+            </n-space>
+          </n-checkbox-group>
+        </n-form-item>
+        <n-form-item label="描述">
+          <n-input
+            v-model:value="editForm.desc"
+            type="textarea"
+            placeholder="请描述"
+            :maxlength="50"
+            show-count
+            :rows="4"
+          />
         </n-form-item>
       </n-form>
       <template #footer>
@@ -116,6 +175,7 @@ import { ref, computed, h } from 'vue'
 import {
   NDataTable, NButton, NIcon, NSpace, NSelect, NModal, NForm, NFormItem,
   NInput, NInputNumber, NTag, NDescriptions, NDescriptionsItem, NRadioGroup, NRadio, NSwitch,
+  NCheckboxGroup, NCheckbox,
   type DataTableColumns, type FormInst, type FormRules
 } from 'naive-ui'
 import { AddOutline, PencilOutline, EyeOutline, TrashOutline, FilmOutline } from '@vicons/ionicons5'
@@ -130,16 +190,42 @@ interface Device {
   isThirdParty: boolean
   isExpired: boolean
   trialStatus: string
+  price: number
+  points: number
+  payMethods: string[]
+  desc: string
+  hostConfig?: string
+  driverConfig?: string
+  lineMachine?: string
+  factoryDate?: string
+  installer?: string
+  installAddress?: string
+  motionCard?: string
+  electricBar?: string
+  flashType?: string
+  installDate?: string
+  installerPhone?: string
 }
 
 const selectedShop = ref('all')
 const showAddModal = ref(false)
 const showDetailModal = ref(false)
 const showEditModal = ref(false)
+const showDeleteModal = ref(false)
 const currentDevice = ref<Device | null>(null)
+const deleteTarget = ref<Device | null>(null)
 const addFormRef = ref<FormInst | null>(null)
 
-const addForm = ref({ name: '', shop: '', price: 20.00, coins: 3, desc: '' })
+const addForm = ref({
+  name: '',
+  shop: '',
+  price: 20.00,
+  coins: 3,
+  status: 'enabled' as 'enabled' | 'disabled',
+  payMethods: ['member'] as string[],
+  desc: ''
+})
+
 const editForm = ref<Partial<Device>>({})
 
 const addRules: FormRules = {
@@ -157,21 +243,21 @@ const shopOptions = [
 ]
 
 const deviceData = ref<Device[]>([
-  { id: 1, shop: '利民街小展厅', type: '第三方设备', name: '扭蛋', token: 'token_abc123', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--' },
-  { id: 2, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_def456', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 3, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_ghi789', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 4, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_jkl012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 5, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_mno345', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 6, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_pqr678', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 7, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_stu901', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 8, shop: '利民街小展厅', type: '暗黑机甲', name: '暗黑机甲2G版', token: 'token_vwx234', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 9, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_yza567', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 10, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_bcd890', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 11, shop: '利民街小展厅', type: '幻影飞碟', name: '幻影飞碟（国外）', token: 'token_efg123', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 12, shop: '卓远亚运城店', type: '悬浮骑兵', name: '悬浮骑兵-A01', token: 'token_hij456', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--' },
-  { id: 13, shop: '卓远亚运城店', type: '暗黑行者', name: '暗黑行者-B02', token: 'token_klm789', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--' },
-  { id: 14, shop: '卓远萧山区店', type: '幻影飞碟', name: '幻影飞碟-C01', token: 'token_nop012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
-  { id: 15, shop: '卓远萝岗区店', type: '第三方设备', name: '体感游戏机', token: 'token_qrs345', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--' },
+  { id: 1, shop: '利民街小展厅', type: '第三方设备', name: '扭蛋', token: 'token_abc123', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--', price: 20, points: 3, payMethods: ['member'], desc: '第三方扭蛋设备' },
+  { id: 2, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_def456', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '利民街小展厅A区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
+  { id: 3, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_ghi789', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '利民街小展厅B区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
+  { id: 4, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_jkl012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '李工', installAddress: '利民街小展厅C区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-02', installerPhone: '13800138002' },
+  { id: 5, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_mno345', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '李工', installAddress: '利民街小展厅D区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-02', installerPhone: '13800138002' },
+  { id: 6, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_pqr678', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '设备维护中', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅E区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 7, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_stu901', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅F区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 8, shop: '利民街小展厅', type: '暗黑机甲', name: '暗黑机甲2G版', token: 'token_vwx234', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 35, points: 7, payMethods: ['member', 'wechat', 'staff'], desc: '', hostConfig: 'i9-11900/RTX3080/32G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2023-01-15', installer: '赵工', installAddress: '利民街小展厅G区', motionCard: '固高运动卡Pro', electricBar: '六电动杠', flashType: '高级刷机', installDate: '2023-02-01', installerPhone: '13800138004' },
+  { id: 9, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_yza567', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅H区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 10, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_bcd890', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅I区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 11, shop: '利民街小展厅', type: '幻影飞碟', name: '幻影飞碟（国外）', token: 'token_efg123', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 40, points: 8, payMethods: ['member', 'wechat'], desc: '海外定制版', hostConfig: 'i9-12900/RTX4090/64G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2024-01-10', installer: '刘工', installAddress: '利民街小展厅J区', motionCard: '固高运动卡Pro', electricBar: '八电动杠', flashType: '海外刷机', installDate: '2024-02-15', installerPhone: '13800138005' },
+  { id: 12, shop: '卓远亚运城店', type: '悬浮骑兵', name: '悬浮骑兵-A01', token: 'token_hij456', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--', price: 25, points: 5, payMethods: ['member'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '亚运城店A区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
+  { id: 13, shop: '卓远亚运城店', type: '暗黑行者', name: '暗黑行者-B02', token: 'token_klm789', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '亚运城店B区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 14, shop: '卓远萧山区店', type: '幻影飞碟', name: '幻影飞碟-C01', token: 'token_nop012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 40, points: 8, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i9-12900/RTX4090/64G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2024-01-10', installer: '刘工', installAddress: '萧山区店C区', motionCard: '固高运动卡Pro', electricBar: '八电动杠', flashType: '海外刷机', installDate: '2024-02-15', installerPhone: '13800138005' },
+  { id: 15, shop: '卓远萝岗区店', type: '第三方设备', name: '体感游戏机', token: 'token_qrs345', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--', price: 15, points: 2, payMethods: ['member'], desc: '第三方体感设备' },
 ])
 
 const filteredData = computed(() => {
@@ -296,7 +382,15 @@ function openDetail(row: Device) {
 
 function openEdit(row: Device) {
   currentDevice.value = row
-  editForm.value = { ...row }
+  editForm.value = {
+    shop: row.shop,
+    name: row.name,
+    price: row.price,
+    points: row.points,
+    status: row.status,
+    payMethods: [...row.payMethods],
+    desc: row.desc,
+  }
   showEditModal.value = true
 }
 
@@ -319,19 +413,32 @@ function handleAdd() {
       type: '第三方设备',
       name: addForm.value.name,
       token: `token_${Math.random().toString(36).slice(2, 10)}`,
-      status: 'enabled',
+      status: addForm.value.status,
       isThirdParty: true,
       isExpired: false,
-      trialStatus: '--'
+      trialStatus: '--',
+      price: addForm.value.price,
+      points: addForm.value.coins,
+      payMethods: addForm.value.payMethods,
+      desc: addForm.value.desc,
     })
     showAddModal.value = false
-    addForm.value = { name: '', shop: '', price: 20.00, coins: 3, desc: '' }
+    addForm.value = { name: '', shop: '', price: 20.00, coins: 3, status: 'enabled', payMethods: ['member'], desc: '' }
   })
 }
 
 function handleDelete(row: Device) {
-  const idx = deviceData.value.findIndex(d => d.id === row.id)
-  if (idx !== -1) deviceData.value.splice(idx, 1)
+  deleteTarget.value = row
+  showDeleteModal.value = true
+}
+
+function confirmDelete() {
+  if (deleteTarget.value) {
+    const idx = deviceData.value.findIndex(d => d.id === deleteTarget.value!.id)
+    if (idx !== -1) deviceData.value.splice(idx, 1)
+  }
+  showDeleteModal.value = false
+  deleteTarget.value = null
 }
 
 function handleFilms(row: Device) {

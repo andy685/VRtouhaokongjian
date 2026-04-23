@@ -247,9 +247,24 @@ const menuOptions: MenuOption[] = [
       { label: '点播设置', key: '/shop/on-demand-settings' },
       { label: '设备列表', key: '/shop/devices' },
       { label: '影片题材', key: '/shop/film-genres' },
-      { label: '收银设置', key: '/shop/cashier-settings' },
+      {
+        label: '收银设置',
+        key: 'cashier-settings-group',
+        children: [
+          { label: '收银终端', key: '/shop/cashier-terminal' },
+          { label: '支付设置', key: '/shop/cashier-settings' },
+          { label: '小票设置', key: '/shop/cashier-receipt' },
+        ]
+      },
       { label: '积分设置', key: '/shop/points-settings' },
-      { label: '用户管理', key: '/shop/users' },
+      {
+        label: '用户管理',
+        key: 'users-group',
+        children: [
+          { label: '用户列表', key: '/shop/users' },
+          { label: '角色列表', key: '/shop/roles' },
+        ]
+      },
     ]
   },
 ]

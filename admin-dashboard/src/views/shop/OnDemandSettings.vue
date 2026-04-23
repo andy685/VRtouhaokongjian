@@ -5,39 +5,7 @@
       <n-select v-model:value="currentShop" :options="shopOptions" size="small" style="width: 200px;" />
     </div>
 
-    <!-- 一、支付方式 -->
-    <n-card class="settings-card">
-      <template #header>
-        <div class="card-title">支付方式</div>
-      </template>
-      <n-form label-placement="left" label-width="160">
-        <n-form-item label="支持的支付方式">
-          <n-checkbox-group v-model:value="settings.paymentMethods">
-            <n-space>
-              <n-checkbox value="cash">现金</n-checkbox>
-              <n-checkbox value="wechat">微信支付</n-checkbox>
-              <n-checkbox value="alipay">支付宝</n-checkbox>
-              <n-checkbox value="prepaid">预存款</n-checkbox>
-              <n-checkbox value="memberCard">会员卡</n-checkbox>
-            </n-space>
-          </n-checkbox-group>
-        </n-form-item>
-        <n-form-item label="扫码支付通道">
-          <n-radio-group v-model:value="settings.scanChannel">
-            <n-space>
-              <n-radio value="official">官方直连</n-radio>
-              <n-radio value="thirdParty">第三方聚合支付</n-radio>
-            </n-space>
-          </n-radio-group>
-        </n-form-item>
-        <n-form-item label="预存款消费">
-          <n-switch v-model:value="settings.enablePrepaid" />
-          <span class="form-hint">允许顾客使用会员预存款支付点播费用</span>
-        </n-form-item>
-      </n-form>
-    </n-card>
-
-    <!-- 二、播放控制 -->
+    <!-- 一、播放控制 -->
     <n-card class="settings-card">
       <template #header>
         <div class="card-title">播放控制</div>
@@ -71,7 +39,7 @@
       </n-form>
     </n-card>
 
-    <!-- 三、待机画面 -->
+    <!-- 待机画面 -->
     <n-card class="settings-card">
       <template #header>
         <div class="card-title">待机画面</div>
@@ -135,7 +103,7 @@
       </n-form>
     </n-card>
 
-    <!-- 四、内容展示 -->
+    <!-- 内容展示 -->
     <n-card class="settings-card">
       <template #header>
         <div class="card-title">内容展示</div>
@@ -191,11 +159,6 @@ const videoList = ref<UploadFileInfo[]>([])
 const gamePreviewList = ref<UploadFileInfo[]>([])
 
 const settings = ref({
-  // 支付方式
-  paymentMethods: ['cash', 'wechat', 'alipay', 'prepaid'] as string[],
-  scanChannel: 'official' as 'official' | 'thirdParty',
-  enablePrepaid: true,
-
   // 播放控制
   playMode: 'single' as 'single' | 'loop' | 'autoNext',
   defaultVolume: 70,
@@ -218,9 +181,6 @@ function saveSettings() {
 
 function resetSettings() {
   settings.value = {
-    paymentMethods: ['cash', 'wechat', 'alipay', 'prepaid'],
-    scanChannel: 'official',
-    enablePrepaid: true,
     playMode: 'single',
     defaultVolume: 70,
     allowVolumeAdjust: true,
