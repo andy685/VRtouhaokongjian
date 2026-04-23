@@ -1,7 +1,7 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>商品管理</h1>
+      <h1>实物商品</h1>
       <n-button type="primary" @click="router.push('/shop/products/add')">+ 添加商品</n-button>
     </div>
 

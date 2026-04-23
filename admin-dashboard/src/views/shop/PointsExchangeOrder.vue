@@ -56,22 +56,56 @@
         </n-space>
       </template>
     </n-modal>
+
+    <!-- 详情弹窗 -->
+    <n-modal v-model:show="showDetailModal" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
+      <n-descriptions v-if="detailData" :column="2" bordered label-placement="left" size="small">
+        <n-descriptions-item label="订单号">{{ detailData.orderNo }}</n-descriptions-item>
+        <n-descriptions-item label="所属店铺">{{ detailData.shop }}</n-descriptions-item>
+        <n-descriptions-item label="会员">{{ detailData.member }}</n-descriptions-item>
+        <n-descriptions-item label="兑换类型">
+          <n-tag :color="{ color: exchangeTypeMap[detailData.exchangeType]?.color || '#999', textColor: '#fff' }" size="small">{{ exchangeTypeMap[detailData.exchangeType]?.label || detailData.exchangeType }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="兑换前积分">{{ detailData.pointsBefore }}</n-descriptions-item>
+        <n-descriptions-item label="兑换后积分">{{ detailData.pointsAfter }}</n-descriptions-item>
+        <n-descriptions-item label="状态">
+          <n-tag :type="statusMap[detailData.status]?.type || 'default'" size="small">{{ statusMap[detailData.status]?.label || detailData.status }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="创建时间">{{ detailData.createTime }}</n-descriptions-item>
+      </n-descriptions>
+      <div v-if="detailData" class="detail-items-section">
+        <h3 class="section-title">兑换明细</h3>
+        <n-data-table :columns="itemColumns" :data="[{ product: detailData.product, exchangeType: exchangeTypeMap[detailData.exchangeType]?.label || detailData.exchangeType, pointsUsed: detailData.pointsUsed }]" :bordered="true" :single-line="false" size="small" />
+      </div>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showDetailModal = false">关闭</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NModal, NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag } from 'naive-ui'
+import { NDataTable, NButton, NIcon, NModal, NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
 
 const showFilter = ref(false)
+const showDetailModal = ref(false)
+const detailData = ref<any>(null)
 const filterShop = ref<string | null>(null)
 const filterPhone = ref('')
 const filterExchangeType = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
 const filterProduct = ref('')
 const dateRange = ref<[number, number] | null>(null)
+
+function openDetail(row: any) {
+  detailData.value = row
+  showDetailModal.value = true
+}
 
 const shopOptions = [
   { label: '利民街小展厅', value: '利民街小展厅' },
@@ -102,6 +136,12 @@ const exchangeTypeMap: Record<string, { label: string; color: string }> = {
   singleConsumption: { label: '单次消费兑换', color: '#52c41a' },
   package: { label: '套票兑换', color: '#faad14' },
 }
+
+const itemColumns: DataTableColumns = [
+  { title: '兑换商品', key: 'product', minWidth: 160, align: 'center' },
+  { title: '兑换类型', key: 'exchangeType', width: 120, align: 'center' },
+  { title: '消耗积分', key: 'pointsUsed', width: 100, align: 'center' },
+]
 
 const columns: DataTableColumns = [
   { title: '订单号', key: 'orderNo', width: 160, align: 'center' },
@@ -137,8 +177,8 @@ const columns: DataTableColumns = [
     key: 'actions',
     width: 100,
     align: 'center',
-    render() {
-      return h(NButton, { size: 'small', type: 'primary', text: true }, { default: () => '详情' })
+    render(row: any) {
+      return h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
     },
   },
 ]
@@ -191,5 +231,14 @@ function exportData() {
   font-weight: 600;
   color: #333;
   margin: 0;
+}
+.detail-items-section {
+  margin-top: 16px;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 </style>

@@ -77,6 +77,33 @@
         </template>
       </n-drawer-content>
     </n-drawer>
+
+    <!-- 详情弹窗 -->
+    <n-modal v-model:show="showDetailModal" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
+      <n-descriptions v-if="detailData" :column="2" bordered label-placement="left" size="small">
+        <n-descriptions-item label="订单号">{{ detailData.orderNo }}</n-descriptions-item>
+        <n-descriptions-item label="所属店铺">{{ detailData.shop }}</n-descriptions-item>
+        <n-descriptions-item label="会员">{{ detailData.member }}</n-descriptions-item>
+        <n-descriptions-item label="会员手机">{{ detailData.memberPhone }}</n-descriptions-item>
+        <n-descriptions-item label="扣费类型">
+          <n-tag :type="deductTypeMap[detailData.deductType]?.type || 'default'" size="small">{{ deductTypeMap[detailData.deductType]?.label || detailData.deductType }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="扣费金额">{{ detailData.deductAmount }}</n-descriptions-item>
+        <n-descriptions-item label="扣费前余额">{{ detailData.balanceBefore }}</n-descriptions-item>
+        <n-descriptions-item label="扣费后余额">{{ detailData.balanceAfter }}</n-descriptions-item>
+        <n-descriptions-item label="操作人">{{ detailData.operator }}</n-descriptions-item>
+        <n-descriptions-item label="创建时间">{{ detailData.createTime }}</n-descriptions-item>
+      </n-descriptions>
+      <div v-if="detailData" class="detail-items-section">
+        <h3 class="section-title">扣费明细</h3>
+        <n-data-table :columns="itemColumns" :data="[{ device: detailData.device, gameFilm: detailData.gameFilm, deductAmount: detailData.deductAmount, remark: detailData.remark }]" :bordered="true" :single-line="false" size="small" />
+      </div>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showDetailModal = false">关闭</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -89,6 +116,8 @@ import {
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
 
 const showFilterDrawer = ref(false)
+const showDetailModal = ref(false)
+const detailData = ref<DeductOrder | null>(null)
 const filterStore = ref<string | null>(null)
 const filterMemberPhone = ref('')
 const filterDeductType = ref<string | null>(null)
@@ -280,16 +309,24 @@ const columns = [
     align: 'center' as const,
     fixed: 'right' as const,
     render(row: DeductOrder) {
-      return h(NButton, { size: 'small', type: 'primary', onClick: () => handleDetail(row) }, { default: () => '详情' })
+      return h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
     }
   },
 ]
 
 const pagination = { pageSize: 10 }
 
-function handleDetail(row: DeductOrder) {
-  window.$message?.info(`查看订单详情: ${row.orderNo}`)
+function openDetail(row: DeductOrder) {
+  detailData.value = row
+  showDetailModal.value = true
 }
+
+const itemColumns = [
+  { title: '设备', key: 'device', minWidth: 120 },
+  { title: '游戏/影片', key: 'gameFilm', minWidth: 120 },
+  { title: '扣费金额', key: 'deductAmount', width: 100, align: 'center' as const },
+  { title: '扣费原因', key: 'remark', minWidth: 160 },
+]
 </script>
 
 <style scoped>
@@ -341,5 +378,14 @@ function handleDetail(row: DeductOrder) {
 
 .table-wrapper {
   padding: 12px 16px;
+}
+.detail-items-section {
+  margin-top: 16px;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 </style>

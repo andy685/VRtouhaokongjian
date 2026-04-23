@@ -61,6 +61,55 @@
       <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" />
     </n-card>
 
+    <!-- 手动发券弹窗 -->
+    <n-modal v-model:show="showManualSendModal" preset="card" title="手动发券" style="width: 520px;">
+      <n-form label-placement="left" label-width="90px">
+        <n-form-item label="优惠券">
+          <n-input :value="manualSendCoupon?.name" disabled />
+        </n-form-item>
+        <n-form-item label="发放对象" required>
+          <n-radio-group v-model:value="manualSendTargetType">
+            <n-space>
+              <n-radio value="member">指定会员</n-radio>
+              <n-radio value="phone">输入手机号</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item v-if="manualSendTargetType === 'member'" label="选择会员" required>
+          <n-select
+            v-model:value="manualSendMembers"
+            multiple
+            filterable
+            placeholder="搜索会员姓名/手机号"
+            :options="memberOptions"
+            :max-tag-count="3"
+          />
+        </n-form-item>
+        <n-form-item v-if="manualSendTargetType === 'phone'" label="手机号" required>
+          <n-input
+            v-model:value="manualSendPhones"
+            type="textarea"
+            placeholder="输入手机号，多个用换行或逗号分隔"
+            :rows="4"
+          />
+        </n-form-item>
+        <n-form-item label="发放数量" required>
+          <n-input-number v-model:value="manualSendCount" :min="1" :max="100" style="width: 150px;">
+            <template #suffix>张/人</template>
+          </n-input-number>
+        </n-form-item>
+        <n-form-item label="发放备注">
+          <n-input v-model:value="manualSendRemark" placeholder="可选填备注信息" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showManualSendModal = false">取消</n-button>
+          <n-button type="primary" @click="handleManualSendSubmit">确认发放</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
     <!-- 新增/编辑优惠券弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
@@ -91,9 +140,33 @@
                 <template #suffix>折</template>
               </n-input-number>
             </n-form-item>
+            <!-- 特价券：一口价 -->
+            <n-form-item v-if="formData.type === 'special'" label="一口价" path="specialPrice" required>
+              <n-input-number v-model:value="formData.specialPrice" :min="0.01" :precision="2" style="width: 100%;">
+                <template #suffix>元</template>
+              </n-input-number>
+            </n-form-item>
+            <!-- 特价券：适用项目 -->
+            <n-form-item v-if="formData.type === 'special'" label="适用项目" path="specialItems" required>
+              <n-select
+                v-model:value="formData.specialItems"
+                multiple
+                filterable
+                placeholder="选择适用的消费项目"
+                :options="productOptions"
+                :max-tag-count="2"
+              />
+            </n-form-item>
             <!-- 兑换券：兑换项目 -->
-            <n-form-item v-if="formData.type === 'exchange'" label="兑换内容" path="exchangeItem" required>
-              <n-input v-model:value="formData.exchangeItem" placeholder="如：30分钟畅玩" />
+            <n-form-item v-if="formData.type === 'exchange'" label="兑换内容" path="exchangeItems" required>
+              <n-select
+                v-model:value="formData.exchangeItems"
+                multiple
+                filterable
+                placeholder="选择可兑换的消费项目"
+                :options="productOptions"
+                :max-tag-count="2"
+              />
             </n-form-item>
           </n-gi>
         </n-grid>
@@ -177,13 +250,16 @@ import { ref, computed, h } from 'vue'
 import {
   NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NInputNumber, NTabs, NTab, NGrid, NGi, NTag, NDropdown,
-  NDatePicker, NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup
+  NDatePicker, NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup,
+  useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import {
   SearchOutline, TicketOutline, DownloadOutline, CheckmarkCircleOutline,
   PricetagsOutline, EllipsisHorizontalOutline
 } from '@vicons/ionicons5'
+
+const message = useMessage()
 
 const activeTab = ref('active')
 const showModal = ref(false)
@@ -192,10 +268,59 @@ const modalTitle = ref('创建优惠券')
 const filterShop = ref(null)
 const filterKeyword = ref('')
 
+// 手动发券
+const showManualSendModal = ref(false)
+const manualSendCoupon = ref<any>(null)
+const manualSendTargetType = ref<'member' | 'phone'>('member')
+const manualSendMembers = ref<string[]>([])
+const manualSendPhones = ref('')
+const manualSendCount = ref(1)
+const manualSendRemark = ref('')
+
+const memberOptions = [
+  { label: '张小明 (138****1234)', value: 'm1' },
+  { label: '李小红 (139****5678)', value: 'm2' },
+  { label: '王小强 (137****9012)', value: 'm3' },
+  { label: '陈小芳 (136****3456)', value: 'm4' },
+  { label: '刘大伟 (135****7890)', value: 'm5' },
+]
+
+function openManualSend(row: any) {
+  manualSendCoupon.value = row
+  manualSendTargetType.value = 'member'
+  manualSendMembers.value = []
+  manualSendPhones.value = ''
+  manualSendCount.value = 1
+  manualSendRemark.value = ''
+  showManualSendModal.value = true
+}
+
+function handleManualSendSubmit() {
+  console.log('手动发券:', {
+    coupon: manualSendCoupon.value?.name,
+    targetType: manualSendTargetType.value,
+    members: manualSendMembers.value,
+    phones: manualSendPhones.value,
+    count: manualSendCount.value,
+    remark: manualSendRemark.value,
+  })
+  showManualSendModal.value = false
+  message.success('手动发券成功')
+}
+
 const shopOptions = [
   { label: '卓远亚运城店', value: 'shop1' },
   { label: '卓远天河路店', value: 'shop2' },
   { label: '卓远北京路店', value: 'shop3' }
+]
+
+const productOptions = [
+  { label: 'VR体验套餐A', value: 'product1' },
+  { label: 'VR体验套餐B', value: 'product2' },
+  { label: 'VR体验套餐C', value: 'product3' },
+  { label: '可乐', value: 'product4' },
+  { label: '薯片', value: 'product5' },
+  { label: 'VR周边T恤', value: 'product6' },
 ]
 
 function getDefaultFormData() {
@@ -205,7 +330,10 @@ function getDefaultFormData() {
     name: '',
     type: 'discount',
     value: 10,
-    exchangeItem: '',
+    specialPrice: 9.9,
+    originalPrice: 48,
+    specialItems: [] as string[],
+    exchangeItems: [] as string[],
     threshold: 0,
     total: 0,
     limit: 1,
@@ -230,6 +358,7 @@ const formRules = {
 const typeOptions = [
   { label: '满减券', value: 'discount' },
   { label: '折扣券', value: 'rate' },
+  { label: '特价券', value: 'special' },
   { label: '兑换券', value: 'exchange' }
 ]
 
@@ -262,13 +391,23 @@ const columns: DataTableColumns = [
   { title: '所属门店', key: 'shopName', width: 150 },
   { title: '优惠券名称', key: 'name', width: 150 },
   { title: '类型', key: 'type', width: 100, render: (row) => {
-    const map: Record<string, string> = { discount: '满减券', rate: '折扣券', exchange: '兑换券' }
+    const map: Record<string, string> = { discount: '满减券', rate: '折扣券', special: '特价券', exchange: '兑换券' }
     return map[row.type] || row.type
   }},
-  { title: '优惠内容', key: 'content', width: 120, render: (row) => {
+  { title: '优惠内容', key: 'content', width: 160, render: (row) => {
     if (row.type === 'discount') return `减${row.value}元`
     if (row.type === 'rate') return `${row.value}折`
-    if (row.type === 'exchange') return row.exchangeItem || row.value
+    if (row.type === 'special') {
+      const items = row.specialItems?.map((id: string) => productOptions.find(p => p.value === id)?.label || id).join('、') || ''
+      return h('div', null, [
+        h('div', { style: 'font-weight: 600; color: #EF4444;' }, `¥${row.specialPrice}`),
+        h('div', { style: 'font-size: 11px; color: #999; margin-top: 2px;' }, items)
+      ])
+    }
+    if (row.type === 'exchange') {
+      const items = row.exchangeItems?.map((id: string) => productOptions.find(p => p.value === id)?.label || id).join('、') || row.value
+      return h('div', { style: 'font-size: 12px; color: #333;' }, items)
+    }
     return row.value
   }},
   { title: '使用门槛', key: 'threshold', width: 100, render: (row) => row.threshold > 0 ? `满${row.threshold}元` : '无门槛' },
@@ -283,25 +422,33 @@ const columns: DataTableColumns = [
     h(NTag, { type: row.status ? 'success' : 'warning', size: 'small' },
       { default: () => row.status ? '启用' : '暂停' })
   },
-  { title: '操作', key: 'actions', width: 100, render: (row) => {
-    const options = [
-      { label: '编辑', key: 'edit' },
-      { label: row.status ? '暂停' : '启用', key: 'toggle' },
-      { type: 'divider', key: 'd1' },
-      { label: '删除', key: 'delete' }
-    ]
-    return h(NDropdown, { options, onSelect: (key) => handleAction(key, row) },
-      { default: () => h(NButton, { quaternary: true, circle: true },
-        { icon: () => h(NIcon, { component: EllipsisHorizontalOutline }) })
-      })
+  { title: '操作', key: 'actions', width: 180, render: (row) => {
+    return h(NSpace, { size: 4 }, {
+      default: () => [
+        h(NButton, { size: 'tiny', secondary: true, onClick: () => openManualSend(row) }, { default: () => '手动发券' }),
+        h(NButton, { size: 'tiny', quaternary: true, onClick: () => handleEdit(row) }, { default: () => '编辑' }),
+        h(NDropdown, {
+          options: [
+            { label: row.status ? '暂停' : '启用', key: 'toggle' },
+            { type: 'divider', key: 'd1' },
+            { label: '删除', key: 'delete' }
+          ],
+          onSelect: (key) => handleAction(key, row)
+        }, {
+          default: () => h(NButton, { quaternary: true, circle: true, size: 'tiny' },
+            { icon: () => h(NIcon, { component: EllipsisHorizontalOutline }) })
+        })
+      ]
+    })
   }}
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '新人专享券', type: 'discount', value: 20, exchangeItem: '', threshold: 100, claimed: 520, total: 1000, used: 186, validType: 'days', validDays: 30, validEndDate: null, status: true },
-  { id: 2, shopName: '卓远天河路店', name: '周末畅玩券', type: 'rate', value: 85, exchangeItem: '', threshold: 80, claimed: 320, total: 500, used: 245, validType: 'date', validDays: null, validEndDate: '2026-12-31', status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '会员专享券', type: 'exchange', value: 0, exchangeItem: '30分钟畅玩', threshold: 0, claimed: 180, total: 300, used: 120, validType: 'days', validDays: 7, validEndDate: null, status: false },
-  { id: 4, shopName: '卓远北京路店', name: '节日特惠券', type: 'discount', value: 50, exchangeItem: '', threshold: 200, claimed: 266, total: 200, used: 266, validType: 'forever', validDays: null, validEndDate: null, status: false },
+  { id: 1, shopName: '卓远亚运城店', name: '新人专享券', type: 'discount', value: 20, exchangeItems: [], threshold: 100, claimed: 520, total: 1000, used: 186, validType: 'days', validDays: 30, validEndDate: null, status: true },
+  { id: 2, shopName: '卓远天河路店', name: '周末畅玩券', type: 'rate', value: 85, exchangeItems: [], threshold: 80, claimed: 320, total: 500, used: 245, validType: 'date', validDays: null, validEndDate: '2026-12-31', status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '会员专享券', type: 'exchange', value: 0, exchangeItems: ['product1'], threshold: 0, claimed: 180, total: 300, used: 120, validType: 'days', validDays: 7, validEndDate: null, status: false },
+  { id: 4, shopName: '卓远北京路店', name: '节日特惠券', type: 'discount', value: 50, exchangeItems: [], threshold: 200, claimed: 266, total: 200, used: 266, validType: 'forever', validDays: null, validEndDate: null, status: false },
+  { id: 5, shopName: '卓远亚运城店', name: '9.9元体验券', type: 'special', value: 0, specialPrice: 9.9, specialItems: ['product1', 'product2'], exchangeItems: [], threshold: 0, claimed: 350, total: 500, used: 128, validType: 'days', validDays: 30, validEndDate: null, status: true },
 ])
 
 // 根据tab筛选数据
@@ -338,7 +485,9 @@ function handleEdit(row: any) {
     name: row.name,
     type: row.type,
     value: row.value,
-    exchangeItem: row.exchangeItem || '',
+    specialPrice: row.specialPrice || 9.9,
+    specialItems: row.specialItems || [],
+    exchangeItems: row.exchangeItems || [],
     threshold: row.threshold,
     total: row.total,
     limit: row.limit || 1,

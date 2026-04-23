@@ -59,9 +59,31 @@
 
     <!-- 详情弹窗 -->
     <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
-      <div class="detail-content" v-if="detailRow">
-        <div class="detail-product-name">这里显示商品名称</div>
+      <n-descriptions v-if="detailRow" :column="2" bordered label-placement="left" size="small">
+        <n-descriptions-item label="订单号">{{ detailRow.orderNo }}</n-descriptions-item>
+        <n-descriptions-item label="所属店铺">{{ detailRow.shop }}</n-descriptions-item>
+        <n-descriptions-item label="会员">{{ detailRow.member }}</n-descriptions-item>
+        <n-descriptions-item label="修改类型">
+          <n-tag :type="detailRow.type === '增加' ? 'success' : 'error'" size="small">{{ detailRow.type }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="类型">
+          <n-tag :color="{ color: categoryMap[detailRow.category]?.color || '#999', textColor: '#fff' }" size="small">{{ categoryMap[detailRow.category]?.label || detailRow.category }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="修改金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="修改前储值">¥{{ detailRow.beforeBalance.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="修改后储值">¥{{ detailRow.afterBalance.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="操作人">{{ detailRow.operator }}</n-descriptions-item>
+        <n-descriptions-item label="创建时间">{{ detailRow.createTime }}</n-descriptions-item>
+      </n-descriptions>
+      <div v-if="detailRow?.items?.length" class="detail-items-section">
+        <h3 class="section-title">明细项目</h3>
+        <n-data-table :columns="itemColumns" :data="detailRow.items.map(item => ({ ...item, name: detailRow.remark }))" :bordered="true" :single-line="false" size="small" />
       </div>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showDetail = false">关闭</n-button>
+        </n-space>
+      </template>
     </n-modal>
   </div>
 </template>
@@ -287,6 +309,11 @@ const filteredData = computed(() => {
   return data
 })
 
+function openDetail(row: BalanceOrder) {
+  detailRow.value = row
+  showDetail.value = true
+}
+
 const columns: DataTableColumns<BalanceOrder> = [
   { title: '订单号', key: 'orderNo', width: 170, align: 'center' },
   { title: '所属店铺', key: 'shop', width: 120, align: 'center' },
@@ -345,14 +372,9 @@ const columns: DataTableColumns<BalanceOrder> = [
     width: 80,
     align: 'center',
     render: (row: BalanceOrder) =>
-      h(NButton, { size: 'small', type: 'primary', onClick: () => openDetail(row) }, { default: () => '详情' })
+      h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
   },
 ]
-
-function openDetail(row: BalanceOrder) {
-  detailRow.value = row
-  showDetail.value = true
-}
 
 function resetFilter() {
   filterShop.value = null

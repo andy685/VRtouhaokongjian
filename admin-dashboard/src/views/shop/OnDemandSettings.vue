@@ -2,81 +2,158 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <h1>点播设置</h1>
+      <n-select v-model:value="currentShop" :options="shopOptions" size="small" style="width: 200px;" />
     </div>
 
-    <!-- 基本设置 -->
+    <!-- 一、支付方式 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">基本设置</div>
+        <div class="card-title">支付方式</div>
       </template>
-      <n-form label-placement="left" label-width="140">
-        <n-form-item label="启用点播功能">
-          <n-switch v-model:value="settings.enableOnDemand" />
+      <n-form label-placement="left" label-width="160">
+        <n-form-item label="支持的支付方式">
+          <n-checkbox-group v-model:value="settings.paymentMethods">
+            <n-space>
+              <n-checkbox value="cash">现金</n-checkbox>
+              <n-checkbox value="wechat">微信支付</n-checkbox>
+              <n-checkbox value="alipay">支付宝</n-checkbox>
+              <n-checkbox value="prepaid">预存款</n-checkbox>
+              <n-checkbox value="memberCard">会员卡</n-checkbox>
+            </n-space>
+          </n-checkbox-group>
         </n-form-item>
-        <n-form-item label="默认计费方式">
-          <n-select v-model:value="settings.billingType" :options="billingOptions" style="width: 300px;" />
+        <n-form-item label="扫码支付通道">
+          <n-radio-group v-model:value="settings.scanChannel">
+            <n-space>
+              <n-radio value="official">官方直连</n-radio>
+              <n-radio value="thirdParty">第三方聚合支付</n-radio>
+            </n-space>
+          </n-radio-group>
         </n-form-item>
-        <n-form-item label="最低消费金额">
-          <n-input-number v-model:value="settings.minAmount" :min="0" style="width: 200px;">
-            <template #suffix>元</template>
-          </n-input-number>
-        </n-form-item>
-        <n-form-item label="超时自动暂停">
-          <n-switch v-model:value="settings.autoPause" />
-          <span style="margin-left: 12px; color: #999; font-size: 13px;">超时</span>
-          <n-input-number v-model:value="settings.timeout" :min="1" style="width: 80px; margin: 0 4px;" />
-          <span style="color: #999; font-size: 13px;">分钟后自动暂停</span>
+        <n-form-item label="预存款消费">
+          <n-switch v-model:value="settings.enablePrepaid" />
+          <span class="form-hint">允许顾客使用会员预存款支付点播费用</span>
         </n-form-item>
       </n-form>
     </n-card>
 
-    <!-- 价格设置 -->
+    <!-- 二、播放控制 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">价格设置</div>
+        <div class="card-title">播放控制</div>
       </template>
-      <n-form label-placement="left" label-width="140">
-        <n-form-item label="VR设备基础价">
-          <n-input-number v-model:value="settings.vrBasePrice" :min="0" style="width: 200px;">
-            <template #suffix>元/小时</template>
-          </n-input-number>
+      <n-form label-placement="left" label-width="160">
+        <n-form-item label="播放模式">
+          <n-radio-group v-model:value="settings.playMode">
+            <n-space>
+              <n-radio value="single">单次播放（播完自动停止）</n-radio>
+              <n-radio value="loop">循环播放（结束后自动重播）</n-radio>
+              <n-radio value="autoNext">自动续播（播放推荐内容）</n-radio>
+            </n-space>
+          </n-radio-group>
         </n-form-item>
-        <n-form-item label="银幕互动基础价">
-          <n-input-number v-model:value="settings.screenBasePrice" :min="0" style="width: 200px;">
-            <template #suffix>元/小时</template>
-          </n-input-number>
+        <n-form-item label="音量默认设置">
+          <n-slider v-model:value="settings.defaultVolume" :min="0" :max="100" style="width: 300px;" />
+          <span style="margin-left: 12px; color: #666;">{{ settings.defaultVolume }}%</span>
         </n-form-item>
-        <n-form-item label="AR体验基础价">
-          <n-input-number v-model:value="settings.arBasePrice" :min="0" style="width: 200px;">
-            <template #suffix>元/小时</template>
-          </n-input-number>
+        <n-form-item label="顾客可调音量">
+          <n-switch v-model:value="settings.allowVolumeAdjust" />
         </n-form-item>
-        <n-form-item label="启用节假日价格">
-          <n-switch v-model:value="settings.enableHolidayPrice" />
+        <n-form-item label="中途暂停策略">
+          <n-radio-group v-model:value="settings.pausePolicy">
+            <n-space>
+              <n-radio value="free">自由暂停（不计时）</n-radio>
+              <n-radio value="limit">限时暂停（最多5分钟）</n-radio>
+              <n-radio value="charge">暂停仍计费</n-radio>
+            </n-space>
+          </n-radio-group>
         </n-form-item>
       </n-form>
     </n-card>
 
-    <!-- 分成设置 -->
+    <!-- 三、待机画面 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">分成设置</div>
+        <div class="card-title">待机画面</div>
       </template>
-      <n-form label-placement="left" label-width="140">
-        <n-form-item label="平台分成比例">
-          <n-input-number v-model:value="settings.platformRatio" :min="0" :max="100" style="width: 200px;">
-            <template #suffix>%</template>
-          </n-input-number>
+      <n-form label-placement="left" label-width="160">
+        <n-form-item label="待机显示内容">
+          <n-radio-group v-model:value="settings.idleContent">
+            <n-space>
+              <n-radio value="poster">门店宣传海报</n-radio>
+              <n-radio value="video">品牌宣传视频</n-radio>
+              <n-radio value="gamePreview">热门游戏预览</n-radio>
+              <n-radio value="qrCode">扫码关注/注册二维码</n-radio>
+            </n-space>
+          </n-radio-group>
         </n-form-item>
-        <n-form-item label="片方分成比例">
-          <n-input-number v-model:value="settings.studioRatio" :min="0" :max="100" style="width: 200px;">
-            <template #suffix>%</template>
-          </n-input-number>
+        <n-form-item v-if="settings.idleContent === 'poster'" label="上传海报">
+          <n-upload
+            action="/api/upload"
+            list-type="image-card"
+            :max="5"
+            v-model:file-list="posterList"
+          />
+          <span class="form-hint">最多上传5张，待机时轮播展示</span>
         </n-form-item>
-        <n-form-item label="门店分成比例">
-          <n-input-number :value="100 - settings.platformRatio - settings.studioRatio" disabled style="width: 200px;">
-            <template #suffix>%</template>
+        <n-form-item v-if="settings.idleContent === 'video'" label="上传视频">
+          <n-space align="center">
+            <n-upload
+              action="/api/upload"
+              accept=".mp4,.mov,.avi,.mkv"
+              :max="1"
+              v-model:file-list="videoList"
+            >
+              <n-button type="primary">上传视频</n-button>
+            </n-upload>
+            <span class="form-hint">支持 mp4 / mov / avi / mkv 格式，待机时循环播放</span>
+          </n-space>
+        </n-form-item>
+        <n-form-item v-if="settings.idleContent === 'gamePreview'" label="上传预览视频">
+          <n-space align="center">
+            <n-upload
+              action="/api/upload"
+              accept=".mp4,.mov,.avi,.mkv"
+              :max="5"
+              v-model:file-list="gamePreviewList"
+            >
+              <n-button type="primary">上传视频</n-button>
+            </n-upload>
+            <span class="form-hint">支持 mp4 / mov / avi / mkv 格式，最多5个热门游戏预览</span>
+          </n-space>
+        </n-form-item>
+        <n-form-item label="待机切换时间">
+          <n-input-number v-model:value="settings.idleSwitchInterval" :min="5" style="width: 150px;">
+            <template #suffix>秒</template>
           </n-input-number>
+          <span class="form-hint">无操作时多久进入待机画面</span>
+        </n-form-item>
+        <n-form-item label="待机背景音乐">
+          <n-switch v-model:value="settings.idleMusic" />
+          <span class="form-hint">待机时播放轻音乐</span>
+        </n-form-item>
+      </n-form>
+    </n-card>
+
+    <!-- 四、内容展示 -->
+    <n-card class="settings-card">
+      <template #header>
+        <div class="card-title">内容展示</div>
+      </template>
+      <n-form label-placement="left" label-width="160">
+        <n-form-item label="首页推荐策略">
+          <n-radio-group v-model:value="settings.recommendStrategy">
+            <n-space>
+              <n-radio value="hot">按热度排序</n-radio>
+              <n-radio value="new">按上新排序</n-radio>
+              <n-radio value="price">按价格排序</n-radio>
+              <n-radio value="manual">手动置顶</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item label="分类显示">
+          <n-switch v-model:value="settings.showCategory" />
+          <span class="form-hint">顾客端按游戏类型分类展示</span>
         </n-form-item>
       </n-form>
     </n-card>
@@ -93,54 +170,79 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NCard, NForm, NFormItem, NSwitch, NInputNumber, NSelect, NSpace, NButton, NInput } from 'naive-ui'
+import {
+  NCard, NForm, NFormItem, NSwitch, NInputNumber, NRadioGroup, NRadio,
+  NCheckboxGroup, NCheckbox, NSpace, NButton, NSelect, NSlider, NUpload,
+  type UploadFileInfo
+} from 'naive-ui'
 
-const settings = ref({
-  enableOnDemand: true,
-  billingType: 'time',
-  minAmount: 0,
-  autoPause: true,
-  timeout: 30,
-  vrBasePrice: 68,
-  screenBasePrice: 38,
-  arBasePrice: 48,
-  enableHolidayPrice: true,
-  platformRatio: 20,
-  studioRatio: 30
-})
+const currentShop = ref('卓远亚运城店')
 
-const billingOptions = [
-  { label: '按时长计费', value: 'time' },
-  { label: '按次计费', value: 'count' },
-  { label: '套餐计费', value: 'package' }
+const shopOptions = [
+  { label: '利民街小展厅', value: '利民街小展厅' },
+  { label: '卓远萝岗区店', value: '卓远萝岗区店' },
+  { label: '卓远萧山区店', value: '卓远萧山区店' },
+  { label: '卓远亚运城店', value: '卓远亚运城店' },
+  { label: '卓远文鼎路店', value: '卓远文鼎路店' },
 ]
 
+const posterList = ref<UploadFileInfo[]>([])
+const videoList = ref<UploadFileInfo[]>([])
+const gamePreviewList = ref<UploadFileInfo[]>([])
+
+const settings = ref({
+  // 支付方式
+  paymentMethods: ['cash', 'wechat', 'alipay', 'prepaid'] as string[],
+  scanChannel: 'official' as 'official' | 'thirdParty',
+  enablePrepaid: true,
+
+  // 播放控制
+  playMode: 'single' as 'single' | 'loop' | 'autoNext',
+  defaultVolume: 70,
+  allowVolumeAdjust: true,
+  pausePolicy: 'limit' as 'free' | 'limit' | 'charge',
+
+  // 待机画面
+  idleContent: 'poster' as 'poster' | 'video' | 'gamePreview' | 'qrCode',
+  idleSwitchInterval: 30,
+  idleMusic: true,
+
+  // 内容展示
+  recommendStrategy: 'hot' as 'hot' | 'new' | 'price' | 'manual',
+  showCategory: true,
+})
+
 function saveSettings() {
-  console.log('保存设置', settings.value)
+  console.log('保存设置', { shop: currentShop.value, settings: settings.value })
 }
 
 function resetSettings() {
   settings.value = {
-    enableOnDemand: true,
-    billingType: 'time',
-    minAmount: 0,
-    autoPause: true,
-    timeout: 30,
-    vrBasePrice: 68,
-    screenBasePrice: 38,
-    arBasePrice: 48,
-    enableHolidayPrice: true,
-    platformRatio: 20,
-    studioRatio: 30
+    paymentMethods: ['cash', 'wechat', 'alipay', 'prepaid'],
+    scanChannel: 'official',
+    enablePrepaid: true,
+    playMode: 'single',
+    defaultVolume: 70,
+    allowVolumeAdjust: true,
+    pausePolicy: 'limit',
+    idleContent: 'poster',
+    idleSwitchInterval: 30,
+    idleMusic: true,
+    recommendStrategy: 'hot',
+    showCategory: true,
   }
+  posterList.value = []
+  videoList.value = []
+  gamePreviewList.value = []
 }
 </script>
 
 <style scoped>
 .page-container { padding: 24px; }
-.page-header { margin-bottom: 24px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-header h1 { font-size: 20px; font-weight: 600; color: #333; margin: 0; }
 .settings-card { margin-bottom: 20px; border-radius: 12px; }
 .card-title { font-size: 16px; font-weight: 600; color: #333; }
 .actions { display: flex; justify-content: flex-end; padding: 20px 0; }
+.form-hint { margin-left: 12px; color: #999; font-size: 13px; }
 </style>

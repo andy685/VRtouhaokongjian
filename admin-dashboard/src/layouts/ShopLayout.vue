@@ -162,8 +162,8 @@ const menuOptions: MenuOption[] = [
     key: 'products-group',
     icon: () => h(NIcon, null, { default: () => h(BagHandleOutline) }),
     children: [
-      { label: '商品', key: '/shop/products' },
-      { label: '库存管理', key: '/shop/products/inventory' },
+      { label: '单次消费项目', key: '/shop/single-consumption' },
+      { label: '实物商品', key: '/shop/products' },
     ]
   },
   {
@@ -171,7 +171,6 @@ const menuOptions: MenuOption[] = [
     key: 'marketing-group',
     icon: () => h(NIcon, null, { default: () => h(GiftOutline) }),
     children: [
-      { label: '单次消费', key: '/shop/single-consumption' },
       { label: '充值套餐', key: '/shop/recharge' },
       { label: '套票', key: '/shop/packages' },
       { label: '优惠券', key: '/shop/coupons' },

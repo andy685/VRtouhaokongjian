@@ -99,76 +99,35 @@
     </n-modal>
 
     <!-- 订单详情弹窗 -->
-    <n-modal v-model:show="showDetail" preset="card" title="收银台订单详情" style="width: 640px;" :bordered="false">
-      <div v-if="detailRow" class="detail-content">
-        <div class="detail-amounts">
-          <div class="amount-box">
-            <div class="amount-value">{{ detailRow.amount.toFixed(2) }}</div>
-            <div class="amount-label">应收(¥)</div>
-          </div>
-          <div class="amount-box">
-            <div class="amount-value">{{ detailRow.discount.toFixed(2) }}</div>
-            <div class="amount-label">优惠(¥)</div>
-          </div>
-          <div class="amount-box">
-            <div class="amount-value">{{ detailRow.paid.toFixed(2) }}</div>
-            <div class="amount-label">实收(¥)</div>
-          </div>
-          <div class="amount-box">
-            <div class="amount-value">{{ detailRow.refunded.toFixed(2) }}</div>
-            <div class="amount-label">已退(¥)</div>
-          </div>
-        </div>
-        <div class="detail-info">
-          <div class="info-row">
-            <span class="info-label">订单状态：</span>
-            <n-tag type="info" size="small" bordered>
-              {{ detailRow.status }}
-            </n-tag>
-          </div>
-          <div class="info-row">
-            <span class="info-label">订单号：</span>
-            <span>{{ detailRow.orderNo }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">交易时间：</span>
-            <span>{{ detailRow.createTime }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">来源：</span>
-            <span>{{ detailRow.source || '收银系统' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">玩家：</span>
-            <span>{{ detailRow.member || '散客' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">订单备注：</span>
-            <span>{{ detailRow.remark || '--' }}</span>
-          </div>
-        </div>
-        <div class="detail-actions">
-          <n-button v-if="detailRow.status === '完成'" size="small" @click="openRefund">
-            <template #icon><n-icon :component="RefreshOutline" /></template>
-            退款
-          </n-button>
-        </div>
-      </div>
-      <div class="detail-section">
+    <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
+      <n-descriptions v-if="detailRow" :column="2" bordered label-placement="left" size="small">
+        <n-descriptions-item label="订单号">{{ detailRow.orderNo }}</n-descriptions-item>
+        <n-descriptions-item label="所属店铺">{{ detailRow.shop }}</n-descriptions-item>
+        <n-descriptions-item label="会员">{{ detailRow.member || '散客' }}</n-descriptions-item>
+        <n-descriptions-item label="订单状态">
+          <n-tag type="info" size="small">{{ detailRow.status }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="应收金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="优惠金额">¥{{ detailRow.discount.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="实收金额">¥{{ detailRow.paid.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="已退金额">¥{{ detailRow.refunded.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="来源">{{ detailRow.source || '收银系统' }}</n-descriptions-item>
+        <n-descriptions-item label="交易时间">{{ detailRow.createTime }}</n-descriptions-item>
+        <n-descriptions-item label="订单备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
+      </n-descriptions>
+      <div v-if="detailRow?.items?.length" class="detail-section">
         <h3 class="section-title">售卖详情</h3>
         <n-data-table
           :columns="detailColumns"
-          :data="detailRow?.items || []"
+          :data="detailRow.items"
           :bordered="true"
           :single-line="false"
           size="small"
         />
       </div>
-      <div class="detail-section">
+      <div v-if="detailRow?.discounts?.length" class="detail-section">
         <h3 class="section-title">优惠详情</h3>
-        <n-empty v-if="!detailRow?.discounts?.length" description="暂无数据" />
         <n-data-table
-          v-else
           :columns="discountColumns"
           :data="detailRow.discounts"
           :bordered="true"
@@ -176,6 +135,15 @@
           size="small"
         />
       </div>
+      <template #footer>
+        <n-space justify="center">
+          <n-button v-if="detailRow?.status === '完成'" size="small" @click="openRefund">
+            <template #icon><n-icon :component="RefreshOutline" /></template>
+            退款
+          </n-button>
+          <n-button @click="showDetail = false">关闭</n-button>
+        </n-space>
+      </template>
     </n-modal>
   </div>
 </template>
@@ -185,7 +153,7 @@ import { ref, computed, h } from 'vue'
 import {
   NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
   NSelect, NInput, NInputNumber, NDatePicker, NSpace, NTag, NEmpty,
-  NRadioGroup, NRadio, NSwitch
+  NRadioGroup, NRadio, NSwitch, NDescriptions, NDescriptionsItem
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { FilterOutline, DownloadOutline, PrintOutline, RefreshOutline } from '@vicons/ionicons5'
@@ -275,6 +243,11 @@ const pagination = { pageSize: 15 }
   '待支付': { type: 'warning', label: '待支付' },
 }
 
+function openDetail(row: any) {
+  detailRow.value = row
+  showDetail.value = true
+}
+
 const columns: DataTableColumns = [
   { title: '订单号', key: 'orderNo', width: 200, align: 'center' },
   { title: '所属店铺', key: 'shop', width: 120, align: 'center' },
@@ -301,7 +274,7 @@ const columns: DataTableColumns = [
     width: 70,
     align: 'center',
     render(row: any) {
-      return h(NButton, { size: 'small', type: 'info', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
+      return h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
     },
   },
 ]
@@ -453,11 +426,6 @@ function resetFilter() {
 
 function exportData() {
   console.log('导出收银订单')
-}
-
-function openDetail(row: any) {
-  detailRow.value = row
-  showDetail.value = true
 }
 
 function openRefund() {

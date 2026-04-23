@@ -119,14 +119,14 @@ const routes: RouteRecordRaw[] = [
       { path: 'workbench/devices', name: 'ShopWorkbenchDevices', component: Workbench, meta: { title: '设备监控' } },
       { path: 'workbench/revenue', name: 'ShopWorkbenchRevenue', component: Workbench, meta: { title: '营收概览' } },
       // 商品管理
-      { path: 'products', name: 'ShopProducts', component: Products, meta: { title: '商品' } },
+      { path: 'products', name: 'ShopProducts', component: Products, meta: { title: '实物商品' } },
       { path: 'products/add', name: 'ShopProductAdd', component: ProductDetail, meta: { title: '添加商品' } },
       { path: 'products/:id', name: 'ShopProductDetail', component: ProductDetail, meta: { title: '编辑商品' } },
-      { path: 'products/inventory', name: 'ShopProductsInventory', component: Products, meta: { title: '库存管理' } },
+      { path: 'products/inventory', name: 'ShopProductsInventory', component: Products, meta: { title: '实物库存管理' } },
       // 运营管理
       { path: 'recharge', name: 'ShopRecharge', component: Recharge, meta: { title: '充值套餐' } },
       { path: 'packages', name: 'ShopPackages', component: Packages, meta: { title: '套票' } },
-      { path: 'single-consumption', name: 'ShopSingleConsumption', component: SingleConsumption, meta: { title: '单次消费' } },
+      { path: 'single-consumption', name: 'ShopSingleConsumption', component: SingleConsumption, meta: { title: '单次消费项目' } },
       { path: 'coupons', name: 'ShopCoupons', component: ShopCoupons, meta: { title: '优惠券' } },
       { path: 'promotions', name: 'ShopPromotions', component: Promotions, meta: { title: '促销' } },
       { path: 'gifts', name: 'ShopGifts', component: Gifts, meta: { title: '活动赠送' } },

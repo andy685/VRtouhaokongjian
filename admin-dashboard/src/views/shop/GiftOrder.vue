@@ -73,18 +73,22 @@
     </n-drawer>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="订单详情" style="width: 520px;" :bordered="false">
-      <n-descriptions :column="1" label-placement="left" label-style="width: 100px; font-weight: 500;">
-        <n-descriptions-item label="订单号">{{ detailData?.orderNo }}</n-descriptions-item>
-        <n-descriptions-item label="会员">{{ detailData?.member }}</n-descriptions-item>
-        <n-descriptions-item label="活动名称">{{ detailData?.activityName }}</n-descriptions-item>
+    <n-modal v-model:show="showDetailModal" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
+      <n-descriptions v-if="detailData" :column="2" bordered label-placement="left" size="small">
+        <n-descriptions-item label="订单号">{{ detailData.orderNo }}</n-descriptions-item>
+        <n-descriptions-item label="所属店铺">{{ shopOptions.find(o => o.value === detailData.shop)?.label || detailData.shop }}</n-descriptions-item>
+        <n-descriptions-item label="会员">{{ detailData.member }}</n-descriptions-item>
+        <n-descriptions-item label="活动名称">{{ detailData.activityName }}</n-descriptions-item>
         <n-descriptions-item label="赠送类型">
-          <n-tag :type="getGiftTypeTag(detailData?.giftType)" size="small">{{ detailData?.giftType }}</n-tag>
+          <n-tag :type="getGiftTypeTag(detailData.giftType)" size="small">{{ detailData.giftType }}</n-tag>
         </n-descriptions-item>
-        <n-descriptions-item label="赠送内容">{{ detailData?.giftContent }}</n-descriptions-item>
-        <n-descriptions-item label="赠送价值">{{ detailData?.giftValue }}</n-descriptions-item>
-        <n-descriptions-item label="创建时间">{{ detailData?.createTime }}</n-descriptions-item>
+        <n-descriptions-item label="赠送价值">{{ detailData.giftValue }}</n-descriptions-item>
+        <n-descriptions-item label="创建时间" :span="2">{{ detailData.createTime }}</n-descriptions-item>
       </n-descriptions>
+      <div v-if="detailData" class="detail-items-section">
+        <h3 class="section-title">赠送明细</h3>
+        <n-data-table :columns="itemColumns" :data="[{ name: detailData.giftContent, type: detailData.giftType, value: detailData.giftValue }]" :bordered="true" :single-line="false" size="small" />
+      </div>
       <template #footer>
         <n-space justify="center">
           <n-button @click="showDetailModal = false">关闭</n-button>
@@ -243,6 +247,12 @@ const filteredData = computed(() => {
 
 const pagination = { pageSize: 10 }
 
+const itemColumns: DataTableColumns = [
+  { title: '赠送内容', key: 'name', minWidth: 180 },
+  { title: '类型', key: 'type', width: 100, align: 'center' },
+  { title: '价值', key: 'value', width: 100, align: 'center' },
+]
+
 // ===== 赠送类型标签颜色 =====
 function getGiftTypeTag(type?: string) {
   const map: Record<string, string> = {
@@ -252,6 +262,15 @@ function getGiftTypeTag(type?: string) {
     '优惠券': 'error',
   }
   return (type && map[type]) ? map[type] : 'default'
+}
+
+// ===== 详情弹窗 =====
+const showDetailModal = ref(false)
+const detailData = ref<GiftOrder | null>(null)
+
+function openDetail(row: GiftOrder) {
+  detailData.value = row
+  showDetailModal.value = true
 }
 
 // ===== 表格列 =====
@@ -272,19 +291,10 @@ const columns: DataTableColumns<GiftOrder> = [
   {
     title: '操作', key: 'actions', width: 90, align: 'center',
     render(row) {
-      return h(NButton, { type: 'primary', size: 'small', onClick: () => openDetail(row) }, { default: () => '详情' })
+      return h(NButton, { type: 'primary', size: 'small', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
     }
   },
 ]
-
-// ===== 详情弹窗 =====
-const showDetailModal = ref(false)
-const detailData = ref<GiftOrder | null>(null)
-
-function openDetail(row: GiftOrder) {
-  detailData.value = row
-  showDetailModal.value = true
-}
 </script>
 
 <style scoped>
@@ -355,5 +365,14 @@ function openDetail(row: GiftOrder) {
 
 .table-wrapper::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+.detail-items-section {
+  margin-top: 16px;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>单次消费</h1>
+      <h1>单次消费项目</h1>
       <n-space>
         <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择门店" size="small" style="width: 180px;" clearable />
         <n-input placeholder="搜索项目名称..." size="small" style="width: 180px;" v-model:value="filterKeyword">

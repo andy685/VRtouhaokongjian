@@ -52,8 +52,8 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 520px;" :bordered="false">
-      <n-descriptions v-if="currentOrder" :columns="2" bordered size="small">
+    <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
+      <n-descriptions v-if="currentOrder" :column="2" bordered label-placement="left" size="small">
         <n-descriptions-item label="订单号">{{ currentOrder.orderNo }}</n-descriptions-item>
         <n-descriptions-item label="设备">{{ currentOrder.device }}</n-descriptions-item>
         <n-descriptions-item label="游戏/影片">{{ currentOrder.gameFilm }}</n-descriptions-item>
@@ -66,10 +66,15 @@
           <n-tag :type="statusType(currentOrder.status)" size="small">{{ currentOrder.status }}</n-tag>
         </n-descriptions-item>
       </n-descriptions>
-      <div v-if="currentOrder" style="margin-top: 16px;">
-        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">点播明细</h3>
+      <div v-if="currentOrder" class="detail-items-section">
+        <h3 class="section-title">点播明细</h3>
         <n-data-table :columns="detailColumns" :data="currentOrder.details" :bordered="true" :single-line="false" size="small" />
       </div>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showDetail = false">关闭</n-button>
+        </n-space>
+      </template>
     </n-modal>
   </div>
 </template>
@@ -107,6 +112,11 @@ function statusType(status: string) {
   }
 }
 
+function openDetail(row: any) {
+  currentOrder.value = row
+  showDetail.value = true
+}
+
 const columns: DataTableColumns = [
   { title: '订单号', key: 'orderNo', width: 160, align: 'center' },
   { title: '所属店铺', key: 'shop', width: 120, align: 'center' },
@@ -118,7 +128,7 @@ const columns: DataTableColumns = [
   { title: '会员', key: 'member', width: 130, align: 'center' },
   { title: '创建时间', key: 'createTime', width: 160, align: 'center' },
   { title: '状态', key: 'status', width: 90, align: 'center', render: (row: any) => h(NTag, { type: statusType(row.status), size: 'small' }, { default: () => row.status }) },
-  { title: '操作', key: 'action', width: 90, align: 'center', render: (row: any) => h(NButton, { type: 'primary', size: 'tiny', onClick: () => openDetail(row) }, { default: () => '详情' }) },
+  { title: '操作', key: 'action', width: 90, align: 'center', render: (row: any) => h(NButton, { type: 'primary', size: 'small', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }) },
 ]
 
 const detailColumns: DataTableColumns = [
@@ -207,11 +217,6 @@ function resetFilter() {
 function exportData() {
   console.log('导出点播系统订单')
 }
-
-function openDetail(row: any) {
-  currentOrder.value = row
-  showDetail.value = true
-}
 </script>
 
 <style scoped>
@@ -229,5 +234,14 @@ function openDetail(row: any) {
   font-weight: 600;
   color: #333;
   margin: 0;
+}
+.detail-items-section {
+  margin-top: 16px;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 </style>

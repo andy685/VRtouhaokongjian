@@ -61,6 +61,57 @@
       <n-data-table :columns="columns" :data="tableData" :pagination="pagination" />
     </n-card>
 
+    <!-- 手动赠送弹窗 -->
+    <n-modal v-model:show="showManualGiftModal" preset="card" title="手动赠送" style="width: 520px;">
+      <n-form label-placement="left" label-width="90px">
+        <n-form-item label="活动名称">
+          <n-input :value="manualGiftActivity?.name" disabled />
+        </n-form-item>
+        <n-form-item label="赠送内容">
+          <div class="gift-preview">
+            <n-tag v-if="manualGiftActivity?.giftDeposit > 0" size="small" type="success">预存款 ¥{{ manualGiftActivity?.giftDeposit }}</n-tag>
+            <n-tag v-if="manualGiftActivity?.giftPoints > 0" size="small" type="info">积分 {{ manualGiftActivity?.giftPoints }}</n-tag>
+            <n-tag v-if="manualGiftActivity?.giftTimes > 0" size="small" type="warning">次数 {{ manualGiftActivity?.giftTimes }}</n-tag>
+          </div>
+        </n-form-item>
+        <n-form-item label="发放对象" required>
+          <n-radio-group v-model:value="manualGiftTargetType">
+            <n-space>
+              <n-radio value="member">指定会员</n-radio>
+              <n-radio value="phone">输入手机号</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item v-if="manualGiftTargetType === 'member'" label="选择会员" required>
+          <n-select
+            v-model:value="manualGiftMembers"
+            multiple
+            filterable
+            placeholder="搜索会员姓名/手机号"
+            :options="memberOptions"
+            :max-tag-count="3"
+          />
+        </n-form-item>
+        <n-form-item v-if="manualGiftTargetType === 'phone'" label="手机号" required>
+          <n-input
+            v-model:value="manualGiftPhones"
+            type="textarea"
+            placeholder="输入手机号，多个用换行或逗号分隔"
+            :rows="4"
+          />
+        </n-form-item>
+        <n-form-item label="发放备注">
+          <n-input v-model:value="manualGiftRemark" placeholder="可选填备注信息" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showManualGiftModal = false">取消</n-button>
+          <n-button type="primary" @click="handleManualGiftSubmit">确认赠送</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
     <!-- 新增/编辑赠送活动弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
@@ -206,7 +257,8 @@ import { ref, computed, h } from 'vue'
 import {
   NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NInputNumber, NSwitch, NTabs, NTab, NTag, NDropdown,
-  NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup, NDatePicker
+  NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup, NDatePicker,
+  useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import {
@@ -214,12 +266,51 @@ import {
   EllipsisHorizontalOutline, WalletOutline
 } from '@vicons/ionicons5'
 
+const message = useMessage()
+
 const activeTab = ref('all')
 const showModal = ref(false)
 const isEdit = ref(false)
 const modalTitle = ref('新增赠送活动')
 const filterShop = ref(null)
 const filterKeyword = ref('')
+
+// 手动赠送
+const showManualGiftModal = ref(false)
+const manualGiftActivity = ref<any>(null)
+const manualGiftTargetType = ref<'member' | 'phone'>('member')
+const manualGiftMembers = ref<string[]>([])
+const manualGiftPhones = ref('')
+const manualGiftRemark = ref('')
+
+const memberOptions = [
+  { label: '张小明 (138****1234)', value: 'm1' },
+  { label: '李小红 (139****5678)', value: 'm2' },
+  { label: '王小强 (137****9012)', value: 'm3' },
+  { label: '陈小芳 (136****3456)', value: 'm4' },
+  { label: '刘大伟 (135****7890)', value: 'm5' },
+]
+
+function openManualGift(row: any) {
+  manualGiftActivity.value = row
+  manualGiftTargetType.value = 'member'
+  manualGiftMembers.value = []
+  manualGiftPhones.value = ''
+  manualGiftRemark.value = ''
+  showManualGiftModal.value = true
+}
+
+function handleManualGiftSubmit() {
+  console.log('手动赠送:', {
+    activity: manualGiftActivity.value?.name,
+    targetType: manualGiftTargetType.value,
+    members: manualGiftMembers.value,
+    phones: manualGiftPhones.value,
+    remark: manualGiftRemark.value,
+  })
+  showManualGiftModal.value = false
+  message.success('手动赠送成功')
+}
 
 const formData = ref(getDefaultFormData())
 
@@ -312,17 +403,24 @@ const columns: DataTableColumns = [
     h(NTag, { type: row.status ? 'success' : 'warning', size: 'small' },
       { default: () => row.status ? '启用' : '停售' })
   },
-  { title: '操作', key: 'actions', width: 100, render: (row) => {
-    const options = [
-      { label: '编辑', key: 'edit' },
-      { label: row.status ? '暂停' : '启用', key: 'toggle' },
-      { type: 'divider', key: 'd1' },
-      { label: '删除', key: 'delete' }
-    ]
-    return h(NDropdown, { options, onSelect: (key) => handleAction(key, row) },
-      { default: () => h(NButton, { quaternary: true, circle: true },
-        { icon: () => h(NIcon, { component: EllipsisHorizontalOutline }) })
-      })
+  { title: '操作', key: 'actions', width: 180, render: (row) => {
+    return h(NSpace, { size: 4 }, {
+      default: () => [
+        h(NButton, { size: 'tiny', secondary: true, onClick: () => openManualGift(row) }, { default: () => '手动赠送' }),
+        h(NButton, { size: 'tiny', quaternary: true, onClick: () => handleEdit(row) }, { default: () => '编辑' }),
+        h(NDropdown, {
+          options: [
+            { label: row.status ? '暂停' : '启用', key: 'toggle' },
+            { type: 'divider', key: 'd1' },
+            { label: '删除', key: 'delete' }
+          ],
+          onSelect: (key) => handleAction(key, row)
+        }, {
+          default: () => h(NButton, { quaternary: true, circle: true, size: 'tiny' },
+            { icon: () => h(NIcon, { component: EllipsisHorizontalOutline }) })
+        })
+      ]
+    })
   }}
 ]
 
@@ -401,4 +499,5 @@ function handleSubmit() {
 .table-card { border-radius: 12px; }
 .form-hint { font-size: 12px; color: #999; }
 .condition-desc { color: #666; font-size: 14px; padding: 8px 0; }
+.gift-preview { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
