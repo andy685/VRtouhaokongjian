@@ -1,204 +1,110 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>设备管理</h1>
-      <n-space>
-        <n-button secondary @click="$router.push('/shop/workbench')">
-          <template #icon><n-icon :component="ArrowBackOutline" /></template> 返回工作台
+      <h1>设备列表</h1>
+      <n-space align="center">
+        <span style="color: #666; font-size: 14px;">请选择门店：</span>
+        <n-select v-model:value="selectedShop" :options="shopOptions" size="small" style="width: 180px;" />
+        <n-button type="primary" @click="showAddModal = true">
+          <template #icon><n-icon :component="AddOutline" /></template>
+          添加第三方设备
         </n-button>
-        <n-button type="primary">+ 添加设备</n-button>
       </n-space>
     </div>
-    
-    <!-- 设备统计 -->
-    <div class="stats-row">
-      <div class="stat-card running">
-        <div class="stat-icon">🟢</div>
-        <div class="stat-info">
-          <span class="num">{{ stats.running }}</span>
-          <span class="label">运行中</span>
-        </div>
-      </div>
-      <div class="stat-card idle">
-        <div class="stat-icon">🔵</div>
-        <div class="stat-info">
-          <span class="num">{{ stats.idle }}</span>
-          <span class="label">空闲</span>
-        </div>
-      </div>
-      <div class="stat-card fault">
-        <div class="stat-icon">🔴</div>
-        <div class="stat-info">
-          <span class="num">{{ stats.fault }}</span>
-          <span class="label">故障</span>
-        </div>
-      </div>
-      <div class="stat-card offline">
-        <div class="stat-icon">⚪</div>
-        <div class="stat-info">
-          <span class="num">{{ stats.offline }}</span>
-          <span class="label">离线</span>
-        </div>
-      </div>
-      <div class="stat-card online-rate">
-        <div class="stat-icon">📶</div>
-        <div class="stat-info">
-          <span class="num">{{ onlineRate }}%</span>
-          <span class="label">在线率</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Tab切换 -->
-    <n-tabs type="line" animated v-model:value="activeTab">
-      <n-tab-pane name="grid" tab="📱 设备网格">
-        <div class="tab-content">
-          <div class="filter-bar">
-            <n-select placeholder="区域筛选" :options="zoneOptions" size="small" style="width: 120px;" />
-            <n-select placeholder="状态筛选" :options="statusOptions" size="small" style="width: 120px;" />
-            <n-input placeholder="搜索设备ID..." size="small" style="width: 160px;">
-              <template #prefix><n-icon :component="SearchOutline" /></template>
-            </n-input>
-          </div>
+    <n-data-table
+      :columns="columns"
+      :data="filteredData"
+      :pagination="pagination"
+      :bordered="false"
+      striped
+      size="medium"
+    />
 
-          <div class="device-grid">
-            <div 
-              v-for="device in devices" 
-              :key="device.id"
-              class="device-card"
-              :class="[`status-${device.status}`]"
-              @click="showDeviceModal(device)"
-            >
-              <div class="device-status-dot"></div>
-              <div class="device-id">{{ device.id }}</div>
-              
-              <template v-if="device.status === 'running'">
-                <div class="device-game">{{ device.currentGame }}</div>
-                <div class="device-timer">{{ device.timeLeft }}</div>
-                <div class="device-progress">
-                  <div class="progress-bar" :style="{ width: device.progress + '%' }"></div>
-                </div>
-                <div class="device-member">{{ device.member }}</div>
-              </template>
-              
-              <template v-else-if="device.status === 'idle'">
-                <div class="device-state-text idle">空闲中</div>
-              </template>
-              
-              <template v-else-if="device.status === 'fault'">
-                <div class="device-state-text fault">{{ device.faultReason }}</div>
-              </template>
-              
-              <template v-else>
-                <div class="device-state-text offline">离线</div>
-              </template>
-            </div>
-          </div>
-        </div>
-      </n-tab-pane>
+    <!-- 添加第三方设备弹窗 -->
+    <n-modal v-model:show="showAddModal" preset="card" title="增加第三方设备" style="width: 520px;" :bordered="false">
+      <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="120">
+        <n-form-item label="门店选择" path="shop">
+          <n-select v-model:value="addForm.shop" :options="shopOptions.filter(s => s.value !== 'all')" placeholder="请选择" />
+        </n-form-item>
+        <n-form-item label="设备名称" path="name">
+          <n-input v-model:value="addForm.name" placeholder="请输入设备名称" />
+        </n-form-item>
+        <n-form-item label="播放影片单价" path="price">
+          <n-input-number v-model:value="addForm.price" :min="0" :precision="2" placeholder="请输入单价" style="width: 100%;" />
+        </n-form-item>
+        <n-form-item label="播放影片币数" path="coins">
+          <n-input-number v-model:value="addForm.coins" :min="0" placeholder="请输入币数" style="width: 100%;" />
+        </n-form-item>
+        <n-form-item label="描述" path="desc">
+          <n-input
+            v-model:value="addForm.desc"
+            type="textarea"
+            placeholder="请描述"
+            :maxlength="50"
+            show-count
+            :rows="4"
+          />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="center" style="width: 100%;">
+          <n-button type="primary" style="width: 160px;" @click="handleAdd">增加</n-button>
+        </n-space>
+      </template>
+    </n-modal>
 
-      <n-tab-pane name="list" tab="📋 设备列表">
-        <div class="tab-content">
-          <n-data-table :columns="columns" :data="deviceListData" :pagination="{ pageSize: 12 }" striped />
-        </div>
-      </n-tab-pane>
+    <!-- 详情弹窗 -->
+    <n-modal v-model:show="showDetailModal" preset="card" title="设备详情" style="width: 520px;" :bordered="false">
+      <n-descriptions v-if="currentDevice" label-placement="left" :column="2" bordered>
+        <n-descriptions-item label="门店">{{ currentDevice.shop }}</n-descriptions-item>
+        <n-descriptions-item label="设备类型">{{ currentDevice.type }}</n-descriptions-item>
+        <n-descriptions-item label="设备名称">{{ currentDevice.name }}</n-descriptions-item>
+        <n-descriptions-item label="设备Token">{{ currentDevice.token }}</n-descriptions-item>
+        <n-descriptions-item label="状态">
+          <n-tag :type="currentDevice.status === 'enabled' ? 'success' : 'error'" size="small">
+            {{ currentDevice.status === 'enabled' ? '启用' : '禁用' }}
+          </n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="第三方设备">
+          <n-tag :type="currentDevice.isThirdParty ? 'error' : 'default'" size="small">
+            {{ currentDevice.isThirdParty ? '是' : '否' }}
+          </n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="是否过保">
+          <n-tag :type="currentDevice.isExpired ? 'success' : 'default'" size="small">
+            {{ currentDevice.isExpired ? '是' : '否' }}
+          </n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="试用状态">{{ currentDevice.trialStatus || '--' }}</n-descriptions-item>
+      </n-descriptions>
+    </n-modal>
 
-      <n-tab-pane name="control" tab="🎮 远程控制">
-        <div class="tab-content">
-          <div class="control-info">
-            <n-alert type="info" :show-icon="true">
-              选择左侧设备卡片进入远程控制模式，可执行远程重启、语音喊话、强制结束等操作
-            </n-alert>
-          </div>
-
-          <div class="control-grid" v-if="selectedDevice">
-            <div class="control-card">
-              <div class="control-device-header">
-                <span class="device-id">{{ selectedDevice.id }}</span>
-                <n-tag :type="statusMap[selectedDevice.status].type" size="small">{{ statusMap[selectedDevice.status].label }}</n-tag>
-              </div>
-              
-              <div class="control-info-grid">
-                <div class="info-item">
-                  <span class="label">当前游戏</span>
-                  <span class="value">{{ selectedDevice.currentGame || '-' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">剩余时间</span>
-                  <span class="value">{{ selectedDevice.timeLeft || '-' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">当前会员</span>
-                  <span class="value">{{ selectedDevice.member || '-' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">设备温度</span>
-                  <span class="value">{{ selectedDevice.temp || '38.5' }}°C</span>
-                </div>
-              </div>
-
-              <div class="control-actions">
-                <h4>远程控制</h4>
-                <n-grid :cols="3" :x-gap="12" :y-gap="12">
-                  <n-gi>
-                    <n-button block type="warning" secondary @click="remoteRestart">
-                      <template #icon><n-icon :component="RefreshOutline" /></template>
-                      远程重启
-                    </n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button block type="error" secondary @click="forceStop">
-                      <template #icon><n-icon :component="StopOutline" /></template>
-                      强制结束
-                    </n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button block type="info" secondary @click="voiceBroadcast">
-                      <template #icon><n-icon :component="MegaphoneOutline" /></template>
-                      语音喊话
-                    </n-button>
-                  </n-gi>
-                </n-grid>
-              </div>
-
-              <div class="voice-modal" v-if="showVoiceModal">
-                <n-input v-model:value="voiceText" type="textarea" placeholder="输入要广播的内容..." />
-                <n-space justify="end" style="margin-top: 12px;">
-                  <n-button @click="showVoiceModal = false">取消</n-button>
-                  <n-button type="primary" @click="sendVoice">发送广播</n-button>
-                </n-space>
-              </div>
-            </div>
-          </div>
-
-          <div class="control-empty" v-else>
-            <n-icon :component="GameControllerOutline" size="64" color="#e2e8f0" />
-            <p>请从上方「设备网格」选择一个设备</p>
-          </div>
-        </div>
-      </n-tab-pane>
-    </n-tabs>
-
-    <!-- 设备详情弹窗 -->
-    <n-modal v-model:show="showModal" preset="card" :title="`设备 ${selectedDevice?.id || ''} 详情`" style="width: 540px;" :bordered="false">
-      <template v-if="selectedDevice">
-        <n-descriptions label-placement="left" :column="2" bordered>
-          <n-descriptions-item label="设备ID">{{ selectedDevice.id }}</n-descriptions-item>
-          <n-descriptions-item label="当前状态">
-            <n-tag :type="statusMap[selectedDevice.status].type" size="small">{{ statusMap[selectedDevice.status].label }}</n-tag>
-          </n-descriptions-item>
-          <n-descriptions-item label="区域">{{ selectedDevice.zone }}</n-descriptions-item>
-          <n-descriptions-item label="今日使用次数">{{ selectedDevice.todayUsage }}</n-descriptions-item>
-          <n-descriptions-item v-if="selectedDevice.currentGame" label="运行游戏">{{ selectedDevice.currentGame }}</n-descriptions-item>
-          <n-descriptions-item v-if="selectedDevice.member" label="当前会员">{{ selectedDevice.member }}</n-descriptions-item>
-          <n-descriptions-item v-if="selectedDevice.timeLeft" label="剩余时间">{{ selectedDevice.timeLeft }}</n-descriptions-item>
-          <n-descriptions-item v-if="selectedDevice.faultReason" label="故障原因">{{ selectedDevice.faultReason }}</n-descriptions-item>
-        </n-descriptions>
-        
-        <n-space justify="center" style="margin-top: 20px;">
-          <n-button type="warning" secondary @click="remoteRestart">远程重启</n-button>
-          <n-button type="error" secondary @click="forceStop">结束体验</n-button>
-          <n-button type="info" secondary @click="voiceBroadcast">语音喊话</n-button>
+    <!-- 编辑弹窗 -->
+    <n-modal v-model:show="showEditModal" preset="card" title="编辑设备" style="width: 480px;" :bordered="false">
+      <n-form v-if="currentDevice" label-placement="left" label-width="100">
+        <n-form-item label="设备名称">
+          <n-input v-model:value="editForm.name" />
+        </n-form-item>
+        <n-form-item label="设备类型">
+          <n-input v-model:value="editForm.type" />
+        </n-form-item>
+        <n-form-item label="状态">
+          <n-radio-group v-model:value="editForm.status">
+            <n-space>
+              <n-radio value="enabled">启用</n-radio>
+              <n-radio value="disabled">禁用</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item label="第三方设备">
+          <n-switch v-model:value="editForm.isThirdParty" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showEditModal = false">取消</n-button>
+          <n-button type="primary" @click="handleEdit">保存</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -208,150 +114,243 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NButton, NIcon, NSpace, NTabs, NTabPane, NDataTable, NTag,
-  NModal, NDescriptions, NDescriptionsItem, NGrid, NGi, NInput,
-  NAlert, NSelect
+  NDataTable, NButton, NIcon, NSpace, NSelect, NModal, NForm, NFormItem,
+  NInput, NInputNumber, NTag, NDescriptions, NDescriptionsItem, NRadioGroup, NRadio, NSwitch,
+  type DataTableColumns, type FormInst, type FormRules
 } from 'naive-ui'
-import {
-  ArrowBackOutline, SearchOutline, RefreshOutline, StopOutline,
-  MegaphoneOutline, GameControllerOutline
-} from '@vicons/ionicons5'
+import { AddOutline, PencilOutline, EyeOutline, TrashOutline, FilmOutline } from '@vicons/ionicons5'
 
-const activeTab = ref('grid')
-const showModal = ref(false)
-const showVoiceModal = ref(false)
-const selectedDevice = ref<any>(null)
-const voiceText = ref('')
-
-const zoneOptions = [
-  { label: '全部区域', value: 'all' },
-  { label: 'A区', value: 'A' },
-  { label: 'B区', value: 'B' },
-  { label: 'C区', value: 'C' },
-]
-
-const statusOptions = [
-  { label: '全部状态', value: 'all' },
-  { label: '运行中', value: 'running' },
-  { label: '空闲', value: 'idle' },
-  { label: '故障', value: 'fault' },
-  { label: '离线', value: 'offline' },
-]
-
-const statusMap: Record<string, { type: string, label: string }> = {
-  running: { type: 'success', label: '运行中' },
-  idle: { type: 'info', label: '空闲' },
-  fault: { type: 'error', label: '故障' },
-  offline: { type: 'default', label: '离线' }
+interface Device {
+  id: number
+  shop: string
+  type: string
+  name: string
+  token: string
+  status: 'enabled' | 'disabled'
+  isThirdParty: boolean
+  isExpired: boolean
+  trialStatus: string
 }
 
-const devices = ref([
-  { id: 'A01', zone: 'A区', status: 'running', currentGame: '过山车VR', timeLeft: '05:23', progress: 45, member: '张三 (黄金)', faultReason: '', todayUsage: 28, temp: '36.8' },
-  { id: 'A02', zone: 'A区', status: 'running', currentGame: '恐怖医院', timeLeft: '12:45', progress: 72, member: '李四 (白银)', faultReason: '', todayUsage: 22, temp: '38.2' },
-  { id: 'A03', zone: 'A区', status: 'running', currentGame: '极速赛车', timeLeft: '03:12', progress: 28, member: '散客', faultReason: '', todayUsage: 18, temp: '35.9' },
-  { id: 'A04', zone: 'A区', status: 'idle', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '', todayUsage: 25, temp: '34.5' },
-  { id: 'A05', zone: 'A区', status: 'fault', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '控制器异常', todayUsage: 12, temp: '42.1' },
-  { id: 'A06', zone: 'B区', status: 'running', currentGame: '海洋世界', timeLeft: '08:56', progress: 58, member: '王五 (普通会员)', faultReason: '', todayUsage: 30, temp: '37.2' },
-  { id: 'A07', zone: 'B区', status: 'running', currentGame: '恐龙王国', timeLeft: '06:34', progress: 48, member: '赵六 (黄金)', faultReason: '', todayUsage: 26, temp: '36.5' },
-  { id: 'A08', zone: 'B区', status: 'idle', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '', todayUsage: 20, temp: '33.8' },
-  { id: 'A09', zone: 'B区', status: 'running', currentGame: '太空漫步', timeLeft: '04:21', progress: 35, member: '孙七 (黄金)', faultReason: '', todayUsage: 24, temp: '37.8' },
-  { id: 'A10', zone: 'B区', status: 'running', currentGame: 'CS对战', timeLeft: '02:58', progress: 22, member: '散客', faultReason: '', todayUsage: 32, temp: '39.1' },
-  { id: 'A11', zone: 'C区', status: 'running', currentGame: '音乐节VR', timeLeft: '11:33', progress: 68, member: '钱八 (白银)', faultReason: '', todayUsage: 15, temp: '36.2' },
-  { id: 'A12', zone: 'C区', status: 'idle', currentGame: '', timeLeft: '', progress: 0, member: '', faultReason: '', todayUsage: 18, temp: '34.0' },
+const selectedShop = ref('all')
+const showAddModal = ref(false)
+const showDetailModal = ref(false)
+const showEditModal = ref(false)
+const currentDevice = ref<Device | null>(null)
+const addFormRef = ref<FormInst | null>(null)
+
+const addForm = ref({ name: '', shop: '', price: 20.00, coins: 3, desc: '' })
+const editForm = ref<Partial<Device>>({})
+
+const addRules: FormRules = {
+  shop: { required: true, message: '请选择门店', trigger: 'change' },
+  name: { required: true, message: '请输入设备名称', trigger: 'blur' },
+  price: { required: true, type: 'number', message: '请输入播放影片单价', trigger: 'blur' },
+}
+
+const shopOptions = [
+  { label: '全部门店', value: 'all' },
+  { label: '利民街小展厅', value: '利民街小展厅' },
+  { label: '卓远萝岗区店', value: '卓远萝岗区店' },
+  { label: '卓远萧山区店', value: '卓远萧山区店' },
+  { label: '卓远亚运城店', value: '卓远亚运城店' },
+]
+
+const deviceData = ref<Device[]>([
+  { id: 1, shop: '利民街小展厅', type: '第三方设备', name: '扭蛋', token: 'token_abc123', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--' },
+  { id: 2, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_def456', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 3, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_ghi789', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 4, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_jkl012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 5, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_mno345', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 6, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_pqr678', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 7, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_stu901', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 8, shop: '利民街小展厅', type: '暗黑机甲', name: '暗黑机甲2G版', token: 'token_vwx234', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 9, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_yza567', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 10, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_bcd890', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 11, shop: '利民街小展厅', type: '幻影飞碟', name: '幻影飞碟（国外）', token: 'token_efg123', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 12, shop: '卓远亚运城店', type: '悬浮骑兵', name: '悬浮骑兵-A01', token: 'token_hij456', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--' },
+  { id: 13, shop: '卓远亚运城店', type: '暗黑行者', name: '暗黑行者-B02', token: 'token_klm789', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--' },
+  { id: 14, shop: '卓远萧山区店', type: '幻影飞碟', name: '幻影飞碟-C01', token: 'token_nop012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是' },
+  { id: 15, shop: '卓远萝岗区店', type: '第三方设备', name: '体感游戏机', token: 'token_qrs345', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--' },
 ])
 
-const stats = computed(() => ({
-  running: devices.value.filter(d => d.status === 'running').length,
-  idle: devices.value.filter(d => d.status === 'idle').length,
-  fault: devices.value.filter(d => d.status === 'fault').length,
-  offline: devices.value.filter(d => d.status === 'offline').length,
-}))
+const filteredData = computed(() => {
+  if (selectedShop.value === 'all') return deviceData.value
+  return deviceData.value.filter(d => d.shop === selectedShop.value)
+})
 
-const onlineRate = computed(() => Math.round((stats.value.running + stats.value.idle) / devices.value.length * 100))
-
-const columns = [
-  { title: '设备ID', key: 'id', width: 100 },
-  { title: '区域', key: 'zone', width: 80 },
-  { title: '状态', key: 'status', width: 100, render(row: any) {
-    return h(NTag, { type: statusMap[row.status].type, size: 'small', bordered: true }, () => statusMap[row.status].label)
-  }},
-  { title: '当前游戏', key: 'currentGame', render(row: any) { return row.currentGame || '-'; } },
-  { title: '当前会员', key: 'member', render(row: any) { return row.member || '-'; } },
-  { title: '今日使用', key: 'todayUsage', width: 100 },
-  { title: '操作', key: 'actions', width: 140, render: () => h(NSpace, null, { default: () => [h(NButton, { size: 'tiny', secondary: true }, () => '详情'), h(NButton, { size: 'tiny', quaternary: true }, () => '控制')] }) },
+const columns: DataTableColumns<Device> = [
+  { title: '门店', key: 'shop', minWidth: 140 },
+  { title: '设备类型', key: 'type', minWidth: 120 },
+  {
+    title: 'token/状态/设备名',
+    key: 'name',
+    minWidth: 180,
+    render(row) {
+      return h(NSpace, { align: 'center', size: 8 }, {
+        default: () => [
+          h(NTag, { size: 'tiny', type: 'info', bordered: true }, () => 'token'),
+          h('span', { style: 'font-weight: 500; color: #333;' }, row.name)
+        ]
+      })
+    }
+  },
+  {
+    title: '状态',
+    key: 'status',
+    width: 90,
+    align: 'center',
+    render(row) {
+      return h(NTag, {
+        size: 'small',
+        type: row.status === 'enabled' ? 'success' : 'error',
+        bordered: true
+      }, () => row.status === 'enabled' ? '启用' : '禁用')
+    }
+  },
+  {
+    title: '第三方设备',
+    key: 'isThirdParty',
+    width: 100,
+    align: 'center',
+    render(row) {
+      return h(NTag, {
+        size: 'small',
+        type: row.isThirdParty ? 'error' : 'default',
+        bordered: true
+      }, () => row.isThirdParty ? '是' : '否')
+    }
+  },
+  {
+    title: '是否过保',
+    key: 'isExpired',
+    width: 90,
+    align: 'center',
+    render(row) {
+      return h(NTag, {
+        size: 'small',
+        type: row.isExpired ? 'success' : 'default',
+        bordered: true
+      }, () => row.isExpired ? '是' : '否')
+    }
+  },
+  {
+    title: '试用状态',
+    key: 'trialStatus',
+    width: 90,
+    align: 'center',
+    render(row) {
+      return h('span', { style: 'color: #999;' }, row.trialStatus || '--')
+    }
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 160,
+    fixed: 'right',
+    align: 'center',
+    render(row) {
+      return h(NSpace, { justify: 'center', size: 4 }, {
+        default: () => [
+          h(NButton, {
+            size: 'tiny',
+            text: true,
+            type: 'primary',
+            onClick: () => openEdit(row)
+          }, { default: () => '编辑', icon: () => h(NIcon, { component: PencilOutline, size: 14 }) }),
+          h(NButton, {
+            size: 'tiny',
+            text: true,
+            type: 'info',
+            onClick: () => openDetail(row)
+          }, { default: () => '详情', icon: () => h(NIcon, { component: EyeOutline, size: 14 }) }),
+          row.isThirdParty
+            ? h(NButton, {
+                size: 'tiny',
+                text: true,
+                type: 'error',
+                onClick: () => handleDelete(row)
+              }, { default: () => '删除', icon: () => h(NIcon, { component: TrashOutline, size: 14 }) })
+            : h(NButton, {
+                size: 'tiny',
+                text: true,
+                type: 'primary',
+                onClick: () => handleFilms(row)
+              }, { default: () => '已购影片', icon: () => h(NIcon, { component: FilmOutline, size: 14 }) })
+        ]
+      })
+    }
+  }
 ]
 
-const deviceListData = devices.value
-
-function showDeviceModal(device: any) {
-  selectedDevice.value = device
-  showModal.value = true
+const pagination = {
+  pageSize: 10,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50],
 }
 
-function remoteRestart() { console.log('远程重启', selectedDevice.value?.id) }
-function forceStop() { console.log('强制结束', selectedDevice.value?.id) }
-function voiceBroadcast() { showVoiceModal.value = true }
-function sendVoice() {
-  console.log('发送语音广播:', voiceText.value)
-  showVoiceModal.value = false
-  voiceText.value = ''
+function openDetail(row: Device) {
+  currentDevice.value = row
+  showDetailModal.value = true
+}
+
+function openEdit(row: Device) {
+  currentDevice.value = row
+  editForm.value = { ...row }
+  showEditModal.value = true
+}
+
+function handleEdit() {
+  if (currentDevice.value && editForm.value) {
+    const idx = deviceData.value.findIndex(d => d.id === currentDevice.value!.id)
+    if (idx !== -1) {
+      deviceData.value[idx] = { ...deviceData.value[idx], ...editForm.value } as Device
+    }
+  }
+  showEditModal.value = false
+}
+
+function handleAdd() {
+  addFormRef.value?.validate((errors) => {
+    if (errors) return
+    deviceData.value.unshift({
+      id: Date.now(),
+      shop: addForm.value.shop,
+      type: '第三方设备',
+      name: addForm.value.name,
+      token: `token_${Math.random().toString(36).slice(2, 10)}`,
+      status: 'enabled',
+      isThirdParty: true,
+      isExpired: false,
+      trialStatus: '--'
+    })
+    showAddModal.value = false
+    addForm.value = { name: '', shop: '', price: 20.00, coins: 3, desc: '' }
+  })
+}
+
+function handleDelete(row: Device) {
+  const idx = deviceData.value.findIndex(d => d.id === row.id)
+  if (idx !== -1) deviceData.value.splice(idx, 1)
+}
+
+function handleFilms(row: Device) {
+  console.log('查看已购影片', row.name)
 }
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-
-.stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: white; border-radius: 14px; padding: 18px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 14px; }
-.stat-icon { font-size: 28px; }
-.stat-info .num { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 700; display: block; }
-.stat-info .label { font-size: 12px; color: var(--text-muted); }
-.stat-card.running .num { color: #10B981; }
-.stat-card.idle .num { color: #3B82F6; }
-.stat-card.fault .num { color: #EF4444; }
-.stat-card.offline .num { color: #94A3B8; }
-.stat-card.online-rate .num { color: #8B5CF6; }
-
-.tab-content { padding-top: 16px; }
-
-.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; }
-
-.device-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
-.device-card { background: white; border-radius: 14px; padding: 16px; border: 2px solid transparent; cursor: pointer; transition: all 0.25s; text-align: center; position: relative; }
-.device-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
-.device-card.status-running { border-color: rgba(16,185,129,0.3); background: linear-gradient(180deg, rgba(16,185,129,0.04), white); }
-.device-card.status-idle { border-color: rgba(59,130,246,0.2); }
-.device-card.status-fault { border-color: rgba(239,68,68,0.3); background: linear-gradient(180deg, rgba(239,68,68,0.04), white); }
-.device-card.status-offline { opacity: 0.5; }
-
-.device-status-dot { width: 10px; height: 10px; border-radius: 50%; position: absolute; top: 12px; right: 12px; }
-.status-running .device-status-dot { background: #10B981; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
-.status-idle .device-status-dot { background: #3B82F6; }
-.status-fault .device-status-dot { background: #EF4444; animation: pulse 1.5s infinite; }
-.status-offline .device-status-dot { background: #94A3B8; }
-
-.device-id { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-.device-game { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-.device-timer { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; color: #10B981; }
-.device-progress { height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; margin: 8px 0; }
-.progress-bar { height: 100%; background: linear-gradient(90deg, #10B981, #34D399); }
-.device-member { font-size: 11px; color: var(--text-muted); }
-.device-state-text { font-size: 14px; font-weight: 500; margin-top: 16px; }
-.device-state-text.idle { color: #3B82F6; }
-.device-state-text.fault { color: #EF4444; }
-.device-state-text.offline { color: #94A3B8; }
-
-.control-info { margin-bottom: 20px; }
-.control-grid { max-width: 500px; }
-.control-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
-.control-device-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9; }
-.control-device-header .device-id { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.control-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
-.info-item .label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; }
-.info-item .value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.control-actions h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
-.voice-modal { background: #f8fafc; padding: 16px; border-radius: 10px; margin-top: 16px; }
-.control-empty { text-align: center; padding: 80px 0; }
-.control-empty p { color: var(--text-muted); margin-top: 16px; }
+.page-container { padding: 24px; }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.page-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
 </style>
