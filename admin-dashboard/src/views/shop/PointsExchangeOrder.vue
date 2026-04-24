@@ -1,7 +1,7 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>积分兑换订单</h1>
+      <h1>游戏币兑换订单</h1>
       <n-space>
         <n-button type="primary" size="small" @click="showFilter = true">
           <template #icon>
@@ -66,8 +66,8 @@
         <n-descriptions-item label="兑换类型">
           <n-tag :color="{ color: exchangeTypeMap[detailData.exchangeType]?.color || '#999', textColor: '#fff' }" size="small">{{ exchangeTypeMap[detailData.exchangeType]?.label || detailData.exchangeType }}</n-tag>
         </n-descriptions-item>
-        <n-descriptions-item label="兑换前积分">{{ detailData.pointsBefore }}</n-descriptions-item>
-        <n-descriptions-item label="兑换后积分">{{ detailData.pointsAfter }}</n-descriptions-item>
+        <n-descriptions-item label="兑换前游戏币">{{ detailData.pointsBefore }}</n-descriptions-item>
+        <n-descriptions-item label="兑换后游戏币">{{ detailData.pointsAfter }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="statusMap[detailData.status]?.type || 'default'" size="small">{{ statusMap[detailData.status]?.label || detailData.status }}</n-tag>
         </n-descriptions-item>
@@ -140,7 +140,7 @@ const exchangeTypeMap: Record<string, { label: string; color: string }> = {
 const itemColumns: DataTableColumns = [
   { title: '兑换商品', key: 'product', minWidth: 160, align: 'center' },
   { title: '兑换类型', key: 'exchangeType', width: 120, align: 'center' },
-  { title: '消耗积分', key: 'pointsUsed', width: 100, align: 'center' },
+  { title: '消耗游戏币', key: 'pointsUsed', width: 100, align: 'center' },
 ]
 
 const columns: DataTableColumns = [
@@ -158,9 +158,9 @@ const columns: DataTableColumns = [
     },
   },
   { title: '兑换商品', key: 'product', width: 160, align: 'center' },
-  { title: '消耗积分', key: 'pointsUsed', width: 100, align: 'center' },
-  { title: '兑换前积分', key: 'pointsBefore', width: 100, align: 'center' },
-  { title: '兑换后积分', key: 'pointsAfter', width: 100, align: 'center' },
+  { title: '消耗游戏币', key: 'pointsUsed', width: 100, align: 'center' },
+  { title: '兑换前游戏币', key: 'pointsBefore', width: 100, align: 'center' },
+  { title: '兑换后游戏币', key: 'pointsAfter', width: 100, align: 'center' },
   { title: '创建时间', key: 'createTime', width: 160, align: 'center' },
   {
     title: '状态',
@@ -212,7 +212,7 @@ function resetFilter() {
 }
 
 function exportData() {
-  console.log('导出积分兑换订单')
+  console.log('导出游戏币兑换订单')
 }
 </script>
 

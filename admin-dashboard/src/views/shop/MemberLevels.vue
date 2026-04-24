@@ -44,7 +44,7 @@
             <template #suffix>%</template>
           </n-input-number>
         </n-form-item>
-        <n-form-item label="积分兑换折扣：" path="pointsDiscount">
+        <n-form-item label="游戏币兑换折扣：" path="pointsDiscount">
           <n-input-number v-model:value="formData.pointsDiscount" :min="0" :max="100" placeholder="" style="flex:1;">
             <template #suffix>%</template>
           </n-input-number>
@@ -94,7 +94,7 @@ const formRules = {
   name: { required: true, message: '请输入等级名称', trigger: 'blur' },
   consumeAmount: { required: true, type: 'number' as const, message: '请输入累计消费金额', trigger: 'blur' },
   consumeDiscount: { required: true, type: 'number' as const, message: '请输入消费折扣', trigger: 'blur' },
-  pointsDiscount: { required: true, type: 'number' as const, message: '请输入积分兑换折扣', trigger: 'blur' },
+  pointsDiscount: { required: true, type: 'number' as const, message: '请输入游戏币兑换折扣', trigger: 'blur' },
 }
 
 const modalTitle = computed(() => isEditing.value ? '编辑会员等级' : '添加会员等级')
@@ -128,7 +128,7 @@ const columns = [
     width: 130,
   },
   {
-    title: '积分兑换折扣（%）',
+    title: '游戏币兑换折扣（%）',
     key: 'pointsDiscount',
     width: 150,
   },

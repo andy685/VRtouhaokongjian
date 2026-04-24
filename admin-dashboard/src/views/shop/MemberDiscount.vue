@@ -37,7 +37,7 @@
             </n-input-number>
           </n-form-item>
 
-          <n-form-item label="积分兑换折扣：" path="pointsDiscount">
+          <n-form-item label="游戏币兑换折扣：" path="pointsDiscount">
             <n-input-number
               v-model:value="formData.pointsDiscount"
               :min="0"
@@ -89,7 +89,7 @@ const formData = reactive({
 const formRules = {
   discountType: { required: true, message: '请选择折扣方式', trigger: 'change' },
   consumeDiscount: { required: true, type: 'number' as const, message: '请输入消费折扣', trigger: 'blur' },
-  pointsDiscount: { required: true, type: 'number' as const, message: '请输入积分兑换折扣', trigger: 'blur' },
+  pointsDiscount: { required: true, type: 'number' as const, message: '请输入游戏币兑换折扣', trigger: 'blur' },
 }
 
 function goBack() {

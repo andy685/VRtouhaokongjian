@@ -198,7 +198,7 @@
           </n-gi>
           <n-gi>
             <div class="adv-item">
-              <span class="adv-label">账户积分：</span>
+              <span class="adv-label">账户游戏币：</span>
               <n-select v-model:value="advSearch.pointsOp" :options="operatorOptions" size="small" style="width: 80px;" />
               <n-input v-model:value="advSearch.pointsVal" placeholder="" size="small" style="width: 90px;" />
             </div>

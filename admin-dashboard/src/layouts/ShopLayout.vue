@@ -195,8 +195,8 @@ const menuOptions: MenuOption[] = [
       { label: '会员级别', key: '/shop/member-levels' },
       { label: '会员消费排行', key: '/shop/member-ranking' },
       { label: '会员储值变更', key: '/shop/member-balance' },
-      { label: '会员积分查询', key: '/shop/member-points-query' },
-      { label: '积分调整有效期查询', key: '/shop/member-points-adjust-log' },
+      { label: '会员游戏币查询', key: '/shop/member-points-query' },
+      { label: '游戏币调整有效期查询', key: '/shop/member-points-adjust-log' },
       { label: '会员预存次数查询', key: '/shop/member-prepaid-times-query' },
       { label: '次数调整有效查询', key: '/shop/times-adjust-log' },
     ]
@@ -231,7 +231,7 @@ const menuOptions: MenuOption[] = [
           { label: '点播系统订单', key: '/shop/ondemand-order' },
           { label: '手动扣费订单', key: '/shop/manual-deduct-order' },
           { label: '修改储值订单', key: '/shop/edit-balance-order' },
-          { label: '积分兑换订单', key: '/shop/points-exchange-order' },
+          { label: '游戏币兑换订单', key: '/shop/points-exchange-order' },
           { label: '活动赠送订单', key: '/shop/gift-order' },
         ]
       },
@@ -256,7 +256,6 @@ const menuOptions: MenuOption[] = [
           { label: '小票设置', key: '/shop/cashier-receipt' },
         ]
       },
-      { label: '积分设置', key: '/shop/points-settings' },
       {
         label: '用户管理',
         key: 'users-group',

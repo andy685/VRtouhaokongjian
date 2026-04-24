@@ -140,7 +140,7 @@ const storeOptions = [
 const deductTypeOptions = [
   { label: '储值', value: 'stored' },
   { label: '次数', value: 'times' },
-  { label: '积分', value: 'points' },
+  { label: '游戏币', value: 'points' },
 ]
 
 const displayStoreLabel = computed(() => {
@@ -217,7 +217,7 @@ function handleResetFilter() {
 const deductTypeMap: Record<string, { label: string; type: 'success' | 'warning' | 'info' }> = {
   stored: { label: '储值', type: 'success' },
   times: { label: '次数', type: 'warning' },
-  points: { label: '积分', type: 'info' },
+  points: { label: '游戏币', type: 'info' },
 }
 
 // ===== 模拟数据 =====
@@ -241,7 +241,7 @@ interface DeductOrder {
 const rawData = ref<DeductOrder[]>([
   { id: 1, orderNo: 'DK20260423001', shop: '卓远萝岗区店', member: '张三', memberPhone: '13800138001', deductType: 'stored', deductAmount: 50.00, balanceBefore: 200.00, balanceAfter: 150.00, operator: 'admin', remark: 'VR设备暗黑战场扣费', createTime: '2026-04-23 10:30:00', device: '暗黑战场舱', gameFilm: '暗黑战场' },
   { id: 2, orderNo: 'DK20260423002', shop: '卓远萧山区店', member: '李四', memberPhone: '13800138002', deductType: 'times', deductAmount: 2, balanceBefore: 10, balanceAfter: 8, operator: 'admin', remark: '幻影飞碟项目消费', createTime: '2026-04-23 11:15:00', device: '幻影飞碟舱', gameFilm: '幻影飞碟' },
-  { id: 3, orderNo: 'DK20260423003', shop: '卓远亚运城店', member: '王五', memberPhone: '13800138003', deductType: 'points', deductAmount: 500, balanceBefore: 2000, balanceAfter: 1500, operator: 'manager', remark: '星际穿越积分兑换', createTime: '2026-04-23 14:20:00', device: '星际穿越舱', gameFilm: '星际穿越' },
+  { id: 3, orderNo: 'DK20260423003', shop: '卓远亚运城店', member: '王五', memberPhone: '13800138003', deductType: 'points', deductAmount: 500, balanceBefore: 2000, balanceAfter: 1500, operator: 'manager', remark: '星际穿越游戏币兑换', createTime: '2026-04-23 14:20:00', device: '星际穿越舱', gameFilm: '星际穿越' },
   { id: 4, orderNo: 'DK20260422001', shop: '卓远文鼎路店', member: '赵六', memberPhone: '13800138004', deductType: 'stored', deductAmount: 100.00, balanceBefore: 500.00, balanceAfter: 400.00, operator: 'admin', remark: '亲子套票设备扣费', createTime: '2026-04-22 09:45:00', device: '亲子互动舱', gameFilm: '亲子乐园' },
   { id: 5, orderNo: 'DK20260422002', shop: '卓远萝岗区店', member: '孙七', memberPhone: '13800138005', deductType: 'times', deductAmount: 1, balanceBefore: 5, balanceAfter: 4, operator: 'staff01', remark: '深海探险单次消费', createTime: '2026-04-22 16:00:00', device: '深海探险舱', gameFilm: '深海探险' },
   { id: 6, orderNo: 'DK20260421001', shop: '卓远萧山区店', member: '周八', memberPhone: '13800138006', deductType: 'stored', deductAmount: 30.00, balanceBefore: 120.00, balanceAfter: 90.00, operator: 'admin', remark: '暗黑双子星补扣费用', createTime: '2026-04-21 13:10:00', device: '暗黑双子星舱', gameFilm: '暗黑双子星' },

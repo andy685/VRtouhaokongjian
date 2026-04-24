@@ -99,7 +99,7 @@
           </n-space>
         </n-form-item>
         <template v-if="rulesForm.enableGift">
-          <n-form-item label="赠送积分">
+          <n-form-item label="赠送游戏币">
             <n-input-number v-model:value="rulesForm.giftPoints" :min="0" style="width: 150px;">
               <template #suffix>分</template>
             </n-input-number>

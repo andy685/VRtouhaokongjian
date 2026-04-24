@@ -95,12 +95,12 @@
               />
             </div>
           </n-form-item>
-          <n-form-item label="账户积分">
+          <n-form-item label="账户游戏币">
             <div class="range-input">
               <n-select v-model:value="filterForm.pointsOp" :options="compareOptions" style="width: 70px;" />
               <n-input
                 v-model:value="filterForm.pointsVal"
-                placeholder="请输入账户积分"
+                placeholder="请输入账户游戏币"
                 clearable
                 style="flex:1;"
               />
@@ -240,7 +240,7 @@ const columns = [
     align: 'center' as const,
   },
   {
-    title: '积分',
+    title: '游戏币',
     key: 'points',
     width: 80,
     render(row: any) {
@@ -559,7 +559,7 @@ function handleSearch() {
 }
 
 function handleExport() {
-  const headers = ['姓名', '昵称', '开卡店铺', '手机', '预存金额', '预存次数', '积分', '累计消费金额', '绑定微信', '最后消费时间', '开通时间', '状态']
+  const headers = ['姓名', '昵称', '开卡店铺', '手机', '预存金额', '预存次数', '游戏币', '累计消费金额', '绑定微信', '最后消费时间', '开通时间', '状态']
   const rows = filteredTableData.value.map(row => [
     row.name, row.nickname, row.storeName, row.phone,
     row.prepaidAmount, row.prepaidTimes, row.points, row.totalSpent,

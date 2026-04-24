@@ -1,32 +1,32 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>积分设置</h1>
+      <h1>游戏币设置</h1>
     </div>
 
     <!-- 基本设置 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">积分规则</div>
+        <div class="card-title">游戏币规则</div>
       </template>
       <n-form label-placement="left" label-width="160">
-        <n-form-item label="启用积分功能">
+        <n-form-item label="启用游戏币功能">
           <n-switch v-model:value="settings.enablePoints" />
         </n-form-item>
-        <n-form-item label="积分名称">
+        <n-form-item label="游戏币名称">
           <n-input v-model:value="settings.pointsName" placeholder="如：成长值" style="width: 200px;" />
         </n-form-item>
-        <n-form-item label="消费1元兑换积分">
+        <n-form-item label="消费1元兑换游戏币">
           <n-input-number v-model:value="settings.consumeRate" :min="0" :precision="1" style="width: 150px;">
-            <template #suffix>积分</template>
+            <template #suffix>游戏币</template>
           </n-input-number>
         </n-form-item>
-        <n-form-item label="100积分抵用金额">
+        <n-form-item label="100游戏币抵用金额">
           <n-input-number v-model:value="settings.exchangeRate" :min="0" :precision="2" style="width: 150px;">
             <template #prefix>¥</template>
           </n-input-number>
         </n-form-item>
-        <n-form-item label="积分有效期">
+        <n-form-item label="游戏币有效期">
           <n-input-number v-model:value="settings.validityDays" :min="0" style="width: 150px;">
             <template #suffix>天</template>
           </n-input-number>
@@ -35,50 +35,50 @@
       </n-form>
     </n-card>
 
-    <!-- 积分获取规则 -->
+    <!-- 游戏币获取规则 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">积分获取规则</div>
+        <div class="card-title">游戏币获取规则</div>
       </template>
       <n-form label-placement="left" label-width="160">
         <n-form-item label="VR消费">
           <n-input-number v-model:value="settings.vrPoints" :min="0" style="width: 150px;">
-            <template #suffix>积分/小时</template>
+            <template #suffix>游戏币/小时</template>
           </n-input-number>
         </n-form-item>
         <n-form-item label="银幕互动">
           <n-input-number v-model:value="settings.screenPoints" :min="0" style="width: 150px;">
-            <template #suffix>积分/小时</template>
+            <template #suffix>游戏币/小时</template>
           </n-input-number>
         </n-form-item>
         <n-form-item label="充值赠送">
           <n-input-number v-model:value="settings.rechargeBonus" :min="0" style="width: 150px;">
-            <template #suffix>积分/元</template>
+            <template #suffix>游戏币/元</template>
           </n-input-number>
         </n-form-item>
-        <n-form-item label="生日双倍积分">
+        <n-form-item label="生日双倍游戏币">
           <n-switch v-model:value="settings.birthdayDouble" />
         </n-form-item>
-        <n-form-item label="会员日双倍积分">
+        <n-form-item label="会员日双倍游戏币">
           <n-switch v-model:value="settings.memberDayDouble" />
         </n-form-item>
       </n-form>
     </n-card>
 
-    <!-- 积分使用规则 -->
+    <!-- 游戏币使用规则 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">积分使用规则</div>
+        <div class="card-title">游戏币使用规则</div>
       </template>
       <n-form label-placement="left" label-width="160">
-        <n-form-item label="最低兑换积分">
+        <n-form-item label="最低兑换游戏币">
           <n-input-number v-model:value="settings.minExchange" :min="0" style="width: 150px;">
-            <template #suffix>积分</template>
+            <template #suffix>游戏币</template>
           </n-input-number>
         </n-form-item>
         <n-form-item label="每日兑换上限">
           <n-input-number v-model:value="settings.dailyLimit" :min="0" style="width: 150px;">
-            <template #suffix>积分</template>
+            <template #suffix>游戏币</template>
           </n-input-number>
         </n-form-item>
         <n-form-item label="允许兑换优惠券">
@@ -106,7 +106,7 @@ import { NCard, NForm, NFormItem, NSwitch, NInputNumber, NSpace, NButton, NInput
 
 const settings = ref({
   enablePoints: true,
-  pointsName: '积分',
+  pointsName: '游戏币',
   consumeRate: 1,
   exchangeRate: 0.01,
   validityDays: 365,
@@ -128,7 +128,7 @@ function saveSettings() {
 function resetSettings() {
   settings.value = {
     enablePoints: true,
-    pointsName: '积分',
+    pointsName: '游戏币',
     consumeRate: 1,
     exchangeRate: 0.01,
     validityDays: 365,

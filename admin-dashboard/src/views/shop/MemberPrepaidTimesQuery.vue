@@ -237,7 +237,7 @@ const tableData = ref([
     remainTimes: 1,
     usedRefundTimes: 0,
     clearedTimes: 0,
-    remark: '积分兑换次数',
+    remark: '游戏币兑换次数',
   },
   {
     id: 2,

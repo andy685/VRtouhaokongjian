@@ -33,8 +33,8 @@
         <n-form-item label="播放影片单价" path="price">
           <n-input-number v-model:value="addForm.price" :min="0" :precision="2" placeholder="请输入单价" style="width: 100%;" />
         </n-form-item>
-        <n-form-item label="播放影片积分" path="coins">
-          <n-input-number v-model:value="addForm.coins" :min="0" placeholder="请输入积分" style="width: 100%;" />
+        <n-form-item label="播放影片游戏币" path="coins">
+          <n-input-number v-model:value="addForm.coins" :min="0" placeholder="请输入游戏币" style="width: 100%;" />
         </n-form-item>
         <n-form-item label="设备状态" path="status">
           <n-radio-group v-model:value="addForm.status">
@@ -82,7 +82,7 @@
           </n-tag>
         </n-descriptions-item>
         <n-descriptions-item label="播放影片单价">{{ currentDevice.price }}</n-descriptions-item>
-        <n-descriptions-item label="播放影片积分">{{ currentDevice.points }}</n-descriptions-item>
+        <n-descriptions-item label="播放影片游戏币">{{ currentDevice.points }}</n-descriptions-item>
         <template v-if="!currentDevice.isThirdParty">
           <n-descriptions-item label="设备类型">{{ currentDevice.type }}</n-descriptions-item>
           <n-descriptions-item label="主机配置参数">{{ currentDevice.hostConfig || '--' }}</n-descriptions-item>
@@ -129,8 +129,8 @@
         <n-form-item label="播放影片单价">
           <n-input-number v-model:value="editForm.price" :min="0" :precision="2" placeholder="请输入单价" style="width: 100%;" />
         </n-form-item>
-        <n-form-item label="播放影片积分">
-          <n-input-number v-model:value="editForm.points" :min="0" placeholder="请输入积分" style="width: 100%;" />
+        <n-form-item label="播放影片游戏币">
+          <n-input-number v-model:value="editForm.points" :min="0" placeholder="请输入游戏币" style="width: 100%;" />
         </n-form-item>
         <n-form-item label="设备状态">
           <n-radio-group v-model:value="editForm.status">

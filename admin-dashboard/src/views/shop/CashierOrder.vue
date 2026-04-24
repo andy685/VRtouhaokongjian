@@ -77,7 +77,7 @@
         <n-button size="small" class="refund-all-btn" @click="refundAll">全退</n-button>
       </div>
       <div class="refund-points">
-        <span>积分不足时允许退款：</span>
+        <span>游戏币不足时允许退款：</span>
         <n-switch v-model:value="allowPointsRefund" size="small" />
       </div>
       <div class="refund-total">

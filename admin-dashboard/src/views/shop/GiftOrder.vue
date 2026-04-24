@@ -205,7 +205,7 @@ const rawData = ref<GiftOrder[]>([
   },
   {
     id: 3, orderNo: 'GF202504230003', member: '王五 (137****9012)', activityName: '会员生日特权',
-    giftType: '积分', giftContent: '赠送 500 积分', giftValue: '¥50.00', createTime: '2025-04-23 14:20:00', shop: 'shop1'
+    giftType: '游戏币', giftContent: '赠送 500 游戏币', giftValue: '¥50.00', createTime: '2025-04-23 14:20:00', shop: 'shop1'
   },
   {
     id: 4, orderNo: 'GF202504230004', member: '赵六 (136****3456)', activityName: '周年庆大回馈',
@@ -258,7 +258,7 @@ function getGiftTypeTag(type?: string) {
   const map: Record<string, string> = {
     '储值': 'success',
     '次数': 'warning',
-    '积分': 'info',
+    '游戏币': 'info',
     '优惠券': 'error',
   }
   return (type && map[type]) ? map[type] : 'default'

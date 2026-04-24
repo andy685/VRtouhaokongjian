@@ -86,7 +86,7 @@ const columns: DataTableColumns = [
       { default: () => row.level })
   },
   { title: '余额', key: 'balance', width: 100, render: (row) => `¥${row.balance}` },
-  { title: '积分', key: 'points', width: 100 },
+  { title: '游戏币', key: 'points', width: 100 },
   { title: '累计消费', key: 'totalConsume', width: 120, render: (row) => `¥${row.totalConsume}` },
   { title: '最近消费', key: 'lastConsume', width: 120 },
   { title: '操作', key: 'actions', width: 150, render: () =>

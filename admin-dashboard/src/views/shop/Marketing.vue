@@ -163,7 +163,7 @@ const couponData = [
 
 const activities = ref([
   { id: 1, name: '周末特惠活动', icon: '🎉', description: '周末到店享受全场8折优惠，周六周日可用', gradient: 'linear-gradient(135deg, #f97316, #ea580c)', status: 'running', statusText: '进行中', participants: '456人', used: 128, total: 200, timeRange: '每周六日 10:00-22:00' },
-  { id: 2, name: '会员日专享', icon: '👑', description: '每月8号为会员日，专享双倍积分和专属折扣', gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', status: 'running', statusText: '进行中', participants: '1,258人', used: 456, total: '不限', timeRange: '每月8号 全天' },
+  { id: 2, name: '会员日专享', icon: '👑', description: '每月8号为会员日，专享双倍游戏币和专属折扣', gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', status: 'running', statusText: '进行中', participants: '1,258人', used: 456, total: '不限', timeRange: '每月8号 全天' },
   { id: 3, name: '开学季促销', icon: '🎒', description: '学生凭学生证享受7折优惠，体验VR魅力', gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)', status: 'ended', statusText: '已结束', participants: '892人', used: 568, total: 1000, timeRange: '2026-02-01 ~ 2026-03-31' },
   { id: 4, name: '充值返利活动', icon: '💰', description: '充值满500元返50元，满1000元返150元', gradient: 'linear-gradient(135deg, #10b981, #059669)', status: 'running', statusText: '进行中', participants: '2,156人', used: 1234, total: '不限', timeRange: '长期有效' },
 ])
@@ -171,19 +171,19 @@ const activities = ref([
 const levels = ref([
   { 
     name: '普通会员', gradient: 'linear-gradient(135deg, #94A3B8, #64748B)', ratio: '55%', threshold: '0',
-    benefits: ['享受会员价', '生日赠券', '积分抵现']
+    benefits: ['享受会员价', '生日赠券', '游戏币抵现']
   },
   { 
     name: '青铜', gradient: 'linear-gradient(135deg, #CD7F32, #B87333)', ratio: '25%', threshold: '500',
-    benefits: ['95折优惠', '积分1.5倍', '专属客服']
+    benefits: ['95折优惠', '游戏币1.5倍', '专属客服']
   },
   { 
     name: '白银', gradient: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)', ratio: '15%', threshold: '800',
-    benefits: ['90折优惠', '积分2倍', '专属客服', '优先预约']
+    benefits: ['90折优惠', '游戏币2倍', '专属客服', '优先预约']
   },
   { 
     name: '黄金', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)', ratio: '5%', threshold: '1000',
-    benefits: ['85折优惠', '积分3倍', '免费体验券', '专属休息区']
+    benefits: ['85折优惠', '游戏币3倍', '免费体验券', '专属休息区']
   },
 ])
 

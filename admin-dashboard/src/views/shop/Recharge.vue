@@ -75,14 +75,14 @@
           </template>
         </n-form-item>
         
-        <!-- 到账积分 -->
-        <n-form-item label="到账积分" path="points" required>
+        <!-- 到账游戏币 -->
+        <n-form-item label="到账游戏币" path="points" required>
           <n-input-number v-model:value="formData.points" :min="0" placeholder="0" style="width: 100%;">
-            <template #suffix>积分</template>
+            <template #suffix>游戏币</template>
           </n-input-number>
         </n-form-item>
-        <!-- 积分有效期（填写积分后显示） -->
-        <n-form-item v-if="formData.points > 0" label="积分有效期" path="pointsValidType" required>
+        <!-- 游戏币有效期（填写游戏币后显示） -->
+        <n-form-item v-if="formData.points > 0" label="游戏币有效期" path="pointsValidType" required>
           <n-radio-group v-model:value="formData.pointsValidType">
             <n-space>
               <n-radio value="forever">永久有效</n-radio>
@@ -91,13 +91,13 @@
             </n-space>
           </n-radio-group>
         </n-form-item>
-        <n-form-item v-if="formData.points > 0 && formData.pointsValidType === 'duration'" label="积分有效时长" path="pointsValidDays" required>
+        <n-form-item v-if="formData.points > 0 && formData.pointsValidType === 'duration'" label="游戏币有效时长" path="pointsValidDays" required>
           <n-input-number v-model:value="formData.pointsValidDays" :min="1" placeholder="365" style="width: 200px;">
             <template #suffix>天</template>
           </n-input-number>
           <span class="form-hint" style="margin-left: 8px;">* 自充值日起算</span>
         </n-form-item>
-        <n-form-item v-if="formData.points > 0 && formData.pointsValidType === 'date'" label="积分截止日期" path="pointsValidDate" required>
+        <n-form-item v-if="formData.points > 0 && formData.pointsValidType === 'date'" label="游戏币截止日期" path="pointsValidDate" required>
           <n-date-picker v-model:value="formData.pointsValidDate" type="date" placeholder="选择截止日期" />
         </n-form-item>
         
@@ -207,7 +207,7 @@ const formRules = {
   name: { required: true, message: '请输入套餐名称', trigger: 'blur' },
   amount: { required: true, type: 'number' as const, message: '请输入售卖金额', trigger: 'blur' },
   deposit: { required: true, type: 'number' as const, message: '请输入到账预存款', trigger: 'blur' },
-  points: { required: true, type: 'number' as const, message: '请输入到账积分', trigger: 'blur' },
+  points: { required: true, type: 'number' as const, message: '请输入到账游戏币', trigger: 'blur' },
   times: { required: true, type: 'number' as const, message: '请输入到账次数', trigger: 'blur' },
   memberTypes: { required: true, type: 'array' as const, message: '请选择可购会员', trigger: 'change' }
 }
@@ -231,8 +231,8 @@ const columns: DataTableColumns = [
   { title: '套餐名称', key: 'name', width: 150 },
   { title: '售卖金额', key: 'amount', width: 100, render: (row) => `¥${row.amount}` },
   { title: '到账预存款', key: 'deposit', width: 120, render: (row) => `¥${row.deposit}` },
-  { title: '到账积分', key: 'points', width: 100 },
-  { title: '积分有效期', key: 'pointsValidText', width: 140 },
+  { title: '到账游戏币', key: 'points', width: 100 },
+  { title: '游戏币有效期', key: 'pointsValidText', width: 140 },
   { title: '到账次数', key: 'times', width: 100 },
   { title: '次数有效期', key: 'timesValidText', width: 140 },
   { title: '状态', key: 'status', width: 80, render: (row) =>

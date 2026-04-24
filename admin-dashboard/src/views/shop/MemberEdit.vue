@@ -55,7 +55,7 @@
           <n-input-number v-model:value="formData.prepaidTimes" :min="0" style="flex:1;" disabled />
         </n-form-item>
 
-        <n-form-item label="积分：">
+        <n-form-item label="游戏币：">
           <n-input-number v-model:value="formData.points" :min="0" :precision="2" style="flex:1;">
             <template #suffix>分</template>
           </n-input-number>

@@ -2,7 +2,7 @@
   <div class="page-container animate-fade-in">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2>积分调整有效期查询</h2>
+      <h2>游戏币调整有效期查询</h2>
       <n-button type="primary" @click="showFilterDrawer = true">
         <template #icon><n-icon :component="FilterOutline" /></template>
         筛选

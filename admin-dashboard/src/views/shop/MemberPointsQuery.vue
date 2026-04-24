@@ -7,7 +7,7 @@
 
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2>会员积分查询</h2>
+      <h2>会员游戏币查询</h2>
       <n-button type="primary" @click="showFilterDrawer = true">
         <template #icon><n-icon :component="FilterOutline" /></template>
         筛选

@@ -144,8 +144,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'member-levels', name: 'ShopMemberLevels', component: MemberLevels, meta: { title: '会员级别' } },
       { path: 'member-ranking', name: 'ShopMemberRanking', component: MemberRanking, meta: { title: '会员消费排行' } },
       { path: 'member-balance', name: 'ShopMemberBalance', component: MemberBalance, meta: { title: '会员储值变更' } },
-      { path: 'member-points-query', name: 'ShopMemberPointsQuery', component: MemberPointsQuery, meta: { title: '会员积分查询' } },
-      { path: 'member-points-adjust-log', name: 'ShopMemberPointsAdjustLog', component: MemberPointsAdjustLog, meta: { title: '积分调整有效期查询' } },
+      { path: 'member-points-query', name: 'ShopMemberPointsQuery', component: MemberPointsQuery, meta: { title: '会员游戏币查询' } },
+      { path: 'member-points-adjust-log', name: 'ShopMemberPointsAdjustLog', component: MemberPointsAdjustLog, meta: { title: '游戏币调整有效期查询' } },
       { path: 'member-prepaid-times-query', name: 'ShopMemberPrepaidTimesQuery', component: MemberPrepaidTimesQuery, meta: { title: '会员预存次数查询' } },
       { path: 'times-adjust-log', name: 'ShopTimesAdjustLog', component: TimesAdjustLog, meta: { title: '次数调整有效期查询' } },
       // 数据报表
@@ -166,7 +166,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'ondemand-order', name: 'ShopOnDemandOrder', component: OnDemandOrder, meta: { title: '点播系统订单' } },
       { path: 'manual-deduct-order', name: 'ShopManualDeductOrder', component: ManualDeductOrder, meta: { title: '手动扣费订单' } },
       { path: 'edit-balance-order', name: 'ShopEditBalanceOrder', component: EditBalanceOrder, meta: { title: '修改储值订单' } },
-      { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: PointsExchangeOrder, meta: { title: '积分兑换订单' } },
+      { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: PointsExchangeOrder, meta: { title: '游戏币兑换订单' } },
       { path: 'gift-order', name: 'ShopGiftOrder', component: GiftOrder, meta: { title: '活动赠送订单' } },
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: FilmRevenue, meta: { title: '影片分成明细' } },
       // 系统设置
@@ -178,7 +178,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: CashierTerminal, meta: { title: '收银终端' } },
       { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置' } },
       { path: 'cashier-receipt', name: 'ShopCashierReceipt', component: CashierReceiptSettings, meta: { title: '小票设置' } },
-      { path: 'points-settings', name: 'ShopPointsSettings', component: PointsSettings, meta: { title: '积分设置' } },
+      { path: 'points-settings', name: 'ShopPointsSettings', component: PointsSettings, meta: { title: '游戏币设置' } },
       { path: 'users', name: 'ShopUsers', component: ShopUsers, meta: { title: '用户列表' } },
       { path: 'roles', name: 'ShopRoles', component: () => import('../views/shop/Roles.vue'), meta: { title: '角色列表' } },
     ]
