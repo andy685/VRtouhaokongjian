@@ -68,13 +68,16 @@
           </n-badge>
           
           <n-dropdown :options="userMenuOptions" @select="handleUserAction">
-            <n-avatar 
-              round 
-              size="small"
-              style="background: linear-gradient(135deg, #3B82F6, #2563EB); cursor: pointer; margin-left: 12px;"
-            >王</n-avatar>
+            <div class="user-dropdown-trigger">
+              <n-avatar
+                round
+                size="small"
+                style="background: linear-gradient(135deg, #3B82F6, #2563EB);"
+              >王</n-avatar>
+              <span class="user-name">王小丫</span>
+              <n-icon :component="ChevronDownOutline" size="14" class="dropdown-arrow" />
+            </div>
           </n-dropdown>
-          <span class="user-name">王小丫</span>
         </div>
       </header>
 
@@ -128,7 +131,9 @@ import {
   SwapHorizontalOutline, NotificationsOutline,
   ServerOutline, StorefrontOutline, CashOutline,
   PersonAddOutline, LogOutOutline, PersonOutline,
-  HelpCircleOutline, HomeOutline
+  HelpCircleOutline, HomeOutline,
+  MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
+  ChevronDownOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -257,6 +262,8 @@ const menuOptions: MenuOption[] = [
           { label: '小票设置', key: '/shop/cashier-receipt' },
         ]
       },
+      { label: '游戏币设置', key: '/shop/points-settings' },
+      { label: '系统参数', key: '/shop/system-params' },
       {
         label: '用户管理',
         key: 'users-group',
@@ -277,9 +284,14 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '个人中心', key: 'profile', icon: () => h(NIcon, { component: PersonOutline }) },
+  { label: () => h('span', { style: 'color: #3B82F6; font-weight: 600;' }, '商家信息'), key: 'shop-info', disabled: true, icon: () => h(NIcon, { component: StorefrontOutline }) },
+  { label: '个人信息', key: 'profile', icon: () => h(NIcon, { component: PersonOutline }) },
+  { label: '绑定微信', key: 'bind-wechat', icon: () => h(NIcon, { component: ChatbubbleOutline }) },
+  { label: '绑定邮箱', key: 'bind-email', icon: () => h(NIcon, { component: MailOutline }) },
+  { label: '账户余额', key: 'balance', icon: () => h(NIcon, { component: WalletOutline }) },
+  { label: '安全设置', key: 'security', icon: () => h(NIcon, { component: ShieldCheckmarkOutline }) },
   { type: 'divider', key: 'd1' },
-  { label: '退出登录', key: 'logout', icon: () => h(NIcon, { component: LogOutOutline }) },
+  { label: '退出', key: 'logout', icon: () => h(NIcon, { component: LogOutOutline }) },
 ]
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
@@ -300,6 +312,9 @@ function quickAction(action: string) {
 }
 function handleUserAction(key: string) {
   if (key === 'logout') console.log('logout')
+  else if (key === 'balance') router.push('/shop/account/balance')
+  else if (key === 'profile') router.push('/shop/account/profile')
+  else if (key === 'security') router.push('/shop/account/security')
 }
 
 function renderMenuLabel(option: MenuOption) {
@@ -510,7 +525,22 @@ function renderMenuLabel(option: MenuOption) {
 }
 
 .header-left, .header-right { display: flex; align-items: center; gap: 8px; }
+
+.user-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.user-dropdown-trigger:hover {
+  background: var(--color-bg-elevated);
+}
 .user-name { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.dropdown-arrow { color: var(--text-muted); }
 
 .page-wrapper {
   flex: 1; overflow-y: auto; padding: 24px;

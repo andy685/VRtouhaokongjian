@@ -234,7 +234,7 @@ const menuOptions: MenuOption[] = [
     key: 'system-group',
     icon: () => h(NIcon, { component: SettingsOutline }),
     children: [
-      { label: '版本发布', key: '/platform/system/versions' },
+      { label: '版本发布', key: '/platform/system' },
       { label: '告警中心', key: '/platform/system/alerts' },
       { label: '操作日志', key: '/platform/system/logs' },
     ]

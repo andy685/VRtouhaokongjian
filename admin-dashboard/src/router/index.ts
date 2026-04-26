@@ -7,11 +7,18 @@ import ShopLayout from '../layouts/ShopLayout.vue'
 import Dashboard from '../views/platform/Dashboard.vue'
 import Reports from '../views/platform/Reports.vue'
 import StoreList from '../views/platform/StoreList.vue'
-import ContentManage from '../views/platform/ContentManage.vue'
-import Users from '../views/platform/Users.vue'
+import StoreAudit from '../views/platform/StoreAudit.vue'
+import AgentList from '../views/platform/AgentList.vue'
+import GameLibrary from '../views/platform/GameLibrary.vue'
+import ContentDistribute from '../views/platform/ContentDistribute.vue'
+import ContentReview from '../views/platform/ContentReview.vue'
+import UserList from '../views/platform/UserList.vue'
+import RolePermission from '../views/platform/RolePermission.vue'
 import Coupons from '../views/platform/Coupons.vue'
 import Activities from '../views/platform/Activities.vue'
-import Finance from '../views/platform/Finance.vue'
+import FinanceOverview from '../views/platform/FinanceOverview.vue'
+import SettlementManage from '../views/platform/SettlementManage.vue'
+import Reconciliation from '../views/platform/Reconciliation.vue'
 import System from '../views/platform/System.vue'
 import Workbench from '../views/shop/Workbench.vue'
 import Members from '../views/shop/Members.vue'
@@ -62,6 +69,7 @@ import PointsSettings from '../views/shop/PointsSettings.vue'
 import CashierSettings from '../views/shop/CashierSettings.vue'
 import CashierTerminal from '../views/shop/CashierTerminal.vue'
 import CashierReceiptSettings from '../views/shop/CashierReceiptSettings.vue'
+import SystemParams from '../views/shop/SystemParams.vue'
 import ShopUsers from '../views/shop/Users.vue'
 import SingleConsumption from '../views/shop/SingleConsumption.vue'
 import MemberDiscount from '../views/shop/MemberDiscount.vue'
@@ -70,6 +78,8 @@ import MemberPointsQuery from '../views/shop/MemberPointsQuery.vue'
 import MemberPointsAdjustLog from '../views/shop/MemberPointsAdjustLog.vue'
 import MemberPrepaidTimesQuery from '../views/shop/MemberPrepaidTimesQuery.vue'
 import TimesAdjustLog from '../views/shop/TimesAdjustLog.vue'
+import AccountBalance from '../views/shop/AccountBalance.vue'
+import AccountRecharge from '../views/shop/AccountRecharge.vue'
 
 const routes: RouteRecordRaw[] = [
   // ===== 总运营后台（平台超管） =====
@@ -84,22 +94,22 @@ const routes: RouteRecordRaw[] = [
       { path: 'reports', name: 'PlatformReports', component: Reports, meta: { title: '数据报表' } },
       // 门店管理
       { path: 'stores', name: 'PlatformStores', component: StoreList, meta: { title: '门店列表' } },
-      { path: 'stores/audit', name: 'PlatformStoresAudit', component: StoreList, meta: { title: '门店审核' } },
-      { path: 'agents', name: 'PlatformAgents', component: StoreList, meta: { title: '代理商' } },
+      { path: 'stores/audit', name: 'PlatformStoresAudit', component: StoreAudit, meta: { title: '门店审核' } },
+      { path: 'agents', name: 'PlatformAgents', component: AgentList, meta: { title: '代理商' } },
       // 内容中心
-      { path: 'games', name: 'PlatformGames', component: ContentManage, meta: { title: '游戏库' } },
-      { path: 'content', name: 'PlatformContent', component: ContentManage, meta: { title: '内容分发' } },
-      { path: 'content/review', name: 'PlatformContentReview', component: ContentManage, meta: { title: '审核管理' } },
+      { path: 'games', name: 'PlatformGames', component: GameLibrary, meta: { title: '游戏库' } },
+      { path: 'content', name: 'PlatformContent', component: ContentDistribute, meta: { title: '内容分发' } },
+      { path: 'content/review', name: 'PlatformContentReview', component: ContentReview, meta: { title: '审核管理' } },
       // 用户体系
-      { path: 'users', name: 'PlatformUsers', component: Users, meta: { title: '平台账号' } },
-      { path: 'users/roles', name: 'PlatformUsersRoles', component: Users, meta: { title: '角色权限' } },
+      { path: 'users', name: 'PlatformUsers', component: UserList, meta: { title: '平台账号' } },
+      { path: 'users/roles', name: 'PlatformUsersRoles', component: RolePermission, meta: { title: '角色权限' } },
       // 营销工具
       { path: 'coupons', name: 'PlatformCoupons', component: Coupons, meta: { title: '优惠券' } },
       { path: 'activities', name: 'PlatformActivities', component: Activities, meta: { title: '活动配置' } },
       // 平台财务
-      { path: 'finance', name: 'PlatformFinance', component: Finance, meta: { title: '财务总览' } },
-      { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: Finance, meta: { title: '结算管理' } },
-      { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: Finance, meta: { title: '对账中心' } },
+      { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '财务总览' } },
+      { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: SettlementManage, meta: { title: '结算管理' } },
+      { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: Reconciliation, meta: { title: '对账中心' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: System, meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: System, meta: { title: '告警中心' } },
@@ -181,8 +191,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置' } },
       { path: 'cashier-receipt', name: 'ShopCashierReceipt', component: CashierReceiptSettings, meta: { title: '小票设置' } },
       { path: 'points-settings', name: 'ShopPointsSettings', component: PointsSettings, meta: { title: '游戏币设置' } },
+      { path: 'system-params', name: 'ShopSystemParams', component: SystemParams, meta: { title: '系统参数' } },
       { path: 'users', name: 'ShopUsers', component: ShopUsers, meta: { title: '用户列表' } },
       { path: 'roles', name: 'ShopRoles', component: () => import('../views/shop/Roles.vue'), meta: { title: '角色列表' } },
+      // 账户
+      { path: 'account/balance', name: 'ShopAccountBalance', component: AccountBalance, meta: { title: '账户余额' } },
+      { path: 'account/recharge', name: 'ShopAccountRecharge', component: AccountRecharge, meta: { title: '充值' } },
     ]
   },
 
@@ -194,7 +208,7 @@ const routes: RouteRecordRaw[] = [
   // 404 兜底
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/shop/order-search'
+    redirect: '/platform/dashboard'
   }
 ]
 
