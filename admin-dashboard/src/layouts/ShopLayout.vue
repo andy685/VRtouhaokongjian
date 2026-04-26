@@ -155,12 +155,12 @@ const menuOptions: MenuOption[] = [
   {
     label: '首页',
     key: '/shop/workbench',
-    icon: () => h(NIcon, null, { default: () => h(HomeOutline) }),
+    icon: () => h(NIcon, { component: HomeOutline }),
   },
   {
     label: '商品管理',
     key: 'products-group',
-    icon: () => h(NIcon, null, { default: () => h(BagHandleOutline) }),
+    icon: () => h(NIcon, { component: BagHandleOutline }),
     children: [
       { label: '单次消费项目', key: '/shop/single-consumption' },
       { label: '实物商品', key: '/shop/products' },
@@ -169,7 +169,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '运营管理',
     key: 'marketing-group',
-    icon: () => h(NIcon, null, { default: () => h(GiftOutline) }),
+    icon: () => h(NIcon, { component: GiftOutline }),
     children: [
       { label: '充值套餐', key: '/shop/recharge' },
       { label: '套票', key: '/shop/packages' },
@@ -189,7 +189,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '会员管理',
     key: 'members-group',
-    icon: () => h(NIcon, null, { default: () => h(PeopleOutline) }),
+    icon: () => h(NIcon, { component: PeopleOutline }),
     children: [
       { label: '会员列表', key: '/shop/members' },
       { label: '会员级别', key: '/shop/member-levels' },
@@ -204,7 +204,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '数据报表',
     key: 'reports-group',
-    icon: () => h(NIcon, null, { default: () => h(StatsChartOutline) }),
+    icon: () => h(NIcon, { component: StatsChartOutline }),
     children: [
       { label: '门店销售日报', key: '/shop/daily-sales' },
       { label: '历史营收统计', key: '/shop/historical-revenue' },
@@ -241,11 +241,12 @@ const menuOptions: MenuOption[] = [
   {
     label: '系统设置',
     key: 'settings-group',
-    icon: () => h(NIcon, null, { default: () => h(SettingsOutline) }),
+    icon: () => h(NIcon, { component: SettingsOutline }),
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
       { label: '点播设置', key: '/shop/on-demand-settings' },
       { label: '设备列表', key: '/shop/devices' },
+      { label: '设备在线统计', key: '/shop/devices/online-stats' },
       { label: '影片题材', key: '/shop/film-genres' },
       {
         label: '收银设置',
@@ -276,9 +277,9 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '个人中心', key: 'profile', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
+  { label: '个人中心', key: 'profile', icon: () => h(NIcon, { component: PersonOutline }) },
   { type: 'divider', key: 'd1' },
-  { label: '退出登录', key: 'logout', icon: () => h(NIcon, null, { default: () => h(LogOutOutline) }) },
+  { label: '退出登录', key: 'logout', icon: () => h(NIcon, { component: LogOutOutline }) },
 ]
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }

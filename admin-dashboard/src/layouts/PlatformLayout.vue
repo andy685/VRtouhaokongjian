@@ -175,7 +175,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '数据中心',
     key: 'dashboard-group',
-    icon: () => h(NIcon, null, { default: () => h(GridOutline) }),
+    icon: () => h(NIcon, { component: GridOutline }),
     children: [
       { label: '大屏看板', key: '/platform/dashboard' },
       { label: '数据报表', key: '/platform/reports' },
@@ -184,7 +184,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '门店管理',
     key: 'stores-group',
-    icon: () => h(NIcon, null, { default: () => h(StorefrontOutline) }),
+    icon: () => h(NIcon, { component: StorefrontOutline }),
     children: [
       { label: '门店列表', key: '/platform/stores' },
       { label: '门店审核', key: '/platform/stores/audit' },
@@ -194,7 +194,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '内容中心',
     key: 'content-group',
-    icon: () => h(NIcon, null, { default: () => h(GameControllerOutline) }),
+    icon: () => h(NIcon, { component: GameControllerOutline }),
     children: [
       { label: '游戏库', key: '/platform/games' },
       { label: '内容分发', key: '/platform/content' },
@@ -204,7 +204,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '用户体系',
     key: 'users-group',
-    icon: () => h(NIcon, null, { default: () => h(PeopleOutline) }),
+    icon: () => h(NIcon, { component: PeopleOutline }),
     children: [
       { label: '平台账号', key: '/platform/users' },
       { label: '角色权限', key: '/platform/users/roles' },
@@ -213,7 +213,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '营销工具',
     key: 'marketing-group',
-    icon: () => h(NIcon, null, { default: () => h(GiftOutline) }),
+    icon: () => h(NIcon, { component: GiftOutline }),
     children: [
       { label: '优惠券', key: '/platform/coupons' },
       { label: '活动配置', key: '/platform/activities' },
@@ -222,7 +222,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '平台财务',
     key: 'finance-group',
-    icon: () => h(NIcon, null, { default: () => h(WalletOutline) }),
+    icon: () => h(NIcon, { component: WalletOutline }),
     children: [
       { label: '财务总览', key: '/platform/finance' },
       { label: '结算管理', key: '/platform/finance/settlement' },
@@ -232,7 +232,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '系统运维',
     key: 'system-group',
-    icon: () => h(NIcon, null, { default: () => h(SettingsOutline) }),
+    icon: () => h(NIcon, { component: SettingsOutline }),
     children: [
       { label: '版本发布', key: '/platform/system/versions' },
       { label: '告警中心', key: '/platform/system/alerts' },
@@ -242,7 +242,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '运维支持',
     key: 'support-group',
-    icon: () => h(NIcon, null, { default: () => h(ConstructOutline) }),
+    icon: () => h(NIcon, { component: ConstructOutline }),
     children: [
       { label: '工单系统', key: '/platform/support/tickets' },
       { label: '帮助中心', key: '/platform/support/help' },
@@ -269,10 +269,7 @@ function handleExpand() {}
 
 function renderMenuLabel(option: MenuOption) {
   if (!option.label) return null
-  return h('div', { class: 'menu-item-custom' }, [
-    option.icon ? option.icon() : null,
-    h('span', { class: 'menu-label' }, option.label as string)
-  ])
+  return h('span', { class: 'menu-label' }, option.label as string)
 }
 
 function switchToShop() {

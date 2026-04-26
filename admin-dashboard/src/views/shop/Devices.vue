@@ -76,9 +76,14 @@
       <n-descriptions v-if="currentDevice" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="设备名称">{{ currentDevice.name }}</n-descriptions-item>
         <n-descriptions-item label="第三方设备">{{ currentDevice.isThirdParty ? '是' : '否' }}</n-descriptions-item>
-        <n-descriptions-item label="状态">
+        <n-descriptions-item label="启用状态">
           <n-tag :type="currentDevice.status === 'enabled' ? 'success' : 'error'" size="small">
             {{ currentDevice.status === 'enabled' ? '启用' : '禁用' }}
+          </n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="在线状态">
+          <n-tag :type="currentDevice.onlineStatus === 'online' ? 'success' : 'error'" size="small">
+            {{ currentDevice.onlineStatus === 'online' ? '在线' : '离线' }}
           </n-tag>
         </n-descriptions-item>
         <n-descriptions-item label="播放影片单价">{{ currentDevice.price }}</n-descriptions-item>
@@ -187,6 +192,7 @@ interface Device {
   name: string
   token: string
   status: 'enabled' | 'disabled'
+  onlineStatus: 'online' | 'offline'
   isThirdParty: boolean
   isExpired: boolean
   trialStatus: string
@@ -243,21 +249,21 @@ const shopOptions = [
 ]
 
 const deviceData = ref<Device[]>([
-  { id: 1, shop: '利民街小展厅', type: '第三方设备', name: '扭蛋', token: 'token_abc123', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--', price: 20, points: 3, payMethods: ['member'], desc: '第三方扭蛋设备' },
-  { id: 2, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_def456', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '利民街小展厅A区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
-  { id: 3, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_ghi789', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '利民街小展厅B区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
-  { id: 4, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_jkl012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '李工', installAddress: '利民街小展厅C区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-02', installerPhone: '13800138002' },
-  { id: 5, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_mno345', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '李工', installAddress: '利民街小展厅D区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-02', installerPhone: '13800138002' },
-  { id: 6, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_pqr678', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '设备维护中', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅E区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
-  { id: 7, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_stu901', status: 'disabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅F区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
-  { id: 8, shop: '利民街小展厅', type: '暗黑机甲', name: '暗黑机甲2G版', token: 'token_vwx234', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 35, points: 7, payMethods: ['member', 'wechat', 'staff'], desc: '', hostConfig: 'i9-11900/RTX3080/32G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2023-01-15', installer: '赵工', installAddress: '利民街小展厅G区', motionCard: '固高运动卡Pro', electricBar: '六电动杠', flashType: '高级刷机', installDate: '2023-02-01', installerPhone: '13800138004' },
-  { id: 9, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_yza567', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅H区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
-  { id: 10, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_bcd890', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅I区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
-  { id: 11, shop: '利民街小展厅', type: '幻影飞碟', name: '幻影飞碟（国外）', token: 'token_efg123', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 40, points: 8, payMethods: ['member', 'wechat'], desc: '海外定制版', hostConfig: 'i9-12900/RTX4090/64G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2024-01-10', installer: '刘工', installAddress: '利民街小展厅J区', motionCard: '固高运动卡Pro', electricBar: '八电动杠', flashType: '海外刷机', installDate: '2024-02-15', installerPhone: '13800138005' },
-  { id: 12, shop: '卓远亚运城店', type: '悬浮骑兵', name: '悬浮骑兵-A01', token: 'token_hij456', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--', price: 25, points: 5, payMethods: ['member'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '亚运城店A区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
-  { id: 13, shop: '卓远亚运城店', type: '暗黑行者', name: '暗黑行者-B02', token: 'token_klm789', status: 'enabled', isThirdParty: false, isExpired: false, trialStatus: '--', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '亚运城店B区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
-  { id: 14, shop: '卓远萧山区店', type: '幻影飞碟', name: '幻影飞碟-C01', token: 'token_nop012', status: 'enabled', isThirdParty: false, isExpired: true, trialStatus: '是', price: 40, points: 8, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i9-12900/RTX4090/64G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2024-01-10', installer: '刘工', installAddress: '萧山区店C区', motionCard: '固高运动卡Pro', electricBar: '八电动杠', flashType: '海外刷机', installDate: '2024-02-15', installerPhone: '13800138005' },
-  { id: 15, shop: '卓远萝岗区店', type: '第三方设备', name: '体感游戏机', token: 'token_qrs345', status: 'enabled', isThirdParty: true, isExpired: false, trialStatus: '--', price: 15, points: 2, payMethods: ['member'], desc: '第三方体感设备' },
+  { id: 1, shop: '利民街小展厅', type: '第三方设备', name: '扭蛋', token: 'token_abc123', status: 'enabled', onlineStatus: 'online', isThirdParty: true, isExpired: false, trialStatus: '--', price: 20, points: 3, payMethods: ['member'], desc: '第三方扭蛋设备' },
+  { id: 2, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_def456', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '利民街小展厅A区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
+  { id: 3, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_ghi789', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '利民街小展厅B区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
+  { id: 4, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_jkl012', status: 'enabled', onlineStatus: 'offline', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '李工', installAddress: '利民街小展厅C区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-02', installerPhone: '13800138002' },
+  { id: 5, shop: '利民街小展厅', type: '悬浮骑兵', name: '悬浮骑兵', token: 'token_mno345', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 25, points: 5, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '李工', installAddress: '利民街小展厅D区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-02', installerPhone: '13800138002' },
+  { id: 6, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_pqr678', status: 'disabled', onlineStatus: 'offline', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '设备维护中', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅E区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 7, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_stu901', status: 'disabled', onlineStatus: 'offline', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅F区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 8, shop: '利民街小展厅', type: '暗黑机甲', name: '暗黑机甲2G版', token: 'token_vwx234', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 35, points: 7, payMethods: ['member', 'wechat', 'staff'], desc: '', hostConfig: 'i9-11900/RTX3080/32G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2023-01-15', installer: '赵工', installAddress: '利民街小展厅G区', motionCard: '固高运动卡Pro', electricBar: '六电动杠', flashType: '高级刷机', installDate: '2023-02-01', installerPhone: '13800138004' },
+  { id: 9, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_yza567', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅H区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 10, shop: '利民街小展厅', type: '暗黑行者', name: '暗黑行者', token: 'token_bcd890', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '利民街小展厅I区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 11, shop: '利民街小展厅', type: '幻影飞碟', name: '幻影飞碟（国外）', token: 'token_efg123', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 40, points: 8, payMethods: ['member', 'wechat'], desc: '海外定制版', hostConfig: 'i9-12900/RTX4090/64G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2024-01-10', installer: '刘工', installAddress: '利民街小展厅J区', motionCard: '固高运动卡Pro', electricBar: '八电动杠', flashType: '海外刷机', installDate: '2024-02-15', installerPhone: '13800138005' },
+  { id: 12, shop: '卓远亚运城店', type: '悬浮骑兵', name: '悬浮骑兵-A01', token: 'token_hij456', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: false, trialStatus: '--', price: 25, points: 5, payMethods: ['member'], desc: '', hostConfig: 'i7-9700/RTX2060/16G', driverConfig: '伺服电机驱动', lineMachine: '标准线路机', factoryDate: '2023-05-12', installer: '张工', installAddress: '亚运城店A区', motionCard: '固高运动卡', electricBar: '双电动杠', flashType: '标准刷机', installDate: '2023-06-01', installerPhone: '13800138001' },
+  { id: 13, shop: '卓远亚运城店', type: '暗黑行者', name: '暗黑行者-B02', token: 'token_klm789', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: false, trialStatus: '--', price: 30, points: 6, payMethods: ['member'], desc: '', hostConfig: 'i9-10900/RTX3060/32G', driverConfig: '步进电机驱动', lineMachine: '标准线路机', factoryDate: '2022-08-20', installer: '王工', installAddress: '亚运城店B区', motionCard: '固高运动卡', electricBar: '四电动杠', flashType: '高级刷机', installDate: '2022-09-10', installerPhone: '13800138003' },
+  { id: 14, shop: '卓远萧山区店', type: '幻影飞碟', name: '幻影飞碟-C01', token: 'token_nop012', status: 'enabled', onlineStatus: 'online', isThirdParty: false, isExpired: true, trialStatus: '是', price: 40, points: 8, payMethods: ['member', 'wechat'], desc: '', hostConfig: 'i9-12900/RTX4090/64G', driverConfig: '伺服电机驱动', lineMachine: '高级线路机', factoryDate: '2024-01-10', installer: '刘工', installAddress: '萧山区店C区', motionCard: '固高运动卡Pro', electricBar: '八电动杠', flashType: '海外刷机', installDate: '2024-02-15', installerPhone: '13800138005' },
+  { id: 15, shop: '卓远萝岗区店', type: '第三方设备', name: '体感游戏机', token: 'token_qrs345', status: 'enabled', onlineStatus: 'online', isThirdParty: true, isExpired: false, trialStatus: '--', price: 15, points: 2, payMethods: ['member'], desc: '第三方体感设备' },
 ])
 
 const filteredData = computed(() => {
@@ -282,7 +288,7 @@ const columns: DataTableColumns<Device> = [
     }
   },
   {
-    title: '状态',
+    title: '启用状态',
     key: 'status',
     width: 90,
     align: 'center',
@@ -292,6 +298,19 @@ const columns: DataTableColumns<Device> = [
         type: row.status === 'enabled' ? 'success' : 'error',
         bordered: true
       }, () => row.status === 'enabled' ? '启用' : '禁用')
+    }
+  },
+  {
+    title: '在线状态',
+    key: 'onlineStatus',
+    width: 90,
+    align: 'center',
+    render(row) {
+      return h(NTag, {
+        size: 'small',
+        type: row.onlineStatus === 'online' ? 'success' : 'error',
+        bordered: true
+      }, () => row.onlineStatus === 'online' ? '在线' : '离线')
     }
   },
   {
@@ -414,6 +433,7 @@ function handleAdd() {
       name: addForm.value.name,
       token: `token_${Math.random().toString(36).slice(2, 10)}`,
       status: addForm.value.status,
+      onlineStatus: 'online',
       isThirdParty: true,
       isExpired: false,
       trialStatus: '--',

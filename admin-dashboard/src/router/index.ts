@@ -16,6 +16,7 @@ import System from '../views/platform/System.vue'
 import Workbench from '../views/shop/Workbench.vue'
 import Members from '../views/shop/Members.vue'
 import Devices from '../views/shop/Devices.vue'
+import DeviceOnlineStats from '../views/shop/DeviceOnlineStats.vue'
 import ReportsShop from '../views/shop/Reports.vue'
 import Products from '../views/shop/Products.vue'
 import ProductDetail from '../views/shop/ProductDetail.vue'
@@ -174,6 +175,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: OnDemandSettings, meta: { title: '点播设置' } },
       { path: 'devices', name: 'ShopDevices', component: Devices, meta: { title: '设备列表' } },
       { path: 'devices/control', name: 'ShopDevicesControl', component: Devices, meta: { title: '远程控制' } },
+      { path: 'devices/online-stats', name: 'ShopDeviceOnlineStats', component: DeviceOnlineStats, meta: { title: '设备在线统计' } },
       { path: 'film-genres', name: 'ShopFilmGenres', component: FilmGenres, meta: { title: '影片题材' } },
       { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: CashierTerminal, meta: { title: '收银终端' } },
       { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置' } },
