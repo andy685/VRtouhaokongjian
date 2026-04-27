@@ -1,11 +1,5 @@
 <template>
   <div class="page-container">
-    <n-breadcrumb class="page-breadcrumb">
-      <n-breadcrumb-item>主页</n-breadcrumb-item>
-      <n-breadcrumb-item>用户设置</n-breadcrumb-item>
-      <n-breadcrumb-item>消息中心</n-breadcrumb-item>
-    </n-breadcrumb>
-
     <div class="page-header">
       <h1 class="page-title">消息中心</h1>
       <div class="header-actions">
@@ -125,7 +119,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NBreadcrumb, NBreadcrumbItem, NButton, NTabs, NTabPane, NTag } from 'naive-ui'
+import { NButton, NTabs, NTabPane, NTag } from 'naive-ui'
 
 const activeTab = ref('all')
 
@@ -163,10 +157,6 @@ function deleteMessage(id: number) {
 <style scoped>
 .page-container {
   padding: 20px 24px;
-}
-
-.page-breadcrumb {
-  margin-bottom: 16px;
 }
 
 .page-header {

@@ -1,82 +1,13 @@
 <template>
   <div class="page-container">
-    <n-breadcrumb class="page-breadcrumb">
-      <n-breadcrumb-item>主页</n-breadcrumb-item>
-      <n-breadcrumb-item>用户设置</n-breadcrumb-item>
-      <n-breadcrumb-item>账户账单</n-breadcrumb-item>
-    </n-breadcrumb>
-
     <div class="page-header">
       <h1 class="page-title">{{ pageTitle }}</h1>
       <div class="page-actions">
-        <n-popover placement="bottom" trigger="click">
-          <template #trigger>
-            <n-button type="primary" ghost>
-              <template #icon><n-icon :component="FilterOutline" /></template>
-              筛选
-            </n-button>
-          </template>
-          <div class="filter-form">
-            <div class="filter-row">
-              <div class="filter-item">
-                <label>门店：</label>
-                <n-select
-                  v-model:value="filterStore"
-                  :options="storeOptions"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 150px;"
-                />
-              </div>
-              <div class="filter-item">
-                <label>日期：</label>
-                <n-date-picker
-                  v-model:value="filterDate"
-                  type="daterange"
-                  clearable
-                  style="width: 240px;"
-                />
-              </div>
-            </div>
-            <div class="filter-row">
-              <div class="filter-item">
-                <label>账单类型：</label>
-                <n-select
-                  v-model:value="filterType"
-                  :options="billTypeOptions"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 150px;"
-                />
-              </div>
-              <div class="filter-item">
-                <label>设备：</label>
-                <n-select
-                  v-model:value="filterDevice"
-                  :options="deviceOptions"
-                  placeholder="请选择"
-                  clearable
-                  style="width: 150px;"
-                />
-              </div>
-            </div>
-            <div class="filter-row">
-              <div class="filter-item">
-                <label>游戏：</label>
-                <n-input
-                  v-model:value="filterGame"
-                  placeholder="请输入游戏名"
-                  style="width: 150px;"
-                />
-              </div>
-            </div>
-            <div class="filter-buttons">
-              <n-button @click="resetFilter">重置</n-button>
-              <n-button type="primary" @click="handleFilter">搜索</n-button>
-            </div>
-          </div>
-        </n-popover>
-        <n-button type="primary" @click="handleExport">
+        <n-button type="primary" @click="showFilterDrawer = true">
+          <template #icon><n-icon :component="FilterOutline" /></template>
+          筛选
+        </n-button>
+        <n-button secondary @click="handleExport">
           <template #icon><n-icon :component="DownloadOutline" /></template>
           导出
         </n-button>
@@ -87,22 +18,83 @@
       <n-data-table
         :columns="billsColumns"
         :data="billsData"
-        :bordered="true"
-        :single-line="true"
-        :pagination="{ pageSize: 10 }"
+        :bordered="false"
+        :single-line="false"
+        :pagination="{ pageSize: 15, showSizePicker: false }"
         size="small"
+        striped
       />
     </div>
+
+    <!-- 筛选抽屉 -->
+    <n-drawer v-model:show="showFilterDrawer" width="380" placement="right" :trap-focus="false">
+      <n-drawer-content title="筛选" closable>
+        <n-form ref="filterFormRef" label-placement="left" :label-width="70" size="medium">
+          <n-form-item label="门店">
+            <n-select
+              v-model:value="filterStore"
+              placeholder="请选择"
+              :options="storeOptions"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item label="日期范围">
+            <n-date-picker
+              v-model:value="filterDate"
+              type="daterange"
+              clearable
+              style="width: 100%;"
+            />
+          </n-form-item>
+          <n-form-item label="账单类型">
+            <n-select
+              v-model:value="filterType"
+              placeholder="请选择"
+              :options="billTypeOptions"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item label="设备">
+            <n-select
+              v-model:value="filterDevice"
+              placeholder="请选择"
+              :options="deviceOptions"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item label="游戏">
+            <n-input
+              v-model:value="filterGame"
+              placeholder="请输入游戏名"
+              clearable
+            />
+          </n-form-item>
+        </n-form>
+
+        <template #footer>
+          <div class="drawer-footer">
+            <n-button @click="resetFilter">重置</n-button>
+            <n-button type="primary" @click="handleFilter">搜索</n-button>
+          </div>
+        </template>
+      </n-drawer-content>
+    </n-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import { useRoute } from 'vue-router'
-import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon, NPopover, NSelect, NDatePicker, NInput, NDataTable, NTag } from 'naive-ui'
+import { NButton, NIcon, NSelect, NDatePicker, NInput, NDataTable, NDrawer, NDrawerContent, NForm, NFormItem } from 'naive-ui'
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
 
 const route = useRoute()
+
+// 筛选抽屉显示
+const showFilterDrawer = ref(false)
+
+// 筛选表单引用
+const filterFormRef = ref<any>(null)
 
 // 页面标题
 const pageTitle = computed(() => {
@@ -181,19 +173,30 @@ const billsData = [
 
 // 账单列定义
 const billsColumns = [
-  { title: '门店', key: 'store', width: 140 },
-  { title: '账单类型', key: 'type', width: 100, render: (row: any) => h(NTag, { 
-    type: row.type === '转入' || row.type === '商户充值' || row.type === '平台赠送' || row.type === '活动奖励' ? 'success' : 
-           row.type === '转出' || row.type === '游戏消耗' ? 'error' : 'warning', 
-    size: 'small' 
-  }, () => row.type) },
-  { title: '设备', key: 'device', width: 100 },
-  { title: '影片', key: 'film', width: 100 },
-  { title: '人数', key: 'people', width: 80 },
+  { title: '门店', key: 'store', minWidth: 130 },
+  { title: '账单类型', key: 'type', width: 110 },
+  { title: '设备', key: 'device', width: 90 },
+  { title: '影片', key: 'film', width: 120 },
+  {
+    title: '人数',
+    key: 'people',
+    width: 70,
+    render: (row: any) => {
+      const noShow = ['转入', '转出', '平台赠送']
+      return noShow.includes(row.type) ? h('span', {}, '') : h('span', {}, row.people || '')
+    }
+  },
   { title: '变动前', key: 'before', width: 90 },
-  { title: '变动金额', key: 'amount', width: 100, render: (row: any) => h('span', { style: { color: row.amount >= 0 ? '#10B981' : '#EF4444' } }, () => (row.amount >= 0 ? '+' : '') + row.amount) },
+  {
+    title: '游戏豆',
+    key: 'amount',
+    width: 100,
+    render: (row: any) => h('span', {
+      style: { color: row.amount >= 0 ? '#10B981' : '#EF4444', fontWeight: 500 }
+    }, (row.amount >= 0 ? '+' : '') + row.amount)
+  },
   { title: '变动后', key: 'after', width: 90 },
-  { title: '时间', key: 'time', width: 170 },
+  { title: '时间', key: 'time', minWidth: 160 },
 ]
 
 function handleFilter() {
@@ -204,6 +207,7 @@ function handleFilter() {
     device: filterDevice.value,
     game: filterGame.value
   })
+  showFilterDrawer.value = false
 }
 
 function resetFilter() {
@@ -222,10 +226,6 @@ function handleExport() {
 <style scoped>
 .page-container {
   padding: 20px 24px;
-}
-
-.page-breadcrumb {
-  margin-bottom: 16px;
 }
 
 .page-header {
@@ -247,44 +247,16 @@ function handleExport() {
   gap: 12px;
 }
 
-.filter-form {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  min-width: 500px;
-}
-
-.filter-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.filter-item label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.filter-buttons {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
 .table-card {
   background: white;
   border-radius: 12px;
   padding: 20px;
   border: 1px solid var(--border-color);
+}
+
+.drawer-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 </style>

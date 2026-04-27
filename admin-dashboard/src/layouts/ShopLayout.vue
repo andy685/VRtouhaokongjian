@@ -56,7 +56,12 @@
       <header class="top-header">
         <div class="header-left">
           <n-breadcrumb>
-            <n-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">{{ item.label }}</n-breadcrumb-item>
+            <n-breadcrumb-item
+              v-for="(item, index) in breadcrumbs"
+              :key="index"
+              @click="item.path ? router.push(item.path) : undefined"
+              :style="item.path ? 'cursor:pointer' : ''"
+            >{{ item.label }}</n-breadcrumb-item>
           </n-breadcrumb>
         </div>
         
@@ -278,9 +283,15 @@ const menuOptions: MenuOption[] = [
 
 
 const currentRoute = computed(() => route.path)
-const breadcrumbs = computed(() => {
-  const matched = route.matched.filter(item => item.meta?.title)
-  return matched.map(m => ({ label: m.meta.title as string, path: m.path }))
+const breadcrumbs = computed<{ label: string; path?: string }[]>(() => {
+  const meta = route.meta as any
+  if (meta?.breadcrumb && Array.isArray(meta.breadcrumb)) {
+    return meta.breadcrumb
+  }
+  // 降级：用 matched 的 title
+  return route.matched
+    .filter(item => item.meta?.title)
+    .map(m => ({ label: m.meta.title as string, path: m.path }))
 })
 
 const userMenuOptions = [
@@ -309,13 +320,14 @@ function quickAction(action: string) {
   else if (action === 'member') router.push('/shop/members')
 }
 function handleUserAction(key: string) {
-  if (key === 'logout') console.log('logout')
-  else if (key === 'balance') router.push('/shop/account/balance')
+  if (key === 'logout') {
+    router.push('/login')
+  } else if (key === 'balance') router.push('/shop/account/balance')
   else if (key === 'profile') router.push('/shop/account/profile')
   else if (key === 'security') router.push('/shop/account/security')
   else if (key === 'shop-info') router.push('/shop/account/shop-info')
-  else if (key === 'bind-wechat') router.push('/shop/account/bind-wechat')
-  else if (key === 'bind-email') router.push('/shop/account/bind-email')
+  else if (key === 'bind-wechat') router.push('/shop/account/profile')
+  else if (key === 'bind-email') router.push('/shop/account/profile')
 }
 
 function goToMessageCenter() {

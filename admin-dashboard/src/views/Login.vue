@@ -6,25 +6,7 @@
         <p class="login-subtitle">欢迎回到头号空间管理系统</p>
       </div>
 
-      <div class="login-tabs">
-        <div 
-          class="tab-item" 
-          :class="{ active: activeTab === 'password' }" 
-          @click="activeTab = 'password'"
-        >
-          账号密码登录
-        </div>
-        <div 
-          class="tab-item" 
-          :class="{ active: activeTab === 'wechat' }" 
-          @click="activeTab = 'wechat'"
-        >
-          微信登录
-        </div>
-      </div>
-
-      <!-- 账号密码登录 -->
-      <div v-if="activeTab === 'password'" class="login-form">
+      <div class="login-form">
         <n-form :model="loginForm" :rules="rules">
           <n-form-item label="用户名" path="username">
             <n-input v-model:value="loginForm.username" placeholder="请输入用户名" />
@@ -36,22 +18,17 @@
               placeholder="请输入密码" 
             />
           </n-form-item>
-          <n-form-item v-if="showVerificationCode" path="verificationCode">
-            <n-input 
-              v-model:value="loginForm.verificationCode" 
-              placeholder="请输入验证码" 
-            >
-              <template #append>
-                <n-button 
-                  type="primary" 
-                  size="small" 
-                  :disabled="isSendingCode"
-                  @click="sendVerificationCode"
-                >
-                  {{ isSendingCode ? '发送中...' : '发送验证码' }}
-                </n-button>
-              </template>
-            </n-input>
+          <n-form-item v-if="showVerificationCode" label="验证码" path="verificationCode">
+            <div class="captcha-input">
+              <n-input 
+                v-model:value="loginForm.verificationCode" 
+                placeholder="请输入验证码" 
+                style="flex: 1;"
+              />
+              <div class="captcha-image" @click="refreshCaptcha" title="点击刷新">
+                <canvas ref="captchaCanvas" width="120" height="42"></canvas>
+              </div>
+            </div>
           </n-form-item>
           <div class="form-actions">
             <n-checkbox v-model:checked="loginForm.remember">记住我</n-checkbox>
@@ -61,20 +38,6 @@
             登录
           </n-button>
         </n-form>
-      </div>
-
-      <!-- 微信登录 -->
-      <div v-else class="wechat-login">
-        <div class="qrcode-section">
-          <div class="qrcode">
-            <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-              <rect width="200" height="200" fill="white" stroke="#e5e7eb" />
-              <text x="100" y="105" font-size="14" text-anchor="middle" fill="#6b7280">微信扫码登录</text>
-            </svg>
-          </div>
-          <p class="qrcode-tip">请使用微信扫描二维码进行登录</p>
-          <p class="qrcode-expire">二维码将在 2 分钟后过期</p>
-        </div>
       </div>
     </div>
 
@@ -86,21 +49,20 @@
             <n-input v-model:value="forgotForm.email" placeholder="请输入绑定的邮箱" />
           </n-form-item>
           <n-form-item label="验证码" path="verificationCode">
-            <n-input 
-              v-model:value="forgotForm.verificationCode" 
-              placeholder="请输入验证码" 
-            >
-              <template #append>
-                <n-button 
-                  type="primary" 
-                  size="small" 
-                  :disabled="isSendingForgotCode"
-                  @click="sendForgotVerificationCode"
-                >
-                  {{ isSendingForgotCode ? '发送中...' : '发送验证码' }}
-                </n-button>
-              </template>
-            </n-input>
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <n-input 
+                v-model:value="forgotForm.verificationCode" 
+                placeholder="请输入验证码" 
+                style="flex: 1;"
+              />
+              <n-button 
+                type="primary" 
+                :disabled="isSendingForgotCode || !forgotForm.email"
+                @click="sendForgotVerificationCode"
+              >
+                {{ isSendingForgotCode ? '发送中...' : '发送验证码' }}
+              </n-button>
+            </div>
           </n-form-item>
           <n-form-item label="新密码" path="newPassword">
             <n-input 
@@ -129,14 +91,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal } from 'naive-ui'
 
 const router = useRouter()
-
-// 激活的标签
-const activeTab = ref('password')
 
 // 登录表单
 const loginForm = reactive({
@@ -203,18 +162,66 @@ const forgotRules = {
 // 状态
 const isLoading = ref(false)
 const showVerificationCode = ref(false)
-const isSendingCode = ref(false)
 const isSendingForgotCode = ref(false)
 const showForgotPassword = ref(false)
+const captchaCanvas = ref<HTMLCanvasElement | null>(null)
+const currentCaptcha = ref('')
 
-// 发送验证码
-function sendVerificationCode() {
-  if (!loginForm.username) return
-  isSendingCode.value = true
-  // 模拟发送验证码
-  setTimeout(() => {
-    isSendingCode.value = false
-  }, 2000)
+// 生成随机验证码
+function generateCaptcha() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+  let captcha = ''
+  for (let i = 0; i < 4; i++) {
+    captcha += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return captcha
+}
+
+// 绘制验证码
+function drawCaptcha() {
+  if (!captchaCanvas.value) return
+  const canvas = captchaCanvas.value
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  currentCaptcha.value = generateCaptcha()
+
+  // 清空画布
+  ctx.fillStyle = '#f0f0f0'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // 添加干扰线
+  for (let i = 0; i < 6; i++) {
+    ctx.strokeStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`
+    ctx.beginPath()
+    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)
+    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height)
+    ctx.stroke()
+  }
+
+  // 绘制文字
+  for (let i = 0; i < currentCaptcha.value.length; i++) {
+    ctx.save()
+    ctx.font = 'bold 24px Arial'
+    ctx.fillStyle = `rgb(${Math.random() * 100}, ${Math.random() * 100}, ${Math.random() * 100 + 155})`
+    ctx.translate(20 + i * 25, 28)
+    ctx.rotate((Math.random() - 0.5) * 0.4)
+    ctx.fillText(currentCaptcha.value[i], 0, 0)
+    ctx.restore()
+  }
+
+  // 添加干扰点
+  for (let i = 0; i < 50; i++) {
+    ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`
+    ctx.beginPath()
+    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, 2 * Math.PI)
+    ctx.fill()
+  }
+}
+
+// 刷新验证码
+function refreshCaptcha() {
+  drawCaptcha()
 }
 
 // 发送忘记密码验证码
@@ -235,7 +242,7 @@ function handleLogin() {
     isLoading.value = false
     // 登录成功后跳转到店铺后台首页
     router.push('/shop/workbench')
-  }, 1500)
+  }, 500)
 }
 
 // 重置密码
@@ -253,7 +260,13 @@ function checkNeedVerificationCode() {
 }
 
 // 页面加载时检查
-checkNeedVerificationCode()
+onMounted(() => {
+  checkNeedVerificationCode()
+  // 绘制初始验证码
+  if (showVerificationCode.value) {
+    setTimeout(() => drawCaptcha(), 100)
+  }
+})
 </script>
 
 <style scoped>
@@ -291,28 +304,6 @@ checkNeedVerificationCode()
   margin: 0;
 }
 
-.login-tabs {
-  display: flex;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.tab-item {
-  flex: 1;
-  text-align: center;
-  padding: 12px 0;
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s;
-}
-
-.tab-item.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
 .login-form {
   display: flex;
   flex-direction: column;
@@ -326,38 +317,24 @@ checkNeedVerificationCode()
   margin: 8px 0 16px 0;
 }
 
-.wechat-login {
+.captcha-input {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px 0;
-}
-
-.qrcode-section {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 12px;
+  width: 100%;
 }
 
-.qrcode {
-  padding: 16px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.captcha-image {
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
 }
 
-.qrcode-tip {
-  font-size: 14px;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.qrcode-expire {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0;
+.captcha-image:hover {
+  opacity: 0.8;
 }
 
 .forgot-password-form {

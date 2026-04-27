@@ -1,11 +1,5 @@
 <template>
   <div class="account-balance-page">
-    <n-breadcrumb class="page-breadcrumb">
-      <n-breadcrumb-item>主页</n-breadcrumb-item>
-      <n-breadcrumb-item>用户设置</n-breadcrumb-item>
-      <n-breadcrumb-item>账户余额</n-breadcrumb-item>
-    </n-breadcrumb>
-
     <div class="page-header">
       <h2 class="page-title">账户</h2>
     </div>
@@ -159,7 +153,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NBreadcrumb, NBreadcrumbItem, NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable, NModal, NSelect, NInput, NForm, NFormItem } from 'naive-ui'
+import { NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable, NModal, NSelect, NInput, NForm, NFormItem } from 'naive-ui'
 
 const router = useRouter()
 const activeTab = ref('operating')
@@ -211,10 +205,14 @@ const storeOptions = [
 
 
 function viewBills(type: string) {
-  router.push({
-    path: '/shop/account/bills',
-    query: { type }
-  })
+  if (type === 'basic') {
+    window.open('http://localhost:9527/shop/cashier-order', '_blank')
+  } else {
+    router.push({
+      path: '/shop/account/bills',
+      query: { type }
+    })
+  }
 }
 
 function handleWithdraw() {
@@ -260,10 +258,6 @@ function handleFromChange(value: string) {
 <style scoped>
 .account-balance-page {
   padding: 20px 24px;
-}
-
-.page-breadcrumb {
-  margin-bottom: 16px;
 }
 
 .page-header {

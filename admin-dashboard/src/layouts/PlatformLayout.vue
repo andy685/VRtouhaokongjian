@@ -283,7 +283,7 @@ function switchToPlatform() {
 
 function handleUserAction(key: string) {
   if (key === 'logout') {
-    console.log('logout')
+    router.push('/login')
   }
 }
 </script>
