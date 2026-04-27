@@ -136,7 +136,7 @@
         </div>
         <div class="wechat-info" v-if="wechatInfo.name">
           <div class="wechat-avatar">
-            <n-avatar round size="60" :src="wechatInfo.avatar" />
+            <n-avatar round size="40" :src="wechatInfo.avatar" />
           </div>
           <div class="wechat-details">
             <h4>{{ wechatInfo.name }}</h4>
