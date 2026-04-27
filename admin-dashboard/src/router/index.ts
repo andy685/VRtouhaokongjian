@@ -4,6 +4,7 @@ import type { RouteRecordRaw } from 'vue-router'
 // 使用静态导入避免 Vite 解析 .vue 动态导入的 bug
 import PlatformLayout from '../layouts/PlatformLayout.vue'
 import ShopLayout from '../layouts/ShopLayout.vue'
+import Login from '../views/Login.vue'
 import Dashboard from '../views/platform/Dashboard.vue'
 import Reports from '../views/platform/Reports.vue'
 import StoreList from '../views/platform/StoreList.vue'
@@ -80,8 +81,21 @@ import MemberPrepaidTimesQuery from '../views/shop/MemberPrepaidTimesQuery.vue'
 import TimesAdjustLog from '../views/shop/TimesAdjustLog.vue'
 import AccountBalance from '../views/shop/AccountBalance.vue'
 import AccountRecharge from '../views/shop/AccountRecharge.vue'
+import GameBeanRecharge from '../views/shop/GameBeanRecharge.vue'
+import AccountBills from '../views/shop/AccountBills.vue'
+import ShopInfo from '../views/shop/account/ShopInfo.vue'
+import Profile from '../views/shop/account/Profile.vue'
+import Security from '../views/shop/account/Security.vue'
+import Message from '../views/shop/account/Message.vue'
 
 const routes: RouteRecordRaw[] = [
+  // ===== 登录页面 =====
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { title: '登录' }
+  },
   // ===== 总运营后台（平台超管） =====
   {
     path: '/platform',
@@ -195,20 +209,29 @@ const routes: RouteRecordRaw[] = [
       { path: 'users', name: 'ShopUsers', component: ShopUsers, meta: { title: '用户列表' } },
       { path: 'roles', name: 'ShopRoles', component: () => import('../views/shop/Roles.vue'), meta: { title: '角色列表' } },
       // 账户
+      { path: 'account/bills', name: 'ShopAccountBills', component: AccountBills, meta: { title: '账户账单' } },
       { path: 'account/balance', name: 'ShopAccountBalance', component: AccountBalance, meta: { title: '账户余额' } },
-      { path: 'account/recharge', name: 'ShopAccountRecharge', component: AccountRecharge, meta: { title: '充值' } },
+      { path: 'account/recharge', name: 'ShopAccountRecharge', component: AccountRecharge, meta: { title: '运营账户充值' } },
+      { path: 'account/game-bean/recharge', name: 'ShopGameBeanRecharge', component: GameBeanRecharge, meta: { title: '游戏豆充值' } },
+      // 用户设置
+      { path: 'account/shop-info', name: 'ShopAccountShopInfo', component: ShopInfo, meta: { title: '商家信息' } },
+      { path: 'account/profile', name: 'ShopAccountProfile', component: Profile, meta: { title: '个人信息' } },
+      { path: 'account/bind-wechat', redirect: '/shop/account/profile' },
+      { path: 'account/bind-email', redirect: '/shop/account/profile' },
+      { path: 'account/security', name: 'ShopAccountSecurity', component: Security, meta: { title: '账户安全' } },
+      { path: 'account/message', name: 'ShopAccountMessage', component: Message, meta: { title: '消息中心' } },
     ]
   },
 
-  // 默认重定向到总后台
+  // 默认重定向到登录页面
   {
     path: '/',
-    redirect: '/platform/dashboard'
+    redirect: '/login'
   },
   // 404 兜底
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/platform/dashboard'
+    redirect: '/login'
   }
 ]
 

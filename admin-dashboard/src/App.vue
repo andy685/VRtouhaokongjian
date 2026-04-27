@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme="darkTheme ? darkTheme : undefined" :locale="zhCN" :date-locale="dateZhCN">
+  <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
     <n-message-provider>
       <n-dialog-provider>
         <n-notification-provider>
@@ -18,9 +18,6 @@ import {
   NNotificationProvider, NLoadingBarProvider,
   zhCN, dateZhCN
 } from 'naive-ui'
-import { ref } from 'vue'
-
-const darkTheme = ref<any>(null)
 </script>
 
 <style scoped>

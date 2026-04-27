@@ -62,7 +62,7 @@
         
         <div class="header-right">
           <n-badge :value="5" :max="99">
-            <n-button quaternary circle size="small">
+            <n-button quaternary circle size="small" @click="goToMessageCenter">
               <template #icon><n-icon :component="NotificationsOutline" /></template>
             </n-button>
           </n-badge>
@@ -284,10 +284,8 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: () => h('span', { style: 'color: #3B82F6; font-weight: 600;' }, '商家信息'), key: 'shop-info', disabled: true, icon: () => h(NIcon, { component: StorefrontOutline }) },
+  { label: () => h('span', { style: 'color: #3B82F6; font-weight: 600;' }, '商家信息'), key: 'shop-info', icon: () => h(NIcon, { component: StorefrontOutline }) },
   { label: '个人信息', key: 'profile', icon: () => h(NIcon, { component: PersonOutline }) },
-  { label: '绑定微信', key: 'bind-wechat', icon: () => h(NIcon, { component: ChatbubbleOutline }) },
-  { label: '绑定邮箱', key: 'bind-email', icon: () => h(NIcon, { component: MailOutline }) },
   { label: '账户余额', key: 'balance', icon: () => h(NIcon, { component: WalletOutline }) },
   { label: '安全设置', key: 'security', icon: () => h(NIcon, { component: ShieldCheckmarkOutline }) },
   { type: 'divider', key: 'd1' },
@@ -315,6 +313,13 @@ function handleUserAction(key: string) {
   else if (key === 'balance') router.push('/shop/account/balance')
   else if (key === 'profile') router.push('/shop/account/profile')
   else if (key === 'security') router.push('/shop/account/security')
+  else if (key === 'shop-info') router.push('/shop/account/shop-info')
+  else if (key === 'bind-wechat') router.push('/shop/account/bind-wechat')
+  else if (key === 'bind-email') router.push('/shop/account/bind-email')
+}
+
+function goToMessageCenter() {
+  router.push('/shop/account/message')
 }
 
 function renderMenuLabel(option: MenuOption) {

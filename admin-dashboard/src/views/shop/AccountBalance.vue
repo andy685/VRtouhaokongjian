@@ -67,13 +67,16 @@
           <div class="game-bean-total">
             <span class="total-label">商家游戏豆：</span>
             <span class="total-value">{{ merchantGameBean }}</span>
-            <n-tag type="warning" size="small" class="total-tip">
+            <n-tag type="warning" size="small" class="total-tip" v-if="gameBeanMode === 'dedicated'">
               注意：商家游戏豆余额不等于各门店游戏豆余额之和
+            </n-tag>
+            <n-tag type="info" size="small" class="total-tip" v-else>
+              注意：全局游戏豆可在所有门店使用
             </n-tag>
           </div>
 
           <!-- 店铺游戏豆表格 -->
-          <div class="game-bean-table-section">
+          <div class="game-bean-table-section" v-if="gameBeanMode === 'dedicated'">
             <div class="table-title">店铺游戏豆：</div>
             <n-data-table
               :columns="gameBeanColumns"
@@ -85,22 +88,78 @@
             />
           </div>
 
+          <!-- 全局游戏豆信息 -->
+          <div class="game-bean-universal-info" v-else>
+            <div class="universal-info-content">
+              <p>全局游戏豆可在所有门店使用，统一管理</p>
+              <p>充值后游戏豆会自动添加到全局余额中</p>
+            </div>
+          </div>
+
           <!-- 操作按钮 -->
           <div class="game-bean-actions">
-            <n-button type="primary" ghost class="game-bean-btn" @click="handleTransfer">游戏豆转移</n-button>
+            <n-button type="primary" ghost class="game-bean-btn" @click="handleTransfer" v-if="gameBeanMode === 'dedicated'">游戏豆转移</n-button>
             <n-button type="primary" class="game-bean-btn" @click="handleRecharge">去充值</n-button>
             <n-button type="primary" ghost class="game-bean-btn" @click="viewBills('game-bean')">查看账单</n-button>
           </div>
         </div>
       </n-tab-pane>
     </n-tabs>
+
+    <!-- 游戏豆转移弹窗 -->
+    <n-modal
+      v-model:show="transferModalVisible"
+      title="转移"
+      preset="card"
+      size="medium"
+      style="width: 500px;"
+    >
+      <n-form>
+        <n-form-item label="*转出方">
+          <n-select
+            v-model:value="transferFrom"
+            :options="storeOptions"
+            placeholder="选择转出方"
+            @update:value="handleFromChange"
+          />
+        </n-form-item>
+        <n-form-item label="*转入方">
+          <n-select
+            v-model:value="transferTo"
+            :options="storeOptions"
+            placeholder="选择转入方"
+          />
+        </n-form-item>
+        <n-form-item label="可用游戏豆">
+          <n-input
+            v-model:value="availableGameBeans"
+            disabled
+          />
+        </n-form-item>
+        <n-form-item label="*转移游戏豆">
+          <n-input
+            v-model:value="transferAmount"
+            placeholder="0"
+            type="number"
+          />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <div class="modal-footer">
+          <n-button @click="handleTransferCancel">取消</n-button>
+          <n-button type="primary" @click="handleTransferSubmit">确定</n-button>
+        </div>
+      </template>
+    </n-modal>
+
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NBreadcrumb, NBreadcrumbItem, NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable } from 'naive-ui'
+import { NBreadcrumb, NBreadcrumbItem, NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable, NModal, NSelect, NInput, NForm, NFormItem } from 'naive-ui'
 
 const router = useRouter()
 const activeTab = ref('operating')
@@ -108,7 +167,7 @@ const activeTab = ref('operating')
 const operatingBalance = ref('0.69')
 const basicBalance = ref('0')
 const gameBeanBalance = ref('5200')
-const gameBeanMode = ref('universal')
+const gameBeanMode = ref('dedicated')
 const merchantGameBean = ref('28')
 
 const basicStoreList = [
@@ -133,8 +192,29 @@ const gameBeanStoreList = [
   { id: '5077', name: '利民街小展厅', amount: '0' },
 ]
 
+// 游戏豆转移弹窗
+const transferModalVisible = ref(false)
+const transferFrom = ref('')
+const transferTo = ref('')
+const availableGameBeans = ref('0')
+const transferAmount = ref('0')
+
+const storeOptions = [
+  { value: '6288', label: '党建馆' },
+  { value: '5764', label: '华东展厅' },
+  { value: '5760', label: '恒然分部展厅' },
+  { value: '5759', label: '利民街大展厅' },
+  { value: '5077', label: '利民街小展厅' },
+  { value: '8088', label: '幻影星空馆 NO.8088' },
+]
+
+
+
 function viewBills(type: string) {
-  console.log('查看账单', type)
+  router.push({
+    path: '/shop/account/bills',
+    query: { type }
+  })
 }
 
 function handleWithdraw() {
@@ -142,11 +222,38 @@ function handleWithdraw() {
 }
 
 function handleRecharge() {
-  router.push('/shop/account/recharge')
+  if (activeTab.value === 'game-bean') {
+    router.push('/shop/account/game-bean/recharge')
+  } else {
+    router.push('/shop/account/recharge')
+  }
 }
 
 function handleTransfer() {
-  console.log('游戏豆转移')
+  transferModalVisible.value = true
+}
+
+function handleTransferSubmit() {
+  console.log('转移游戏豆', {
+    from: transferFrom.value,
+    to: transferTo.value,
+    amount: transferAmount.value
+  })
+  transferModalVisible.value = false
+}
+
+function handleTransferCancel() {
+  transferModalVisible.value = false
+}
+
+function handleFromChange(value: string) {
+  transferFrom.value = value
+  // 模拟获取可用游戏豆
+  if (value === '8088') {
+    availableGameBeans.value = '1028'
+  } else {
+    availableGameBeans.value = '0'
+  }
 }
 </script>
 
@@ -340,4 +447,30 @@ function handleTransfer() {
 .game-bean-btn {
   min-width: 120px;
 }
+
+/* 通用游戏豆信息 */
+.game-bean-universal-info {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.universal-info-content p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* 游戏豆转移弹窗 */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+
 </style>
