@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>店铺列表</h1>
-        <p class="header-desc">管理所有已入驻和待审核的店铺</p>
+        <p class="header-desc">管理所有已入驻的店铺</p>
       </div>
       <n-space>
         <n-input v-model:value="searchText" placeholder="搜索店铺名称/店长..." size="small" style="width: 220px;">
@@ -42,8 +42,8 @@
           <n-icon :component="TimeOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">待审核</span>
-          <span class="value warning">8</span>
+          <span class="label">维护中</span>
+          <span class="value warning">1</span>
         </div>
       </div>
       <div class="stat-card">
@@ -66,6 +66,9 @@
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="100">
         <n-form-item label="店铺名称" path="name">
           <n-input v-model:value="addForm.name" placeholder="请输入店铺名称" />
+        </n-form-item>
+        <n-form-item label="所属商家" path="merchant">
+          <n-select v-model:value="addForm.merchant" :options="merchantOptions" placeholder="请选择所属商家" />
         </n-form-item>
         <n-form-item label="所属区域" path="region">
           <n-select v-model:value="addForm.region" :options="regionOptions" placeholder="请选择区域" />
@@ -104,6 +107,9 @@
         <n-form-item label="店铺名称">
           <n-input v-model:value="editForm.name" />
         </n-form-item>
+        <n-form-item label="所属商家">
+          <n-select v-model:value="editForm.merchant" :options="merchantOptions" />
+        </n-form-item>
         <n-form-item label="所属区域">
           <n-select v-model:value="editForm.region" :options="regionOptions" />
         </n-form-item>
@@ -140,8 +146,9 @@
       <n-descriptions v-if="currentStore" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="店铺名称">{{ currentStore.name }}</n-descriptions-item>
         <n-descriptions-item label="店铺ID">ST{{ String(currentStore.id).padStart(5, '0') }}</n-descriptions-item>
+        <n-descriptions-item label="所属商家">{{ currentStore.merchant }}</n-descriptions-item>
         <n-descriptions-item label="所属区域">{{ currentStore.region }}</n-descriptions-item>
-        <n-descriptions-item label="详细地址">{{ currentStore.address }}</n-descriptions-item>
+        <n-descriptions-item label="详细地址" :span="2">{{ currentStore.address }}</n-descriptions-item>
         <n-descriptions-item label="店长">{{ currentStore.manager }}</n-descriptions-item>
         <n-descriptions-item label="联系电话">{{ currentStore.phone }}</n-descriptions-item>
         <n-descriptions-item label="设备数量">{{ currentStore.devices }} 台</n-descriptions-item>
@@ -206,6 +213,12 @@ const regionOptions = [
   { label: '武汉', value: '武汉' },
 ]
 
+const merchantOptions = [
+  { label: '恒然集团', value: '恒然集团' },
+  { label: '幻影星空', value: '幻影星空' },
+  { label: '利民街商家', value: '利民街商家' },
+]
+
 const statusOptions = [
   { label: '营业中', value: 'online' },
   { label: '已打烊', value: 'offline' },
@@ -214,6 +227,7 @@ const statusOptions = [
 
 const columns = [
   { title: '店铺名称', key: 'name', width: 180 },
+  { title: '所属商家', key: 'merchant', width: 140 },
   { title: '地区', key: 'region', width: 100 },
   { title: '详细地址', key: 'address', ellipsis: { tooltip: true } },
   {
@@ -259,14 +273,14 @@ const columns = [
 ]
 
 const storeData = ref([
-  { id: 1, name: '深圳福田旗舰店', region: '深圳', address: '深圳市福田区华强北路101号', status: 'online', statusText: '营业中', devices: 12, manager: '张三', phone: '13800138001', todayRevenue: '¥15,680', monthRevenue: '¥356,800', memberCount: 1280, createdAt: '2024-01-15' },
-  { id: 2, name: '南山科技园店', region: '深圳', address: '深圳市南山区科技园南路88号', status: 'online', statusText: '营业中', devices: 8, manager: '李四', phone: '13800138002', todayRevenue: '¥9,240', monthRevenue: '¥198,500', memberCount: 856, createdAt: '2024-02-20' },
-  { id: 3, name: '广州天河店', region: '广州', address: '广州市天河区天河路368号', status: 'online', statusText: '营业中', devices: 16, manager: '王五', phone: '13800138003', todayRevenue: '¥21,350', monthRevenue: '¥462,100', memberCount: 1520, createdAt: '2024-03-05' },
-  { id: 4, name: '北京朝阳店', region: '北京', address: '北京市朝阳区建国路88号', status: 'offline', statusText: '已打烊', devices: 14, manager: '赵六', phone: '13800138004', todayRevenue: '¥0', monthRevenue: '¥389,200', memberCount: 1100, createdAt: '2024-03-18' },
-  { id: 5, name: '上海浦东店', region: '上海', address: '上海市浦东新区陆家嘴环路1000号', status: 'online', statusText: '营业中', devices: 20, manager: '孙七', phone: '13800138005', todayRevenue: '¥26,800', monthRevenue: '¥578,900', memberCount: 1890, createdAt: '2024-04-01' },
-  { id: 6, name: '成都太古里店', region: '成都', address: '成都市锦江区中纱帽街8号', status: 'online', statusText: '营业中', devices: 10, manager: '周八', phone: '13800138006', todayRevenue: '¥11,200', monthRevenue: '¥245,600', memberCount: 920, createdAt: '2024-04-15' },
-  { id: 7, name: '杭州西湖店', region: '杭州', address: '杭州市西湖区南山路15号', status: 'maintain', statusText: '维护中', devices: 8, manager: '吴九', phone: '13800138007', todayRevenue: '¥0', monthRevenue: '¥168,300', memberCount: 680, createdAt: '2024-05-01' },
-  { id: 8, name: '武汉光谷店', region: '武汉', address: '武汉市洪山区光谷步行街1号', status: 'online', statusText: '营业中', devices: 11, manager: '郑十', phone: '13800138008', todayRevenue: '¥13,500', monthRevenue: '¥298,700', memberCount: 1050, createdAt: '2024-05-20' },
+  { id: 1, name: '深圳福田旗舰店', merchant: '恒然集团', region: '深圳', address: '深圳市福田区华强北路101号', status: 'online', statusText: '营业中', devices: 12, manager: '张三', phone: '13800138001', todayRevenue: '¥15,680', monthRevenue: '¥356,800', memberCount: 1280, createdAt: '2024-01-15' },
+  { id: 2, name: '南山科技园店', merchant: '恒然集团', region: '深圳', address: '深圳市南山区科技园南路88号', status: 'online', statusText: '营业中', devices: 8, manager: '李四', phone: '13800138002', todayRevenue: '¥9,240', monthRevenue: '¥198,500', memberCount: 856, createdAt: '2024-02-20' },
+  { id: 3, name: '广州天河店', merchant: '幻影星空', region: '广州', address: '广州市天河区天河路368号', status: 'online', statusText: '营业中', devices: 16, manager: '王五', phone: '13800138003', todayRevenue: '¥21,350', monthRevenue: '¥462,100', memberCount: 1520, createdAt: '2024-03-05' },
+  { id: 4, name: '北京朝阳店', merchant: '利民街商家', region: '北京', address: '北京市朝阳区建国路88号', status: 'offline', statusText: '已打烊', devices: 14, manager: '赵六', phone: '13800138004', todayRevenue: '¥0', monthRevenue: '¥389,200', memberCount: 1100, createdAt: '2024-03-18' },
+  { id: 5, name: '上海浦东店', merchant: '幻影星空', region: '上海', address: '上海市浦东新区陆家嘴环路1000号', status: 'online', statusText: '营业中', devices: 20, manager: '孙七', phone: '13800138005', todayRevenue: '¥26,800', monthRevenue: '¥578,900', memberCount: 1890, createdAt: '2024-04-01' },
+  { id: 6, name: '成都太古里店', merchant: '恒然集团', region: '成都', address: '成都市锦江区中纱帽街8号', status: 'online', statusText: '营业中', devices: 10, manager: '周八', phone: '13800138006', todayRevenue: '¥11,200', monthRevenue: '¥245,600', memberCount: 920, createdAt: '2024-04-15' },
+  { id: 7, name: '杭州西湖店', merchant: '利民街商家', region: '杭州', address: '杭州市西湖区南山路15号', status: 'maintain', statusText: '维护中', devices: 8, manager: '吴九', phone: '13800138007', todayRevenue: '¥0', monthRevenue: '¥168,300', memberCount: 680, createdAt: '2024-05-01' },
+  { id: 8, name: '武汉光谷店', merchant: '幻影星空', region: '武汉', address: '武汉市洪山区光谷步行街1号', status: 'online', statusText: '营业中', devices: 11, manager: '郑十', phone: '13800138008', todayRevenue: '¥13,500', monthRevenue: '¥298,700', memberCount: 1050, createdAt: '2024-05-20' },
 ])
 
 const pagination = { pageSize: 10 }
@@ -275,7 +289,12 @@ const filteredData = computed(() => {
   let data = [...storeData.value]
   if (searchText.value) {
     const kw = searchText.value.toLowerCase()
-    data = data.filter(d => d.name.toLowerCase().includes(kw) || d.manager.toLowerCase().includes(kw) || d.phone.includes(kw))
+    data = data.filter(d =>
+      d.name.toLowerCase().includes(kw) ||
+      d.merchant.toLowerCase().includes(kw) ||
+      d.manager.toLowerCase().includes(kw) ||
+      d.phone.includes(kw)
+    )
   }
   if (filterRegion.value) {
     data = data.filter(d => d.region === filterRegion.value)
@@ -289,9 +308,10 @@ const filteredData = computed(() => {
 // 新增
 const showAddModal = ref(false)
 const addFormRef = ref<FormInst | null>(null)
-const addForm = ref({ name: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' })
+const addForm = ref({ name: '', merchant: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' })
 const addRules: FormRules = {
   name: { required: true, message: '请输入店铺名称', trigger: 'blur' },
+  merchant: { required: true, message: '请选择所属商家', trigger: 'change' },
   region: { required: true, message: '请选择区域', trigger: 'change' },
   manager: { required: true, message: '请输入店长姓名', trigger: 'blur' },
   phone: { required: true, message: '请输入联系电话', trigger: 'blur' },
@@ -304,6 +324,7 @@ function handleAdd() {
     storeData.value.unshift({
       id: Date.now(),
       name: addForm.value.name,
+      merchant: addForm.value.merchant,
       region: addForm.value.region,
       address: addForm.value.address,
       status: addForm.value.status,
@@ -318,18 +339,18 @@ function handleAdd() {
     })
     message.success('店铺新增成功')
     showAddModal.value = false
-    addForm.value = { name: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' }
+    addForm.value = { name: '', merchant: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' }
   })
 }
 
 // 编辑
 const showEditModal = ref(false)
 const currentStore = ref<any>(null)
-const editForm = ref({ name: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' })
+const editForm = ref({ name: '', merchant: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' })
 
 function openEdit(row: any) {
   currentStore.value = row
-  editForm.value = { ...row, deviceCount: row.devices }
+  editForm.value = { ...row, deviceCount: row.devices, merchant: row.merchant || '' }
   showEditModal.value = true
 }
 
@@ -341,6 +362,7 @@ function handleEdit() {
       ...storeData.value[idx],
       ...editForm.value,
       devices: editForm.value.deviceCount,
+      merchant: editForm.value.merchant,
       statusText: statusMap[editForm.value.status],
     }
     message.success('店铺信息已更新')

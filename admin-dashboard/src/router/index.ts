@@ -4,15 +4,16 @@ import type { RouteRecordRaw } from 'vue-router'
 // 使用静态导入避免 Vite 解析 .vue 动态导入的 bug
 import PlatformLayout from '../layouts/PlatformLayout.vue'
 import ShopLayout from '../layouts/ShopLayout.vue'
+import AgentLayout from '../layouts/AgentLayout.vue'
 import Login from '../views/Login.vue'
 import Dashboard from '../views/platform/Dashboard.vue'
 import Reports from '../views/platform/Reports.vue'
 import StoreList from '../views/platform/StoreList.vue'
-import StoreAudit from '../views/platform/StoreAudit.vue'
+import MerchantList from '../views/platform/MerchantList.vue'
 import AgentList from '../views/platform/AgentList.vue'
 import GameLibrary from '../views/platform/GameLibrary.vue'
+import GameDetail from '../views/platform/GameDetail.vue'
 import ContentDistribute from '../views/platform/ContentDistribute.vue'
-import ContentReview from '../views/platform/ContentReview.vue'
 import UserList from '../views/platform/UserList.vue'
 import RolePermission from '../views/platform/RolePermission.vue'
 import FinanceOverview from '../views/platform/FinanceOverview.vue'
@@ -26,6 +27,10 @@ import OrderFlow from '../views/platform/OrderFlow.vue'
 import SettlementManage from '../views/platform/SettlementManage.vue'
 import Reconciliation from '../views/platform/Reconciliation.vue'
 import System from '../views/platform/System.vue'
+import AgentDashboard from '../views/agent/Dashboard.vue'
+import AgentMerchants from '../views/agent/Merchants.vue'
+import AgentStores from '../views/agent/Stores.vue'
+import AgentCommission from '../views/agent/Commission.vue'
 import Workbench from '../views/shop/Workbench.vue'
 import Members from '../views/shop/Members.vue'
 import Devices from '../views/shop/Devices.vue'
@@ -114,12 +119,13 @@ const routes: RouteRecordRaw[] = [
       { path: 'reports', name: 'PlatformReports', component: Reports, meta: { title: '数据报表' } },
       // 店铺管理
       { path: 'stores', name: 'PlatformStores', component: StoreList, meta: { title: '店铺列表' } },
-      { path: 'stores/audit', name: 'PlatformStoresAudit', component: StoreAudit, meta: { title: '店铺审核' } },
+      { path: 'merchants', name: 'PlatformMerchants', component: MerchantList, meta: { title: '商家管理' } },
       { path: 'agents', name: 'PlatformAgents', component: AgentList, meta: { title: '代理商' } },
-      // 内容中心
+      // 内容中心（注意：静态路由必须在动态路由之前）
       { path: 'games', name: 'PlatformGames', component: GameLibrary, meta: { title: '游戏库' } },
+      { path: 'games/add', name: 'PlatformGameAdd', component: GameDetail, meta: { title: '新增游戏' } },
+      { path: 'games/:id', name: 'PlatformGameDetail', component: GameDetail, meta: { title: '游戏详情' } },
       { path: 'content', name: 'PlatformContent', component: ContentDistribute, meta: { title: '内容分发' } },
-      { path: 'content/review', name: 'PlatformContentReview', component: ContentReview, meta: { title: '审核管理' } },
       // 平台账号
       { path: 'users', name: 'PlatformUsers', component: UserList, meta: { title: '账号管理' } },
       { path: 'users/roles', name: 'PlatformUsersRoles', component: RolePermission, meta: { title: '角色权限' } },
@@ -148,7 +154,7 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
-  // ===== 店铺运营后台（店铺店长） =====
+  // ===== 商家后台（商家） =====
   {
     path: '/shop',
     name: 'Shop',
@@ -235,6 +241,26 @@ const routes: RouteRecordRaw[] = [
       { path: 'account/bind-email', redirect: '/shop/account/profile' },
       { path: 'account/security', name: 'ShopAccountSecurity', component: Security, meta: { title: '账户安全', breadcrumb: [{ label: '账户安全' }] } },
       { path: 'account/message', name: 'ShopAccountMessage', component: Message, meta: { title: '消息中心', breadcrumb: [{ label: '消息中心' }] } },
+    ]
+  },
+
+  // ===== 代理商后台 =====
+  {
+    path: '/agent',
+    name: 'Agent',
+    component: AgentLayout,
+    redirect: '/agent/dashboard',
+    children: [
+      { path: 'dashboard', name: 'AgentDashboard', component: AgentDashboard, meta: { title: '首页概览' } },
+      { path: 'merchants', name: 'AgentMerchants', component: AgentMerchants, meta: { title: '商家管理' } },
+      { path: 'stores', name: 'AgentStores', component: AgentStores, meta: { title: '店铺概览' } },
+      { path: 'stores/devices', name: 'AgentStoreDevices', component: AgentStores, meta: { title: '设备统计' } },
+      { path: 'commission', name: 'AgentCommission', component: AgentCommission, meta: { title: '分润明细' } },
+      { path: 'settlement', name: 'AgentSettlement', component: AgentCommission, meta: { title: '结算记录' } },
+      { path: 'reports/revenue', name: 'AgentReportsRevenue', component: AgentDashboard, meta: { title: '营收统计' } },
+      { path: 'reports/members', name: 'AgentReportsMembers', component: AgentDashboard, meta: { title: '会员统计' } },
+      { path: 'account', name: 'AgentAccount', component: AgentDashboard, meta: { title: '账户信息' } },
+      { path: 'account/security', name: 'AgentAccountSecurity', component: AgentDashboard, meta: { title: '安全设置' } },
     ]
   },
 

@@ -2,33 +2,11 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <h1>店铺列表</h1>
-      <n-button type="primary" size="small" @click="openAdd">添加店铺</n-button>
     </div>
 
     <n-card class="table-card">
       <n-data-table :columns="columns" :data="storeData" :pagination="pagination" striped size="small" />
     </n-card>
-
-    <!-- 添加弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" title="添加店铺" style="width: 520px;">
-      <n-form :model="addForm" label-placement="left" label-width="80px">
-        <n-form-item label="店铺名称">
-          <n-input v-model:value="addForm.name" placeholder="请输入店铺名称" />
-        </n-form-item>
-        <n-form-item label="联系电话">
-          <n-input v-model:value="addForm.phone" placeholder="请输入联系电话" />
-        </n-form-item>
-        <n-form-item label="地址">
-          <n-input v-model:value="addForm.address" type="textarea" :rows="2" placeholder="请输入地址" />
-        </n-form-item>
-      </n-form>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showAddModal = false">取消</n-button>
-          <n-button type="primary" @click="handleAddSubmit">保存</n-button>
-        </n-space>
-      </template>
-    </n-modal>
 
     <!-- 编辑弹窗 -->
     <n-modal v-model:show="showEditModal" preset="card" title="编辑店铺" style="width: 520px;">
@@ -134,40 +112,12 @@ import {
 import type { DataTableColumns } from 'naive-ui'
 import { QrCodeOutline } from '@vicons/ionicons5'
 
-const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showCodeModal = ref(false)
 const showRulesModal = ref(false)
 const currentStore = ref<any>(null)
-const addForm = ref({ name: '', phone: '', address: '' })
 const editForm = ref({ name: '', phone: '', address: '' })
 const pagination = { pageSize: 10 }
-
-function openAdd() {
-  addForm.value = { name: '', phone: '', address: '' }
-  showAddModal.value = true
-}
-
-function handleAddSubmit() {
-  if (!addForm.value.name) {
-    window.$message?.warning('请输入店铺名称')
-    return
-  }
-  const newId = Math.floor(Math.random() * 9000) + 1000
-  storeData.value.unshift({
-    id: newId,
-    name: addForm.value.name,
-    isDomestic: true,
-    phone: addForm.value.phone || '-',
-    createTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-'),
-    address: addForm.value.address || '-',
-    payStatus: '支付业务未开通',
-    status: '启用',
-    registerCode: `REG-${newId}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
-  })
-  window.$message?.success('添加成功')
-  showAddModal.value = false
-}
 
 const couponOptions = [
   { label: '新人专享券', value: 'coupon1' },

@@ -8,14 +8,21 @@
 
       <div class="login-form">
         <n-form :model="loginForm" :rules="rules">
+          <n-form-item label="登录身份" required>
+            <n-radio-group v-model:value="loginRole" size="small">
+              <n-radio value="shop">商家</n-radio>
+              <n-radio value="agent">代理商</n-radio>
+              <n-radio value="platform">平台超管</n-radio>
+            </n-radio-group>
+          </n-form-item>
           <n-form-item label="用户名" path="username">
             <n-input v-model:value="loginForm.username" placeholder="请输入用户名" />
           </n-form-item>
           <n-form-item label="密码" path="password">
-            <n-input 
-              v-model:value="loginForm.password" 
-              type="password" 
-              placeholder="请输入密码" 
+            <n-input
+              v-model:value="loginForm.password"
+              type="password"
+              placeholder="请输入密码"
             />
           </n-form-item>
           <n-form-item v-if="showVerificationCode" label="验证码" path="verificationCode">
@@ -96,6 +103,9 @@ import { useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal } from 'naive-ui'
 
 const router = useRouter()
+
+// 登录身份
+const loginRole = ref<'shop' | 'agent' | 'platform'>('shop')
 
 // 登录表单
 const loginForm = reactive({
@@ -240,8 +250,13 @@ function handleLogin() {
   // 模拟登录请求
   setTimeout(() => {
     isLoading.value = false
-    // 登录成功后跳转到店铺后台首页
-    router.push('/shop/workbench')
+    // 根据选择的身份跳转到对应后台
+    const redirectMap = {
+      platform: '/platform/dashboard',
+      agent: '/agent/dashboard',
+      shop: '/shop/workbench',
+    }
+    router.push(redirectMap[loginRole.value])
   }, 500)
 }
 

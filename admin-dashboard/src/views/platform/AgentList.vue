@@ -102,8 +102,9 @@
         <n-descriptions-item label="联系电话">{{ currentAgent.phone }}</n-descriptions-item>
         <n-descriptions-item label="负责区域">{{ currentAgent.region }}</n-descriptions-item>
         <n-descriptions-item label="分润比例">{{ currentAgent.commissionRate }}%</n-descriptions-item>
+        <n-descriptions-item label="旗下商家">{{ currentAgent.merchantCount }} 家</n-descriptions-item>
         <n-descriptions-item label="管辖店铺">{{ currentAgent.storeCount }} 家</n-descriptions-item>
-        <n-descriptions-item label="本月营收">{{ currentAgent.monthRevenue }}</n-descriptions-item>
+        <n-descriptions-item label="本月游戏豆充值">{{ currentAgent.monthRecharge }}</n-descriptions-item>
         <n-descriptions-item label="本月分润">{{ currentAgent.monthCommission }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentAgent.status === 'active' ? 'success' : 'default'" size="small">
@@ -149,8 +150,10 @@ const columns = [
   { title: '联系人', key: 'contact', width: 100 },
   { title: '联系电话', key: 'phone', width: 130 },
   { title: '负责区域', key: 'region', width: 100 },
+  { title: '旗下商家', key: 'merchantCount', width: 100 },
   { title: '分润比例', key: 'commissionRate', width: 100, render: (row: any) => `${row.commissionRate}%` },
   { title: '管辖店铺', key: 'storeCount', width: 100 },
+  { title: '本月游戏豆充值', key: 'monthRecharge', width: 150 },
   { title: '本月分润', key: 'monthCommission', width: 120 },
   {
     title: '状态',
@@ -184,11 +187,11 @@ const columns = [
 ]
 
 const agentData = ref([
-  { id: 1, name: '深圳未来科技', contact: '张伟', phone: '13800138001', region: '华南区', commissionRate: 15, storeCount: 12, monthRevenue: '¥856,200', monthCommission: '¥128,430', status: 'active', createdAt: '2023-06-01' },
-  { id: 2, name: '北京梦想空间', contact: '李娜', phone: '13800138002', region: '华北区', commissionRate: 12, storeCount: 8, monthRevenue: '¥623,400', monthCommission: '¥74,808', status: 'active', createdAt: '2023-07-15' },
-  { id: 3, name: '上海星际娱乐', contact: '王强', phone: '13800138003', region: '华东区', commissionRate: 18, storeCount: 15, monthRevenue: '¥1,056,800', monthCommission: '¥190,224', status: 'active', createdAt: '2023-08-20' },
-  { id: 4, name: '成都虚拟现实', contact: '赵敏', phone: '13800138004', region: '西南区', commissionRate: 10, storeCount: 6, monthRevenue: '¥312,500', monthCommission: '¥31,250', status: 'active', createdAt: '2023-09-10' },
-  { id: 5, name: '武汉创新体验', contact: '刘洋', phone: '13800138005', region: '华中区', commissionRate: 14, storeCount: 9, monthRevenue: '¥445,600', monthCommission: '¥62,384', status: 'inactive', createdAt: '2023-10-05' },
+  { id: 1, name: '深圳未来科技', contact: '张伟', phone: '13800138001', region: '华南区', commissionRate: 15, merchantCount: 4, storeCount: 12, monthRecharge: '¥856,200', monthCommission: '¥128,430', status: 'active', createdAt: '2023-06-01' },
+  { id: 2, name: '北京梦想空间', contact: '李娜', phone: '13800138002', region: '华北区', commissionRate: 12, merchantCount: 3, storeCount: 8, monthRecharge: '¥623,400', monthCommission: '¥74,808', status: 'active', createdAt: '2023-07-15' },
+  { id: 3, name: '上海星际娱乐', contact: '王强', phone: '13800138003', region: '华东区', commissionRate: 18, merchantCount: 5, storeCount: 15, monthRecharge: '¥1,056,800', monthCommission: '¥190,224', status: 'active', createdAt: '2023-08-20' },
+  { id: 4, name: '成都虚拟现实', contact: '赵敏', phone: '13800138004', region: '西南区', commissionRate: 10, merchantCount: 2, storeCount: 6, monthRecharge: '¥312,500', monthCommission: '¥31,250', status: 'active', createdAt: '2023-09-10' },
+  { id: 5, name: '武汉创新体验', contact: '刘洋', phone: '13800138005', region: '华中区', commissionRate: 14, merchantCount: 2, storeCount: 9, monthRecharge: '¥445,600', monthCommission: '¥62,384', status: 'inactive', createdAt: '2023-10-05' },
 ])
 
 const pagination = { pageSize: 10 }

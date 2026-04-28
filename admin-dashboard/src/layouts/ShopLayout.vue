@@ -97,7 +97,7 @@
     </main>
 
     <!-- 角色切换弹窗 -->
-    <n-modal v-model:show="showRoleModal" preset="card" title="切换视图" style="width: 480px;" :bordered="false">
+    <n-modal v-model:show="showRoleModal" preset="card" title="切换视图" style="width: 680px;" :bordered="false">
       <div class="role-switch-grid">
         <div class="role-card" @click="switchToPlatform">
           <div class="role-card-icon platform">
@@ -107,13 +107,22 @@
           <div class="role-card-desc">平台级管理 · 全局数据</div>
           <n-button size="tiny" secondary>进入</n-button>
         </div>
+
+        <div class="role-card" @click="switchToAgent">
+          <div class="role-card-icon agent">
+            <n-icon :component="BusinessOutline" size="32" />
+          </div>
+          <div class="role-card-title">代理商后台</div>
+          <div class="role-card-desc">代理商管理 · 分润数据</div>
+          <n-button size="tiny" secondary>进入</n-button>
+        </div>
         
         <div class="role-card active" @click="switchToShop">
           <div class="role-card-icon shop">
             <n-icon :component="StorefrontOutline" size="32" />
           </div>
-          <div class="role-card-title">店铺后台</div>
-          <div class="role-card-desc">店铺运营 · 日常管理</div>
+          <div class="role-card-title">商家后台</div>
+          <div class="role-card-desc">商家运营 · 日常管理</div>
           <n-tag type="success" size="small" bordered>当前</n-tag>
         </div>
       </div>
@@ -134,7 +143,7 @@ import {
   StatsChartOutline, BagHandleOutline, GiftOutline,
   SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, NotificationsOutline,
-  ServerOutline, StorefrontOutline, CashOutline,
+  ServerOutline, StorefrontOutline, BusinessOutline, CashOutline,
   PersonAddOutline, LogOutOutline, PersonOutline,
   HelpCircleOutline, HomeOutline,
   MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
@@ -313,6 +322,10 @@ function handleMenuUpdate(key: string) {
 function switchToPlatform() {
   showRoleModal.value = false
   router.push('/platform/dashboard')
+}
+function switchToAgent() {
+  showRoleModal.value = false
+  router.push('/agent/dashboard')
 }
 function switchToShop() { showRoleModal.value = false }
 function quickAction(action: string) {
@@ -565,7 +578,7 @@ function renderMenuLabel(option: MenuOption) {
 
 /* ===== 角色切换弹窗 ===== */
 .role-switch-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 8px 0;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 8px 0;
 }
 
 .role-card {
@@ -573,7 +586,7 @@ function renderMenuLabel(option: MenuOption) {
   cursor: pointer; transition: all 0.3s; text-align: center; background: white;
 }
 .role-card:hover { border-color: #3B82F6; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,0.12); }
-.role-card.active { border-color: #3B82F6; background: linear-gradient(180deg, rgba(59,130,246,0.08), transparent); }
+.role-card.active { border-color: #10B981; background: linear-gradient(180deg, rgba(16,185,129,0.08), transparent); }
 
 .role-card-icon {
   width: 64px; height: 64px; border-radius: 16px;
@@ -581,7 +594,8 @@ function renderMenuLabel(option: MenuOption) {
   margin-bottom: 12px; color: white;
 }
 .role-card-icon.platform { background: linear-gradient(135deg, #3B82F6, #2563EB); }
-.role-card-icon.shop { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+.role-card-icon.agent { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.role-card-icon.shop { background: linear-gradient(135deg, #10B981, #059669); }
 
 .role-card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
 .role-card-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }

@@ -63,7 +63,7 @@
     </div>
 
     <!-- 批量分发弹窗 -->
-    <n-modal v-model:show="showBatchModal" preset="card" title="批量分发" style="width: 560px;" :bordered="false">
+    <n-modal v-model:show="showBatchModal" preset="card" :title="batchForm.games.length === 1 ? '游戏分发' : '批量分发'" style="width: 560px;" :bordered="false">
       <n-form label-placement="left" label-width="100">
         <n-form-item label="选择游戏" required>
           <n-select v-model:value="batchForm.games" :options="gameOptions" multiple placeholder="请选择要分发的游戏" />
@@ -84,7 +84,7 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="分发详情" style="width: 600px;" :bordered="false">
+    <n-modal v-model:show="showDetailModal" preset="card" title="分发详情" style="width: 720px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="游戏名称">{{ currentRecord.gameName }}</n-descriptions-item>
         <n-descriptions-item label="分发版本">{{ currentRecord.version }}</n-descriptions-item>
@@ -97,8 +97,21 @@
         <n-descriptions-item label="分发时间">{{ currentRecord.time }}</n-descriptions-item>
         <n-descriptions-item label="操作人">{{ currentRecord.operator }}</n-descriptions-item>
       </n-descriptions>
+      <div style="margin-top: 16px;" v-if="currentRecord && currentRecord.storeList">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">分发店铺列表</h4>
+        <n-data-table :columns="storeColumns" :data="currentRecord.storeList" size="small" :bordered="true" />
+      </div>
       <template #footer>
-        <n-button @click="showDetailModal = false">关闭</n-button>
+        <n-space justify="end">
+          <n-button @click="showDetailModal = false">关闭</n-button>
+          <n-button 
+            v-if="currentRecord && currentRecord.status === 'failed'" 
+            type="warning" 
+            @click="retryFromDetail"
+          >
+            重新分发
+          </n-button>
+        </n-space>
       </template>
     </n-modal>
   </div>
@@ -165,19 +178,117 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    width: 120,
+    width: 200,
+    fixed: 'right',
     render(row: any) {
-      return h(NButton, { size: 'tiny', secondary: true, onClick: () => openDetail(row) }, () => '详情')
+      const buttons = [
+        h(NButton, { size: 'tiny', type: 'primary', secondary: true, onClick: () => openDistribute(row) }, () => '分发'),
+      ]
+      if (row.status === 'failed') {
+        buttons.push(
+          h(NButton, { size: 'tiny', type: 'warning', secondary: true, onClick: () => retryDistribute(row) }, () => '重试')
+        )
+      }
+      buttons.push(
+        h(NButton, { size: 'tiny', secondary: true, onClick: () => openDetail(row) }, () => '详情')
+      )
+      return h(NSpace, { size: 'small' }, () => buttons)
     }
   },
 ]
 
+const storeColumns = [
+  { title: '店铺名称', key: 'storeName', width: 200 },
+  { title: '区域', key: 'region', width: 100 },
+  {
+    title: '分发状态',
+    key: 'status',
+    width: 100,
+    render(row: any) {
+      const typeMap: Record<string, string> = { done: 'success', pending: 'warning', failed: 'error' }
+      return h(NTag, { type: typeMap[row.status] as any, size: 'small' }, () => row.statusText)
+    }
+  },
+  { title: '完成时间', key: 'finishTime', width: 160 },
+]
+
 const distributeData = ref([
-  { id: 1, gameName: '过山车VR', storeCount: 156, version: 'v2.3.1', status: 'done', statusText: '已完成', time: '2026-04-20 10:00', operator: '管理员' },
-  { id: 2, gameName: '恐怖医院', storeCount: 148, version: 'v1.8.5', status: 'done', statusText: '已完成', time: '2026-04-19 15:30', operator: '管理员' },
-  { id: 3, gameName: '极速赛车', storeCount: 142, version: 'v3.1.0', status: 'pending', statusText: '分发中', time: '2026-04-20 14:00', operator: '管理员' },
-  { id: 4, gameName: '海洋世界', storeCount: 138, version: 'v2.0.2', status: 'failed', statusText: '失败', time: '2026-04-18 09:00', operator: '管理员' },
-  { id: 5, gameName: '恐龙王国', storeCount: 130, version: 'v1.5.0', status: 'done', statusText: '已完成', time: '2026-04-17 11:20', operator: '管理员' },
+  { 
+    id: 1, 
+    gameName: '过山车VR', 
+    storeCount: 156, 
+    version: 'v2.3.1', 
+    status: 'done', 
+    statusText: '已完成', 
+    time: '2026-04-20 10:00', 
+    operator: '管理员',
+    storeList: [
+      { storeName: '深圳福田旗舰店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-20 10:05' },
+      { storeName: '南山科技园店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-20 10:06' },
+      { storeName: '广州天河店', region: '广州', status: 'done', statusText: '已完成', finishTime: '2026-04-20 10:08' },
+      { storeName: '北京朝阳店', region: '北京', status: 'done', statusText: '已完成', finishTime: '2026-04-20 10:10' },
+      { storeName: '上海浦东店', region: '上海', status: 'done', statusText: '已完成', finishTime: '2026-04-20 10:12' },
+    ]
+  },
+  { 
+    id: 2, 
+    gameName: '恐怖医院', 
+    storeCount: 148, 
+    version: 'v1.8.5', 
+    status: 'done', 
+    statusText: '已完成', 
+    time: '2026-04-19 15:30', 
+    operator: '管理员',
+    storeList: [
+      { storeName: '深圳福田旗舰店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-19 15:35' },
+      { storeName: '南山科技园店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-19 15:36' },
+      { storeName: '广州天河店', region: '广州', status: 'done', statusText: '已完成', finishTime: '2026-04-19 15:38' },
+    ]
+  },
+  { 
+    id: 3, 
+    gameName: '极速赛车', 
+    storeCount: 142, 
+    version: 'v3.1.0', 
+    status: 'pending', 
+    statusText: '分发中', 
+    time: '2026-04-20 14:00', 
+    operator: '管理员',
+    storeList: [
+      { storeName: '深圳福田旗舰店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-20 14:05' },
+      { storeName: '南山科技园店', region: '深圳', status: 'pending', statusText: '分发中', finishTime: '-' },
+      { storeName: '广州天河店', region: '广州', status: 'pending', statusText: '分发中', finishTime: '-' },
+      { storeName: '北京朝阳店', region: '北京', status: 'done', statusText: '已完成', finishTime: '2026-04-20 14:08' },
+    ]
+  },
+  { 
+    id: 4, 
+    gameName: '海洋世界', 
+    storeCount: 138, 
+    version: 'v2.0.2', 
+    status: 'failed', 
+    statusText: '失败', 
+    time: '2026-04-18 09:00', 
+    operator: '管理员',
+    storeList: [
+      { storeName: '深圳福田旗舰店', region: '深圳', status: 'failed', statusText: '失败', finishTime: '2026-04-18 09:05' },
+      { storeName: '南山科技园店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-18 09:06' },
+    ]
+  },
+  { 
+    id: 5, 
+    gameName: '恐龙王国', 
+    storeCount: 130, 
+    version: 'v1.5.0', 
+    status: 'done', 
+    statusText: '已完成', 
+    time: '2026-04-17 11:20', 
+    operator: '管理员',
+    storeList: [
+      { storeName: '深圳福田旗舰店', region: '深圳', status: 'done', statusText: '已完成', finishTime: '2026-04-17 11:25' },
+      { storeName: '广州天河店', region: '广州', status: 'done', statusText: '已完成', finishTime: '2026-04-17 11:28' },
+    ]
+  },
 ])
 
 const pagination = { pageSize: 10 }
@@ -218,6 +329,39 @@ const currentRecord = ref<any>(null)
 function openDetail(row: any) {
   currentRecord.value = row
   showDetailModal.value = true
+}
+
+// 单个游戏分发
+function openDistribute(row: any) {
+  batchForm.value = {
+    games: [row.gameName],
+    stores: [],
+    version: row.version || '',
+  }
+  showBatchModal.value = true
+}
+
+// 重试分发（从列表）
+function retryDistribute(row: any) {
+  // 将失败的店铺名称映射到 storeOptions 的 value
+  const failedStoreNames = row.storeList?.filter((s: any) => s.status === 'failed').map((s: any) => s.storeName) || []
+  const storeValueMap = new Map(storeOptions.map((opt: any) => [opt.label, opt.value]))
+  const failedStoreValues = failedStoreNames.map((name: string) => storeValueMap.get(name)).filter(Boolean)
+  
+  batchForm.value = {
+    games: [row.gameName],
+    stores: failedStoreValues,
+    version: row.version || '',
+  }
+  showBatchModal.value = true
+  message.info(`正在重新分发：${row.gameName}，已预选失败的店铺`)
+}
+
+// 从详情弹窗重试
+function retryFromDetail() {
+  if (!currentRecord.value) return
+  showDetailModal.value = false
+  retryDistribute(currentRecord.value)
 }
 </script>
 

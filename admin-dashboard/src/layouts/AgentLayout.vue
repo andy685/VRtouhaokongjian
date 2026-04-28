@@ -1,20 +1,20 @@
 <template>
-  <div class="platform-layout">
+  <div class="agent-layout">
     <!-- 侧边栏 -->
     <aside class="sidebar" :class="{ collapsed: isCollapsed }">
       <!-- Logo区域 -->
       <div class="sidebar-header">
         <div class="logo-section">
-          <div class="logo-icon">
-            <svg viewBox="0 0 40 40" fill="none">
-              <rect width="40" height="40" rx="10" fill="url(#logoGrad)"/>
-              <path d="M12 20L20 12L28 20L20 28Z" fill="white" opacity="0.9"/>
-              <circle cx="20" cy="20" r="4" fill="white"/>
-              <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#3B82F6"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
+          <div class="brand-icon">
+            <svg viewBox="0 0 36 36" fill="none">
+              <rect width="36" height="36" rx="8" fill="url(#agentGrad)"/>
+              <path d="M10 18L18 10L26 18L18 26Z" fill="white" opacity="0.9"/>
+              <circle cx="18" cy="18" r="3.5" fill="white"/>
+              <defs><linearGradient id="agentGrad" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#F59E0B"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs>
             </svg>
           </div>
           <transition name="fade">
-            <span v-show="!isCollapsed" class="logo-text">头号空间<span class="logo-sub">运营后台</span></span>
+            <span v-show="!isCollapsed" class="logo-text">头号空间<span class="logo-sub">代理商后台</span></span>
           </transition>
         </div>
         <n-button v-if="!isCollapsed" quaternary circle size="small" @click="toggleCollapse" class="collapse-btn">
@@ -25,9 +25,9 @@
         </n-button>
       </div>
 
-      <!-- 平台标识 -->
-      <div v-if="!isCollapsed" class="platform-badge">
-        <span class="badge-dot"></span> 总运营后台
+      <!-- 代理商标识 -->
+      <div v-if="!isCollapsed" class="agent-badge">
+        <span class="badge-dot"></span> 代理商后台
       </div>
 
       <!-- 导航菜单 -->
@@ -40,33 +40,30 @@
           :collapsed-icon-size="22"
           :render-label="renderMenuLabel"
           @update:value="handleMenuUpdate"
-          @update:expanded-keys="handleExpand"
         />
       </nav>
 
       <!-- 底部角色切换 -->
       <div v-if="!isCollapsed" class="sidebar-footer">
         <div class="role-switch-card" @click="showRoleModal = true">
-          <div class="role-avatar">
-            <n-avatar round size="small" style="background: linear-gradient(135deg, #3B82F6, #8B5CF6);">
-              超
-            </n-avatar>
-          </div>
+          <n-avatar round size="small" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+            代
+          </n-avatar>
           <div class="role-info">
-            <div class="role-name">平台超管</div>
-            <div class="role-desc">全局管理权限</div>
+            <div class="role-name">{{ agentName }}</div>
+            <div class="role-desc">代理商</div>
           </div>
           <n-icon :component="SwapHorizontalOutline" size="16" class="switch-icon" />
         </div>
       </div>
 
       <div v-else class="sidebar-footer-collapsed">
-        <n-avatar 
-          round 
-          size="large" 
-          style="background: linear-gradient(135deg, #3B82F6, #8B5CF6); cursor: pointer;"
+        <n-avatar
+          round
+          size="large"
+          style="background: linear-gradient(135deg, #F59E0B, #D97706); cursor: pointer;"
           @click="showRoleModal = true"
-        >超</n-avatar>
+        >代</n-avatar>
       </div>
     </aside>
 
@@ -79,32 +76,29 @@
             <n-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">{{ item.label }}</n-breadcrumb-item>
           </n-breadcrumb>
         </div>
-        
+
         <div class="header-right">
-          <!-- 搜索 -->
           <n-input placeholder="搜索..." size="small" round clearable style="width: 200px;">
             <template #prefix>
               <n-icon :component="SearchOutline" />
             </template>
           </n-input>
-          
-          <!-- 通知 -->
-          <n-badge :value="3" :max="99">
+
+          <n-badge :value="2" :max="99">
             <n-button quaternary circle size="small">
               <template #icon><n-icon :component="NotificationsOutline" /></template>
             </n-button>
           </n-badge>
-          
-          <!-- 用户菜单 -->
+
           <n-dropdown :options="userMenuOptions" @select="handleUserAction">
-            <n-avatar 
-              round 
+            <n-avatar
+              round
               size="small"
-              style="background: linear-gradient(135deg, #3B82F6, #8B5CF6); cursor: pointer; margin-left: 12px;"
-            >管</n-avatar>
+              style="background: linear-gradient(135deg, #F59E0B, #D97706); cursor: pointer; margin-left: 12px;"
+            >代</n-avatar>
           </n-dropdown>
-          
-          <span class="user-name">管理员</span>
+
+          <span class="user-name">{{ agentName }}</span>
         </div>
       </header>
 
@@ -119,36 +113,27 @@
     </main>
 
     <!-- 角色切换弹窗 -->
-    <n-modal v-model:show="showRoleModal" preset="card" title="切换视图" style="width: 680px;" :bordered="false">
+    <n-modal v-model:show="showRoleModal" preset="card" title="切换视图" style="width: 480px;" :bordered="false">
       <div class="role-switch-grid">
-        <div
-          class="role-card active"
-          @click="switchToPlatform"
-        >
+        <div class="role-card" @click="switchToPlatform">
           <div class="role-card-icon platform">
             <n-icon :component="ServerOutline" size="32" />
           </div>
           <div class="role-card-title">总运营后台</div>
           <div class="role-card-desc">平台级管理 · 全局数据</div>
-          <n-tag type="success" size="small" bordered>当前</n-tag>
+          <n-button size="tiny" secondary>进入</n-button>
         </div>
 
-        <div
-          class="role-card"
-          @click="switchToAgent"
-        >
+        <div class="role-card active" @click="switchToAgent">
           <div class="role-card-icon agent">
             <n-icon :component="BusinessOutline" size="32" />
           </div>
           <div class="role-card-title">代理商后台</div>
           <div class="role-card-desc">代理商管理 · 分润数据</div>
-          <n-button size="tiny" secondary>进入</n-button>
+          <n-tag type="success" size="small" bordered>当前</n-tag>
         </div>
 
-        <div
-          class="role-card"
-          @click="switchToShop"
-        >
+        <div class="role-card" @click="switchToShop">
           <div class="role-card-icon shop">
             <n-icon :component="StorefrontOutline" size="32" />
           </div>
@@ -166,119 +151,73 @@ import { ref, computed, h } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   NMenu, NButton, NIcon, NAvatar, NBadge, NBreadcrumb, NBreadcrumbItem,
-  NInput, NDropdown, NModal, NTag,
+  NDropdown, NModal, NTag,
 } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
-  GridOutline, StorefrontOutline, BusinessOutline, GameControllerOutline, WalletOutline,
-  SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
+  HomeOutline, PeopleOutline, StorefrontOutline, StatsChartOutline,
+  WalletOutline, SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, SearchOutline, NotificationsOutline,
-  ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
-  GiftOutline, ConstructOutline, TrendingUpOutline, ReceiptOutline,
-  BarChartOutline, PulseOutline
+  ServerOutline, BusinessOutline, LogOutOutline, PersonOutline,
 } from '@vicons/ionicons5'
 
 const router = useRouter()
 const route = useRoute()
 const isCollapsed = ref(false)
 const showRoleModal = ref(false)
+const agentName = ref('深圳未来科技')
 
-// 菜单配置 - 二级菜单结构
+// 代理商菜单配置
 const menuOptions: MenuOption[] = [
   {
-    label: '数据中心',
-    key: 'dashboard-group',
-    icon: () => h(NIcon, { component: GridOutline }),
+    label: '首页概览',
+    key: '/agent/dashboard',
+    icon: () => h(NIcon, { component: HomeOutline }),
+  },
+  {
+    label: '商家管理',
+    key: 'merchants-group',
+    icon: () => h(NIcon, { component: PeopleOutline }),
     children: [
-      { label: '大屏看板', key: '/platform/dashboard' },
-      { label: '数据报表', key: '/platform/reports' },
-      { label: '内容消费大盘', key: '/platform/content-consumption' },
-      { label: '设备运行总览', key: '/platform/device-overview' },
+      { label: '商家列表', key: '/agent/merchants' },
     ]
   },
   {
-    label: '店铺管理',
+    label: '店铺概览',
     key: 'stores-group',
     icon: () => h(NIcon, { component: StorefrontOutline }),
     children: [
-      { label: '商家管理', key: '/platform/merchants' },
-      { label: '店铺列表', key: '/platform/stores' },
-      { label: '代理商', key: '/platform/agents' },
+      { label: '店铺列表', key: '/agent/stores' },
+      { label: '设备统计', key: '/agent/stores/devices' },
     ]
   },
   {
-    label: '内容中心',
-    key: 'content-group',
-    icon: () => h(NIcon, { component: GameControllerOutline }),
-    children: [
-      { label: '游戏库', key: '/platform/games' },
-      { label: '内容分发', key: '/platform/content' },
-    ]
-  },
-  {
-    label: '游戏豆销售',
-    key: 'gamebean-group',
-    icon: () => h(NIcon, { component: TrendingUpOutline }),
-    children: [
-      { label: '销售总览', key: '/platform/gamebean-sales' },
-      { label: '销售明细', key: '/platform/gamebean-sales/detail' },
-    ]
-  },
-  {
-    label: '会员中心',
-    key: 'member-group',
-    icon: () => h(NIcon, { component: PeopleOutline }),
-    children: [
-      { label: '会员数据', key: '/platform/members' },
-      { label: '会员增长', key: '/platform/members/growth' },
-    ]
-  },
-  {
-    label: '订单流水',
-    key: 'order-group',
-    icon: () => h(NIcon, { component: ReceiptOutline }),
-    children: [
-      { label: '订单透视', key: '/platform/order-flow' },
-    ]
-  },
-  {
-    label: '平台财务',
-    key: 'finance-group',
+    label: '分润中心',
+    key: 'commission-group',
     icon: () => h(NIcon, { component: WalletOutline }),
     children: [
-      { label: '财务总览', key: '/platform/finance' },
-      { label: '结算管理', key: '/platform/finance/settlement' },
-      { label: '对账中心', key: '/platform/finance/reconciliation' },
+      { label: '分润明细', key: '/agent/commission' },
+      { label: '结算记录', key: '/agent/settlement' },
     ]
   },
   {
-    label: '系统运维',
-    key: 'system-group',
+    label: '数据报表',
+    key: 'reports-group',
+    icon: () => h(NIcon, { component: StatsChartOutline }),
+    children: [
+      { label: '营收统计', key: '/agent/reports/revenue' },
+      { label: '会员统计', key: '/agent/reports/members' },
+    ]
+  },
+  {
+    label: '账户设置',
+    key: 'settings-group',
     icon: () => h(NIcon, { component: SettingsOutline }),
     children: [
-      { label: '版本发布', key: '/platform/system' },
-      { label: '告警中心', key: '/platform/system/alerts' },
-      { label: '操作日志', key: '/platform/system/logs' },
+      { label: '账户信息', key: '/agent/account' },
+      { label: '安全设置', key: '/agent/account/security' },
     ]
   },
-  {
-    label: '运维支持',
-    key: 'support-group',
-    icon: () => h(NIcon, { component: ConstructOutline }),
-    children: [
-      { label: '工单系统', key: '/platform/support/tickets' },
-      { label: '帮助中心', key: '/platform/support/help' },
-    ]
-  },
-  {
-    label: '平台账号',
-    key: 'users-group',
-    icon: () => h(NIcon, { component: PeopleOutline }),
-    children: [
-      { label: '账号管理', key: '/platform/users' },
-      { label: '角色权限', key: '/platform/users/roles' },
-    ]
-  }
 ]
 
 const currentRoute = computed(() => route.path)
@@ -289,43 +228,37 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '个人中心', key: 'profile', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
+  { label: '账户信息', key: 'account', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
   { type: 'divider', key: 'd1' },
   { label: '退出登录', key: 'logout', icon: () => h(NIcon, null, { default: () => h(LogOutOutline) }) },
 ]
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
 function handleMenuUpdate(key: string) { router.push(key) }
-function handleExpand() {}
-
 function renderMenuLabel(option: MenuOption) {
   if (!option.label) return null
   return h('span', { class: 'menu-label' }, option.label as string)
 }
 
+function switchToPlatform() {
+  showRoleModal.value = false
+  router.push('/platform/dashboard')
+}
+function switchToAgent() {
+  showRoleModal.value = false
+}
 function switchToShop() {
   showRoleModal.value = false
   router.push('/shop/workbench')
 }
-
-function switchToAgent() {
-  showRoleModal.value = false
-  router.push('/agent/dashboard')
-}
-
-function switchToPlatform() {
-  showRoleModal.value = false
-}
-
 function handleUserAction(key: string) {
-  if (key === 'logout') {
-    router.push('/login')
-  }
+  if (key === 'logout') router.push('/login')
+  if (key === 'account') router.push('/agent/account')
 }
 </script>
 
 <style scoped>
-.platform-layout {
+.agent-layout {
   display: flex;
   height: 100vh;
   overflow: hidden;
@@ -334,7 +267,7 @@ function handleUserAction(key: string) {
 /* ===== 侧边栏 ===== */
 .sidebar {
   width: 260px;
-  background: var(--color-sidebar);
+  background: linear-gradient(180deg, #1A0E00 0%, #0D1F3C 100%);
   display: flex;
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -361,16 +294,12 @@ function handleUserAction(key: string) {
   gap: 12px;
 }
 
-.logo-icon {
+.brand-icon {
   width: 40px;
   height: 40px;
   flex-shrink: 0;
 }
-
-.logo-icon svg {
-  width: 100%;
-  height: 100%;
-}
+.brand-icon svg { width: 100%; height: 100%; }
 
 .logo-text {
   font-family: 'Orbitron', sans-serif;
@@ -391,19 +320,12 @@ function handleUserAction(key: string) {
   margin-top: 2px;
 }
 
-.collapse-btn {
-  color: rgba(255,255,255,0.5) !important;
-}
-.collapse-btn.centered {
-  margin: 0 auto;
-  display: block;
-}
-.collapse-btn:hover {
-  color: rgba(255,255,255,0.9) !important;
-}
+.collapse-btn { color: rgba(255,255,255,0.5) !important; }
+.collapse-btn.centered { margin: 0 auto; display: block; }
+.collapse-btn:hover { color: rgba(255,255,255,0.9) !important; }
 
-/* 平台标识 */
-.platform-badge {
+/* 代理商标识 */
+.agent-badge {
   margin: 16px 20px 8px;
   display: flex;
   align-items: center;
@@ -418,7 +340,7 @@ function handleUserAction(key: string) {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--gradient-brand);
+  background: #F59E0B;
   animation: pulse-glow 2s infinite;
 }
 
@@ -432,9 +354,9 @@ function handleUserAction(key: string) {
 :deep(.n-menu) {
   --n-item-text-color: rgba(255, 255, 255, 0.75) !important;
   --n-item-text-color-active: #fff !important;
-  --n-item-color-active: rgba(59, 130, 246, 0.2) !important;
+  --n-item-color-active: rgba(245, 158, 11, 0.2) !important;
   --n-item-icon-color: rgba(255, 255, 255, 0.6) !important;
-  --n-item-icon-color-active: #60A5FA !important;
+  --n-item-icon-color-active: #FBBF24 !important;
   --n-item-text-color-hover: rgba(255,255,255,0.9) !important;
   --n-item-color-hover: rgba(255,255,255,0.06) !important;
   --n-border-color: transparent !important;
@@ -444,18 +366,6 @@ function handleUserAction(key: string) {
 :deep(.n-menu-item-content) {
   border-radius: 10px !important;
   margin: 2px 0 !important;
-}
-
-.menu-item-custom {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.menu-label {
-  white-space: nowrap;
 }
 
 /* 底部角色卡片 */
@@ -478,34 +388,15 @@ function handleUserAction(key: string) {
 
 .role-switch-card:hover {
   background: rgba(255,255,255,0.08);
-  border-color: rgba(59,130,246,0.3);
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
-.role-info {
-  flex: 1;
-  min-width: 0;
-}
+.role-info { flex: 1; min-width: 0; }
+.role-name { font-size: 13px; font-weight: 600; color: white; }
+.role-desc { font-size: 11px; color: rgba(255,255,255,0.4); }
 
-.role-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: white;
-}
-
-.role-desc {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-}
-
-.switch-icon {
-  color: rgba(255,255,255,0.3);
-  transition: transform 0.25s;
-}
-
-.role-switch-card:hover .switch-icon {
-  transform: rotate(180deg);
-  color: var(--color-primary-light);
-}
+.switch-icon { color: rgba(255,255,255,0.3); transition: transform 0.25s; }
+.role-switch-card:hover .switch-icon { transform: rotate(180deg); color: #FBBF24; }
 
 .sidebar-footer-collapsed {
   padding: 16px;
@@ -523,7 +414,6 @@ function handleUserAction(key: string) {
   background: var(--color-bg-base);
 }
 
-/* 顶部导航 */
 .top-header {
   height: 64px;
   background: white;
@@ -548,7 +438,6 @@ function handleUserAction(key: string) {
   color: var(--text-secondary);
 }
 
-/* 页面内容 */
 .page-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -574,14 +463,14 @@ function handleUserAction(key: string) {
 }
 
 .role-card:hover {
-  border-color: var(--color-primary-light);
+  border-color: #F59E0B;
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 8px 30px rgba(245, 158, 11, 0.12);
 }
 
 .role-card.active {
-  border-color: var(--color-primary);
-  background: var(--gradient-glow);
+  border-color: #F59E0B;
+  background: linear-gradient(180deg, rgba(245,158,11,0.08), transparent);
 }
 
 .role-card-icon {
@@ -595,32 +484,18 @@ function handleUserAction(key: string) {
   color: white;
 }
 
-.role-card-icon.platform {
-  background: linear-gradient(135deg, #3B82F6, #2563EB);
-}
+.role-card-icon.platform { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+.role-card-icon.agent { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.role-card-icon.shop { background: linear-gradient(135deg, #10B981, #059669); }
 
-.role-card-icon.agent {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-}
+.role-card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.role-card-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
 
-.role-card-icon.shop {
-  background: linear-gradient(135deg, #10B981, #059669);
-}
-
-.role-card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.role-card-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-/* 动画过渡 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 </style>
