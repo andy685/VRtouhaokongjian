@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>设备列表</h1>
       <n-space align="center">
-        <span style="color: #666; font-size: 14px;">请选择门店：</span>
+        <span style="color: #666; font-size: 14px;">请选择店铺：</span>
         <n-select v-model:value="selectedShop" :options="shopOptions" size="small" style="width: 180px;" />
         <n-button type="primary" @click="showAddModal = true">
           <template #icon><n-icon :component="AddOutline" /></template>
@@ -24,7 +24,7 @@
     <!-- 添加第三方设备弹窗 -->
     <n-modal v-model:show="showAddModal" preset="card" title="增加第三方设备" style="width: 520px;" :bordered="false">
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="140">
-        <n-form-item label="门店选择" path="shop">
+        <n-form-item label="店铺选择" path="shop">
           <n-select v-model:value="addForm.shop" :options="shopOptions.filter(s => s.value !== 'all')" placeholder="请选择" />
         </n-form-item>
         <n-form-item label="设备名称" path="name">
@@ -125,7 +125,7 @@
     <!-- 编辑弹窗 -->
     <n-modal v-model:show="showEditModal" preset="card" title="编辑设备" style="width: 520px;" :bordered="false">
       <n-form v-if="currentDevice" label-placement="left" label-width="140">
-        <n-form-item label="门店选择">
+        <n-form-item label="店铺选择">
           <n-select v-model:value="editForm.shop" :options="shopOptions.filter(s => s.value !== 'all')" placeholder="请选择" />
         </n-form-item>
         <n-form-item label="设备名称">
@@ -235,13 +235,13 @@ const addForm = ref({
 const editForm = ref<Partial<Device>>({})
 
 const addRules: FormRules = {
-  shop: { required: true, message: '请选择门店', trigger: 'change' },
+  shop: { required: true, message: '请选择店铺', trigger: 'change' },
   name: { required: true, message: '请输入设备名称', trigger: 'blur' },
   price: { required: true, type: 'number', message: '请输入播放影片单价', trigger: 'blur' },
 }
 
 const shopOptions = [
-  { label: '全部门店', value: 'all' },
+  { label: '全部店铺', value: 'all' },
   { label: '利民街小展厅', value: '利民街小展厅' },
   { label: '卓远萝岗区店', value: '卓远萝岗区店' },
   { label: '卓远萧山区店', value: '卓远萧山区店' },
@@ -272,7 +272,7 @@ const filteredData = computed(() => {
 })
 
 const columns: DataTableColumns<Device> = [
-  { title: '门店', key: 'shop', minWidth: 140 },
+  { title: '店铺', key: 'shop', minWidth: 140 },
   { title: '设备类型', key: 'type', minWidth: 120 },
   {
     title: 'token/状态/设备名',

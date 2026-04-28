@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>套票管理</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择门店" size="small" style="width: 180px;" clearable />
+        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择店铺" size="small" style="width: 180px;" clearable />
         <n-input placeholder="搜索套票名称..." size="small" style="width: 180px;" v-model:value="filterKeyword">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
@@ -55,8 +55,8 @@
     <!-- 新增/编辑套票弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
-        <n-form-item label="售卖门店" path="shop" required>
-          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的门店" />
+        <n-form-item label="售卖店铺" path="shop" required>
+          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
         </n-form-item>
         <n-form-item label="套票名称" path="name" required>
           <n-input v-model:value="formData.name" placeholder="如：10次游戏卡" />
@@ -192,7 +192,7 @@ const formData = ref({
 })
 
 const formRules = {
-  shop: { required: true, message: '请选择售卖门店', trigger: 'change' },
+  shop: { required: true, message: '请选择售卖店铺', trigger: 'change' },
   name: { required: true, message: '请输入套票名称', trigger: 'blur' },
   type: { required: true, message: '请选择套票类型', trigger: 'change' },
   price: { required: true, type: 'number' as const, message: '请输入售价', trigger: 'blur' },
@@ -215,7 +215,7 @@ const terminalOptions = [
 const pagination = { pageSize: 10 }
 
 const columns: DataTableColumns = [
-  { title: '所属门店', key: 'shopName', width: 150 },
+  { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '套票名称', key: 'name', width: 140 },
   { title: '类型', key: 'type', width: 90, render: (row) => row.type === 'time' ? '计时票' : '计次票' },
   { title: '售价', key: 'price', width: 90, render: (row) => `¥${row.price}` },

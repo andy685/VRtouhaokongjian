@@ -141,7 +141,7 @@
             <n-icon :component="StorefrontOutline" size="32" />
           </div>
           <div class="role-card-title">店铺后台</div>
-          <div class="role-card-desc">门店运营 · 日常管理</div>
+          <div class="role-card-desc">店铺运营 · 日常管理</div>
           <n-button size="tiny" secondary>进入</n-button>
         </div>
       </div>
@@ -162,7 +162,8 @@ import {
   SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, SearchOutline, NotificationsOutline,
   ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
-  GiftOutline, ConstructOutline
+  GiftOutline, ConstructOutline, TrendingUpOutline, ReceiptOutline,
+  BarChartOutline, PulseOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -179,15 +180,17 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '大屏看板', key: '/platform/dashboard' },
       { label: '数据报表', key: '/platform/reports' },
+      { label: '内容消费大盘', key: '/platform/content-consumption' },
+      { label: '设备运行总览', key: '/platform/device-overview' },
     ]
   },
   {
-    label: '门店管理',
+    label: '店铺管理',
     key: 'stores-group',
     icon: () => h(NIcon, { component: StorefrontOutline }),
     children: [
-      { label: '门店列表', key: '/platform/stores' },
-      { label: '门店审核', key: '/platform/stores/audit' },
+      { label: '店铺列表', key: '/platform/stores' },
+      { label: '店铺审核', key: '/platform/stores/audit' },
       { label: '代理商', key: '/platform/agents' },
     ]
   },
@@ -202,21 +205,38 @@ const menuOptions: MenuOption[] = [
     ]
   },
   {
-    label: '用户体系',
+    label: '平台账号',
     key: 'users-group',
     icon: () => h(NIcon, { component: PeopleOutline }),
     children: [
-      { label: '平台账号', key: '/platform/users' },
+      { label: '账号管理', key: '/platform/users' },
       { label: '角色权限', key: '/platform/users/roles' },
     ]
   },
   {
-    label: '营销工具',
-    key: 'marketing-group',
-    icon: () => h(NIcon, { component: GiftOutline }),
+    label: '游戏豆销售',
+    key: 'gamebean-group',
+    icon: () => h(NIcon, { component: TrendingUpOutline }),
     children: [
-      { label: '优惠券', key: '/platform/coupons' },
-      { label: '活动配置', key: '/platform/activities' },
+      { label: '销售总览', key: '/platform/gamebean-sales' },
+      { label: '销售明细', key: '/platform/gamebean-sales/detail' },
+    ]
+  },
+  {
+    label: '会员中心',
+    key: 'member-group',
+    icon: () => h(NIcon, { component: PeopleOutline }),
+    children: [
+      { label: '会员数据', key: '/platform/members' },
+      { label: '会员增长', key: '/platform/members/growth' },
+    ]
+  },
+  {
+    label: '订单流水',
+    key: 'order-group',
+    icon: () => h(NIcon, { component: ReceiptOutline }),
+    children: [
+      { label: '订单透视', key: '/platform/order-flow' },
     ]
   },
   {

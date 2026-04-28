@@ -37,10 +37,10 @@
             <n-data-table :columns="couponColumns" :data="coupons" :pagination="{ pageSize: 10 }" striped />
           </div>
         </n-tab-pane>
-        <n-tab-pane name="shop" tab="门店优惠券">
+        <n-tab-pane name="shop" tab="店铺优惠券">
           <div class="tab-content">
             <n-alert type="info" :show-icon="true">
-              门店优惠券由各门店自行创建，此处可查看汇总情况
+              店铺优惠券由各店铺自行创建，此处可查看汇总情况
             </n-alert>
             <n-data-table :columns="shopCouponColumns" :data="shopCoupons" :pagination="{ pageSize: 10 }" striped style="margin-top: 16px;" />
           </div>
@@ -108,7 +108,7 @@ const coupons = ref([
 ])
 
 const shopCouponColumns = [
-  { title: '门店', key: 'store', width: 180 },
+  { title: '店铺', key: 'store', width: 180 },
   { title: '券名称', key: 'name' },
   { title: '类型', key: 'type', render: (row: any) => h(NTag, { size: 'small', bordered: true }, () => row.type) },
   { title: '面额', key: 'value' },
@@ -118,7 +118,7 @@ const shopCouponColumns = [
 ]
 
 const shopCoupons = ref([
-  { store: '深圳福田旗舰店', name: '门店专属8折券', type: '折扣券', value: '8折', used: 156, total: 500, validity: '长期有效', status: 'active' },
+  { store: '深圳福田旗舰店', name: '店铺专属8折券', type: '折扣券', value: '8折', used: 156, total: 500, validity: '长期有效', status: 'active' },
   { store: '南山科技园店', name: '周末优惠券', type: '满减券', value: '满50减10', used: 89, total: 200, validity: '长期有效', status: 'active' },
   { store: '广州天河店', name: '会员日专享', type: '体验券', value: '免费续时10分钟', used: 45, total: 100, validity: '每月8号', status: 'active' },
 ])

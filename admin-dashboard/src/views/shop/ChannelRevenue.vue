@@ -71,8 +71,8 @@
           <n-form-item label="日期范围">
             <n-date-picker v-model:value="filterDateRange" type="daterange" style="width: 100%;" clearable />
           </n-form-item>
-          <n-form-item label="门店">
-            <n-select v-model:value="filterStore" placeholder="请选择门店" :options="storeOptions" clearable />
+          <n-form-item label="店铺">
+            <n-select v-model:value="filterStore" placeholder="请选择店铺" :options="storeOptions" clearable />
           </n-form-item>
         </n-form>
         <template #footer>
@@ -183,7 +183,7 @@ function handleResetFilter() {
  * 这是模拟数据的简化处理，实际业务中应从底层渠道往上汇总。
  */
 
-// 模拟数据：生成最近7天、6个门店的数据
+// 模拟数据：生成最近7天、6个店铺的数据
 function generateMockData() {
   const stores = ['卓远萝岗区店', '卓远萧山区店', '卓远亚运城店', '卓远文鼎路店', '卓远天河路店', '卓远白云路店']
   const result: { id: number; store: string; date: string }[] = []
@@ -234,7 +234,7 @@ const tableData = computed(() => {
   // 数据计算完成后检查是否需要横向滚动提示
   setTimeout(checkScrollable, 100)
 
-  // 门店筛选
+  // 店铺筛选
   if (displayStore.value) {
     const storeName = storeOptions.find(o => o.value === displayStore.value)?.label || ''
     data = data.filter(d => d.store === storeName)

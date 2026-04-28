@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>收银终端</h1>
       <n-space align="center">
-        <span style="color: #666; font-size: 14px;">请选择门店：</span>
+        <span style="color: #666; font-size: 14px;">请选择店铺：</span>
         <n-select v-model:value="selectedShop" :options="shopOptions" size="small" style="width: 180px;" clearable placeholder="请选择" />
         <n-button type="primary" @click="openAdd">
           <template #icon><n-icon :component="AddOutline" /></template>
@@ -26,8 +26,8 @@
     <!-- 增加收银终端弹窗 -->
     <n-modal v-model:show="showAddModal" preset="card" title="增加新的收银token" style="width: 480px;" :bordered="false">
       <n-form label-placement="top">
-        <n-form-item label="门店选择">
-          <n-select v-model:value="form.shop" :options="shopOptions.filter(s => s.value)" placeholder="请选择门店" />
+        <n-form-item label="店铺选择">
+          <n-select v-model:value="form.shop" :options="shopOptions.filter(s => s.value)" placeholder="请选择店铺" />
         </n-form-item>
         <n-form-item label="收银终端名称">
           <n-input v-model:value="form.name" placeholder="请输入终端名称" />
@@ -50,8 +50,8 @@
     <!-- 编辑弹窗 -->
     <n-modal v-model:show="showEditModal" preset="card" title="编辑收银终端" style="width: 480px;" :bordered="false">
       <n-form label-placement="top">
-        <n-form-item label="门店">
-          <n-select v-model:value="editForm.shop" :options="shopOptions.filter(s => s.value)" placeholder="请选择门店" />
+        <n-form-item label="店铺">
+          <n-select v-model:value="editForm.shop" :options="shopOptions.filter(s => s.value)" placeholder="请选择店铺" />
         </n-form-item>
         <n-form-item label="收银终端名称">
           <n-input v-model:value="editForm.name" placeholder="请输入终端名称" />
@@ -127,7 +127,7 @@ const filteredData = computed(() => {
 const pagination = { pageSize: 10 }
 
 const columns: DataTableColumns<Terminal> = [
-  { title: '门店', key: 'shop', minWidth: 180 },
+  { title: '店铺', key: 'shop', minWidth: 180 },
   { title: '收银终端名称', key: 'name', minWidth: 140 },
   {
     title: 'Token',

@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>结算管理</h1>
-        <p class="header-desc">管理门店结算周期与打款状态</p>
+        <p class="header-desc">管理店铺结算周期与打款状态</p>
       </div>
       <n-space>
         <n-select v-model:value="filterStatus" placeholder="结算状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
@@ -56,7 +56,7 @@
 
     <!-- 批量结算弹窗 -->
     <n-modal v-model:show="showBatchModal" preset="card" title="批量结算" style="width: 520px;" :bordered="false">
-      <p style="margin-bottom: 16px; color: #666;">选择要结算的门店记录</p>
+      <p style="margin-bottom: 16px; color: #666;">选择要结算的店铺记录</p>
       <n-data-table :columns="batchColumns" :data="pendingData" :pagination="false" size="small" striped />
       <template #footer>
         <n-space justify="end">
@@ -70,7 +70,7 @@
     <n-modal v-model:show="showDetailModal" preset="card" title="结算详情" style="width: 600px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
-        <n-descriptions-item label="门店">{{ currentRecord.store }}</n-descriptions-item>
+        <n-descriptions-item label="店铺">{{ currentRecord.store }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
         <n-descriptions-item label="结算金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="手续费">{{ `¥${currentRecord.fee}` }}</n-descriptions-item>
@@ -113,7 +113,7 @@ const statusOptions = [
 
 const columns = [
   { title: '结算单号', key: 'no', width: 160 },
-  { title: '门店', key: 'store', width: 160 },
+  { title: '店铺', key: 'store', width: 160 },
   { title: '结算周期', key: 'period', width: 180 },
   { title: '结算金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '手续费', key: 'fee', width: 100, render: (row: any) => `¥${row.fee}` },
@@ -160,7 +160,7 @@ const pendingData = computed(() => settlementData.value.filter(d => d.status ===
 // 批量结算
 const showBatchModal = ref(false)
 const batchColumns = [
-  { title: '门店', key: 'store' },
+  { title: '店铺', key: 'store' },
   { title: '结算金额', key: 'amount', render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '状态', key: 'status', render: () => h(NTag, { type: 'warning', size: 'tiny' }, () => '待打款') },
 ]

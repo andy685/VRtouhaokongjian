@@ -39,8 +39,8 @@
     <n-drawer v-model:show="showFilterDrawer" width="340" placement="right">
       <n-drawer-content title="筛选条件" closable>
         <n-form label-placement="left" :label-width="80">
-          <n-form-item label="门店">
-            <n-select placeholder="请选择门店" :options="storeOptions" clearable />
+          <n-form-item label="店铺">
+            <n-select placeholder="请选择店铺" :options="storeOptions" clearable />
           </n-form-item>
           <n-form-item label="会员搜索">
             <n-input placeholder="姓名/手机号" />
@@ -147,7 +147,7 @@ const columns = [
     }
   },
   {
-    title: '发生门店',
+    title: '发生店铺',
     key: 'storeName',
     width: 110,
   },

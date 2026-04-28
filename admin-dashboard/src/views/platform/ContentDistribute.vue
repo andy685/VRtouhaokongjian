@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>内容分发</h1>
-        <p class="header-desc">管理游戏内容向各门店的分发配置</p>
+        <p class="header-desc">管理游戏内容向各店铺的分发配置</p>
       </div>
       <n-space>
         <n-select v-model:value="filterGame" placeholder="选择游戏" :options="gameOptions" size="small" style="width: 160px;" clearable />
@@ -68,8 +68,8 @@
         <n-form-item label="选择游戏" required>
           <n-select v-model:value="batchForm.games" :options="gameOptions" multiple placeholder="请选择要分发的游戏" />
         </n-form-item>
-        <n-form-item label="目标门店" required>
-          <n-select v-model:value="batchForm.stores" :options="storeOptions" multiple placeholder="请选择目标门店" />
+        <n-form-item label="目标店铺" required>
+          <n-select v-model:value="batchForm.stores" :options="storeOptions" multiple placeholder="请选择目标店铺" />
         </n-form-item>
         <n-form-item label="分发版本">
           <n-input v-model:value="batchForm.version" placeholder="如：v2.3.1" />
@@ -88,7 +88,7 @@
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="游戏名称">{{ currentRecord.gameName }}</n-descriptions-item>
         <n-descriptions-item label="分发版本">{{ currentRecord.version }}</n-descriptions-item>
-        <n-descriptions-item label="分发门店">{{ currentRecord.storeCount }} 家</n-descriptions-item>
+        <n-descriptions-item label="分发店铺">{{ currentRecord.storeCount }} 家</n-descriptions-item>
         <n-descriptions-item label="分发状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'error'" size="small">
             {{ currentRecord.statusText }}
@@ -149,7 +149,7 @@ const storeOptions = [
 
 const columns = [
   { title: '游戏名称', key: 'gameName', width: 160 },
-  { title: '分发门店', key: 'storeCount', width: 120, render: (row: any) => `${row.storeCount} 家` },
+  { title: '分发店铺', key: 'storeCount', width: 120, render: (row: any) => `${row.storeCount} 家` },
   { title: '版本号', key: 'version', width: 120 },
   {
     title: '分发状态',
@@ -203,10 +203,10 @@ const batchForm = ref({ games: [] as string[], stores: [] as string[], version: 
 
 function confirmBatch() {
   if (batchForm.value.games.length === 0 || batchForm.value.stores.length === 0) {
-    message.warning('请选择游戏和目标门店')
+    message.warning('请选择游戏和目标店铺')
     return
   }
-  message.success(`已成功分发 ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家门店`)
+  message.success(`已成功分发 ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家店铺`)
   showBatchModal.value = false
   batchForm.value = { games: [], stores: [], version: '' }
 }

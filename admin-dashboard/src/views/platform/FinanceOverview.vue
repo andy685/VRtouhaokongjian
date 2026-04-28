@@ -114,7 +114,7 @@ const incomeChartRef = ref<HTMLElement>()
 
 const transactionColumns = [
   { title: '订单号', key: 'orderNo', width: 160 },
-  { title: '门店', key: 'store' },
+  { title: '店铺', key: 'store' },
   { title: '金额', key: 'amount', render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '手续费', key: 'fee', render: (row: any) => `¥${row.fee}` },
   { title: '到账金额', key: 'actual', render: (row: any) => `¥${row.actual.toLocaleString()}` },

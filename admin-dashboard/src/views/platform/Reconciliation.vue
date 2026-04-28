@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>对账中心</h1>
-        <p class="header-desc">平台与门店、支付渠道的财务对账</p>
+        <p class="header-desc">平台与店铺、支付渠道的财务对账</p>
       </div>
       <n-space>
         <n-date-picker type="daterange" clearable size="small" v-model:value="dateRange" />
@@ -67,7 +67,7 @@
     <n-modal v-model:show="showHandleModal" preset="card" title="处理异常订单" style="width: 560px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="订单号">{{ currentRecord.orderNo }}</n-descriptions-item>
-        <n-descriptions-item label="门店">{{ currentRecord.store }}</n-descriptions-item>
+        <n-descriptions-item label="店铺">{{ currentRecord.store }}</n-descriptions-item>
         <n-descriptions-item label="金额">{{ currentRecord.amount }}</n-descriptions-item>
         <n-descriptions-item label="异常类型">
           <n-tag :type="currentRecord.type === '金额异常' ? 'error' : 'warning'" size="small">{{ currentRecord.type }}</n-tag>
@@ -122,7 +122,7 @@ const stats = ref([
 
 const exceptionColumns = [
   { title: '订单号', key: 'orderNo', width: 160 },
-  { title: '门店', key: 'store', width: 160 },
+  { title: '店铺', key: 'store', width: 160 },
   { title: '金额', key: 'amount', width: 120 },
   {
     title: '异常类型',
@@ -147,7 +147,7 @@ const exceptionColumns = [
 const exceptionData = ref([
   { id: 1, orderNo: 'VR20260419001', store: '深圳福田旗舰店', amount: '¥128.00', type: '金额异常', reason: '支付金额与订单不符', time: '2026-04-19 18:30' },
   { id: 2, orderNo: 'VR20260419002', store: '南山科技园店', amount: '¥99.00', type: '重复支付', reason: '同一订单出现两次支付记录', time: '2026-04-19 16:45' },
-  { id: 3, orderNo: 'VR20260419003', store: '广州天河店', amount: '¥256.00', type: '金额异常', reason: '门店上报金额与平台记录不一致', time: '2026-04-19 14:20' },
+  { id: 3, orderNo: 'VR20260419003', store: '广州天河店', amount: '¥256.00', type: '金额异常', reason: '店铺上报金额与平台记录不一致', time: '2026-04-19 14:20' },
   { id: 4, orderNo: 'VR20260419004', store: '北京朝阳店', amount: '¥68.00', type: '未到账', reason: '顾客已支付但平台未收到', time: '2026-04-19 12:10' },
   { id: 5, orderNo: 'VR20260419005', store: '上海浦东店', amount: '¥188.00', type: '重复支付', reason: '顾客重复扫码支付', time: '2026-04-19 10:30' },
 ])

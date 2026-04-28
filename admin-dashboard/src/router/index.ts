@@ -15,9 +15,14 @@ import ContentDistribute from '../views/platform/ContentDistribute.vue'
 import ContentReview from '../views/platform/ContentReview.vue'
 import UserList from '../views/platform/UserList.vue'
 import RolePermission from '../views/platform/RolePermission.vue'
-import Coupons from '../views/platform/Coupons.vue'
-import Activities from '../views/platform/Activities.vue'
 import FinanceOverview from '../views/platform/FinanceOverview.vue'
+import GameBeanSales from '../views/platform/GameBeanSales.vue'
+import GameBeanSalesDetail from '../views/platform/GameBeanSalesDetail.vue'
+import ContentConsumption from '../views/platform/ContentConsumption.vue'
+import DeviceOverview from '../views/platform/DeviceOverview.vue'
+import MemberCenter from '../views/platform/MemberCenter.vue'
+import MemberGrowth from '../views/platform/MemberGrowth.vue'
+import OrderFlow from '../views/platform/OrderFlow.vue'
 import SettlementManage from '../views/platform/SettlementManage.vue'
 import Reconciliation from '../views/platform/Reconciliation.vue'
 import System from '../views/platform/System.vue'
@@ -107,20 +112,28 @@ const routes: RouteRecordRaw[] = [
       // 数据中心
       { path: 'dashboard', name: 'PlatformDashboard', component: Dashboard, meta: { title: '大屏看板' } },
       { path: 'reports', name: 'PlatformReports', component: Reports, meta: { title: '数据报表' } },
-      // 门店管理
-      { path: 'stores', name: 'PlatformStores', component: StoreList, meta: { title: '门店列表' } },
-      { path: 'stores/audit', name: 'PlatformStoresAudit', component: StoreAudit, meta: { title: '门店审核' } },
+      // 店铺管理
+      { path: 'stores', name: 'PlatformStores', component: StoreList, meta: { title: '店铺列表' } },
+      { path: 'stores/audit', name: 'PlatformStoresAudit', component: StoreAudit, meta: { title: '店铺审核' } },
       { path: 'agents', name: 'PlatformAgents', component: AgentList, meta: { title: '代理商' } },
       // 内容中心
       { path: 'games', name: 'PlatformGames', component: GameLibrary, meta: { title: '游戏库' } },
       { path: 'content', name: 'PlatformContent', component: ContentDistribute, meta: { title: '内容分发' } },
       { path: 'content/review', name: 'PlatformContentReview', component: ContentReview, meta: { title: '审核管理' } },
-      // 用户体系
-      { path: 'users', name: 'PlatformUsers', component: UserList, meta: { title: '平台账号' } },
+      // 平台账号
+      { path: 'users', name: 'PlatformUsers', component: UserList, meta: { title: '账号管理' } },
       { path: 'users/roles', name: 'PlatformUsersRoles', component: RolePermission, meta: { title: '角色权限' } },
-      // 营销工具
-      { path: 'coupons', name: 'PlatformCoupons', component: Coupons, meta: { title: '优惠券' } },
-      { path: 'activities', name: 'PlatformActivities', component: Activities, meta: { title: '活动配置' } },
+      // 游戏豆销售
+      { path: 'gamebean-sales', name: 'PlatformGameBeanSales', component: GameBeanSales, meta: { title: '销售总览' } },
+      { path: 'gamebean-sales/detail', name: 'PlatformGameBeanSalesDetail', component: GameBeanSalesDetail, meta: { title: '销售明细' } },
+      // 会员中心
+      { path: 'members', name: 'PlatformMembers', component: MemberCenter, meta: { title: '会员数据' } },
+      { path: 'members/growth', name: 'PlatformMembersGrowth', component: MemberGrowth, meta: { title: '会员增长' } },
+      // 订单流水
+      { path: 'order-flow', name: 'PlatformOrderFlow', component: OrderFlow, meta: { title: '订单透视' } },
+      // 数据中心扩展
+      { path: 'content-consumption', name: 'PlatformContentConsumption', component: ContentConsumption, meta: { title: '内容消费大盘' } },
+      { path: 'device-overview', name: 'PlatformDeviceOverview', component: DeviceOverview, meta: { title: '设备运行总览' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '财务总览' } },
       { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: SettlementManage, meta: { title: '结算管理' } },
@@ -135,7 +148,7 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
-  // ===== 店铺运营后台（门店店长） =====
+  // ===== 店铺运营后台（店铺店长） =====
   {
     path: '/shop',
     name: 'Shop',
@@ -175,7 +188,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'member-prepaid-times-query', name: 'ShopMemberPrepaidTimesQuery', component: MemberPrepaidTimesQuery, meta: { title: '会员预存次数查询', breadcrumb: [{ label: '会员管理' }, { label: '会员预存次数查询' }] } },
       { path: 'times-adjust-log', name: 'ShopTimesAdjustLog', component: TimesAdjustLog, meta: { title: '次数调整有效期查询', breadcrumb: [{ label: '会员管理' }, { label: '次数调整有效期查询' }] } },
       // 数据报表
-      { path: 'daily-sales', name: 'ShopDailySales', component: DailySales, meta: { title: '门店销售日报', breadcrumb: [{ label: '数据报表' }, { label: '门店销售日报' }] } },
+      { path: 'daily-sales', name: 'ShopDailySales', component: DailySales, meta: { title: '店铺销售日报', breadcrumb: [{ label: '数据报表' }, { label: '店铺销售日报' }] } },
       { path: 'historical-revenue', name: 'ShopHistoricalRevenue', component: HistoricalRevenue, meta: { title: '历史营收统计', breadcrumb: [{ label: '数据报表' }, { label: '历史营收统计' }] } },
       { path: 'channel-revenue', name: 'ShopChannelRevenue', component: ChannelRevenue, meta: { title: '渠道营收统计', breadcrumb: [{ label: '数据报表' }, { label: '渠道营收统计' }] } },
       { path: 'product-sales', name: 'ShopProductSales', component: ProductSales, meta: { title: '售品销售报表', breadcrumb: [{ label: '数据报表' }, { label: '售品销售报表' }] } },

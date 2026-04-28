@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>优惠券管理</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择门店" size="small" style="width: 180px;" clearable />
+        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择店铺" size="small" style="width: 180px;" clearable />
         <n-input placeholder="搜索优惠券名称..." size="small" style="width: 180px;" v-model:value="filterKeyword">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
@@ -113,8 +113,8 @@
     <!-- 新增/编辑优惠券弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
-        <n-form-item label="售卖门店" path="shop" required>
-          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的门店" />
+        <n-form-item label="售卖店铺" path="shop" required>
+          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
         </n-form-item>
         <n-form-item label="优惠券名称" path="name" required>
           <n-input v-model:value="formData.name" placeholder="如：新人专享券" />
@@ -349,7 +349,7 @@ function getDefaultFormData() {
 const formData = ref(getDefaultFormData())
 
 const formRules = {
-  shop: { required: true, message: '请选择售卖的门店', trigger: 'change' },
+  shop: { required: true, message: '请选择售卖的店铺', trigger: 'change' },
   name: { required: true, message: '请输入优惠券名称', trigger: 'blur' },
   type: { required: true, message: '请选择优惠类型', trigger: 'change' },
   value: { required: true, message: '请输入优惠内容', trigger: 'blur' }
@@ -388,7 +388,7 @@ const totalDiscount = computed(() => {
 })
 
 const columns: DataTableColumns = [
-  { title: '所属门店', key: 'shopName', width: 150 },
+  { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '优惠券名称', key: 'name', width: 150 },
   { title: '类型', key: 'type', width: 100, render: (row) => {
     const map: Record<string, string> = { discount: '满减券', rate: '折扣券', special: '特价券', exchange: '兑换券' }

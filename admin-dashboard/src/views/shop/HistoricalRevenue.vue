@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <!-- 三、渠道占比/门店对比 -->
+    <!-- 三、渠道占比/店铺对比 -->
     <div class="section-card">
       <div class="section-title">
         <span class="title-bar"></span>
@@ -151,8 +151,8 @@
           <n-form-item v-else label="月份范围">
             <n-date-picker v-model:value="filterMonthRange" type="monthrange" style="width: 100%;" clearable />
           </n-form-item>
-          <n-form-item label="门店">
-            <n-select v-model:value="filterStore" placeholder="请选择门店" :options="storeOptions" clearable />
+          <n-form-item label="店铺">
+            <n-select v-model:value="filterStore" placeholder="请选择店铺" :options="storeOptions" clearable />
           </n-form-item>
         </n-form>
         <template #footer>
@@ -488,7 +488,7 @@ const tableData = computed(() => {
 
 const columns = computed(() => [
   { title: viewMode.value === 'month' ? '月份' : '日期', key: 'date', width: 90, fixed: 'left' as const },
-  { title: '门店', key: 'store', width: 130, fixed: 'left' as const,
+  { title: '店铺', key: 'store', width: 130, fixed: 'left' as const,
     render(row: any) { return row.isTotal ? h('b', {}, row.store) : row.store }
   },
   { title: '营收总额', key: 'revenueTotal', width: 110, align: 'center' as const,

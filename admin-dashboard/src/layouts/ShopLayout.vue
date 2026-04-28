@@ -113,7 +113,7 @@
             <n-icon :component="StorefrontOutline" size="32" />
           </div>
           <div class="role-card-title">店铺后台</div>
-          <div class="role-card-desc">门店运营 · 日常管理</div>
+          <div class="role-card-desc">店铺运营 · 日常管理</div>
           <n-tag type="success" size="small" bordered>当前</n-tag>
         </div>
       </div>
@@ -216,7 +216,7 @@ const menuOptions: MenuOption[] = [
     key: 'reports-group',
     icon: () => h(NIcon, { component: StatsChartOutline }),
     children: [
-      { label: '门店销售日报', key: '/shop/daily-sales' },
+      { label: '店铺销售日报', key: '/shop/daily-sales' },
       { label: '历史营收统计', key: '/shop/historical-revenue' },
       { label: '渠道营收统计', key: '/shop/channel-revenue' },
       { label: '售品销售报表', key: '/shop/product-sales' },

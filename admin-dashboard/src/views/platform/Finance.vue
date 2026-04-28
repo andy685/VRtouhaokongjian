@@ -190,7 +190,7 @@ const statusOptions = [
 // 交易记录
 const transactionColumns = [
   { title: '订单号', key: 'orderNo', width: 160 },
-  { title: '门店', key: 'store' },
+  { title: '店铺', key: 'store' },
   { title: '金额', key: 'amount', render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '手续费', key: 'fee', render: (row: any) => `¥${row.fee}` },
   { title: '到账金额', key: 'actual', render: (row: any) => `¥${row.actual.toLocaleString()}` },
@@ -209,7 +209,7 @@ const transactionData = [
 // 结算记录
 const settlementColumns = [
   { title: '结算单号', key: 'no', width: 160 },
-  { title: '门店', key: 'store' },
+  { title: '店铺', key: 'store' },
   { title: '结算周期', key: 'period' },
   { title: '结算金额', key: 'amount', render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '手续费', key: 'fee', render: (row: any) => `¥${row.fee}` },
@@ -227,7 +227,7 @@ const settlementData = [
 // 异常订单
 const exceptionColumns = [
   { title: '订单号', key: 'orderNo' },
-  { title: '门店', key: 'store' },
+  { title: '店铺', key: 'store' },
   { title: '金额', key: 'amount' },
   { title: '异常类型', key: 'type', render: (row: any) => h(NTag, { type: row.type === '金额异常' ? 'error' : 'warning', size: 'small' }, () => row.type) },
   { title: '原因', key: 'reason' },

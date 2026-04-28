@@ -18,7 +18,7 @@
       </div>
       <div class="stat-card">
         <n-icon :component="CloudUploadOutline" size="24" color="#10B981" />
-        <div><span class="num">126</span><span class="label">分发门店</span></div>
+        <div><span class="num">126</span><span class="label">分发店铺</span></div>
       </div>
       <div class="stat-card">
         <n-icon :component="EyeOutline" size="24" color="#F59E0B" />
@@ -154,7 +154,7 @@ const reviewTypeOptions = [
 // 分发记录
 const distributeColumns = [
   { title: '游戏名称', key: 'gameName' },
-  { title: '分发门店', key: 'storeCount', render: (row: any) => `${row.storeCount} 家` },
+  { title: '分发店铺', key: 'storeCount', render: (row: any) => `${row.storeCount} 家` },
   { title: '版本号', key: 'version' },
   { title: '分发状态', key: 'status', render: (row: any) => h(NTag, { type: row.status === 'done' ? 'success' : row.status === 'pending' ? 'warning' : 'error', size: 'small' }, () => row.statusText) },
   { title: '分发时间', key: 'time' },

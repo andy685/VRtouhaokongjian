@@ -48,7 +48,7 @@
         <n-form-item label="待机显示内容">
           <n-radio-group v-model:value="settings.idleContent">
             <n-space>
-              <n-radio value="poster">门店宣传海报</n-radio>
+              <n-radio value="poster">店铺宣传海报</n-radio>
               <n-radio value="video">品牌宣传视频</n-radio>
               <n-radio value="gamePreview">热门游戏预览</n-radio>
               <n-radio value="qrCode">扫码关注/注册二维码</n-radio>

@@ -12,8 +12,8 @@
     <!-- 添加弹窗 -->
     <n-modal v-model:show="showAddModal" preset="card" title="添加店铺" style="width: 520px;">
       <n-form :model="addForm" label-placement="left" label-width="80px">
-        <n-form-item label="门店名称">
-          <n-input v-model:value="addForm.name" placeholder="请输入门店名称" />
+        <n-form-item label="店铺名称">
+          <n-input v-model:value="addForm.name" placeholder="请输入店铺名称" />
         </n-form-item>
         <n-form-item label="联系电话">
           <n-input v-model:value="addForm.phone" placeholder="请输入联系电话" />
@@ -33,7 +33,7 @@
     <!-- 编辑弹窗 -->
     <n-modal v-model:show="showEditModal" preset="card" title="编辑店铺" style="width: 520px;">
       <n-form :model="editForm" label-placement="left" label-width="80px">
-        <n-form-item label="门店名称">
+        <n-form-item label="店铺名称">
           <n-input v-model:value="editForm.name" />
         </n-form-item>
         <n-form-item label="联系电话">
@@ -150,7 +150,7 @@ function openAdd() {
 
 function handleAddSubmit() {
   if (!addForm.value.name) {
-    window.$message?.warning('请输入门店名称')
+    window.$message?.warning('请输入店铺名称')
     return
   }
   const newId = Math.floor(Math.random() * 9000) + 1000
@@ -186,7 +186,7 @@ const rulesForm = ref({
 
 const columns: DataTableColumns = [
   { title: '编号', key: 'id', width: 80 },
-  { title: '门店', key: 'name', width: 160 },
+  { title: '店铺', key: 'name', width: 160 },
   { title: '国内店铺', key: 'isDomestic', width: 90, render: (row: any) =>
     h(NTag, { type: 'success', size: 'small' }, { default: () => row.isDomestic ? '是' : '否' })
   },

@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>促销活动</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择门店" size="small" style="width: 180px;" clearable />
+        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择店铺" size="small" style="width: 180px;" clearable />
         <n-input placeholder="搜索活动名称..." size="small" style="width: 180px;" v-model:value="filterKeyword">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
@@ -55,8 +55,8 @@
     <!-- 创建/编辑活动弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 700px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
-        <n-form-item label="售卖门店" path="shop" required>
-          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的门店" />
+        <n-form-item label="售卖店铺" path="shop" required>
+          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
         </n-form-item>
         <n-form-item label="活动名称" path="name" required>
           <n-input v-model:value="formData.name" placeholder="如：周末限时特惠" />
@@ -223,7 +223,7 @@ function getDefaultFormData() {
 const formData = ref(getDefaultFormData())
 
 const formRules = {
-  shop: { required: true, message: '请选择售卖的门店', trigger: 'change' },
+  shop: { required: true, message: '请选择售卖的店铺', trigger: 'change' },
   name: { required: true, message: '请输入活动名称', trigger: 'blur' },
   type: { required: true, message: '请选择促销类型', trigger: 'change' },
   startTime: { required: true, message: '请选择开始时间', trigger: 'change' },
@@ -256,7 +256,7 @@ function getPromoContent(row: any): string {
 }
 
 const columns: DataTableColumns = [
-  { title: '所属门店', key: 'shopName', width: 150 },
+  { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '活动名称', key: 'name', width: 160 },
   { title: '促销类型', key: 'type', width: 110, render: (row) => {
     const map: Record<string, string> = { package: '套餐促销', discount: '全场打折', threshold: '满额立减' }

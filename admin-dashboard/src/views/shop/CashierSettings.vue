@@ -5,7 +5,7 @@
     </div>
 
     <div class="payment-layout">
-      <!-- 左侧门店选择 -->
+      <!-- 左侧店铺选择 -->
       <div class="shop-sidebar">
         <div class="sidebar-title">店铺选择</div>
         <div class="shop-list">
@@ -85,7 +85,7 @@ const currentShop = ref('利民街小展厅')
 
 const shopList = ['党建馆', '华东展厅', '恒源分部展厅', '利民街小展厅', '卓远亚运城店', '卓远萧山区店', '卓远萝岗区店']
 
-// 系统固定支付方式，所有门店一致，默认全部启用
+// 系统固定支付方式，所有店铺一致，默认全部启用
 const basePayments: PaymentMethod[] = [
   { id: 1, type: 'scan', name: '扫码支付', desc: '扫码支付，支持微信支付宝支付，如未开通且有需要请联系卓远开通。', enabled: true },
   { id: 2, type: 'cash', name: '现金', desc: '平台提供数据，需要线下自主对账。', enabled: true },
@@ -94,7 +94,7 @@ const basePayments: PaymentMethod[] = [
   { id: 5, type: 'bank', name: '线下银行卡', desc: '线下的方式，直接支付到店铺老板银行卡，平台提供数据，需要线下自主对账。', enabled: true },
 ]
 
-// 每个门店独立保存自己的启用状态和排序（深拷贝）
+// 每个店铺独立保存自己的启用状态和排序（深拷贝）
 const paymentsMap = ref<Record<string, PaymentMethod[]>>(
   Object.fromEntries(shopList.map(shop => [shop, JSON.parse(JSON.stringify(basePayments))]))
 )
@@ -152,7 +152,7 @@ function saveSettings() {
   align-items: flex-start;
 }
 
-/* 左侧门店 */
+/* 左侧店铺 */
 .shop-sidebar {
   width: 220px;
   flex-shrink: 0;

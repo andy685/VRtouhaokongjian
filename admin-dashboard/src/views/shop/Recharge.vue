@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>充值套餐</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择门店" size="small" style="width: 180px;" clearable />
+        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择店铺" size="small" style="width: 180px;" clearable />
         <n-input placeholder="搜索套餐名称..." size="small" style="width: 180px;" v-model:value="filterKeyword">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
@@ -55,8 +55,8 @@
     <!-- 新增/编辑充值套餐弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="110px" :rules="formRules">
-        <n-form-item label="售卖门店" path="shop" required>
-          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的门店" />
+        <n-form-item label="售卖店铺" path="shop" required>
+          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
         </n-form-item>
         <n-form-item label="套餐名称" path="name" required>
           <n-input v-model:value="formData.name" placeholder="如：充300送100" />
@@ -203,7 +203,7 @@ const formData = ref({
 })
 
 const formRules = {
-  shop: { required: true, message: '请选择售卖门店', trigger: 'change' },
+  shop: { required: true, message: '请选择售卖店铺', trigger: 'change' },
   name: { required: true, message: '请输入套餐名称', trigger: 'blur' },
   amount: { required: true, type: 'number' as const, message: '请输入售卖金额', trigger: 'blur' },
   deposit: { required: true, type: 'number' as const, message: '请输入到账预存款', trigger: 'blur' },
@@ -227,7 +227,7 @@ const terminalOptions = [
 const pagination = { pageSize: 10 }
 
 const columns: DataTableColumns = [
-  { title: '所属门店', key: 'shopName', width: 150 },
+  { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '套餐名称', key: 'name', width: 150 },
   { title: '售卖金额', key: 'amount', width: 100, render: (row) => `¥${row.amount}` },
   { title: '到账预存款', key: 'deposit', width: 120, render: (row) => `¥${row.deposit}` },

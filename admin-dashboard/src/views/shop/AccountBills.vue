@@ -36,7 +36,7 @@
     <n-drawer v-model:show="showFilterDrawer" width="380" placement="right" :trap-focus="false">
       <n-drawer-content title="筛选" closable>
         <n-form ref="filterFormRef" label-placement="left" :label-width="70" size="medium">
-          <n-form-item label="门店">
+          <n-form-item label="店铺">
             <n-select
               v-model:value="filterStore"
               placeholder="请选择"
@@ -119,7 +119,7 @@ const filterType = ref('')
 const filterDevice = ref('')
 const filterGame = ref('')
 
-// 门店选项
+// 店铺选项
 const storeOptions = [
   { value: '6288', label: '党建馆' },
   { value: '5764', label: '华东展厅' },
@@ -269,7 +269,7 @@ const currentColumns = computed(() => {
       : ['转入', '转出', '平台赠送']
 
   const columns: any[] = [
-    { title: '门店', key: 'store', minWidth: 130 },
+    { title: '店铺', key: 'store', minWidth: 130 },
     { title: '账单类型', key: 'type', width: 110 },
   ]
 

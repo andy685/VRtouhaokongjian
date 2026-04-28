@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>活动赠送</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择门店" size="small" style="width: 180px;" clearable />
+        <n-select v-model:value="filterShop" :options="shopOptions" placeholder="选择店铺" size="small" style="width: 180px;" clearable />
         <n-input placeholder="搜索活动..." size="small" style="width: 180px;" v-model:value="filterKeyword">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
@@ -115,8 +115,8 @@
     <!-- 新增/编辑赠送活动弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
-        <n-form-item label="售卖门店" path="shop" required>
-          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择参与的门店" />
+        <n-form-item label="售卖店铺" path="shop" required>
+          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择参与的店铺" />
         </n-form-item>
         <n-form-item label="活动名称" path="name" required>
           <n-input v-model:value="formData.name" placeholder="如：消费满额赠" />
@@ -339,7 +339,7 @@ function getDefaultFormData() {
 }
 
 const formRules = {
-  shop: { required: true, message: '请选择参与的门店', trigger: 'change' },
+  shop: { required: true, message: '请选择参与的店铺', trigger: 'change' },
   name: { required: true, message: '请输入活动名称', trigger: 'blur' },
   condition: { required: true, message: '请选择触发条件', trigger: 'change' },
   memberTypes: { required: true, type: 'array' as const, message: '请选择可购会员', trigger: 'change' }
@@ -379,7 +379,7 @@ const totalPoints = computed(() => tableData.value.reduce((sum, item) => sum + i
 const totalDeposit = computed(() => tableData.value.reduce((sum, item) => sum + item.giftDeposit, 0))
 
 const columns: DataTableColumns = [
-  { title: '所属门店', key: 'shopName', width: 150 },
+  { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '活动名称', key: 'name', width: 150 },
   { title: '触发条件', key: 'condition', width: 100, render: (row) => {
     const map: Record<string, string> = { consume: '消费满额', recharge: '充值金额', package: '办理套餐', birthday: '生日' }

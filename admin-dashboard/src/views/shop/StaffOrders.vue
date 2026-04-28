@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>员工点播</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width: 160px;" clearable placeholder="选择门店" />
+        <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width: 160px;" clearable placeholder="选择店铺" />
         <n-select v-model:value="filterEmployee" :options="employeeOptions" size="small" style="width: 140px;" clearable placeholder="选择员工" />
         <n-select v-model:value="deviceType" :options="deviceOptions" size="small" style="width: 120px;" />
         <n-date-picker type="daterange" clearable size="small" v-model:value="dateRange" />
@@ -59,7 +59,7 @@
     <!-- 详情弹窗 -->
     <n-modal v-model:show="showDetailModal" preset="card" title="点播详情" style="width: 520px;">
       <n-descriptions :column="2" bordered>
-        <n-descriptions-item label="门店">{{ currentRecord?.shop }}</n-descriptions-item>
+        <n-descriptions-item label="店铺">{{ currentRecord?.shop }}</n-descriptions-item>
         <n-descriptions-item label="员工">{{ currentRecord?.name }}（{{ currentRecord?.employeeId }}）</n-descriptions-item>
         <n-descriptions-item label="设备">{{ currentRecord?.device }}</n-descriptions-item>
         <n-descriptions-item label="游戏">{{ currentRecord?.game }}</n-descriptions-item>
@@ -120,7 +120,7 @@ function getTodayRange(): [number, number] {
 }
 
 const columns: DataTableColumns = [
-  { title: '门店', key: 'shop', width: 140 },
+  { title: '店铺', key: 'shop', width: 140 },
   { title: '员工姓名', key: 'name', width: 100 },
   { title: '工号', key: 'employeeId', width: 90 },
   { title: '设备', key: 'device', width: 110 },

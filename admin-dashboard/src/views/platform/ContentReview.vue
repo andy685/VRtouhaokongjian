@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>审核管理</h1>
-        <p class="header-desc">审核门店提交的游戏内容和素材</p>
+        <p class="header-desc">审核店铺提交的游戏内容和素材</p>
       </div>
       <n-space>
         <n-select v-model:value="filterType" placeholder="审核类型" :options="reviewTypeOptions" size="small" style="width: 120px;" clearable />

@@ -25,8 +25,8 @@
     <!-- 创建/编辑 -->
     <n-modal v-model:show="showUserModal" preset="card" :title="isEdit?'编辑管理员':'创建用户'" style="width:520px" :bordered="false">
       <n-form ref="userFormRef" :model="userForm" :rules="activeRules" label-placement="left" label-width="100">
-        <n-form-item label="门店" path="shops">
-          <n-select v-model:value="userForm.shops" :options="shopOptions" multiple placeholder="请选择门店" :disabled="isEdit" />
+        <n-form-item label="店铺" path="shops">
+          <n-select v-model:value="userForm.shops" :options="shopOptions" multiple placeholder="请选择店铺" :disabled="isEdit" />
         </n-form-item>
         <n-form-item label="角色" path="role"><n-select v-model:value="userForm.role" :options="roleOptions" placeholder="请选择角色" :disabled="isEdit" /></n-form-item>
         <n-form-item v-if="!isEdit" label="登录账号" path="account"><n-input v-model:value="userForm.account" placeholder="请输入登录账号" /></n-form-item>
@@ -123,7 +123,7 @@ const columns: DataTableColumns<User> = [
   { title:'姓名', key:'name', width:100 },
   { title:'联系方式', key:'phone', width:140 },
   { title:'邮箱', key:'email', width:180 },
-  { title:'门店', key:'shops', width:200,
+  { title:'店铺', key:'shops', width:200,
     render(row){ return h('span',{},row.shops.join('、')) }
   },
   { title:'状态', key:'status', width:90, align:'center',

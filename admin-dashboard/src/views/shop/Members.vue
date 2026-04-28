@@ -32,7 +32,7 @@
     <n-drawer v-model:show="showFilterDrawer" width="380" placement="right" :trap-focus="false">
       <n-drawer-content title="筛选" closable>
         <n-form ref="filterFormRef" label-placement="left" :label-width="70" size="medium">
-          <n-form-item label="门店">
+          <n-form-item label="店铺">
             <n-select
               v-model:value="filterForm.storeId"
               placeholder="请选择"

@@ -2,17 +2,17 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <div>
-        <h1>门店列表</h1>
-        <p class="header-desc">管理所有已入驻和待审核的门店</p>
+        <h1>店铺列表</h1>
+        <p class="header-desc">管理所有已入驻和待审核的店铺</p>
       </div>
       <n-space>
-        <n-input v-model:value="searchText" placeholder="搜索门店名称/店长..." size="small" style="width: 220px;">
+        <n-input v-model:value="searchText" placeholder="搜索店铺名称/店长..." size="small" style="width: 220px;">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
         <n-select v-model:value="filterRegion" placeholder="全部区域" :options="regionOptions" size="small" style="width: 140px;" clearable />
         <n-select v-model:value="filterStatus" placeholder="全部状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
         <n-button type="primary" @click="showAddModal = true">
-          <template #icon><n-icon :component="AddOutline" /></template> 新增门店
+          <template #icon><n-icon :component="AddOutline" /></template> 新增店铺
         </n-button>
       </n-space>
     </div>
@@ -24,7 +24,7 @@
           <n-icon :component="StorefrontOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">总门店数</span>
+          <span class="label">总店铺数</span>
           <span class="value">168</span>
         </div>
       </div>
@@ -61,11 +61,11 @@
       <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
     </div>
 
-    <!-- 新增门店弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" title="新增门店" style="width: 560px;" :bordered="false">
+    <!-- 新增店铺弹窗 -->
+    <n-modal v-model:show="showAddModal" preset="card" title="新增店铺" style="width: 560px;" :bordered="false">
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="100">
-        <n-form-item label="门店名称" path="name">
-          <n-input v-model:value="addForm.name" placeholder="请输入门店名称" />
+        <n-form-item label="店铺名称" path="name">
+          <n-input v-model:value="addForm.name" placeholder="请输入店铺名称" />
         </n-form-item>
         <n-form-item label="所属区域" path="region">
           <n-select v-model:value="addForm.region" :options="regionOptions" placeholder="请选择区域" />
@@ -82,7 +82,7 @@
         <n-form-item label="设备数量" path="deviceCount">
           <n-input-number v-model:value="addForm.deviceCount" :min="1" :max="100" style="width: 100%;" />
         </n-form-item>
-        <n-form-item label="门店状态" path="status">
+        <n-form-item label="店铺状态" path="status">
           <n-radio-group v-model:value="addForm.status">
             <n-radio value="online">营业中</n-radio>
             <n-radio value="offline">已打烊</n-radio>
@@ -98,10 +98,10 @@
       </template>
     </n-modal>
 
-    <!-- 编辑门店弹窗 -->
-    <n-modal v-model:show="showEditModal" preset="card" title="编辑门店" style="width: 560px;" :bordered="false">
+    <!-- 编辑店铺弹窗 -->
+    <n-modal v-model:show="showEditModal" preset="card" title="编辑店铺" style="width: 560px;" :bordered="false">
       <n-form v-if="currentStore" label-placement="left" label-width="100">
-        <n-form-item label="门店名称">
+        <n-form-item label="店铺名称">
           <n-input v-model:value="editForm.name" />
         </n-form-item>
         <n-form-item label="所属区域">
@@ -119,7 +119,7 @@
         <n-form-item label="设备数量">
           <n-input-number v-model:value="editForm.deviceCount" :min="1" :max="100" style="width: 100%;" />
         </n-form-item>
-        <n-form-item label="门店状态">
+        <n-form-item label="店铺状态">
           <n-radio-group v-model:value="editForm.status">
             <n-radio value="online">营业中</n-radio>
             <n-radio value="offline">已打烊</n-radio>
@@ -136,16 +136,16 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="门店详情" style="width: 640px;" :bordered="false">
+    <n-modal v-model:show="showDetailModal" preset="card" title="店铺详情" style="width: 640px;" :bordered="false">
       <n-descriptions v-if="currentStore" label-placement="left" :column="2" bordered>
-        <n-descriptions-item label="门店名称">{{ currentStore.name }}</n-descriptions-item>
-        <n-descriptions-item label="门店ID">ST{{ String(currentStore.id).padStart(5, '0') }}</n-descriptions-item>
+        <n-descriptions-item label="店铺名称">{{ currentStore.name }}</n-descriptions-item>
+        <n-descriptions-item label="店铺ID">ST{{ String(currentStore.id).padStart(5, '0') }}</n-descriptions-item>
         <n-descriptions-item label="所属区域">{{ currentStore.region }}</n-descriptions-item>
         <n-descriptions-item label="详细地址">{{ currentStore.address }}</n-descriptions-item>
         <n-descriptions-item label="店长">{{ currentStore.manager }}</n-descriptions-item>
         <n-descriptions-item label="联系电话">{{ currentStore.phone }}</n-descriptions-item>
         <n-descriptions-item label="设备数量">{{ currentStore.devices }} 台</n-descriptions-item>
-        <n-descriptions-item label="门店状态">
+        <n-descriptions-item label="店铺状态">
           <n-tag :type="currentStore.status === 'online' ? 'success' : currentStore.status === 'maintain' ? 'warning' : 'default'" size="small">
             {{ currentStore.statusText }}
           </n-tag>
@@ -158,14 +158,14 @@
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDetailModal = false">关闭</n-button>
-          <n-button type="primary" @click="openEditFromDetail">编辑门店</n-button>
+          <n-button type="primary" @click="openEditFromDetail">编辑店铺</n-button>
         </n-space>
       </template>
     </n-modal>
 
     <!-- 删除确认 -->
     <n-modal v-model:show="showDeleteModal" preset="card" title="确认删除" style="width: 400px;" :bordered="false">
-      <p style="color: #666;">确定要删除门店「{{ deleteTarget?.name }}」吗？此操作不可恢复。</p>
+      <p style="color: #666;">确定要删除店铺「{{ deleteTarget?.name }}」吗？此操作不可恢复。</p>
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDeleteModal = false">取消</n-button>
@@ -213,7 +213,7 @@ const statusOptions = [
 ]
 
 const columns = [
-  { title: '门店名称', key: 'name', width: 180 },
+  { title: '店铺名称', key: 'name', width: 180 },
   { title: '地区', key: 'region', width: 100 },
   { title: '详细地址', key: 'address', ellipsis: { tooltip: true } },
   {
@@ -291,7 +291,7 @@ const showAddModal = ref(false)
 const addFormRef = ref<FormInst | null>(null)
 const addForm = ref({ name: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' })
 const addRules: FormRules = {
-  name: { required: true, message: '请输入门店名称', trigger: 'blur' },
+  name: { required: true, message: '请输入店铺名称', trigger: 'blur' },
   region: { required: true, message: '请选择区域', trigger: 'change' },
   manager: { required: true, message: '请输入店长姓名', trigger: 'blur' },
   phone: { required: true, message: '请输入联系电话', trigger: 'blur' },
@@ -316,7 +316,7 @@ function handleAdd() {
       memberCount: 0,
       createdAt: new Date().toISOString().slice(0, 10),
     })
-    message.success('门店新增成功')
+    message.success('店铺新增成功')
     showAddModal.value = false
     addForm.value = { name: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online' }
   })
@@ -343,7 +343,7 @@ function handleEdit() {
       devices: editForm.value.deviceCount,
       statusText: statusMap[editForm.value.status],
     }
-    message.success('门店信息已更新')
+    message.success('店铺信息已更新')
   }
   showEditModal.value = false
 }
@@ -373,7 +373,7 @@ function handleDelete(row: any) {
 function confirmDelete() {
   if (deleteTarget.value) {
     storeData.value = storeData.value.filter(d => d.id !== deleteTarget.value.id)
-    message.success('门店已删除')
+    message.success('店铺已删除')
   }
   showDeleteModal.value = false
 }

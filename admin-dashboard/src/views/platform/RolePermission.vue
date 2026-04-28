@@ -112,7 +112,7 @@ const columns = [
 
 const roleData = ref([
   { id: 1, name: '超级管理员', description: '拥有系统所有权限，可进行任何操作', count: 2, permissions: ['all'], permissionList: ['全部权限'] },
-  { id: 2, name: '平台运营', description: '负责日常运营管理，包括门店、内容、营销活动', count: 5, permissions: ['dashboard', 'stores', 'content', 'marketing'], permissionList: ['数据中心', '门店管理', '内容中心', '营销工具'] },
+  { id: 2, name: '平台运营', description: '负责日常运营管理，包括店铺、内容、营销活动', count: 5, permissions: ['dashboard', 'stores', 'content', 'marketing'], permissionList: ['数据中心', '店铺管理', '内容中心', '营销工具'] },
   { id: 3, name: '平台财务', description: '财务结算与对账，查看财务相关数据', count: 3, permissions: ['finance', 'reports'], permissionList: ['平台财务', '数据报表'] },
   { id: 4, name: '内容审核', description: '游戏内容审核管理，分发配置', count: 4, permissions: ['content', 'review'], permissionList: ['内容中心', '审核管理'] },
   { id: 5, name: '客服', description: '处理工单、用户反馈，查看基础数据', count: 8, permissions: ['support', 'reports'], permissionList: ['运维支持', '数据报表'] },
@@ -130,11 +130,11 @@ const permissionTree = [
     ]
   },
   {
-    label: '门店管理',
+    label: '店铺管理',
     key: 'stores',
     children: [
-      { label: '门店列表', key: 'stores_list' },
-      { label: '门店审核', key: 'stores_audit' },
+      { label: '店铺列表', key: 'stores_list' },
+      { label: '店铺审核', key: 'stores_audit' },
       { label: '代理商', key: 'agents' },
     ]
   },

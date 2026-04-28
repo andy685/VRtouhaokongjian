@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>交接班记录</h1>
       <n-space>
-        <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width: 160px;" clearable placeholder="选择门店" />
+        <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width: 160px;" clearable placeholder="选择店铺" />
         <n-select v-model:value="filterCashier" :options="cashierOptions" size="small" style="width: 140px;" clearable placeholder="选择收银员" />
         <n-date-picker type="daterange" clearable size="small" v-model:value="dateRange" />
         <n-button secondary @click="exportData">导出</n-button>
@@ -173,7 +173,7 @@ const cashierOptions = [
 ]
 
 const columns: DataTableColumns = [
-  { title: '门店', key: 'shop', width: 140 },
+  { title: '店铺', key: 'shop', width: 140 },
   { title: '收银员', key: 'cashier', width: 100 },
   { title: '开始时间', key: 'startTime', width: 170 },
   { title: '结束时间', key: 'endTime', width: 170, render: (row: any) => row.endTime || h(NTag, { type: 'success', size: 'small' }, { default: () => '进行中' }) },

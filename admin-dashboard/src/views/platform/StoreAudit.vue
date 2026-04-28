@@ -2,8 +2,8 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <div>
-        <h1>门店审核</h1>
-        <p class="header-desc">审核门店入驻申请，管理门店资质</p>
+        <h1>店铺审核</h1>
+        <p class="header-desc">审核店铺入驻申请，管理店铺资质</p>
       </div>
       <n-space>
         <n-select v-model:value="filterStatus" placeholder="全部状态" :options="auditStatusOptions" size="small" style="width: 140px;" clearable />
@@ -57,9 +57,9 @@
     </div>
 
     <!-- 审核弹窗 -->
-    <n-modal v-model:show="showAuditModal" preset="card" title="门店入驻审核" style="width: 640px;" :bordered="false">
+    <n-modal v-model:show="showAuditModal" preset="card" title="店铺入驻审核" style="width: 640px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
-        <n-descriptions-item label="申请门店">{{ currentRecord.storeName }}</n-descriptions-item>
+        <n-descriptions-item label="申请店铺">{{ currentRecord.storeName }}</n-descriptions-item>
         <n-descriptions-item label="申请人">{{ currentRecord.applicant }}</n-descriptions-item>
         <n-descriptions-item label="联系电话">{{ currentRecord.phone }}</n-descriptions-item>
         <n-descriptions-item label="申请区域">{{ currentRecord.region }}</n-descriptions-item>
@@ -91,7 +91,7 @@
     <!-- 详情弹窗 -->
     <n-modal v-model:show="showDetailModal" preset="card" title="审核详情" style="width: 600px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
-        <n-descriptions-item label="申请门店">{{ currentRecord.storeName }}</n-descriptions-item>
+        <n-descriptions-item label="申请店铺">{{ currentRecord.storeName }}</n-descriptions-item>
         <n-descriptions-item label="申请人">{{ currentRecord.applicant }}</n-descriptions-item>
         <n-descriptions-item label="联系电话">{{ currentRecord.phone }}</n-descriptions-item>
         <n-descriptions-item label="申请区域">{{ currentRecord.region }}</n-descriptions-item>
@@ -132,7 +132,7 @@ const auditStatusOptions = [
 ]
 
 const columns = [
-  { title: '申请门店', key: 'storeName', width: 180 },
+  { title: '申请店铺', key: 'storeName', width: 180 },
   { title: '申请人', key: 'applicant', width: 100 },
   { title: '联系电话', key: 'phone', width: 130 },
   { title: '区域', key: 'region', width: 100 },

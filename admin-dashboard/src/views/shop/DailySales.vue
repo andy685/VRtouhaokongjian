@@ -90,8 +90,8 @@
           <n-form-item label="日期范围">
             <n-date-picker v-model:value="filterDateRange" type="daterange" style="width: 100%;" clearable />
           </n-form-item>
-          <n-form-item label="门店">
-            <n-select v-model:value="filterStore" placeholder="请选择门店" :options="storeOptions" clearable />
+          <n-form-item label="店铺">
+            <n-select v-model:value="filterStore" placeholder="请选择店铺" :options="storeOptions" clearable />
           </n-form-item>
         </n-form>
         <template #footer>
@@ -248,7 +248,7 @@ const currentData = computed(() => {
       const ds = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`
       const dayData = getDayData(ds)
 
-      // 营业概况按门店累加
+      // 营业概况按店铺累加
       for (const o of dayData.overview) {
         if (o.isTotal) continue
         if (!overviewMap.has(o.store)) {
@@ -263,7 +263,7 @@ const currentData = computed(() => {
         }
       }
 
-      // 业务数据按 门店+业务 分组累加
+      // 业务数据按 店铺+业务 分组累加
       for (const b of dayData.business) {
         if (b.isTotal) continue
         const key = `${b.store}|${b.business}`
@@ -276,7 +276,7 @@ const currentData = computed(() => {
         }
       }
 
-      // 支付数据按 门店+支付方式 分组累加
+      // 支付数据按 店铺+支付方式 分组累加
       for (const p of dayData.payment) {
         if (p.isTotal) continue
         const key = `${p.store}|${p.payMethod}`
@@ -336,7 +336,7 @@ const currentData = computed(() => {
     result = getDayData(dateStr)
   }
 
-  // 门店筛选
+  // 店铺筛选
   if (displayStore.value) {
     const storeName = storeOptions.find(o => o.value === displayStore.value)?.label || ''
     result.overview = result.overview.filter((r: any) => r.store === storeName || r.isTotal)
@@ -380,7 +380,7 @@ const paymentData = computed(() => currentData.value.payment)
 // ===== 营业概况 表格列 =====
 const overviewColumns = [
   {
-    title: '门店', key: 'store', width: 140,
+    title: '店铺', key: 'store', width: 140,
     render(row: any) { return row.isTotal ? h('b', {}, row.store) : row.store }
   },
   { title: '营收总额（元）', key: 'revenueTotal', width: 130, align: 'center' as const,

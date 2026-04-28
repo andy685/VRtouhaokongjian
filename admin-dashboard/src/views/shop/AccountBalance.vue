@@ -32,7 +32,7 @@
             </div>
             <div class="basic-balance-right">
               <div class="store-pay-hint">
-                各门店通过收银系统扫码支付及点播系统直接扫码支付的金额
+                各店铺通过收银系统扫码支付及点播系统直接扫码支付的金额
               </div>
               <div v-for="store in basicStoreList" :key="store.name" class="store-balance-item">
                 <span class="store-name">{{ store.name }}</span>
@@ -53,7 +53,7 @@
               <n-radio value="universal">游戏豆通用</n-radio>
             </n-radio-group>
             <span class="mode-hint">
-              说明：游戏豆专用是各门店游戏豆充值仅用于当前门店点播，游戏豆通用是各门店游戏豆充值可用于所有门店点播
+              说明：游戏豆专用是各店铺游戏豆充值仅用于当前店铺点播，游戏豆通用是各店铺游戏豆充值可用于所有店铺点播
             </span>
           </div>
 
@@ -62,10 +62,10 @@
             <span class="total-label">商家游戏豆：</span>
             <span class="total-value">{{ merchantGameBean }}</span>
             <n-tag type="warning" size="small" class="total-tip" v-if="gameBeanMode === 'dedicated'">
-              注意：商家游戏豆余额不等于各门店游戏豆余额之和
+              注意：商家游戏豆余额不等于各店铺游戏豆余额之和
             </n-tag>
             <n-tag type="info" size="small" class="total-tip" v-else>
-              注意：全局游戏豆可在所有门店使用
+              注意：全局游戏豆可在所有店铺使用
             </n-tag>
           </div>
 
@@ -85,7 +85,7 @@
           <!-- 全局游戏豆信息 -->
           <div class="game-bean-universal-info" v-else>
             <div class="universal-info-content">
-              <p>全局游戏豆可在所有门店使用，统一管理</p>
+              <p>全局游戏豆可在所有店铺使用，统一管理</p>
               <p>充值后游戏豆会自动添加到全局余额中</p>
             </div>
           </div>

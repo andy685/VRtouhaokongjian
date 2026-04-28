@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>代理商管理</h1>
-        <p class="header-desc">管理区域代理商及其下属门店</p>
+        <p class="header-desc">管理区域代理商及其下属店铺</p>
       </div>
       <n-space>
         <n-input v-model:value="searchText" placeholder="搜索代理商名称..." size="small" style="width: 200px;">
@@ -30,7 +30,7 @@
           <n-icon :component="StorefrontOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">管辖门店</span>
+          <span class="label">管辖店铺</span>
           <span class="value">156</span>
         </div>
       </div>
@@ -102,7 +102,7 @@
         <n-descriptions-item label="联系电话">{{ currentAgent.phone }}</n-descriptions-item>
         <n-descriptions-item label="负责区域">{{ currentAgent.region }}</n-descriptions-item>
         <n-descriptions-item label="分润比例">{{ currentAgent.commissionRate }}%</n-descriptions-item>
-        <n-descriptions-item label="管辖门店">{{ currentAgent.storeCount }} 家</n-descriptions-item>
+        <n-descriptions-item label="管辖店铺">{{ currentAgent.storeCount }} 家</n-descriptions-item>
         <n-descriptions-item label="本月营收">{{ currentAgent.monthRevenue }}</n-descriptions-item>
         <n-descriptions-item label="本月分润">{{ currentAgent.monthCommission }}</n-descriptions-item>
         <n-descriptions-item label="状态">
@@ -150,7 +150,7 @@ const columns = [
   { title: '联系电话', key: 'phone', width: 130 },
   { title: '负责区域', key: 'region', width: 100 },
   { title: '分润比例', key: 'commissionRate', width: 100, render: (row: any) => `${row.commissionRate}%` },
-  { title: '管辖门店', key: 'storeCount', width: 100 },
+  { title: '管辖店铺', key: 'storeCount', width: 100 },
   { title: '本月分润', key: 'monthCommission', width: 120 },
   {
     title: '状态',

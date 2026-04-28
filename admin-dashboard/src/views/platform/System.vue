@@ -238,7 +238,7 @@ const logColumns = [
 ]
 
 const logData = [
-  { time: '2026-04-20 15:35:22', operator: '张三 (admin)', type: 'config', typeText: '配置变更', content: '修改门店「深圳福田店」结算周期为T+1', ip: '192.168.1.100', result: 'success', resultText: '成功' },
+  { time: '2026-04-20 15:35:22', operator: '张三 (admin)', type: 'config', typeText: '配置变更', content: '修改店铺「深圳福田店」结算周期为T+1', ip: '192.168.1.100', result: 'success', resultText: '成功' },
   { time: '2026-04-20 15:20:08', operator: '李四 (admin)', type: 'login', typeText: '登录', content: '后台登录成功', ip: '192.168.1.105', result: 'success', resultText: '成功' },
   { time: '2026-04-20 14:50:33', operator: '王五 (finance)', type: 'data', typeText: '数据操作', content: '导出2026年3月财务报表', ip: '192.168.1.110', result: 'success', resultText: '成功' },
   { time: '2026-04-20 14:30:15', operator: '赵六 (operator)', type: 'config', typeText: '配置变更', content: '新增游戏「丛林探险」到游戏库', ip: '192.168.1.120', result: 'success', resultText: '成功' },

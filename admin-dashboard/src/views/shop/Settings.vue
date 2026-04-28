@@ -7,15 +7,15 @@
       <n-tab-pane name="basic" tab="📋 基本信息">
         <div class="settings-card">
           <div class="form-section">
-            <h3>门店基本信息</h3>
+            <h3>店铺基本信息</h3>
             <n-form label-placement="left" :label-width="100" style="max-width: 600px;">
-              <n-form-item label="门店名称">
+              <n-form-item label="店铺名称">
                 <n-input value="深圳福田旗舰店" />
               </n-form-item>
               <n-form-item label="联系电话">
                 <n-input value="0755-88886666" />
               </n-form-item>
-              <n-form-item label="门店地址">
+              <n-form-item label="店铺地址">
                 <n-input value="深圳市福田区XX路XX号" type="textarea" />
               </n-form-item>
               <n-form-item label="营业时间">

@@ -156,9 +156,9 @@
     <!-- 分发弹窗 -->
     <n-modal v-model:show="showDistributeModal" preset="card" title="内容分发" style="width: 520px;" :bordered="false">
       <div v-if="currentGame" style="margin-bottom: 16px;">
-        <p>正在为 <strong>{{ currentGame.name }}</strong> 选择分发门店</p>
+        <p>正在为 <strong>{{ currentGame.name }}</strong> 选择分发店铺</p>
       </div>
-      <n-transfer v-model:value="selectedStores" :options="storeOptions" source-title="未分发门店" target-title="已选择门店" />
+      <n-transfer v-model:value="selectedStores" :options="storeOptions" source-title="未分发店铺" target-title="已选择店铺" />
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDistributeModal = false">取消</n-button>
@@ -281,7 +281,7 @@ function distributeGame(game: any) {
 }
 
 function confirmDistribute() {
-  message.success(`已将「${currentGame.value.name}」分发到 ${selectedStores.value.length} 家门店`)
+  message.success(`已将「${currentGame.value.name}」分发到 ${selectedStores.value.length} 家店铺`)
   showDistributeModal.value = false
 }
 </script>

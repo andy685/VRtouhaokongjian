@@ -188,8 +188,8 @@
               style="width: 100%;"
             />
           </n-form-item>
-          <n-form-item label="门店">
-            <n-select v-model:value="filterStore" placeholder="请选择门店" :options="storeOptions" clearable />
+          <n-form-item label="店铺">
+            <n-select v-model:value="filterStore" placeholder="请选择店铺" :options="storeOptions" clearable />
           </n-form-item>
         </n-form>
         <template #footer>
@@ -488,7 +488,7 @@ const tableData = computed(() => {
 
 const columns = [
   { title: '日期', key: 'date', width: 120 },
-  { title: '门店', key: 'store', width: 140 },
+  { title: '店铺', key: 'store', width: 140 },
   { title: '收款合计', key: 'receipt', width: 130, render: (row: any) => h('span', { style: { color: '#F59E0B', fontWeight: 600 } }, `¥${row.receipt.toLocaleString()}`) },
   { title: '充值', key: 'recharge', width: 130, render: (row: any) => h('span', { style: { color: '#3B82F6', fontWeight: 600 } }, `¥${row.recharge.toLocaleString()}`) },
   { title: '直接消费', key: 'directConsume', width: 120, render: (row: any) => h('span', { style: { color: '#EF4444', fontWeight: 600 } }, `¥${row.directConsume.toLocaleString()}`) },

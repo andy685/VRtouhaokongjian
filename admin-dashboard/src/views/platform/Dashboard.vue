@@ -58,12 +58,12 @@
 
     <!-- 图表区域 -->
     <div class="charts-grid">
-      <!-- 营收趋势 -->
+      <!-- 游戏豆销售趋势 -->
       <div class="chart-card chart-large">
         <div class="chart-header">
           <div>
-            <h3>营收趋势</h3>
-            <p>近7天平台营收变化</p>
+            <h3>游戏豆销售趋势</h3>
+            <p>近7天平台游戏豆销售额变化</p>
           </div>
           <n-radio-group value="week" size="small">
             <n-radio-button value="week">周</n-radio-button>
@@ -78,8 +78,8 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <h3>门店分布</h3>
-            <p>各地区门店数量</p>
+            <h3>店铺分布</h3>
+            <p>各地区店铺数量</p>
           </div>
         </div>
         <div ref="storeChartRef" class="chart-container"></div>
@@ -115,8 +115,8 @@
     <!-- 店铺列表预览 -->
     <div class="section-card">
       <div class="section-header">
-        <h2>门店监控</h2>
-        <n-input placeholder="搜索门店..." size="small" style="width: 200px;">
+        <h2>店铺监控</h2>
+        <n-input placeholder="搜索店铺..." size="small" style="width: 200px;">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
       </div>
@@ -175,40 +175,40 @@ const CountUp = {
   }
 }
 
-// 核心指标数据
+// 核心指标数据 - 平台视角（游戏豆销售、内容消费、设备、会员）
 const metrics = ref([
   {
-    label: '今日营收',
+    label: '今日游戏豆销售',
     prefix: '¥',
-    value: 286580,
+    value: 86580,
     suffix: '',
     trend: 12.5,
     icon: TrendingUpOutline,
     gradient: 'linear-gradient(135deg, #3B82F6, #2563EB)',
     color: '#3B82F6',
-    sparkData: [20, 35, 28, 45, 38, 55, 50]
+    sparkData: [50, 55, 48, 62, 58, 72, 68]
   },
   {
-    label: '在线门店',
+    label: '今日游戏豆消耗',
     prefix: '',
-    value: 156,
-    suffix: '/168家',
-    trend: 3.2,
-    icon: StorefrontOutline,
+    value: 45680,
+    suffix: '豆',
+    trend: 8.3,
+    icon: HardwareChipOutline,
     gradient: 'linear-gradient(135deg, #10B981, #059669)',
     color: '#10B981',
-    sparkData: [140, 142, 145, 148, 150, 153, 156]
+    sparkData: [32000, 34000, 31000, 38000, 40000, 43000, 45680]
   },
   {
-    label: '今日客流',
+    label: '今日点播次数',
     prefix: '',
-    value: 12860,
-    suffix: '人',
-    trend: 8.7,
+    value: 3286,
+    suffix: '次',
+    trend: 15.2,
     icon: PeopleOutline,
     gradient: 'linear-gradient(135deg, #F59E0B, #D97706)',
     color: '#F59E0B',
-    sparkData: [8000, 9000, 8500, 10000, 11000, 12000, 12860]
+    sparkData: [2100, 2300, 2500, 2700, 2900, 3100, 3286]
   },
   {
     label: '设备在线率',
@@ -216,7 +216,7 @@ const metrics = ref([
     value: 94.2,
     suffix: '%',
     trend: 1.5,
-    icon: HardwareChipOutline,
+    icon: StorefrontOutline,
     gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
     color: '#8B5CF6',
     sparkData: [90, 91, 92, 93, 93.5, 94, 94.2]
@@ -236,29 +236,30 @@ const topGames = ref([
 
 // 店铺列表
 const storeColumns = [
-  { title: '门店名称', key: 'name' },
+  { title: '店铺名称', key: 'name' },
   { title: '地区', key: 'region' },
-  { 
-    title: '状态', 
+  {
+    title: '状态',
     key: 'status',
     render(row: any) {
       return h(NTag, { type: row.status === 'online' ? 'success' : 'warning', size: 'small', bordered: true }, { default: () => row.statusText })
     }
   },
   { title: '设备数', key: 'devices' },
-  { title: '今日营收', key: 'revenue' },
-  { title: '客流', key: 'traffic' },
+  { title: '游戏豆余额', key: 'beanBalance' },
+  { title: '今日消耗', key: 'beanConsume' },
+  { title: '设备在线率', key: 'deviceRate' },
 ]
 
 const storeList = ref([
-  { name: '深圳福田旗舰店', region: '深圳', status: 'online', statusText: '营业中', devices: 12, revenue: '¥15,680', traffic: 186 },
-  { name: '南山科技园店', region: '深圳', status: 'online', statusText: '营业中', devices: 8, revenue: '¥9,240', traffic: 124 },
-  { name: '广州天河店', region: '广州', status: 'online', statusText: '营业中', devices: 16, revenue: '¥21,350', traffic: 210 },
-  { name: '北京朝阳店', region: '北京', status: 'offline', statusText: '已打烊', devices: 14, revenue: '¥18,900', traffic: 198 },
-  { name: '上海浦东店', region: '上海', status: 'online', statusText: '营业中', devices: 20, revenue: '¥26,800', traffic: 267 },
-  { name: '成都太古里店', region: '成都', status: 'online', statusText: '营业中', devices: 10, revenue: '¥11,200', traffic: 145 },
-  { name: '杭州西湖店', region: '杭州', status: 'maintain', statusText: '维护中', devices: 8, revenue: '¥6,800', traffic: 89 },
-  { name: '武汉光谷店', region: '武汉', status: 'online', statusText: '营业中', devices: 11, revenue: '¥13,500', traffic: 167 },
+  { name: '深圳福田旗舰店', region: '深圳', status: 'online', statusText: '营业中', devices: 12, beanBalance: '8,500', beanConsume: 320, deviceRate: '92%' },
+  { name: '南山科技园店', region: '深圳', status: 'online', statusText: '营业中', devices: 8, beanBalance: '5,200', beanConsume: 180, deviceRate: '100%' },
+  { name: '广州天河店', region: '广州', status: 'online', statusText: '营业中', devices: 16, beanBalance: '12,000', beanConsume: 450, deviceRate: '88%' },
+  { name: '北京朝阳店', region: '北京', status: 'offline', statusText: '已打烊', devices: 14, beanBalance: '6,800', beanConsume: 0, deviceRate: '0%' },
+  { name: '上海浦东店', region: '上海', status: 'online', statusText: '营业中', devices: 20, beanBalance: '15,600', beanConsume: 580, deviceRate: '95%' },
+  { name: '成都太古里店', region: '成都', status: 'online', statusText: '营业中', devices: 10, beanBalance: '4,200', beanConsume: 210, deviceRate: '90%' },
+  { name: '杭州西湖店', region: '杭州', status: 'maintain', statusText: '维护中', devices: 8, beanBalance: '3,800', beanConsume: 0, deviceRate: '75%' },
+  { name: '武汉光谷店', region: '武汉', status: 'online', statusText: '营业中', devices: 11, beanBalance: '7,100', beanConsume: 290, deviceRate: '91%' },
 ])
 
 const revenueChartRef = ref<HTMLElement>()
@@ -305,7 +306,7 @@ function initCharts() {
       window.addEventListener('resize', () => revenueChart.resize())
     }
 
-    // 门店分布图
+    // 店铺分布图
     if (storeChartRef.value) {
       const storeChart = echarts.init(storeChartRef.value)
       storeChart.setOption({
