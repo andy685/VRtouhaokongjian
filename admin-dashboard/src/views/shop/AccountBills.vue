@@ -60,7 +60,7 @@
               clearable
             />
           </n-form-item>
-          <n-form-item label="设备">
+          <n-form-item v-if="accountType !== 'operating' && accountType !== 'basic'" label="设备">
             <n-select
               v-model:value="filterDevice"
               placeholder="请选择"
@@ -68,7 +68,7 @@
               clearable
             />
           </n-form-item>
-          <n-form-item label="游戏">
+          <n-form-item v-if="accountType !== 'operating' && accountType !== 'basic'" label="游戏">
             <n-input
               v-model:value="filterGame"
               placeholder="请输入游戏名"
@@ -194,15 +194,15 @@ const operatingBillsData = [
   { id: 104, store: '利民街小展厅', type: '运营充值', device: '', film: '', people: 0, before: 100, amount: 300, after: 400, time: '2023-09-16 15:45:30' },
   { id: 105, store: '恒然分部展厅', type: '短信发送', device: '', film: '充值到账提醒', people: 800, before: 400, amount: -40, after: 360, time: '2023-09-16 15:50:12' },
   { id: 106, store: '幻影星空馆 NO.8088', type: '系统调整', device: '', film: '', people: 0, before: 360, amount: 50, after: 410, time: '2023-09-16 15:30:20' },
-  { id: 107, store: '利民街大展厅', type: '转入', device: '', film: '', people: 0, before: 410, amount: 100, after: 510, time: '2023-09-16 15:23:54' },
-  { id: 108, store: '利民街小展厅', type: '转出', device: '', film: '', people: 0, before: 510, amount: -100, after: 410, time: '2023-09-16 15:23:54' },
+  { id: 107, store: '幻影星空馆 NO.8088', type: '运营充值', device: '', film: '', people: 0, before: 410, amount: 100, after: 510, time: '2023-09-16 15:23:54' },
+  { id: 108, store: '党建馆', type: '短信发送', device: '', film: '验证码通知', people: 600, before: 510, amount: -30, after: 480, time: '2023-09-16 15:23:54' },
   { id: 109, store: '党建馆', type: '短信发送', device: '', film: '活动到期提醒', people: 300, before: 410, amount: -15, after: 395, time: '2023-09-16 15:23:36' },
   { id: 110, store: '华东展厅', type: '短信发送', device: '', film: '节假日祝福', people: 2000, before: 395, amount: -100, after: 295, time: '2023-09-16 15:09:17' },
   { id: 111, store: '恒然分部展厅', type: '运营充值', device: '', film: '', people: 0, before: 295, amount: 200, after: 495, time: '2023-09-16 15:09:08' },
   { id: 112, store: '幻影星空馆 NO.8088', type: '短信发送', device: '', film: '新会员欢迎', people: 400, before: 495, amount: -20, after: 475, time: '2023-09-16 14:54:28' },
   { id: 113, store: '利民街大展厅', type: '短信发送', device: '', film: '消费回访', people: 600, before: 475, amount: -30, after: 445, time: '2023-09-16 14:45:18' },
-  { id: 114, store: '利民街小展厅', type: '转入', device: '', film: '', people: 0, before: 445, amount: 50, after: 495, time: '2023-09-16 14:30:45' },
-  { id: 115, store: '党建馆', type: '转出', device: '', film: '', people: 0, before: 495, amount: -50, after: 445, time: '2023-09-16 14:30:45' },
+  { id: 114, store: '恒然分部展厅', type: '运营充值', device: '', film: '', people: 0, before: 445, amount: 80, after: 525, time: '2023-09-16 14:30:45' },
+  { id: 115, store: '幻影星空馆 NO.8088', type: '短信发送', device: '', film: '退款通知', people: 400, before: 525, amount: -20, after: 505, time: '2023-09-16 14:30:45' },
   { id: 116, store: '华东展厅', type: '短信发送', device: '', film: '积分兑换通知', people: 350, before: 445, amount: -17, after: 428, time: '2023-09-16 13:50:10' },
   { id: 117, store: '恒然分部展厅', type: '短信发送', device: '', film: '优惠券到期提醒', people: 900, before: 428, amount: -45, after: 383, time: '2023-09-16 13:35:28' },
   { id: 118, store: '幻影星空馆 NO.8088', type: '短信发送', device: '', film: '会员等级变更', people: 250, before: 383, amount: -12, after: 371, time: '2023-09-16 13:20:15' },
@@ -241,8 +241,6 @@ const amountColumnTitle = computed(() => {
 const currentBillTypeOptions = computed(() => {
   if (accountType.value === 'operating') {
     return [
-      { value: '转入', label: '转入' },
-      { value: '转出', label: '转出' },
       { value: '短信发送', label: '短信发送' },
       { value: '运营充值', label: '运营充值' },
       { value: '系统调整', label: '系统调整' },
@@ -265,7 +263,7 @@ const currentColumns = computed(() => {
   const isOperating = accountType.value === 'operating'
   const isBasic = accountType.value === 'basic'
   const noShowTypes = isOperating
-    ? ['转入', '转出', '运营充值', '系统调整']
+    ? ['运营充值', '系统调整']
     : isBasic
       ? ['转入', '转出', '基础充值', '系统调整', '系统扣费']
       : ['转入', '转出', '平台赠送']
