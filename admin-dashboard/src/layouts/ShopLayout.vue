@@ -295,7 +295,7 @@ const breadcrumbs = computed<{ label: string; path?: string }[]>(() => {
 })
 
 const userMenuOptions = [
-  { label: () => h('span', { style: 'color: #3B82F6; font-weight: 600;' }, '商家信息'), key: 'shop-info', icon: () => h(NIcon, { component: StorefrontOutline }) },
+  { label: '商家信息', key: 'shop-info', icon: () => h(NIcon, { component: StorefrontOutline }) },
   { label: '个人信息', key: 'profile', icon: () => h(NIcon, { component: PersonOutline }) },
   { label: '账户余额', key: 'balance', icon: () => h(NIcon, { component: WalletOutline }) },
   { label: '安全设置', key: 'security', icon: () => h(NIcon, { component: ShieldCheckmarkOutline }) },
