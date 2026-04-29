@@ -49,6 +49,23 @@
       <n-button type="primary" block @click="downloadCode">点击下载</n-button>
     </n-modal>
 
+    <!-- 支付码弹窗 -->
+    <n-modal v-model:show="showPayCodeModal" preset="card" :title="`拉卡拉支付码 - ${currentStore?.name}`" style="width: 420px;">
+      <div class="qr-card" style="border-color: #d1fae5;">
+        <div class="qr-header" style="color: #059669;">LAKALA PAY</div>
+        <div class="qr-title" style="color: #047857;">扫一扫付款</div>
+        <div class="qr-code">
+          <div class="qr-placeholder">
+            <n-icon :component="QrCodeOutline" size="120" color="#333" />
+          </div>
+          <div class="qr-store">{{ currentStore?.name }}</div>
+          <div class="qr-hint">顾客扫码向该店铺付款</div>
+        </div>
+      </div>
+      <div class="qr-download-hint">当前图片仅供预览，为保证打印效果，请直接下载</div>
+      <n-button type="primary" block @click="downloadPayCode">下载支付码</n-button>
+    </n-modal>
+
     <!-- 注册规则弹窗 -->
     <n-modal v-model:show="showRulesModal" preset="card" title="注册规则设置" style="width: 560px;">
       <n-form :model="rulesForm" label-placement="left" label-width="120px">
@@ -107,10 +124,12 @@ import { ref, h } from 'vue'
 import {
   NButton, NIcon, NTag, NModal, NForm, NFormItem, NInput,
   NCard, NDataTable, NSpace, NRadioGroup, NRadio, NCheckboxGroup,
-  NCheckbox, NSwitch, NInputNumber, NSelect
+  NCheckbox, NSwitch, NInputNumber, NSelect, useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { QrCodeOutline } from '@vicons/ionicons5'
+
+const message = useMessage()
 
 const showEditModal = ref(false)
 const showCodeModal = ref(false)
@@ -151,26 +170,44 @@ const columns: DataTableColumns = [
     h(NTag, { type: row.status === '启用' ? 'success' : 'default', size: 'small' },
       { default: () => row.status })
   },
-  { title: '操作', key: 'actions', width: 200, render: (row: any) =>
-    h(NSpace, { size: 8 }, {
+  { title: '操作', key: 'actions', width: 240, render: (row: any) => {
+    const isPayEnabled = row.payStatus === '已开通'
+    return h(NSpace, { size: 6 }, {
       default: () => [
         h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => openEdit(row) },
           { default: () => '编辑' }),
+        h(NButton, {
+          size: 'tiny', text: true, type: 'success',
+          disabled: !isPayEnabled,
+          onClick: () => openPayCode(row)
+        }, { default: () => '支付码' }),
         h(NButton, { size: 'tiny', text: true, type: 'info', onClick: () => openCode(row) },
-          { default: () => '自助注册码' }),
+          { default: () => '注册码' }),
         h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => handleRegisterRules(row) },
           { default: () => '注册规则' }),
       ]
     })
-  }
+  }},
 ]
 
 const storeData = ref([
-  { id: 5324, name: '卓远亚运城店', isDomestic: true, phone: '145878451236955587', createTime: '2022-02-18 14:06:34', address: '广州番禺亚运城1', payStatus: '支付业务未开通', status: '启用', registerCode: 'REG-5324-ABCD' },
-  { id: 4415, name: '卓远文桥路店', isDomestic: true, phone: '15972158080', createTime: '2021-04-13 10:19:28', address: '文桥路13号', payStatus: '支付业务未开通', status: '启用', registerCode: 'REG-4415-EFGH' },
-  { id: 4005, name: '卓远天河路店', isDomestic: true, phone: '15972158080', createTime: '2020-11-14 14:33:17', address: '大龙街道文桥路13号', payStatus: '支付业务未开通', status: '启用', registerCode: 'REG-4005-IJKL' },
-  { id: 3998, name: '卓远白云路店', isDomestic: true, phone: '15972158080', createTime: '2020-11-13 18:24:06', address: '1', payStatus: '支付业务未开通', status: '启用', registerCode: 'REG-3998-MNOP' },
+  { id: 5324, name: '卓远亚运城店', isDomestic: true, phone: '145878451236955587', createTime: '2022-02-18 14:06:34', address: '广州番禺亚运城1', payStatus: '已开通', status: '启用', registerCode: 'REG-5324-ABCD' },
+  { id: 4415, name: '卓远文桥路店', isDomestic: true, phone: '15972158080', createTime: '2021-04-13 10:19:28', address: '文桥路13号', payStatus: '未开通', status: '启用', registerCode: 'REG-4415-EFGH' },
+  { id: 4005, name: '卓远天河路店', isDomestic: true, phone: '15972158080', createTime: '2020-11-14 14:33:17', address: '大龙街道文桥路13号', payStatus: '已开通', status: '启用', registerCode: 'REG-4005-IJKL' },
+  { id: 3998, name: '卓远白云路店', isDomestic: true, phone: '15972158080', createTime: '2020-11-13 18:24:06', address: '1', payStatus: '未开通', status: '启用', registerCode: 'REG-3998-MNOP' },
 ])
+
+const showPayCodeModal = ref(false)
+
+function openPayCode(row: any) {
+  currentStore.value = row
+  showPayCodeModal.value = true
+}
+
+function downloadPayCode() {
+  console.log('下载支付码:', currentStore.value?.name)
+  message.success('支付码已开始下载')
+}
 
 function openEdit(row: any) {
   currentStore.value = row
@@ -259,6 +296,11 @@ function handleRulesSubmit() {
   color: #666;
   margin-top: 10px;
   font-weight: 500;
+}
+.qr-hint {
+  font-size: 11px;
+  color: #999;
+  margin-top: 6px;
 }
 .qr-mascot {
   margin-top: 12px;

@@ -55,7 +55,7 @@
     </div>
 
     <!-- Tab切换 -->
-    <n-tabs type="line" animated v-model:value="activeTab">
+    <n-tabs type="line" animated :value="activeTab" @update:value="handleTabChange">
       <!-- 财务总览 -->
       <n-tab-pane name="overview" tab="📊 财务总览">
         <div class="tab-content">
@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, h, onMounted, nextTick } from 'vue'
 import {
   NButton, NIcon, NSpace, NTabs, NTabPane, NGrid, NGi,
   NDataTable, NTag, NDatePicker, NSelect
@@ -178,8 +178,10 @@ echarts.use([LineChart, PieChart, TitleComponent, TooltipComponent, GridComponen
 
 const dateRange = ref(null)
 const activeTab = ref('overview')
-const revenueChartRef = ref<HTMLElement>()
-const incomeChartRef = ref<HTMLElement>()
+const revenueChartRef = ref<HTMLElement | null>(null)
+const incomeChartRef = ref<HTMLElement | null>(null)
+let revenueChart: echarts.ECharts | null = null
+let incomeChart: echarts.ECharts | null = null
 
 const statusOptions = [
   { label: '全部', value: 'all' },
@@ -240,54 +242,75 @@ const exceptionData = [
   { orderNo: 'VR20260419002', store: '南山科技园店', amount: '¥99.00', type: '重复支付', reason: '同一订单出现两次支付记录', time: '2026-04-19 16:45' },
 ]
 
-import { h } from 'vue'
-
 function initCharts() {
   nextTick(() => {
-    if (revenueChartRef.value) {
-      const chart = echarts.init(revenueChartRef.value)
-      chart.setOption({
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
-        grid: { left: 48, right: 16, top: 24, bottom: 32 },
-        xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
-        yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: '¥{value}k' } },
-        series: [
-          {
-            type: 'line', smooth: true, data: [320, 380, 420, 480, 520, 580],
-            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59,130,246,0.2)' }, { offset: 1, color: 'rgba(59,130,246,0)' }]) },
-            lineStyle: { width: 3, color: '#3B82F6' },
-            itemStyle: { color: '#3B82F6' }
-          }
-        ]
-      })
-      window.addEventListener('resize', () => chart.resize())
-    }
-
-    if (incomeChartRef.value) {
-      const chart = echarts.init(incomeChartRef.value)
-      chart.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: ¥{c}k ({d}%)' },
-        series: [{
-          type: 'pie',
-          radius: ['45%', '72%'],
-          center: ['50%', '50%'],
-          label: { show: true, fontSize: 12, color: '#64748b' },
-          data: [
-            { value: 280, name: 'VR体验', itemStyle: { color: '#3B82F6' } },
-            { value: 180, name: '会员充值', itemStyle: { color: '#10B981' } },
-            { value: 120, name: '实体商品', itemStyle: { color: '#F59E0B' } },
-            { value: 80, name: '其他', itemStyle: { color: '#8B5CF6' } },
-          ]
-        }]
-      })
-      window.addEventListener('resize', () => chart.resize())
-    }
+    // 只初始化收入趋势图（在 overview tab 内，需要等 tab 激活）
+    if (activeTab.value !== 'overview') return
+    initRevenueChart()
+    initIncomeChart()
   })
 }
 
+function initRevenueChart() {
+  if (!revenueChartRef.value) return
+  if (revenueChart) revenueChart.dispose()
+  revenueChart = echarts.init(revenueChartRef.value)
+  revenueChart.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
+    grid: { left: 48, right: 16, top: 24, bottom: 32 },
+    xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
+    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: '¥{value}k' } },
+    series: [
+      {
+        type: 'line', smooth: true, data: [320, 380, 420, 480, 520, 580],
+        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59,130,246,0.2)' }, { offset: 1, color: 'rgba(59,130,246,0)' }]) },
+        lineStyle: { width: 3, color: '#3B82F6' },
+        itemStyle: { color: '#3B82F6' }
+      }
+    ]
+  })
+}
+
+function initIncomeChart() {
+  if (!incomeChartRef.value) return
+  if (incomeChart) incomeChart.dispose()
+  incomeChart = echarts.init(incomeChartRef.value)
+  incomeChart.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: ¥{c}k ({d}%)' },
+    series: [{
+      type: 'pie',
+      radius: ['45%', '72%'],
+      center: ['50%', '50%'],
+      label: { show: true, fontSize: 12, color: '#64748b' },
+      data: [
+        { value: 280, name: 'VR体验', itemStyle: { color: '#3B82F6' } },
+        { value: 180, name: '会员充值', itemStyle: { color: '#10B981' } },
+        { value: 120, name: '实体商品', itemStyle: { color: '#F59E0B' } },
+        { value: 80, name: '其他', itemStyle: { color: '#8B5CF6' } },
+      ]
+    }]
+  })
+}
+
+function handleTabChange(tab: string) {
+  activeTab.value = tab
+  if (tab === 'overview') {
+    nextTick(() => {
+      initRevenueChart()
+      initIncomeChart()
+    })
+  }
+}
+
 onMounted(() => {
-  initCharts()
+  // 初始 tab 是 overview，延迟初始化（等待 DOM 渲染完成）
+  setTimeout(() => initCharts(), 100)
+  window.addEventListener('resize', () => {
+    revenueChart?.resize()
+    incomeChart?.resize()
+  })
 })
+</script>
 </script>
 
 <style scoped>

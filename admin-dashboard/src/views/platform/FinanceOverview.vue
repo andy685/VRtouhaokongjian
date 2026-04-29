@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, h, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NButton, NIcon, NSpace, NDatePicker, NRadioGroup, NRadioButton,
@@ -109,8 +109,10 @@ const message = useMessage()
 
 const dateRange = ref(null)
 const trendPeriod = ref('month')
-const revenueChartRef = ref<HTMLElement>()
-const incomeChartRef = ref<HTMLElement>()
+const revenueChartRef = ref<HTMLElement | null>(null)
+const incomeChartRef = ref<HTMLElement | null>(null)
+let revenueChart: echarts.ECharts | null = null
+let incomeChart: echarts.ECharts | null = null
 
 const transactionColumns = [
   { title: '订单号', key: 'orderNo', width: 160 },
@@ -134,49 +136,58 @@ function viewAllTransactions() {
   message.info('查看全部交易记录')
 }
 
+function initRevenueChart() {
+  if (!revenueChartRef.value) return
+  if (revenueChart) revenueChart.dispose()
+  revenueChart = echarts.init(revenueChartRef.value)
+  revenueChart.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
+    grid: { left: 48, right: 16, top: 24, bottom: 32 },
+    xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
+    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: '¥{value}k' } },
+    series: [{
+      type: 'line', smooth: true, data: [320, 380, 420, 480, 520, 580],
+      areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59,130,246,0.2)' }, { offset: 1, color: 'rgba(59,130,246,0)' }]) },
+      lineStyle: { width: 3, color: '#3B82F6' },
+      itemStyle: { color: '#3B82F6' }
+    }]
+  })
+}
+
+function initIncomeChart() {
+  if (!incomeChartRef.value) return
+  if (incomeChart) incomeChart.dispose()
+  incomeChart = echarts.init(incomeChartRef.value)
+  incomeChart.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: ¥{c}k ({d}%)' },
+    series: [{
+      type: 'pie',
+      radius: ['45%', '72%'],
+      center: ['50%', '50%'],
+      label: { show: true, fontSize: 12, color: '#64748b' },
+      data: [
+        { value: 280, name: 'VR体验', itemStyle: { color: '#3B82F6' } },
+        { value: 180, name: '会员充值', itemStyle: { color: '#10B981' } },
+        { value: 120, name: '实体商品', itemStyle: { color: '#F59E0B' } },
+        { value: 80, name: '其他', itemStyle: { color: '#8B5CF6' } },
+      ]
+    }]
+  })
+}
+
 function initCharts() {
   nextTick(() => {
-    if (revenueChartRef.value) {
-      const chart = echarts.init(revenueChartRef.value)
-      chart.setOption({
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
-        grid: { left: 48, right: 16, top: 24, bottom: 32 },
-        xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
-        yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: '¥{value}k' } },
-        series: [{
-          type: 'line', smooth: true, data: [320, 380, 420, 480, 520, 580],
-          areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59,130,246,0.2)' }, { offset: 1, color: 'rgba(59,130,246,0)' }]) },
-          lineStyle: { width: 3, color: '#3B82F6' },
-          itemStyle: { color: '#3B82F6' }
-        }]
-      })
-      window.addEventListener('resize', () => chart.resize())
-    }
-
-    if (incomeChartRef.value) {
-      const chart = echarts.init(incomeChartRef.value)
-      chart.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: ¥{c}k ({d}%)' },
-        series: [{
-          type: 'pie',
-          radius: ['45%', '72%'],
-          center: ['50%', '50%'],
-          label: { show: true, fontSize: 12, color: '#64748b' },
-          data: [
-            { value: 280, name: 'VR体验', itemStyle: { color: '#3B82F6' } },
-            { value: 180, name: '会员充值', itemStyle: { color: '#10B981' } },
-            { value: 120, name: '实体商品', itemStyle: { color: '#F59E0B' } },
-            { value: 80, name: '其他', itemStyle: { color: '#8B5CF6' } },
-          ]
-        }]
-      })
-      window.addEventListener('resize', () => chart.resize())
-    }
+    initRevenueChart()
+    initIncomeChart()
   })
 }
 
 onMounted(() => {
-  initCharts()
+  setTimeout(() => initCharts(), 100)
+  window.addEventListener('resize', () => {
+    revenueChart?.resize()
+    incomeChart?.resize()
+  })
 })
 </script>
 

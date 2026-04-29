@@ -25,6 +25,7 @@ import MemberCenter from '../views/platform/MemberCenter.vue'
 import MemberGrowth from '../views/platform/MemberGrowth.vue'
 import OrderFlow from '../views/platform/OrderFlow.vue'
 import SettlementManage from '../views/platform/SettlementManage.vue'
+import SettlementConfig from '../views/platform/SettlementConfig.vue'
 import Reconciliation from '../views/platform/Reconciliation.vue'
 import System from '../views/platform/System.vue'
 import AgentDashboard from '../views/agent/Dashboard.vue'
@@ -94,6 +95,7 @@ import AccountRecharge from '../views/shop/AccountRecharge.vue'
 import GameBeanRecharge from '../views/shop/GameBeanRecharge.vue'
 import AccountBills from '../views/shop/AccountBills.vue'
 import OperatingBills from '../views/shop/OperatingBills.vue'
+import ShopSettlement from '../views/shop/Settlement.vue'
 import ShopInfo from '../views/shop/account/ShopInfo.vue'
 import Profile from '../views/shop/account/Profile.vue'
 import Security from '../views/shop/account/Security.vue'
@@ -135,14 +137,21 @@ const routes: RouteRecordRaw[] = [
       // 会员中心
       { path: 'members', name: 'PlatformMembers', component: MemberCenter, meta: { title: '会员数据' } },
       { path: 'members/growth', name: 'PlatformMembersGrowth', component: MemberGrowth, meta: { title: '会员增长' } },
-      // 订单流水
-      { path: 'order-flow', name: 'PlatformOrderFlow', component: OrderFlow, meta: { title: '订单透视' } },
+      // 订单流水（重定向到第一个子菜单）
+      { path: 'order-flow', redirect: '/platform/order-flow/cashier' },
+      { path: 'order-flow/cashier', name: 'PlatformOrderFlowCashier', component: OrderFlow, meta: { title: '收银订单' } },
+      { path: 'order-flow/vod', name: 'PlatformOrderFlowVod', component: OrderFlow, meta: { title: '点播系统订单' } },
+      { path: 'order-flow/manual', name: 'PlatformOrderFlowManual', component: OrderFlow, meta: { title: '手动扣费订单' } },
+      { path: 'order-flow/balance', name: 'PlatformOrderFlowBalance', component: OrderFlow, meta: { title: '修改储值订单' } },
+      { path: 'order-flow/gamebean', name: 'PlatformOrderFlowGamebean', component: OrderFlow, meta: { title: '游戏币兑换订单' } },
+      { path: 'order-flow/promo', name: 'PlatformOrderFlowPromo', component: OrderFlow, meta: { title: '活动赠送订单' } },
       // 数据中心扩展
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: ContentConsumption, meta: { title: '内容消费大盘' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: DeviceOverview, meta: { title: '设备运行总览' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '财务总览' } },
       { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: SettlementManage, meta: { title: '结算管理' } },
+      { path: 'finance/settlement-config', name: 'PlatformSettlementConfig', component: SettlementConfig, meta: { title: '结算配置' } },
       { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: Reconciliation, meta: { title: '对账中心' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: System, meta: { title: '版本发布' } },
@@ -214,6 +223,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: PointsExchangeOrder, meta: { title: '游戏币兑换订单', breadcrumb: [{ label: '数据报表' }, { label: '订单查询' }, { label: '游戏币兑换订单' }] } },
       { path: 'gift-order', name: 'ShopGiftOrder', component: GiftOrder, meta: { title: '活动赠送订单', breadcrumb: [{ label: '数据报表' }, { label: '订单查询' }, { label: '活动赠送订单' }] } },
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: FilmRevenue, meta: { title: '影片分成明细', breadcrumb: [{ label: '数据报表' }, { label: '影片分成明细' }] } },
+      { path: 'settlement', name: 'ShopSettlement', component: ShopSettlement, meta: { title: '结算记录', breadcrumb: [{ label: '数据报表' }, { label: '结算记录' }] } },
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: ShopStoreList, meta: { title: '店铺列表', breadcrumb: [{ label: '系统设置' }, { label: '店铺列表' }] } },
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: OnDemandSettings, meta: { title: '点播设置', breadcrumb: [{ label: '系统设置' }, { label: '点播设置' }] } },

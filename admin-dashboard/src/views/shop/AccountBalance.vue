@@ -98,6 +98,81 @@
           </div>
         </div>
       </n-tab-pane>
+
+      <n-tab-pane name="bank" tab="提现账户">
+        <div class="bank-card">
+          <!-- 冷却期提示 -->
+          <div v-if="pendingChange" class="cooling-alert" style="margin-bottom: 20px; padding: 16px; background: #fff7e6; border: 1px solid #ffd591; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="margin: 0; color: #d46b08;">⏰ 提现账户修改冷却期中</h4>
+              <n-button type="warning" size="small" @click="handleRevoke" :loading="revoking">
+                撤销修改
+              </n-button>
+            </div>
+            <div style="font-size: 14px; color: #666;">
+              <p style="margin: 6px 0;">新账户：{{ pendingChange.bankNameText }} - {{ formatCardNo(pendingChange.cardNo) }}</p>
+              <p style="margin: 6px 0;">预计生效时间：{{ pendingChange.effectiveTime }}</p>
+              <p style="margin: 6px 0;">冷却期剩余：{{ formatRemainingTime(pendingChange.remainingSeconds) }}</p>
+            </div>
+          </div>
+
+          <div class="bank-header">
+            <h4>提现账户信息</h4>
+            <n-button v-if="!isEditingBank && !pendingChange" text type="primary" @click="startEditBank">编辑</n-button>
+          </div>
+          
+          <n-form v-if="isEditingBank" label-placement="left" label-width="100">
+            <n-form-item label="开户银行">
+              <n-select v-model:value="bankForm.bankName" :options="bankOptions" placeholder="请选择开户银行" />
+            </n-form-item>
+            <n-form-item label="银行卡号">
+              <n-input v-model:value="bankForm.cardNo" placeholder="请输入银行卡号" maxlength="23" />
+            </n-form-item>
+            <n-form-item label="开户人姓名">
+              <n-input v-model:value="bankForm.accountName" placeholder="请输入开户人姓名" />
+            </n-form-item>
+            <n-form-item label="身份证号">
+              <n-input v-model:value="bankForm.idCard" placeholder="请输入身份证号" maxlength="18" />
+            </n-form-item>
+            <n-form-item>
+              <n-space>
+                <n-button type="primary" @click="saveBankInfo">保存</n-button>
+                <n-button @click="cancelEditBank">取消</n-button>
+              </n-space>
+            </n-form-item>
+          </n-form>
+          
+          <n-descriptions v-else-if="bankInfo && !pendingChange" label-placement="left" :column="1" bordered>
+            <n-descriptions-item label="开户银行">{{ bankInfo.bankNameText }}</n-descriptions-item>
+            <n-descriptions-item label="银行卡号">{{ formatCardNo(bankInfo.cardNo) }}</n-descriptions-item>
+            <n-descriptions-item label="开户人">{{ bankInfo.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="身份证号">{{ formatIDCard(bankInfo.idCard) }}</n-descriptions-item>
+            <n-descriptions-item label="状态">
+              <n-tag type="success" size="small">已绑定</n-tag>
+            </n-descriptions-item>
+          </n-descriptions>
+          
+          <n-empty v-else-if="!bankInfo && !pendingChange" description="未绑定提现账户" />
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="operation-logs" style="margin-top: 24px;">
+          <n-collapse>
+            <n-collapse-item title="查看操作日志" name="logs">
+              <n-timeline>
+                <n-timeline-item 
+                  v-for="log in operationLogs" 
+                  :key="log.id"
+                  :type="log.type"
+                  :title="log.action"
+                  :content="log.detail"
+                  :time="log.time"
+                />
+              </n-timeline>
+            </n-collapse-item>
+          </n-collapse>
+        </div>
+      </n-tab-pane>
     </n-tabs>
 
     <!-- 游戏豆转移弹窗 -->
@@ -146,17 +221,398 @@
       </template>
     </n-modal>
 
+    <!-- 验证码弹窗 -->
+    <n-modal
+      v-model:show="verifyModalVisible"
+      title="验证身份"
+      preset="card"
+      size="medium"
+      style="width: 450px;"
+      :mask-closable="false"
+    >
+      <n-form>
+        <n-form-item label="验证码已发送至">
+          <span style="color: #666;">{{ maskedPhone }}</span>
+        </n-form-item>
+        <n-form-item label="*验证码">
+          <n-input-group>
+            <n-input 
+              v-model:value="verifyCode" 
+              placeholder="请输入6位验证码"
+              maxlength="6"
+              style="flex: 1;"
+            />
+            <n-button 
+              :disabled="cooldown > 0" 
+              @click="sendVerifyCode"
+              style="width: 120px;"
+            >
+              {{ cooldown > 0 ? `${cooldown}s后重发` : '发送验证码' }}
+            </n-button>
+          </n-input-group>
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <div class="modal-footer">
+          <n-button @click="verifyModalVisible = false">取消</n-button>
+          <n-button type="primary" @click="confirmVerifyCode" :loading="verifying">
+            确认
+          </n-button>
+        </div>
+      </template>
+    </n-modal>
+
+    <!-- 冷却期提示弹窗 -->
+    <n-modal
+      v-model:show="coolingModalVisible"
+      title="提现账户修改已提交"
+      preset="success"
+      :closable="false"
+      :mask-closable="false"
+      style="width: 500px;"
+    >
+      <div class="cooling-content">
+        <n-result
+          status="success"
+          title="修改申请已提交"
+          description="您的提现账户修改申请已进入24小时冷却期"
+        >
+          <template #footer>
+            <div class="cooling-info">
+              <n-alert type="warning" style="margin-bottom: 16px;">
+                <template #header>
+                  <span>⏰ 冷却期说明</span>
+                </template>
+                <ul style="margin: 8px 0; padding-left: 20px;">
+                  <li>冷却期时长：24小时</li>
+                  <li>冷却期内可撤销修改</li>
+                  <li>冷却期结束后，新账户自动生效</li>
+                  <li>修改期间会发送邮件和短信通知</li>
+                </ul>
+              </n-alert>
+              <div class="cooling-timer">
+                <n-statistic label="距离生效还剩" :value="coolingTimeRemaining" />
+              </div>
+            </div>
+          </template>
+        </n-result>
+      </div>
+      <template #footer>
+        <div class="modal-footer">
+          <n-button @click="revokeChange" :loading="revoking">
+            撤销修改
+          </n-button>
+          <n-button type="primary" @click="coolingModalVisible = false">
+            我知道了
+          </n-button>
+        </div>
+      </template>
+    </n-modal>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable, NModal, NSelect, NInput, NForm, NFormItem } from 'naive-ui'
+import { 
+  NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable, 
+  NModal, NSelect, NInput, NForm, NFormItem, NEmpty, NDescriptions, 
+  NDescriptionsItem, NInputGroup, NAlert, NResult, NStatistic, NCountdown,
+  NTimeline, NTimelineItem, NCollapse, NCollapseItem,
+  useMessage, type FormInst
+} from 'naive-ui'
 
+const message = useMessage()
 const router = useRouter()
 const activeTab = ref('operating')
+
+// 提现账户相关
+const bankInfo = ref<{ bankName: string; bankNameText: string; cardNo: string; accountName: string; idCard: string } | null>({
+  bankName: 'ICBC',
+  bankNameText: '中国工商银行',
+  cardNo: '6222021234567890123',
+  accountName: '张三',
+  idCard: '440301199001011234'
+})
+
+const isEditingBank = ref(false)
+const bankForm = ref({ bankName: '', cardNo: '', accountName: '', idCard: '' })
+
+// 验证相关
+const verifyModalVisible = ref(false)
+const verifyCode = ref('')
+const cooldown = ref(0)
+const verifying = ref(false)
+const maskedPhone = ref('138****8000') // 模拟手机号
+
+// 冷却期相关
+const coolingModalVisible = ref(false)
+const pendingChange = ref<{
+  bankName: string;
+  bankNameText: string;
+  cardNo: string;
+  accountName: string;
+  idCard: string;
+  effectiveTime: string;
+  remainingSeconds: number;
+} | null>(null)
+const coolingTimeRemaining = ref('')
+const revoking = ref(false)
+let coolingTimer: number | null = null
+
+// 操作日志
+const operationLogs = ref<Array<{
+  id: number;
+  type: 'success' | 'warning' | 'info';
+  action: string;
+  detail: string;
+  time: string;
+}>>([])
+
+const bankOptions = [
+  { label: '中国工商银行', value: 'ICBC' },
+  { label: '中国建设银行', value: 'CCB' },
+  { label: '中国农业银行', value: 'ABC' },
+  { label: '中国银行', value: 'BOC' },
+  { label: '交通银行', value: 'BOCOM' },
+  { label: '招商银行', value: 'CMB' },
+]
+
+function formatCardNo(cardNo: string) {
+  if (!cardNo) return ''
+  return cardNo.replace(/(\d{4})(?=\d)/g, '$1 ')
+}
+
+function formatIDCard(idCard: string) {
+  if (!idCard) return ''
+  return idCard.replace(/(\d{4})\d+(\d{4})/, '$1********$2')
+}
+
+function startEditBank() {
+  if (bankInfo.value) {
+    bankForm.value = { ...bankInfo.value, bankNameText: '' }
+  } else {
+    bankForm.value = { bankName: '', cardNo: '', accountName: '', idCard: '' }
+  }
+  isEditingBank.value = true
+}
+
+function saveBankInfo() {
+  // 先验证表单
+  if (!bankForm.value.bankName || !bankForm.value.cardNo || !bankForm.value.accountName || !bankForm.value.idCard) {
+    message.warning('请填写完整信息')
+    return
+  }
+  
+  // 显示验证码弹窗
+  verifyModalVisible.value = true
+  verifyCode.value = ''
+  sendVerifyCode()
+}
+
+async function sendVerifyCode() {
+  // 模拟发送验证码
+  message.success('验证码已发送，测试验证码为：123456')
+  cooldown.value = 60
+  
+  const timer = setInterval(() => {
+    cooldown.value--
+    if (cooldown.value <= 0) {
+      clearInterval(timer)
+    }
+  }, 1000)
+}
+
+async function confirmVerifyCode() {
+  if (!verifyCode.value || verifyCode.value.length !== 6) {
+    message.warning('请输入6位验证码')
+    return
+  }
+  
+  verifying.value = true
+  
+  // 模拟验证
+  setTimeout(() => {
+    verifying.value = false
+    
+    if (verifyCode.value === '123456') {
+      verifyModalVisible.value = false
+      message.success('验证成功')
+      
+      // 创建待生效的修改（冷却期）- 改为10分钟方便测试
+      const effectiveTime = new Date(Date.now() + 10 * 60 * 1000) // 10分钟后生效
+      const remainingSeconds = 10 * 60 // 10分钟 = 600秒
+      
+      pendingChange.value = {
+        ...bankForm.value,
+        bankNameText: bankOptions.find(b => b.value === bankForm.value.bankName)?.label || '',
+        effectiveTime: effectiveTime.toLocaleString('zh-CN'),
+        remainingSeconds
+      }
+      
+      isEditingBank.value = false
+      
+      // 保存到localStorage（模拟后端存储）
+      localStorage.setItem('pendingBankChange', JSON.stringify(pendingChange.value))
+      
+      // 添加操作日志
+      addOperationLog('warning', '提现账户修改申请已提交', `新账户：${pendingChange.value.bankNameText} - ${formatCardNo(bankForm.value.cardNo)}，进入10分钟冷却期`)
+      
+      // 发送通知（模拟）
+      message.info('已发送邮件和短信通知')
+      message.success('修改已进入冷却期，10分钟后生效')
+      
+      // 开始倒计时
+      startCoolingTimer()
+    } else {
+      message.error('验证码错误，请输入123456')
+    }
+  }, 500)
+}
+
+function startCoolingTimer() {
+  if (coolingTimer) {
+    clearInterval(coolingTimer)
+  }
+  
+  coolingTimer = window.setInterval(() => {
+    if (pendingChange.value) {
+      pendingChange.value.remainingSeconds--
+      
+      if (pendingChange.value.remainingSeconds <= 0) {
+        handleCoolingFinish()
+      }
+    }
+  }, 1000)
+}
+
+function handleCoolingFinish() {
+  // 冷却期结束，应用修改
+  if (pendingChange.value) {
+    bankInfo.value = {
+      bankName: pendingChange.value.bankName,
+      bankNameText: pendingChange.value.bankNameText,
+      cardNo: pendingChange.value.cardNo,
+      accountName: pendingChange.value.accountName,
+      idCard: pendingChange.value.idCard
+    }
+    
+    addOperationLog('success', '提现账户修改已生效', `新账户：${pendingChange.value.bankNameText} - ${formatCardNo(pendingChange.value.cardNo)}`)
+    
+    pendingChange.value = null
+    localStorage.removeItem('pendingBankChange')
+    
+    message.success('提现账户修改已生效')
+    
+    if (coolingTimer) {
+      clearInterval(coolingTimer)
+      coolingTimer = null
+    }
+  }
+}
+
+async function revokeChange() {
+  revoking.value = true
+  
+  // 模拟撤销
+  setTimeout(() => {
+    revoking.value = false
+    
+    if (pendingChange.value) {
+      addOperationLog('info', '提现账户修改已撤销', '用户主动撤销修改申请')
+    }
+    
+    pendingChange.value = null
+    localStorage.removeItem('pendingBankChange')
+    
+    coolingModalVisible.value = false
+    
+    if (coolingTimer) {
+      clearInterval(coolingTimer)
+      coolingTimer = null
+    }
+    
+    message.success('修改已撤销')
+  }, 1000)
+}
+
+function cancelEditBank() {
+  isEditingBank.value = false
+}
+
+function formatRemainingTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+  
+  if (hours > 0) {
+    return `${hours}小时${minutes}分${secs}秒`
+  } else if (minutes > 0) {
+    return `${minutes}分${secs}秒`
+  } else {
+    return `${secs}秒`
+  }
+}
+
+function handleRevoke() {
+  revokeChange()
+}
+
+function addOperationLog(type: 'success' | 'warning' | 'info', action: string, detail: string) {
+  const now = new Date()
+  const time = now.toLocaleString('zh-CN')
+  
+  operationLogs.value.unshift({
+    id: Date.now(),
+    type,
+    action,
+    detail,
+    time
+  })
+  
+  // 保存到localStorage
+  localStorage.setItem('bankOperationLogs', JSON.stringify(operationLogs.value))
+}
+
+function loadPendingChange() {
+  const saved = localStorage.getItem('pendingBankChange')
+  if (saved) {
+    try {
+      pendingChange.value = JSON.parse(saved)
+      startCoolingTimer()
+    } catch (e) {
+      localStorage.removeItem('pendingBankChange')
+    }
+  }
+}
+
+function loadOperationLogs() {
+  const saved = localStorage.getItem('bankOperationLogs')
+  if (saved) {
+    try {
+      operationLogs.value = JSON.parse(saved)
+    } catch (e) {
+      localStorage.removeItem('bankOperationLogs')
+    }
+  }
+  
+  // 添加初始日志（如果为空）
+  if (operationLogs.value.length === 0 && bankInfo.value) {
+    addOperationLog('success', '提现账户已绑定', `${bankInfo.value.bankNameText} - ${formatCardNo(bankInfo.value.cardNo)}`)
+  }
+}
+
+onMounted(() => {
+  loadPendingChange()
+  loadOperationLogs()
+})
+
+onUnmounted(() => {
+  if (coolingTimer) {
+    clearInterval(coolingTimer)
+  }
+})
 
 const operatingBalance = ref('0.69')
 const basicBalance = ref('0')
@@ -467,4 +923,58 @@ function handleFromChange(value: string) {
 }
 
 
+
+/* 提现账户 */
+.bank-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 600px;
+}
+
+.bank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.bank-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 冷却期相关样式 */
+.cooling-content {
+  text-align: center;
+}
+
+.cooling-info {
+  text-align: left;
+  margin-top: 16px;
+}
+
+.cooling-timer {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f0f9ff;
+  border-radius: 8px;
+}
+
+/* 操作日志样式 */
+.operation-logs {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.operation-logs .n-collapse {
+  margin: 0;
+}
+
+.operation-logs .n-timeline {
+  margin-top: 12px;
+}
 </style>

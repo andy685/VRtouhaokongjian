@@ -2,7 +2,24 @@
   <div class="page-container animate-fade-in">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2>会员列表</h2>
+      <div>
+        <h2>会员列表</h2>
+        <p class="header-desc">
+          活跃会员：30天内有消费 · 流失会员：超过60天无消费记录
+          <n-tooltip placement="bottom-start">
+            <template #trigger>
+              <n-icon :component="HelpCircleOutline" size="14" style="margin-left: 4px; cursor: pointer; color: var(--text-muted);" />
+            </template>
+            <div style="max-width: 280px; line-height: 1.6;">
+              <strong>会员状态定义：</strong><br/>
+              • <span style="color: #10B981;">活跃会员</span>：30天内有消费记录<br/>
+              • <span style="color: #F59E0B;">沉睡会员</span>：30-60天无消费记录<br/>
+              • <span style="color: #EF4444;">流失会员</span>：超过60天无消费记录<br/>
+              • <span style="color: #6B7280;">未激活</span>：注册后从未消费
+            </div>
+          </n-tooltip>
+        </p>
+      </div>
       <n-space>
         <n-button secondary @click="handleExport">
           <template #icon><n-icon :component="DownloadOutline" /></template>
@@ -142,7 +159,7 @@ import {
   NForm, NFormItem, NSelect, NInput,
 } from 'naive-ui'
 import {
-  FilterOutline, SearchOutline, DownloadOutline,
+  FilterOutline, SearchOutline, DownloadOutline, HelpCircleOutline,
 } from '@vicons/ionicons5'
 
 const router = useRouter()

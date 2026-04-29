@@ -61,30 +61,53 @@
     </div>
 
     <!-- 新增商家弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" title="新增商家" style="width: 560px;" :bordered="false">
+    <n-modal v-model:show="showAddModal" preset="card" title="新增商家" style="width: 680px;" :bordered="false">
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="100">
-        <n-form-item label="商家名称" path="name">
-          <n-input v-model:value="addForm.name" placeholder="请输入商家名称" />
-        </n-form-item>
-        <n-form-item label="联系人" path="contact">
-          <n-input v-model:value="addForm.contact" placeholder="请输入联系人姓名" />
-        </n-form-item>
-        <n-form-item label="联系电话" path="phone">
-          <n-input v-model:value="addForm.phone" placeholder="请输入联系电话" />
-        </n-form-item>
-        <n-form-item label="负责区域" path="region">
-          <n-select v-model:value="addForm.region" :options="regionOptions" placeholder="请选择负责区域" />
-        </n-form-item>
-        <n-form-item label="对应代理商" path="agentId">
-          <n-select v-model:value="addForm.agentId" :options="agentOptions" placeholder="请选择代理商（选填）" clearable />
-        </n-form-item>
-        <n-form-item label="商家状态" path="status">
-          <n-radio-group v-model:value="addForm.status">
-            <n-radio value="active">正常</n-radio>
-            <n-radio value="pending">待审核</n-radio>
-            <n-radio value="inactive">停用</n-radio>
-          </n-radio-group>
-        </n-form-item>
+        <n-tabs type="line">
+          <n-tab-pane name="basic" tab="基本信息">
+            <n-form-item label="商家名称" path="name">
+              <n-input v-model:value="addForm.name" placeholder="请输入商家名称" />
+            </n-form-item>
+            <n-form-item label="联系人" path="contact">
+              <n-input v-model:value="addForm.contact" placeholder="请输入联系人姓名" />
+            </n-form-item>
+            <n-form-item label="联系电话" path="phone">
+              <n-input v-model:value="addForm.phone" placeholder="请输入联系电话" />
+            </n-form-item>
+            <n-form-item label="负责区域" path="region">
+              <n-select v-model:value="addForm.region" :options="regionOptions" placeholder="请选择负责区域" />
+            </n-form-item>
+            <n-form-item label="对应代理商" path="agentId">
+              <n-select v-model:value="addForm.agentId" :options="agentOptions" placeholder="请选择代理商（选填）" clearable />
+            </n-form-item>
+            <n-form-item label="手续费率">
+              <n-input-number v-model:value="addForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
+              <span style="margin-left: 8px; color: var(--text-muted);">（例：0.005 = 0.5%）</span>
+            </n-form-item>
+            <n-form-item label="商家状态" path="status">
+              <n-radio-group v-model:value="addForm.status">
+                <n-radio value="active">正常</n-radio>
+                <n-radio value="pending">待审核</n-radio>
+                <n-radio value="inactive">停用</n-radio>
+              </n-radio-group>
+            </n-form-item>
+          </n-tab-pane>
+          
+          <n-tab-pane name="bank" tab="提现账户">
+            <n-form-item label="开户银行">
+              <n-select v-model:value="addForm.bankInfo.bankName" :options="bankOptions" placeholder="请选择开户银行" />
+            </n-form-item>
+            <n-form-item label="银行卡号">
+              <n-input v-model:value="addForm.bankInfo.cardNo" placeholder="请输入银行卡号" maxlength="23" />
+            </n-form-item>
+            <n-form-item label="开户人姓名">
+              <n-input v-model:value="addForm.bankInfo.accountName" placeholder="请输入开户人姓名" />
+            </n-form-item>
+            <n-form-item label="身份证号">
+              <n-input v-model:value="addForm.bankInfo.idCard" placeholder="请输入身份证号" maxlength="18" />
+            </n-form-item>
+          </n-tab-pane>
+        </n-tabs>
       </n-form>
       <template #footer>
         <n-space justify="end">
@@ -95,31 +118,56 @@
     </n-modal>
 
     <!-- 编辑商家弹窗 -->
-    <n-modal v-model:show="showEditModal" preset="card" title="编辑商家" style="width: 560px;" :bordered="false">
-      <n-form v-if="currentMerchant" label-placement="left" label-width="100">
-        <n-form-item label="商家名称">
-          <n-input v-model:value="editForm.name" />
-        </n-form-item>
-        <n-form-item label="联系人">
-          <n-input v-model:value="editForm.contact" />
-        </n-form-item>
-        <n-form-item label="联系电话">
-          <n-input v-model:value="editForm.phone" />
-        </n-form-item>
-        <n-form-item label="负责区域">
-          <n-select v-model:value="editForm.region" :options="regionOptions" />
-        </n-form-item>
-        <n-form-item label="对应代理商">
-          <n-select v-model:value="editForm.agentId" :options="agentOptions" clearable />
-        </n-form-item>
-        <n-form-item label="商家状态">
-          <n-radio-group v-model:value="editForm.status">
-            <n-radio value="active">正常</n-radio>
-            <n-radio value="pending">待审核</n-radio>
-            <n-radio value="inactive">停用</n-radio>
-          </n-radio-group>
-        </n-form-item>
-      </n-form>
+    <n-modal v-model:show="showEditModal" preset="card" title="编辑商家" style="width: 680px;" :bordered="false">
+      <n-tabs v-if="currentMerchant" type="line">
+        <n-tab-pane name="basic" tab="基本信息">
+          <n-form label-placement="left" label-width="100">
+            <n-form-item label="商家名称">
+              <n-input v-model:value="editForm.name" />
+            </n-form-item>
+            <n-form-item label="联系人">
+              <n-input v-model:value="editForm.contact" />
+            </n-form-item>
+            <n-form-item label="联系电话">
+              <n-input v-model:value="editForm.phone" />
+            </n-form-item>
+            <n-form-item label="负责区域">
+              <n-select v-model:value="editForm.region" :options="regionOptions" />
+            </n-form-item>
+            <n-form-item label="对应代理商">
+              <n-select v-model:value="editForm.agentId" :options="agentOptions" clearable />
+            </n-form-item>
+            <n-form-item label="手续费率">
+              <n-input-number v-model:value="editForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
+              <span style="margin-left: 8px; color: var(--text-muted);">（例：0.005 = 0.5%）</span>
+            </n-form-item>
+            <n-form-item label="商家状态">
+              <n-radio-group v-model:value="editForm.status">
+                <n-radio value="active">正常</n-radio>
+                <n-radio value="pending">待审核</n-radio>
+                <n-radio value="inactive">停用</n-radio>
+              </n-radio-group>
+            </n-form-item>
+          </n-form>
+        </n-tab-pane>
+        
+        <n-tab-pane name="bank" tab="提现账户">
+          <n-form label-placement="left" label-width="100">
+            <n-form-item label="开户银行">
+              <n-select v-model:value="editForm.bankInfo.bankName" :options="bankOptions" placeholder="请选择开户银行" />
+            </n-form-item>
+            <n-form-item label="银行卡号">
+              <n-input v-model:value="editForm.bankInfo.cardNo" placeholder="请输入银行卡号" maxlength="23" />
+            </n-form-item>
+            <n-form-item label="开户人姓名">
+              <n-input v-model:value="editForm.bankInfo.accountName" placeholder="请输入开户人姓名" />
+            </n-form-item>
+            <n-form-item label="身份证号">
+              <n-input v-model:value="editForm.bankInfo.idCard" placeholder="请输入身份证号" maxlength="18" />
+            </n-form-item>
+          </n-form>
+        </n-tab-pane>
+      </n-tabs>
       <template #footer>
         <n-space justify="end">
           <n-button @click="showEditModal = false">取消</n-button>
@@ -129,22 +177,40 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="商家详情" style="width: 640px;" :bordered="false">
-      <n-descriptions v-if="currentMerchant" label-placement="left" :column="2" bordered>
-        <n-descriptions-item label="商家名称">{{ currentMerchant.name }}</n-descriptions-item>
-        <n-descriptions-item label="商家ID">MC{{ String(currentMerchant.id).padStart(5, '0') }}</n-descriptions-item>
-        <n-descriptions-item label="联系人">{{ currentMerchant.contact }}</n-descriptions-item>
-        <n-descriptions-item label="联系电话">{{ currentMerchant.phone }}</n-descriptions-item>
-        <n-descriptions-item label="负责区域">{{ currentMerchant.region }}</n-descriptions-item>
-        <n-descriptions-item label="对应代理商">{{ currentMerchant.agentName || '无' }}</n-descriptions-item>
-        <n-descriptions-item label="旗下店铺">{{ currentMerchant.storeCount }} 家</n-descriptions-item>
-        <n-descriptions-item label="会员总数">{{ currentMerchant.memberCount }} 人</n-descriptions-item>
-        <n-descriptions-item label="本月营收">{{ currentMerchant.monthRevenue }}</n-descriptions-item>
-        <n-descriptions-item label="商家状态">
-          <n-tag :type="statusType(currentMerchant.status)" size="small">{{ statusLabel(currentMerchant.status) }}</n-tag>
-        </n-descriptions-item>
-        <n-descriptions-item label="创建时间" :span="2">{{ currentMerchant.createdAt }}</n-descriptions-item>
-      </n-descriptions>
+    <n-modal v-model:show="showDetailModal" preset="card" title="商家详情" style="width: 720px;" :bordered="false">
+      <n-tabs v-if="currentMerchant" type="line">
+        <n-tab-pane name="basic" tab="基本信息">
+          <n-descriptions label-placement="left" :column="2" bordered>
+            <n-descriptions-item label="商家名称">{{ currentMerchant.name }}</n-descriptions-item>
+            <n-descriptions-item label="商家ID">MC{{ String(currentMerchant.id).padStart(5, '0') }}</n-descriptions-item>
+            <n-descriptions-item label="联系人">{{ currentMerchant.contact }}</n-descriptions-item>
+            <n-descriptions-item label="联系电话">{{ currentMerchant.phone }}</n-descriptions-item>
+            <n-descriptions-item label="负责区域">{{ currentMerchant.region }}</n-descriptions-item>
+            <n-descriptions-item label="对应代理商">{{ currentMerchant.agentName || '无' }}</n-descriptions-item>
+            <n-descriptions-item label="旗下店铺">{{ currentMerchant.storeCount }} 家</n-descriptions-item>
+            <n-descriptions-item label="会员总数">{{ currentMerchant.memberCount }} 人</n-descriptions-item>
+            <n-descriptions-item label="本月营收">{{ currentMerchant.monthRevenue }}</n-descriptions-item>
+            <n-descriptions-item label="手续费率">{{ (currentMerchant.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
+            <n-descriptions-item label="商家状态">
+              <n-tag :type="statusType(currentMerchant.status)" size="small">{{ statusLabel(currentMerchant.status) }}</n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item label="创建时间" :span="2">{{ currentMerchant.createdAt }}</n-descriptions-item>
+          </n-descriptions>
+        </n-tab-pane>
+        
+        <n-tab-pane name="bank" tab="提现账户">
+          <n-descriptions label-placement="left" :column="1" bordered v-if="currentMerchant.bankInfo">
+            <n-descriptions-item label="开户银行">{{ currentMerchant.bankInfo.bankName }}</n-descriptions-item>
+            <n-descriptions-item label="银行卡号">{{ formatCardNo(currentMerchant.bankInfo.cardNo) }}</n-descriptions-item>
+            <n-descriptions-item label="开户人">{{ currentMerchant.bankInfo.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="身份证号">{{ formatIDCard(currentMerchant.bankInfo.idCard) }}</n-descriptions-item>
+            <n-descriptions-item label="状态">
+              <n-tag type="success" size="small">已绑定</n-tag>
+            </n-descriptions-item>
+          </n-descriptions>
+          <n-empty v-else description="未绑定提现账户" />
+        </n-tab-pane>
+      </n-tabs>
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDetailModal = false">关闭</n-button>
@@ -159,7 +225,8 @@
 import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
-  NForm, NFormItem, NRadioGroup, NRadio, NIcon, NDescriptions, NDescriptionsItem, useMessage, type FormInst, type FormRules
+  NForm, NFormItem, NRadioGroup, NRadio, NIcon, NDescriptions, NDescriptionsItem, 
+  useMessage, type FormInst, type FormRules, NInputNumber, NTabs, NTabPane, NEmpty
 } from 'naive-ui'
 import {
   SearchOutline, AddOutline, BusinessOutline, CheckmarkCircleOutline,
@@ -194,22 +261,45 @@ const agentOptions = [
   { label: '武汉创新体验', value: 5 },
 ]
 
+const bankOptions = [
+  { label: '中国工商银行', value: 'ICBC' },
+  { label: '中国建设银行', value: 'CCB' },
+  { label: '中国农业银行', value: 'ABC' },
+  { label: '中国银行', value: 'BOC' },
+  { label: '交通银行', value: 'BOCOM' },
+  { label: '招商银行', value: 'CMB' },
+  { label: '中国邮政储蓄银行', value: 'PSBC' },
+  { label: '兴业银行', value: 'CIB' },
+  { label: '浦发银行', value: 'SPDB' },
+  { label: '民生银行', value: 'CMBC' },
+]
+
+function formatCardNo(cardNo: string) {
+  if (!cardNo) return ''
+  return cardNo.replace(/(\d{4})(?=\d)/g, '$1 ')
+}
+
+function formatIDCard(idCard: string) {
+  if (!idCard) return ''
+  return idCard.replace(/(\d{4})\d+(\d{4})/, '$1**********$2')
+}
+
 const columns = [
-  { title: '商家名称', key: 'name', width: 180 },
-  { title: '联系人', key: 'contact', width: 100 },
-  { title: '联系电话', key: 'phone', width: 130 },
-  { title: '负责区域', key: 'region', width: 100 },
-  { title: '对应代理商', key: 'agentName', width: 140 },
+  { title: '商家名称', key: 'name', width: 160 },
+  { title: '联系人', key: 'contact', width: 90 },
+  { title: '联系电话', key: 'phone', width: 120 },
+  { title: '负责区域', key: 'region', width: 90 },
+  { title: '对应代理商', key: 'agentName', width: 130 },
   {
-    title: '状态', key: 'status', width: 90,
+    title: '状态', key: 'status', width: 80,
     render(row: any) {
       return h(NTag, { type: statusType(row.status), size: 'small', bordered: true }, () => statusLabel(row.status))
     }
   },
-  { title: '旗下店铺', key: 'storeCount', width: 100 },
-  { title: '会员数', key: 'memberCount', width: 90 },
-  { title: '本月营收', key: 'monthRevenue', width: 120 },
-  { title: '创建时间', key: 'createdAt', width: 120 },
+  { title: '旗下店铺', key: 'storeCount', width: 90 },
+  { title: '手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
+  { title: '本月营收', key: 'monthRevenue', width: 110 },
+  { title: '创建时间', key: 'createdAt', width: 110 },
   {
     title: '操作', key: 'actions', width: 180, fixed: 'right',
     render(row: any) {
@@ -240,14 +330,46 @@ function statusLabel(status: string) {
 }
 
 const merchantData = ref([
-  { id: 1, name: '恒然集团', contact: '陈总', phone: '13800001101', region: '深圳', agentId: 1, agentName: '深圳未来科技', status: 'active', storeCount: 8, memberCount: 3280, monthRevenue: '¥156,800', createdAt: '2023-06-01' },
-  { id: 2, name: '幻影星空', contact: '林总', phone: '13800001102', region: '广州', agentId: 3, agentName: '上海星际娱乐', status: 'active', storeCount: 5, memberCount: 1890, monthRevenue: '¥98,500', createdAt: '2023-07-15' },
-  { id: 3, name: '利民街商家', contact: '张总', phone: '13800001103', region: '北京', agentId: 2, agentName: '北京梦想空间', status: 'active', storeCount: 3, memberCount: 2150, monthRevenue: '¥112,000', createdAt: '2023-08-20' },
-  { id: 4, name: '党建馆集团', contact: '李总', phone: '13800001104', region: '成都', agentId: 4, agentName: '成都虚拟现实', status: 'active', storeCount: 2, memberCount: 980, monthRevenue: '¥56,800', createdAt: '2023-09-10' },
-  { id: 5, name: '华东展厅', contact: '王总', phone: '13800001105', region: '上海', agentId: 3, agentName: '上海星际娱乐', status: 'pending', storeCount: 4, memberCount: 1560, monthRevenue: '¥89,200', createdAt: '2023-10-05' },
-  { id: 6, name: '南山科创', contact: '赵总', phone: '13800001106', region: '深圳', agentId: 1, agentName: '深圳未来科技', status: 'active', storeCount: 6, memberCount: 2450, monthRevenue: '¥134,600', createdAt: '2023-11-01' },
-  { id: 7, name: '天河娱乐', contact: '孙总', phone: '13800001107', region: '广州', agentId: null, agentName: '', status: 'inactive', storeCount: 1, memberCount: 560, monthRevenue: '¥12,300', createdAt: '2023-12-10' },
-  { id: 8, name: '钱塘体验中心', contact: '周总', phone: '13800001108', region: '杭州', agentId: null, agentName: '', status: 'active', storeCount: 3, memberCount: 1120, monthRevenue: '¥67,800', createdAt: '2024-01-08' },
+  { 
+    id: 1, name: '恒然集团', contact: '陈总', phone: '13800001101', region: '深圳', agentId: 1, agentName: '深圳未来科技', 
+    status: 'active', storeCount: 8, memberCount: 3280, monthRevenue: '¥156,800', feeRate: 0.005, createdAt: '2023-06-01',
+    bankInfo: { bankName: 'ICBC', cardNo: '6222021234567890123', accountName: '陈总', idCard: '440301198001011234' }
+  },
+  { 
+    id: 2, name: '幻影星空', contact: '林总', phone: '13800001102', region: '广州', agentId: 3, agentName: '上海星际娱乐', 
+    status: 'active', storeCount: 5, memberCount: 1890, monthRevenue: '¥98,500', feeRate: 0.005, createdAt: '2023-07-15',
+    bankInfo: { bankName: 'CCB', cardNo: '6217001234567890', accountName: '林总', idCard: '440101198502021234' }
+  },
+  { 
+    id: 3, name: '利民街商家', contact: '张总', phone: '13800001103', region: '北京', agentId: 2, agentName: '北京梦想空间', 
+    status: 'active', storeCount: 3, memberCount: 2150, monthRevenue: '¥112,000', feeRate: 0.006, createdAt: '2023-08-20',
+    bankInfo: null
+  },
+  { 
+    id: 4, name: '党建馆集团', contact: '李总', phone: '13800001104', region: '成都', agentId: 4, agentName: '成都虚拟现实', 
+    status: 'active', storeCount: 2, memberCount: 980, monthRevenue: '¥56,800', feeRate: 0.005, createdAt: '2023-09-10',
+    bankInfo: { bankName: 'ABC', cardNo: '6228481234567890', accountName: '李总', idCard: '510102197801011234' }
+  },
+  { 
+    id: 5, name: '华东展厅', contact: '王总', phone: '13800001105', region: '上海', agentId: 3, agentName: '上海星际娱乐', 
+    status: 'pending', storeCount: 4, memberCount: 1560, monthRevenue: '¥89,200', feeRate: 0.005, createdAt: '2023-10-05',
+    bankInfo: null
+  },
+  { 
+    id: 6, name: '南山科创', contact: '赵总', phone: '13800001106', region: '深圳', agentId: 1, agentName: '深圳未来科技', 
+    status: 'active', storeCount: 6, memberCount: 2450, monthRevenue: '¥134,600', feeRate: 0.004, createdAt: '2023-11-01',
+    bankInfo: { bankName: 'CMB', cardNo: '6214831234567890', accountName: '赵总', idCard: '440303198503031234' }
+  },
+  { 
+    id: 7, name: '天河娱乐', contact: '孙总', phone: '13800001107', region: '广州', agentId: null, agentName: '', 
+    status: 'inactive', storeCount: 1, memberCount: 560, monthRevenue: '¥12,300', feeRate: 0.005, createdAt: '2023-12-10',
+    bankInfo: null
+  },
+  { 
+    id: 8, name: '钱塘体验中心', contact: '周总', phone: '13800001108', region: '杭州', agentId: null, agentName: '', 
+    status: 'active', storeCount: 3, memberCount: 1120, monthRevenue: '¥67,800', feeRate: 0.005, createdAt: '2024-01-08',
+    bankInfo: { bankName: 'BOC', cardNo: '6217851234567890', accountName: '周总', idCard: '330102198204041234' }
+  },
 ])
 
 const pagination = { pageSize: 10 }
@@ -267,7 +389,11 @@ const filteredData = computed(() => {
 // 新增
 const showAddModal = ref(false)
 const addFormRef = ref<FormInst | null>(null)
-const addForm = ref({ name: '', contact: '', phone: '', region: '', agentId: null as number | null, status: 'active' })
+const addForm = ref({ 
+  name: '', contact: '', phone: '', region: '', agentId: null as number | null, 
+  status: 'active', feeRate: 0.005,
+  bankInfo: { bankName: '', cardNo: '', accountName: '', idCard: '' }
+})
 const addRules: FormRules = {
   name: { required: true, message: '请输入商家名称', trigger: 'blur' },
   contact: { required: true, message: '请输入联系人', trigger: 'blur' },
@@ -279,6 +405,7 @@ function handleAdd() {
   addFormRef.value?.validate((errors) => {
     if (errors) return
     const agentName = agentOptions.find(a => a.value === addForm.value.agentId)?.label || ''
+    const bankInfo = addForm.value.bankInfo.bankName ? { ...addForm.value.bankInfo } : null
     merchantData.value.unshift({
       id: Date.now(),
       name: addForm.value.name,
@@ -291,22 +418,35 @@ function handleAdd() {
       storeCount: 0,
       memberCount: 0,
       monthRevenue: '¥0',
+      feeRate: addForm.value.feeRate,
+      bankInfo,
       createdAt: new Date().toISOString().slice(0, 10),
     })
     message.success('商家新增成功')
     showAddModal.value = false
-    addForm.value = { name: '', contact: '', phone: '', region: '', agentId: null, status: 'active' }
+    addForm.value = { 
+      name: '', contact: '', phone: '', region: '', agentId: null, 
+      status: 'active', feeRate: 0.005,
+      bankInfo: { bankName: '', cardNo: '', accountName: '', idCard: '' }
+    }
   })
 }
 
 // 编辑
 const showEditModal = ref(false)
 const currentMerchant = ref<any>(null)
-const editForm = ref({ name: '', contact: '', phone: '', region: '', agentId: null as number | null, status: 'active' })
+const editForm = ref({ 
+  name: '', contact: '', phone: '', region: '', agentId: null as number | null, 
+  status: 'active', feeRate: 0.005,
+  bankInfo: { bankName: '', cardNo: '', accountName: '', idCard: '' }
+})
 
 function openEdit(row: any) {
   currentMerchant.value = row
-  editForm.value = { ...row }
+  editForm.value = { 
+    ...row,
+    bankInfo: row.bankInfo ? { ...row.bankInfo } : { bankName: '', cardNo: '', accountName: '', idCard: '' }
+  }
   showEditModal.value = true
 }
 
@@ -315,7 +455,13 @@ function handleEdit() {
   const idx = merchantData.value.findIndex(d => d.id === currentMerchant.value.id)
   if (idx !== -1) {
     const agentName = agentOptions.find(a => a.value === editForm.value.agentId)?.label || ''
-    merchantData.value[idx] = { ...merchantData.value[idx], ...editForm.value, agentName }
+    const bankInfo = editForm.value.bankInfo.bankName ? { ...editForm.value.bankInfo } : null
+    merchantData.value[idx] = { 
+      ...merchantData.value[idx], 
+      ...editForm.value, 
+      agentName,
+      bankInfo
+    }
     message.success('商家信息已更新')
   }
   showEditModal.value = false

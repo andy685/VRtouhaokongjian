@@ -85,9 +85,10 @@
                 <img :src="banner.url" />
                 <n-button size="tiny" quaternary type="error" class="banner-del" @click="removeBanner(i)">×</n-button>
               </div>
-              <div class="banner-thumb banner-add">
-                <n-upload accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload">
-                  <n-icon size="18"><AddOutline /></n-icon>
+              <div class="banner-add-placeholder">
+                <n-upload class="banner-upload-inner" accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload">
+                  <n-icon size="22" color="#aaa"><ImageOutline /></n-icon>
+                  <span>上传展位图</span>
                 </n-upload>
               </div>
             </div>
@@ -754,16 +755,31 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1;
 }
-.banner-add {
+.banner-add-placeholder {
   aspect-ratio: 16/9;
   border-radius: 8px;
-  border: 2px dashed var(--border-color, #e8e8e8);
+  background: var(--bg-secondary, #f5f5f5);
+  border: 2px dashed #ddd;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted, #999);
   cursor: pointer;
   transition: all 0.2s;
+}
+.banner-upload-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #aaa;
+}
+.banner-add-placeholder:hover {
+  border-color: #bbb;
+  background: #f0f0f0;
 }
 
 /* 单独资源区（封面/资源包） */

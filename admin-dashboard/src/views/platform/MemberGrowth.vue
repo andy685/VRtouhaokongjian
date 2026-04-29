@@ -10,15 +10,27 @@
 </template>
 
 <script setup lang="ts">
-import { NDataTable } from 'naive-ui'
+import { h, ref } from 'vue'
+import { NDataTable, NTooltip, NIcon, NText } from 'naive-ui'
+import { HelpCircleOutline } from '@vicons/ionicons5'
+
+function renderTitle(label: string, tooltip: string, color: string) {
+  return () => h('span', { style: 'display:inline-flex;align-items:center;gap:4px;' }, [
+    label,
+    h(NTooltip, { placement: 'top' }, {
+      trigger: () => h(NIcon, { component: HelpCircleOutline, size: 14, style: `cursor:pointer;color:${color};` }),
+      default: () => tooltip,
+    }),
+  ])
+}
 
 const columns = [
   { title: '日期', key: 'date', minWidth: 120 },
   { title: '新增会员', key: 'newMembers', width: 100 },
   { title: '储值新增', key: 'newDeposit', width: 110 },
   { title: '游戏豆新增', key: 'newBeans', width: 110 },
-  { title: '活跃数', key: 'active', width: 90 },
-  { title: '流失数', key: 'churned', width: 90 },
+  { title: renderTitle('活跃数', '当天有消费记录的会员数', '#8B5CF6'), key: 'active', width: 100 },
+  { title: renderTitle('流失数', '当天新增流失会员（超过60天无消费）', '#EF4444'), key: 'churned', width: 100 },
   { title: '净增长', key: 'netGrowth', width: 90 },
 ]
 

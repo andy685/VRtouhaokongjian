@@ -3,10 +3,33 @@
     <div class="page-header">
       <div>
         <h1>结算管理</h1>
-        <p class="header-desc">管理店铺结算周期与打款状态</p>
+        <p class="header-desc">管理商家结算周期与打款状态</p>
       </div>
       <n-space>
+        <!-- 高级筛选 -->
+        <n-date-picker
+          v-model:value="filterDateRange"
+          type="daterange"
+          clearable
+          size="small"
+          style="width: 240px;"
+          placeholder="选择日期范围"
+        />
+        <n-select 
+          v-model:value="filterMerchant" 
+          placeholder="选择商家" 
+          :options="merchantOptions" 
+          size="small" 
+          style="width: 160px;" 
+          clearable 
+        />
         <n-select v-model:value="filterStatus" placeholder="结算状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
+        <n-button @click="exportToExcel">
+          <template #icon>
+            <n-icon :component="DownloadOutline" />
+          </template>
+          导出Excel
+        </n-button>
         <n-button type="primary" @click="showBatchModal = true">批量结算</n-button>
       </n-space>
     </div>
@@ -44,8 +67,8 @@
           <n-icon :component="ReceiptOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">结算笔数</span>
-          <span class="value">45</span>
+          <span class="label">手续费收入</span>
+          <span class="value">¥4,281</span>
         </div>
       </div>
     </div>
@@ -55,8 +78,8 @@
     </div>
 
     <!-- 批量结算弹窗 -->
-    <n-modal v-model:show="showBatchModal" preset="card" title="批量结算" style="width: 520px;" :bordered="false">
-      <p style="margin-bottom: 16px; color: #666;">选择要结算的店铺记录</p>
+    <n-modal v-model:show="showBatchModal" preset="card" title="批量结算" style="width: 600px;" :bordered="false">
+      <p style="margin-bottom: 16px; color: #666;">选择要结算的商家记录</p>
       <n-data-table :columns="batchColumns" :data="pendingData" :pagination="false" size="small" striped />
       <template #footer>
         <n-space justify="end">
@@ -67,13 +90,14 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="结算详情" style="width: 600px;" :bordered="false">
+    <n-modal v-model:show="showDetailModal" preset="card" :title="`结算明细 - ${currentRecord?.no || ''}`" style="width: 800px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
-        <n-descriptions-item label="店铺">{{ currentRecord.store }}</n-descriptions-item>
+        <n-descriptions-item label="商家">{{ currentRecord.merchant }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
-        <n-descriptions-item label="结算金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="手续费">{{ `¥${currentRecord.fee}` }}</n-descriptions-item>
+        <n-descriptions-item label="总结算金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
+        <n-descriptions-item label="手续费率">{{ (currentRecord.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
+        <n-descriptions-item label="总手续费">{{ `¥${currentRecord.fee}` }}</n-descriptions-item>
         <n-descriptions-item label="实际到账">{{ `¥${(currentRecord.amount - currentRecord.fee).toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
@@ -82,6 +106,53 @@
         </n-descriptions-item>
         <n-descriptions-item label="打款时间">{{ currentRecord.time }}</n-descriptions-item>
       </n-descriptions>
+      
+      <!-- 店铺明细 -->
+      <div style="margin-top: 20px;" v-if="currentRecord?.storeDetails?.length">
+        <n-divider>店铺明细</n-divider>
+        <n-data-table 
+          :columns="storeDetailColumns" 
+          :data="currentRecord.storeDetails" 
+          :pagination="false" 
+          size="small" 
+          striped 
+        />
+      </div>
+      
+      <!-- 打款凭证上传 -->
+      <div style="margin-top: 20px;" v-if="currentRecord?.status === 'done'">
+        <n-divider>打款凭证</n-divider>
+        <div v-if="currentRecord.voucher">
+          <n-image 
+            :src="currentRecord.voucher" 
+            width="200"
+            style="border-radius: 8px;"
+          />
+          <div style="margin-top: 8px;">
+            <n-button size="small" @click="currentRecord.voucher = null; message.success('凭证已删除')">
+              删除凭证
+            </n-button>
+          </div>
+        </div>
+        <n-upload
+          v-else
+          accept="image/*"
+          :max="1"
+          :custom-request="handleVoucherUpload"
+        >
+          <n-upload-dragger>
+            <div style="padding: 20px 0;">
+              <n-icon size="32" :depth="3">
+                <CloudUploadOutline />
+              </n-icon>
+              <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">
+                点击或拖拽上传打款凭证
+              </p>
+            </div>
+          </n-upload-dragger>
+        </n-upload>
+      </div>
+      
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDetailModal = false">关闭</n-button>
@@ -96,14 +167,18 @@
 import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal,
-  NIcon, NDescriptions, NDescriptionsItem, useMessage
+  NIcon, NDescriptions, NDescriptionsItem, useMessage, NDatePicker, NUpload, NUploadDragger, NImage
 } from 'naive-ui'
 import {
-  WalletOutline, CheckmarkCircleOutline, TimeOutline, ReceiptOutline
+  WalletOutline, CheckmarkCircleOutline, TimeOutline, ReceiptOutline, DownloadOutline, CloudUploadOutline
 } from '@vicons/ionicons5'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 const message = useMessage()
 const filterStatus = ref<string | null>(null)
+const filterMerchant = ref<string | null>(null)
+const filterDateRange = ref<[number, number] | null>(null)
 
 const statusOptions = [
   { label: '已打款', value: 'done' },
@@ -111,61 +186,224 @@ const statusOptions = [
   { label: '处理中', value: 'processing' },
 ]
 
+const merchantOptions = [
+  { label: '深圳XX科技公司', value: '深圳XX科技公司' },
+  { label: '广州YY传媒公司', value: '广州YY传媒公司' },
+  { label: '北京ZZ娱乐公司', value: '北京ZZ娱乐公司' },
+  { label: '上海WW投资公司', value: '上海WW投资公司' },
+]
+
 const columns = [
-  { title: '结算单号', key: 'no', width: 160 },
-  { title: '店铺', key: 'store', width: 160 },
-  { title: '结算周期', key: 'period', width: 180 },
-  { title: '结算金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '手续费', key: 'fee', width: 100, render: (row: any) => `¥${row.fee}` },
+  { title: '结算单号', key: 'no', width: 150 },
+  { title: '商家', key: 'merchant', width: 160 },
+  { title: '店铺数量', key: 'storeCount', width: 90, render: (row: any) => `${row.storeDetails.length} 家` },
+  { title: '结算周期', key: 'period', width: 160 },
+  { title: '结算金额', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
+  { title: '手续费', key: 'fee', width: 90, render: (row: any) => `¥${row.fee}` },
+  { title: '实际到账', key: 'actualAmount', width: 110, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString()}` },
   {
     title: '状态',
     key: 'status',
-    width: 100,
+    width: 90,
     render(row: any) {
       const typeMap: Record<string, string> = { done: 'success', pending: 'warning', processing: 'info' }
       return h(NTag, { type: typeMap[row.status] as any, size: 'small', bordered: true }, () => row.statusText)
     }
   },
-  { title: '打款时间', key: 'time', width: 150 },
+  { title: '打款时间', key: 'time', width: 140 },
   {
     title: '操作',
     key: 'action',
     width: 120,
     render(row: any) {
-      return h(NButton, { size: 'tiny', secondary: true, onClick: () => openDetail(row) }, () => '详情')
+      return h(NButton, { size: 'tiny', secondary: true, onClick: () => openDetail(row) }, () => '查看明细')
     }
   },
 ]
 
 const settlementData = ref([
-  { id: 1, no: 'ST2026042001', store: '深圳福田旗舰店', period: '2026-04-13 ~ 2026-04-19', amount: 85623, fee: 2568.69, status: 'done', statusText: '已打款', time: '2026-04-20 10:00' },
-  { id: 2, no: 'ST2026042002', store: '南山科技园店', period: '2026-04-13 ~ 2026-04-19', amount: 52340, fee: 1570.20, status: 'done', statusText: '已打款', time: '2026-04-20 10:00' },
-  { id: 3, no: 'ST2026042003', store: '广州天河店', period: '2026-04-13 ~ 2026-04-19', amount: 78230, fee: 2346.90, status: 'pending', statusText: '待打款', time: '-' },
-  { id: 4, no: 'ST2026042004', store: '北京朝阳店', period: '2026-04-13 ~ 2026-04-19', amount: 45680, fee: 1370.40, status: 'processing', statusText: '处理中', time: '-' },
-  { id: 5, no: 'ST2026042005', store: '上海浦东店', period: '2026-04-13 ~ 2026-04-19', amount: 97850, fee: 2935.50, status: 'pending', statusText: '待打款', time: '-' },
+  { 
+    id: 1, 
+    no: 'ST2026042001', 
+    merchant: '深圳XX科技公司', 
+    period: '2026-04-13 ~ 2026-04-19', 
+    amount: 137963, 
+    feeRate: 0.03, 
+    fee: 4138.89, 
+    status: 'done', 
+    statusText: '已打款', 
+    time: '2026-04-20 10:00',
+    voucher: '',
+    storeDetails: [
+      { store: '深圳福田旗舰店', amount: 85623, fee: 2568.69 },
+      { store: '南山科技园店', amount: 52340, fee: 1570.20 },
+    ]
+  },
+  { 
+    id: 2, 
+    no: 'ST2026042002', 
+    merchant: '广州YY传媒公司', 
+    period: '2026-04-13 ~ 2026-04-19', 
+    amount: 78230, 
+    feeRate: 0.03, 
+    fee: 2346.90, 
+    status: 'pending', 
+    statusText: '待打款', 
+    time: '-',
+    voucher: '',
+    storeDetails: [
+      { store: '广州天河店', amount: 78230, fee: 2346.90 },
+    ]
+  },
+  { 
+    id: 3, 
+    no: 'ST2026042003', 
+    merchant: '北京ZZ娱乐公司', 
+    period: '2026-04-13 ~ 2026-04-19', 
+    amount: 45680, 
+    feeRate: 0.03, 
+    fee: 1370.40, 
+    status: 'processing', 
+    statusText: '处理中', 
+    time: '-',
+    voucher: '',
+    storeDetails: [
+      { store: '北京朝阳店', amount: 45680, fee: 1370.40 },
+    ]
+  },
+  { 
+    id: 4, 
+    no: 'ST2026042004', 
+    merchant: '上海WW投资公司', 
+    period: '2026-04-13 ~ 2026-04-19', 
+    amount: 97850, 
+    feeRate: 0.03, 
+    fee: 2935.50, 
+    status: 'pending', 
+    statusText: '待打款', 
+    time: '-',
+    voucher: '',
+    storeDetails: [
+      { store: '上海浦东店', amount: 97850, fee: 2935.50 },
+    ]
+  },
 ])
 
 const pagination = { pageSize: 10 }
 
 const filteredData = computed(() => {
   let data = [...settlementData.value]
+  
+  // 按状态筛选
   if (filterStatus.value) {
     data = data.filter(d => d.status === filterStatus.value)
   }
+  
+  // 按商家筛选
+  if (filterMerchant.value) {
+    data = data.filter(d => d.merchant === filterMerchant.value)
+  }
+  
+  // 按日期范围筛选
+  if (filterDateRange.value && filterDateRange.value.length === 2) {
+    const [start, end] = filterDateRange.value
+    data = data.filter(d => {
+      const recordDate = new Date(d.period.split(' ~ ')[0])
+      return recordDate.getTime() >= start && recordDate.getTime() <= end
+    })
+  }
+  
   return data
 })
 
+// 导出Excel功能
+function exportToExcel() {
+  try {
+    const exportData = filteredData.value.map((item, index) => ({
+      '序号': index + 1,
+      '结算单号': item.no,
+      '商家': item.merchant,
+      '店铺数量': `${item.storeDetails.length} 家`,
+      '结算周期': item.period,
+      '总结算金额': item.amount,
+      '手续费率': `${(item.feeRate * 100).toFixed(1)}%`,
+      '总手续费': item.fee,
+      '实际到账': item.amount - item.fee,
+      '状态': item.statusText,
+      '打款时间': item.time
+    }))
+    
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '结算管理')
+    
+    // 设置列宽
+    ws['!cols'] = [
+      { wch: 6 },  // 序号
+      { wch: 15 }, // 结算单号
+      { wch: 18 }, // 商家
+      { wch: 10 }, // 店铺数量
+      { wch: 20 }, // 结算周期
+      { wch: 12 }, // 总结算金额
+      { wch: 10 }, // 手续费率
+      { wch: 10 }, // 总手续费
+      { wch: 12 }, // 实际到账
+      { wch: 10 }, // 状态
+      { wch: 18 }, // 打款时间
+    ]
+    
+    const fileName = `结算管理_${new Date().toLocaleDateString('zh-CN')}.xlsx`
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+    const blob = new Blob([wbout], { type: 'application/octet-stream' })
+    saveAs(blob, fileName)
+    
+    message.success('导出成功')
+  } catch (error) {
+    message.error('导出失败')
+    console.error(error)
+  }
+}
+
 const pendingData = computed(() => settlementData.value.filter(d => d.status === 'pending'))
+
+// 店铺明细表格列
+const storeDetailColumns = [
+  { title: '店铺名称', key: 'store', width: 160 },
+  { title: '结算金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '手续费', key: 'fee', width: 100, render: (row: any) => `¥${row.fee}` },
+  { title: '实际到账', key: 'actual', width: 120, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString()}` },
+]
 
 // 批量结算
 const showBatchModal = ref(false)
 const batchColumns = [
-  { title: '店铺', key: 'store' },
+  { title: '商家', key: 'merchant' },
+  { title: '店铺数量', key: 'storeCount', width: 90, render: (row: any) => `${row.storeDetails.length} 家` },
   { title: '结算金额', key: 'amount', render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '状态', key: 'status', render: () => h(NTag, { type: 'warning', size: 'tiny' }, () => '待打款') },
 ]
 
 function confirmBatch() {
+  // 结算前检查：检查是否有异常订单
+  const pendingSettlements = settlementData.value.filter(d => d.status === 'pending')
+  let hasException = false
+  let exceptionCount = 0
+  
+  // 模拟检查：随机决定是否有异常订单
+  if (Math.random() > 0.5) {
+    hasException = true
+    exceptionCount = Math.floor(Math.random() * 5) + 1
+  }
+  
+  if (hasException) {
+    const confirmed = window.confirm(`⚠️ 警告：存在 ${exceptionCount} 笔异常订单，是否继续结算？\n\n点击"取消"暂停结算，先处理异常订单。`)
+    if (!confirmed) {
+      message.warning('已暂停结算，请先处理异常订单')
+      return
+    }
+  }
+  
   let count = 0
   settlementData.value.forEach(d => {
     if (d.status === 'pending') {
@@ -189,6 +427,25 @@ function openDetail(row: any) {
 }
 
 function confirmSingle() {
+  // 结算前检查：检查是否有异常订单
+  const currentMerchant = currentRecord.value?.merchant
+  let hasException = false
+  let exceptionCount = 0
+  
+  // 模拟检查：随机决定是否有异常订单
+  if (Math.random() > 0.5) {
+    hasException = true
+    exceptionCount = Math.floor(Math.random() * 3) + 1
+  }
+  
+  if (hasException) {
+    const confirmed = window.confirm(`⚠️ 警告：商家"${currentMerchant}"存在 ${exceptionCount} 笔异常订单，是否继续结算？\n\n点击"取消"暂停结算，先处理异常订单。`)
+    if (!confirmed) {
+      message.warning('已暂停结算，请先处理异常订单')
+      return
+    }
+  }
+  
   if (currentRecord.value) {
     const idx = settlementData.value.findIndex(d => d.id === currentRecord.value.id)
     if (idx !== -1) {
@@ -199,6 +456,23 @@ function confirmSingle() {
     }
   }
   showDetailModal.value = false
+}
+
+// 上传打款凭证
+function handleVoucherUpload({ file, onFinish }: any) {
+  if (!currentRecord.value) return
+  
+  // 模拟上传，实际应该调用API
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const idx = settlementData.value.findIndex(d => d.id === currentRecord.value.id)
+    if (idx !== -1) {
+      settlementData.value[idx].voucher = e.target?.result as string
+      message.success('凭证上传成功')
+    }
+    onFinish()
+  }
+  reader.readAsDataURL(file.file)
 }
 </script>
 

@@ -10,7 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { NDataTable } from 'naive-ui'
+import { h } from 'vue'
+import { NDataTable, NTooltip, NIcon } from 'naive-ui'
+import { HelpCircleOutline } from '@vicons/ionicons5'
 
 const columns = [
   { title: '商家', key: 'merchant', minWidth: 140 },
@@ -18,8 +20,26 @@ const columns = [
   { title: '本月新增', key: 'newThisMonth', width: 100 },
   { title: '储值总额', key: 'totalDeposit', width: 110 },
   { title: '游戏豆总额', key: 'totalBeans', width: 110 },
-  { title: '活跃会员', key: 'activeMembers', width: 100 },
-  { title: '流失会员', key: 'churnedMembers', width: 100 },
+  {
+    title: () => h('span', { style: 'display:inline-flex;align-items:center;gap:2px;' }, [
+      '活跃会员',
+      h(NTooltip, { placement: 'top' }, {
+        trigger: () => h(NIcon, { component: HelpCircleOutline, size: 14, style: 'cursor:pointer;color:#8B5CF6;' }),
+        default: () => '近30天内有消费记录的会员',
+      }),
+    ]),
+    key: 'activeMembers', width: 110,
+  },
+  {
+    title: () => h('span', { style: 'display:inline-flex;align-items:center;gap:2px;' }, [
+      '流失会员',
+      h(NTooltip, { placement: 'top' }, {
+        trigger: () => h(NIcon, { component: HelpCircleOutline, size: 14, style: 'cursor:pointer;color:#EF4444;' }),
+        default: () => '超过60天无消费记录的会员',
+      }),
+    ]),
+    key: 'churnedMembers', width: 110,
+  },
 ]
 
 const data = [

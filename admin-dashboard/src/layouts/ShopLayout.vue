@@ -255,6 +255,7 @@ const menuOptions: MenuOption[] = [
         ]
       },
       { label: '影片分成明细', key: '/shop/film-revenue' },
+      { label: '结算记录', key: '/shop/settlement' },
     ]
   },
   {
