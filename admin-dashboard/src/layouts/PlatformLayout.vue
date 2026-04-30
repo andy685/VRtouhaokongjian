@@ -88,12 +88,35 @@
             </template>
           </n-input>
           
-          <!-- 通知 -->
-          <n-badge :value="3" :max="99">
-            <n-button quaternary circle size="small">
-              <template #icon><n-icon :component="NotificationsOutline" /></template>
-            </n-button>
-          </n-badge>
+          <!-- 系统通知中心 -->
+          <n-popover trigger="click" placement="bottom-end" :width="380" :style="{ padding: 0 }">
+            <template #trigger>
+              <n-badge :value="unreadCount" :max="99" :show="unreadCount > 0">
+                <n-button quaternary circle size="small">
+                  <template #icon><n-icon :component="NotificationsOutline" /></template>
+                </n-button>
+              </n-badge>
+            </template>
+            <div class="notice-panel">
+              <div class="notice-panel-header">
+                <span class="notice-panel-title">系统通知</span>
+                <n-button text size="tiny" type="primary">全部已读</n-button>
+              </div>
+              <div class="notice-list">
+                <div v-for="item in noticeList" :key="item.id" class="notice-item" :class="{ unread: !item.read }" @click="handleNoticeClick(item)">
+                  <div class="notice-dot" :class="item.type"></div>
+                  <div class="notice-body">
+                    <div class="notice-text">{{ item.title }}</div>
+                    <div class="notice-time">{{ item.time }}</div>
+                  </div>
+                </div>
+                <div v-if="!noticeList.length" class="notice-empty">暂无新通知</div>
+              </div>
+              <div class="notice-panel-footer">
+                <router-link to="/platform/notice/inbox" style="text-decoration:none;">查看全部通知 &rarr;</router-link>
+              </div>
+            </div>
+          </n-popover>
           
           <!-- 用户菜单 -->
           <n-dropdown :options="userMenuOptions" @select="handleUserAction">
@@ -166,7 +189,7 @@ import { ref, computed, h } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   NMenu, NButton, NIcon, NAvatar, NBadge, NBreadcrumb, NBreadcrumbItem,
-  NInput, NDropdown, NModal, NTag,
+  NInput, NDropdown, NModal, NTag, NPopover,
 } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
@@ -174,8 +197,9 @@ import {
   SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, SearchOutline, NotificationsOutline,
   ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
-  GiftOutline, ConstructOutline, TrendingUpOutline, ReceiptOutline,
-  BarChartOutline, PulseOutline
+  GiftOutline, ConstructOutline, ReceiptOutline,
+  BarChartOutline, PulseOutline, HelpCircleOutline, MegaphoneOutline,
+  ShieldCheckmarkOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -216,21 +240,20 @@ const menuOptions: MenuOption[] = [
     ]
   },
   {
-    label: '游戏豆销售',
-    key: 'gamebean-group',
-    icon: () => h(NIcon, { component: TrendingUpOutline }),
-    children: [
-      { label: '销售总览', key: '/platform/gamebean-sales' },
-      { label: '销售明细', key: '/platform/gamebean-sales/detail' },
-    ]
-  },
-  {
     label: '会员中心',
     key: 'member-group',
     icon: () => h(NIcon, { component: PeopleOutline }),
     children: [
       { label: '会员数据', key: '/platform/members' },
+      { label: '会员列表', key: '/platform/members/list' },
       { label: '会员增长', key: '/platform/members/growth' },
+      { type: 'divider', key: 'd-member-1' },
+      { label: '会员消费排行', key: '/platform/members/ranking' },
+      { label: '会员储值变更', key: '/platform/members/deposit-log' },
+      { label: '会员游戏币查询', key: '/platform/members/coins-query' },
+      { label: '游戏币调整有效期查询', key: '/platform/members/coin-adjust-log' },
+      { label: '会员预存次数查询', key: '/platform/members/prepaid-times-query' },
+      { label: '次数调整有效查询', key: '/platform/members/times-adjust-log' },
     ]
   },
   {
@@ -251,30 +274,32 @@ const menuOptions: MenuOption[] = [
     key: 'finance-group',
     icon: () => h(NIcon, { component: WalletOutline }),
     children: [
-      { label: '财务总览', key: '/platform/finance' },
-      { label: '结算管理', key: '/platform/finance/settlement' },
-      { label: '结算配置', key: '/platform/finance/settlement-config' },
-      { label: '对账中心', key: '/platform/finance/reconciliation' },
-    ]
-  },
-  {
-    label: '系统运维',
-    key: 'system-group',
-    icon: () => h(NIcon, { component: SettingsOutline }),
-    children: [
-      { label: '版本发布', key: '/platform/system' },
-      { label: '告警中心', key: '/platform/system/alerts' },
-      { label: '操作日志', key: '/platform/system/logs' },
-    ]
-  },
-  {
-    label: '运维支持',
-    key: 'support-group',
-    icon: () => h(NIcon, { component: ConstructOutline }),
-    children: [
-      { label: '工单系统', key: '/platform/support/tickets' },
-      { label: '帮助中心', key: '/platform/support/help' },
-    ]
+      {
+        label: '游戏豆销售',
+        key: 'gamebean-sales-group',
+        children: [
+          { label: '销售总览', key: '/platform/gamebean-sales' },
+          { label: '销售明细', key: '/platform/gamebean-sales/detail' },
+        ]
+      },
+      {
+        label: '商家结算',
+        key: 'merchant-settlement-group',
+        children: [
+          { label: '结算管理', key: '/platform/finance/settlement' },
+          { label: '结算配置', key: '/platform/finance/settlement-config' },
+          { label: '对账中心', key: '/platform/finance/reconciliation' },
+        ]
+      },
+      {
+        label: '代理商结算',
+        key: 'agent-settlement-group',
+        children: [
+          { label: '结算管理', key: '/platform/finance/agent-settlement' },
+          { label: '结算配置', key: '/platform/finance/agent-settlement-config' },
+        ]
+      },
+    ],
   },
   {
     label: '平台账号',
@@ -284,7 +309,25 @@ const menuOptions: MenuOption[] = [
       { label: '账号管理', key: '/platform/users' },
       { label: '角色权限', key: '/platform/users/roles' },
     ]
-  }
+  },
+  {
+    label: '帮助中心系统',
+    key: 'help-center-group',
+    icon: () => h(NIcon, { component: HelpCircleOutline }),
+    children: [
+      { label: '帮助文档', key: '/platform/help-center/docs' },
+      { label: 'FAQ', key: '/platform/help-center/faq' },
+    ]
+  },
+  {
+    label: '平台通知系统',
+    key: 'notice-group',
+    icon: () => h(NIcon, { component: MegaphoneOutline }),
+    children: [
+      { label: '公告管理', key: '/platform/notice/announcement' },
+      { label: '消息推送', key: '/platform/notice/push' },
+    ]
+  },
 ]
 
 const currentRoute = computed(() => route.path)
@@ -295,7 +338,8 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '个人中心', key: 'profile', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
+  { label: '个人信息', key: 'profile', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
+  { label: '安全设置', key: 'security', icon: () => h(NIcon, null, { default: () => h(ShieldCheckmarkOutline) }) },
   { type: 'divider', key: 'd1' },
   { label: '退出登录', key: 'logout', icon: () => h(NIcon, null, { default: () => h(LogOutOutline) }) },
 ]
@@ -326,7 +370,26 @@ function switchToPlatform() {
 function handleUserAction(key: string) {
   if (key === 'logout') {
     router.push('/login')
+  } else if (key === 'profile') {
+    router.push('/platform/account/profile')
+  } else if (key === 'security') {
+    router.push('/platform/account/security')
   }
+}
+
+// ========== 系统通知 ==========
+interface NoticeItem { id: number; title: string; time: string; read: boolean; type: 'warning' | 'error' | 'info' | 'success'; detailId: string }
+const noticeList = ref<NoticeItem[]>([
+  { id: 1, title: '【结算】4月份商家结算单已全部生成，共 1,286 笔，待审核打款', time: '10 分钟前', read: false, type: 'info', detailId: 'n-settlement-202604' },
+  { id: 2, title: '【订单】今日大额订单 12 笔（¥9,760），较昨日 +25%', time: '30 分钟前', read: false, type: 'warning', detailId: 'n-order-large-today' },
+  { id: 3, title: '【设备】深圳福田旗舰店 VR-03 已离线超 2 小时，请关注', time: '1 小时前', read: false, type: 'error', detailId: 'n-device-offline-vr03' },
+  { id: 4, title: '【安全】检测到 3 次异常登录尝试（IP：103.24.*），已拦截', time: '2 小时前', read: true, type: 'error', detailId: 'n-login-anomaly-ip103' },
+  { id: 5, title: '【系统】五一假期运维安排公告已发布，请查看', time: '今天 09:00', read: true, type: 'success', detailId: 'n-announce-may1' },
+])
+const unreadCount = computed(() => noticeList.value.filter(n => !n.read).length)
+
+function handleNoticeClick(item: NoticeItem) {
+  router.push({ path: '/platform/notice/inbox', query: { id: item.detailId } })
 }
 </script>
 
@@ -629,4 +692,37 @@ function handleUserAction(key: string) {
 /* 动画过渡 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* 系统通知面板 */
+.notice-panel { padding: 0; }
+.notice-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+}
+.notice-panel-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.notice-list { max-height: 320px; overflow-y: auto; }
+.notice-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer; transition: background 0.15s;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+.notice-item:hover { background: rgba(59,130,246,0.04); }
+.notice-item.unread { background: rgba(59,130,246,0.03); }
+.notice-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+}
+.notice-dot.warning { background: #F59E0B; }
+.notice.dot.error { background: #EF4444; }
+.notice.dot.info { background: #3B82F6; }
+.notice.dot.success { background: #10B981; }
+.notice-body { flex: 1; min-width: 0; }
+.notice-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+.notice-item.unread .notice-text { font-weight: 500; }
+.notice-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.notice-empty { text-align: center; padding: 32px 0; color: var(--text-muted); font-size: 13px; }
+.notice-panel-footer {
+  padding: 10px 16px; border-top: 1px solid var(--border-color);
+  text-align: center; font-size: 12px; color: var(--color-primary);
+}
 </style>

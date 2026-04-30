@@ -159,7 +159,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { ref, h, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   NButton, NIcon, NSpace, NTabs, NTabPane, NGrid, NGi,
   NDataTable, NTag, NInput, NSelect, NDatePicker
@@ -170,7 +171,23 @@ import {
   BookOutline
 } from '@vicons/ionicons5'
 
-const activeTab = ref('versions')
+const route = useRoute()
+
+// 根据路由路径自动定位到对应 Tab
+const pathToTabMap: Record<string, string> = {
+  '/platform/system': 'versions',
+  '/platform/system/alerts': 'alerts',
+  '/platform/system/logs': 'logs',
+  '/platform/support/tickets': 'tickets',
+  '/platform/support/help': 'help',
+}
+const activeTab = ref(pathToTabMap[route.path] || 'versions')
+
+// 路由变化时自动切换 Tab
+watch(() => route.path, (path) => {
+  const targetTab = pathToTabMap[path]
+  if (targetTab) activeTab.value = targetTab
+})
 const dateRange = ref(null)
 
 const versionOptions = [

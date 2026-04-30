@@ -21,7 +21,7 @@
           <n-icon :component="WalletOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">本月分润</span>
+          <span class="label">当月已产生</span>
           <span class="value">¥128,430</span>
         </div>
       </div>
@@ -64,10 +64,11 @@
       <h3>分润规则说明</h3>
       <n-descriptions :column="2" bordered size="small">
         <n-descriptions-item label="分润基数">店铺向平台充值游戏豆的金额</n-descriptions-item>
-        <n-descriptions-item label="分润比例">按合同约定比例，当前统一：<n-text type="primary" strong>15%</n-text></n-descriptions-item>
-        <n-descriptions-item label="结算周期">每月 <n-text strong>10 日</n-text> 结算上月分润</n-descriptions-item>
-        <n-descriptions-item label="结算方式">银行转账至绑定账户</n-descriptions-item>
-        <n-descriptions-item label="税费说明" :span="2">分润金额为税前，税费由代理商自行申报</n-descriptions-item>
+        <n-descriptions-item label="分润比例">采用<n-text type="primary" strong>阶梯分润策略</n-text>，基础比例 15%，月采购额达标后自动上浮</n-descriptions-item>
+        <n-descriptions-item label="阶梯规则（示例）">月采购 ≤50万 → 基础比例；50万~100万 → 基础+2%；＞100万 → 基础+5%</n-descriptions-item>
+        <n-descriptions-item label="结算周期">通过拉卡拉自动打款，按配置周期结算</n-descriptions-item>
+        <n-descriptions-item label="结算方式">银行转账至绑定账户（拉卡拉代发）</n-descriptions-item>
+        <n-descriptions-item label="税费说明" :span="2">分润金额为税前，税费由代理商自行申报；发票事宜请联系平台财务线下处理</n-descriptions-item>
       </n-descriptions>
     </div>
   </div>

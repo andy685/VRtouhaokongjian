@@ -19,3 +19,4 @@
 /docs/references/huanying_xingkong/selected.png filter=lfs diff=lfs merge=lfs -text
 /docs/references/huanying_xingkong/zoomed_top.png filter=lfs diff=lfs merge=lfs -text
 /docs/运营后台设计方案.md filter=lfs diff=lfs merge=lfs -text
+/docs/头号空间-产品设计文档-v1.0.md filter=lfs diff=lfs merge=lfs -text

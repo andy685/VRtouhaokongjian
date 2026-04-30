@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>对账中心</h1>
-        <p class="header-desc">平台与店铺、支付渠道的财务对账</p>
+        <p class="header-desc">核对店铺订单与支付渠道到账记录</p>
         <n-button text size="small" type="primary" @click="showHelp = !showHelp" style="padding:0;margin-top:2px;">
           {{ showHelp ? '收起说明 ▲' : '对账规则说明 ▼' }}
         </n-button>
@@ -26,10 +26,10 @@
     <div v-show="showHelp" class="help-card">
       <h4 style="margin-bottom:8px;">对账中心使用说明</h4>
       <n-descriptions :column="1" label-placement="left" bordered size="small">
-        <n-descriptions-item label="对账目的">核对平台订单与支付渠道（微信/支付宝）到账记录，确保每笔交易金额、状态一致，发现差异及时处理。</n-descriptions-item>
-        <n-descriptions-item label="自动对账">点击「自动对账」后，系统将平台订单与支付渠道流水按订单号匹配：金额一致→对账成功；金额不一致→金额异常；同一订单多次支付→重复支付；平台无记录但渠道已到账→未到账。每日凌晨自动执行一次。</n-descriptions-item>
-        <n-descriptions-item label="手动对账">点击「手动对账」，可人工录入渠道流水订单号与金额，与平台订单手动比对，适用于自动对账未覆盖的异常场景。</n-descriptions-item>
-        <n-descriptions-item label="异常处理">在异常订单列表中点击「处理」，选择处理方式（已解决/退款/忽略）并填写备注，备注将保存在记录中可供追溯。</n-descriptions-item>
+        <n-descriptions-item label="对账目的">核对店铺订单与支付渠道（微信/支付宝）到账记录，确保每笔交易金额一致，发现差异及时处理。</n-descriptions-item>
+        <n-descriptions-item label="自动对账">点击「自动对账」后，系统将店铺订单与支付渠道流水按订单号匹配：金额一致→对账成功；金额不一致→金额异常；同一订单多次支付→重复支付。每日凌晨自动执行一次。</n-descriptions-item>
+        <n-descriptions-item label="手动对账">点击「手动对账」，可上传支付渠道对账单或手动录入订单信息，与店铺订单手动比对。</n-descriptions-item>
+        <n-descriptions-item label="异常处理">在异常订单列表中点击「处理」，选择处理方式（已解决/退款/忽略）并填写备注，备注将保存可供追溯。</n-descriptions-item>
       </n-descriptions>
     </div>
 
@@ -77,23 +77,20 @@
     </n-modal>
 
     <!-- 自动对账弹窗 -->
-    <n-modal v-model:show="showAutoModal" preset="card" :title="autoStep === 'idle' ? '自动对账' : autoStep === 'running' ? '对账中...' : '对账结果'" style="width: 520px;" :bordered="false" :mask-closable="false">
-      <!-- 步骤一：选择时间范围 -->
+    <n-modal v-model:show="showAutoModal" preset="card"
+      :title="autoStep === 'idle' ? '自动对账' : autoStep === 'running' ? '对账中...' : '对账结果'"
+      style="width: 520px;" :bordered="false" :mask-closable="false">
       <div v-if="autoStep === 'idle'">
         <n-form label-placement="left" label-width="100">
           <n-form-item label="对账范围">
             <n-select v-model:value="autoRange" :options="autoRangeOptions" style="width: 240px;" />
           </n-form-item>
-          <n-form-item v-if="autoRange === 'custom'" label="自定义范围">
-            <n-date-picker v-model:value="autoCustomRange" type="daterange" clearable size="small" />
-          </n-form-item>
         </n-form>
         <n-alert type="info" style="margin-top: 8px;">
-          系统将按订单号匹配平台订单与支付渠道流水，自动识别异常订单。
+          系统将按订单号匹配店铺订单与支付渠道流水，自动识别异常订单。
         </n-alert>
       </div>
 
-      <!-- 步骤二：对账中动画 -->
       <div v-else-if="autoStep === 'running'" style="text-align: center; padding: 32px 0;">
         <n-progress type="circle" :percentage="autoProgress" :show-indicator="true" size="large" />
         <p style="margin-top: 16px; font-size: 14px; color: var(--text-secondary);">
@@ -101,7 +98,6 @@
         </p>
       </div>
 
-      <!-- 步骤三：结果展示 -->
       <div v-else-if="autoStep === 'done'">
         <n-result status="success" title="对账完成">
           <template #footer>
@@ -131,7 +127,6 @@
     <!-- 手动对账弹窗 -->
     <n-modal v-model:show="showManualModal" preset="card" title="手动对账" style="width: 600px;" :bordered="false">
       <n-tabs v-model:value="manualTab" type="line">
-        <!-- Tab1：上传对账单 -->
         <n-tab-pane name="upload" tab="上传对账单">
           <n-upload
             v-model:file-list="manualFileList"
@@ -152,12 +147,10 @@
             上传完成：共 {{ manualUploadResult.total }} 笔，匹配成功 {{ manualUploadResult.success }} 笔，发现异常 {{ manualUploadResult.exception }} 笔
           </n-alert>
         </n-tab-pane>
-
-        <!-- Tab2：手动录入 -->
         <n-tab-pane name="input" tab="手动录入">
           <n-form label-placement="left" label-width="100" style="margin-top: 16px;">
             <n-form-item label="订单号">
-              <n-input v-model:value="manualInput.orderNo" placeholder="请输入平台订单号" />
+              <n-input v-model:value="manualInput.orderNo" placeholder="请输入订单号" />
             </n-form-item>
             <n-form-item label="渠道金额">
               <n-input-number v-model:value="manualInput.amount" :min="0" :precision="2" style="width: 200px;" />
@@ -172,7 +165,6 @@
           </n-form>
         </n-tab-pane>
       </n-tabs>
-
       <template #footer>
         <n-space justify="end">
           <n-button @click="showManualModal = false">关闭</n-button>
@@ -186,10 +178,10 @@
 <script setup lang="ts">
 import { ref, h, computed } from 'vue'
 import {
-  NButton, NDataTable, NTag, NSpace, NDatePicker, NModal,
+  NButton, NDataTable, NTag, NDatePicker, NModal,
   NForm, NFormItem, NRadioGroup, NRadio, NInput, NIcon,
-  NDescriptions, NDescriptionsItem, NDivider, NTabs, NTabPane, useMessage, NUpload, NUploadDragger,
-  NSelect, NSwitch, NProgress, NResult, NStatistic, NCard, NStep, NSteps
+  NDescriptions, NDescriptionsItem, NDivider, NTabs, NTabPane, useMessage,
+  NUpload, NUploadDragger, NProgress, NResult, NAlert, NSelect
 } from 'naive-ui'
 import {
   CheckmarkCircleOutline, TimeOutline, CloseCircleOutline,
@@ -201,8 +193,6 @@ const message = useMessage()
 const dateRange = ref(null)
 const activeTab = ref('exception')
 const showHelp = ref(false)
-
-
 
 const exceptionColumns = [
   { title: '订单号', key: 'orderNo', width: 160 },
@@ -251,11 +241,8 @@ const exceptionColumns = [
 ]
 
 const exceptionData = ref([
-  { id: 1, orderNo: 'VR20260419001', store: '深圳福田旗舰店', amount: '¥128.00', type: '金额异常', reason: '支付金额与订单不符', time: '2026-04-19 18:30', status: 'pending', handleRemark: '' },
-  { id: 2, orderNo: 'VR20260419002', store: '南山科技园店', amount: '¥99.00', type: '重复支付', reason: '同一订单出现两次支付记录', time: '2026-04-19 16:45', status: 'pending', handleRemark: '' },
-  { id: 3, orderNo: 'VR20260419003', store: '广州天河店', amount: '¥256.00', type: '金额异常', reason: '店铺上报金额与平台记录不一致', time: '2026-04-19 14:20', status: 'pending', handleRemark: '' },
-  { id: 4, orderNo: 'VR20260419004', store: '北京朝阳店', amount: '¥68.00', type: '未到账', reason: '顾客已支付但平台未收到', time: '2026-04-19 12:10', status: 'pending', handleRemark: '' },
-  { id: 5, orderNo: 'VR20260419005', store: '上海浦东店', amount: '¥188.00', type: '重复支付', reason: '顾客重复扫码支付', time: '2026-04-19 10:30', status: 'pending', handleRemark: '' },
+  { id: 1, orderNo: 'VR20260420001', store: '我的旗舰店', amount: '¥88.00', type: '金额异常', reason: '支付金额与订单不符', time: '2026-04-20 10:30', status: 'pending', handleRemark: '' },
+  { id: 2, orderNo: 'VR20260420002', store: '我的旗舰店', amount: '¥56.00', type: '重复支付', reason: '顾客重复扫码支付', time: '2026-04-20 09:15', status: 'pending', handleRemark: '' },
 ])
 
 const recordColumns = [
@@ -272,29 +259,20 @@ const recordColumns = [
     }
   },
   { title: '差异笔数', key: 'diffCount', width: 100 },
-  { title: '操作人', key: 'operator', width: 100 },
-]
-
-const exceptionTypes = [
-  { label: '金额异常', value: '金额异常' },
-  { label: '重复支付', value: '重复支付' },
-  { label: '未到账', value: '未到账' },
-  { label: '退款异常', value: '退款异常' },
 ]
 
 const recordData = ref([
-  { id: 1, date: '2026-04-20', batch: 'RC20260420', totalOrders: 1256, amount: 185620, status: 'success', statusText: '对账成功', diffCount: 0, operator: '管理员' },
-  { id: 2, date: '2026-04-19', batch: 'RC20260419', totalOrders: 1189, amount: 168430, status: 'success', statusText: '对账成功', diffCount: 2, operator: '管理员' },
-  { id: 3, date: '2026-04-18', batch: 'RC20260418', totalOrders: 1320, amount: 192560, status: 'warning', statusText: '存在差异', diffCount: 5, operator: '管理员' },
+  { id: 1, date: '2026-04-20', batch: 'RC20260420', totalOrders: 86, amount: 12880, status: 'success', statusText: '对账成功', diffCount: 0 },
+  { id: 2, date: '2026-04-19', batch: 'RC20260419', totalOrders: 72, amount: 10240, status: 'warning', statusText: '存在差异', diffCount: 2 },
 ])
 
-// 统计数据（必须在 recordData / exceptionData 之后定义）
+// stats 必须在 recordData / exceptionData 之后定义
 const stats = computed(() => {
   const success = recordData.value.filter((r: any) => r.status === 'success').length
   const pending = exceptionData.value.filter((e: any) => e.status === 'pending').length
   const exception = exceptionData.value.length
   const refunding = exceptionData.value.filter((e: any) => e.type === '退款异常').length
-  return { success, pending, exception, refunding }
+  return { success, pending, exception, refunding: refunding || 0 }
 })
 
 function refreshData() {
@@ -318,7 +296,6 @@ function confirmHandle() {
   if (currentRecord.value) {
     const idx = exceptionData.value.findIndex(d => d.id === currentRecord.value.id)
     if (idx !== -1) {
-      // 保存备注
       exceptionData.value[idx].handleRemark = handleRemark.value
       if (handleResult.value === 'resolved') {
         exceptionData.value[idx].status = 'resolved'
@@ -341,15 +318,12 @@ const autoStep = ref<'idle' | 'running' | 'done'>('idle')
 const autoProgress = ref(0)
 const autoProgressText = ref('')
 const autoRange = ref('today')
-const autoCustomRange = ref(null)
-const autoResult = ref<{ range: string, total: number, success: number, exception: number }>({ range: '', total: 0, success: 0, exception: 0 })
-
 const autoRangeOptions = [
   { label: '今天', value: 'today' },
   { label: '昨天', value: 'yesterday' },
   { label: '最近7天', value: 'week' },
-  { label: '自定义范围', value: 'custom' },
 ]
+const autoResult = ref<{ range: string, total: number, success: number, exception: number }>({ range: '', total: 0, success: 0, exception: 0 })
 
 function handleAutoReconcile() {
   autoStep.value = 'idle'
@@ -360,14 +334,11 @@ function handleAutoReconcile() {
 function startAutoReconcile() {
   autoStep.value = 'running'
   autoProgress.value = 0
-  autoProgressText.value = '正在拉取平台订单...'
-
-  // 模拟对账进度
+  autoProgressText.value = '正在拉取店铺订单...'
   const steps = [
-    { pct: 20, text: '正在拉取支付渠道流水...' },
-    { pct: 45, text: '正在按订单号匹配...' },
-    { pct: 70, text: '正在比对金额...' },
-    { pct: 90, text: '正在生成异常订单...' },
+    { pct: 25, text: '正在拉取支付渠道流水...' },
+    { pct: 55, text: '正在按订单号匹配...' },
+    { pct: 80, text: '正在比对金额...' },
     { pct: 100, text: '对账完成！' },
   ]
   let i = 0
@@ -378,21 +349,18 @@ function startAutoReconcile() {
       i++
     } else {
       clearInterval(timer)
-      // 生成模拟结果
-      const rangeLabel = autoRangeOptions.find(o => o.value === autoRange.value)?.label || '自定义'
-      const total = Math.floor(Math.random() * 500) + 800
-      const success = total - Math.floor(Math.random() * 20)
+      const total = Math.floor(Math.random() * 100) + 50
+      const success = total - Math.floor(Math.random() * 5)
       const exception = total - success
-      autoResult.value = { range: rangeLabel, total, success, exception }
+      autoResult.value = { range: autoRangeOptions.find(o => o.value === autoRange.value)?.label || '', total, success, exception }
 
-      // 随机加入几条异常订单（模拟）
-      const mockStores = ['深圳福田旗舰店', '南山科技园店', '广州天河店', '北京朝阳店', '上海浦东店']
+      // 加入异常订单
       const mockTypes = ['金额异常', '重复支付', '未到账']
       for (let j = 0; j < exception; j++) {
         exceptionData.value.push({
           id: Date.now() + j,
           orderNo: `VR${Date.now()}${j}`.slice(0, 13),
-          store: mockStores[Math.floor(Math.random() * mockStores.length)],
+          store: '我的旗舰店',
           amount: `¥${(Math.random() * 300 + 50).toFixed(2)}`,
           type: mockTypes[Math.floor(Math.random() * mockTypes.length)],
           reason: '自动对账发现差异',
@@ -409,11 +377,10 @@ function startAutoReconcile() {
         date: today,
         batch: `RC${today.replace(/-/g, '')}`,
         totalOrders: total,
-        amount: Math.floor(Math.random() * 500000),
+        amount: Math.floor(Math.random() * 50000),
         status: exception > 0 ? 'warning' : 'success',
         statusText: exception > 0 ? '存在差异' : '对账成功',
         diffCount: exception,
-        operator: '管理员',
       })
 
       autoStep.value = 'done'
@@ -433,32 +400,33 @@ const manualTab = ref<'upload' | 'input'>('upload')
 const manualFileList = ref<any[]>([])
 const manualUploadResult = ref<{ total: number, success: number, exception: number } | null>(null)
 const manualInput = ref({ orderNo: '', amount: 0, type: '', remark: '' })
+const exceptionTypes = [
+  { label: '金额异常', value: '金额异常' },
+  { label: '重复支付', value: '重复支付' },
+  { label: '未到账', value: '未到账' },
+]
 
 async function handleManualUpload({ file, onFinish, onError }: any) {
   try {
-    const data = await file.file.arrayBuffer()
+    const data = await (file as any).file.arrayBuffer()
     const workbook = XLSX.read(data, { type: 'array' })
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     const json: any[] = XLSX.utils.sheet_to_json(sheet)
     const total = json.length
     let success = 0
     let exception = 0
-
     json.forEach((row: any) => {
-      const orderNo = row['订单号'] || row['orderNo'] || row['订单编号'] || ''
-      const amount = row['到账金额'] || row['amount'] || row['金额'] || 0
+      const orderNo = row['订单号'] || row['orderNo'] || ''
       if (!orderNo) { exception++; return }
-
-      // 模拟比对：随机决定是否正常
-      if (Math.random() > 0.1) {
+      if (Math.random() > 0.15) {
         success++
       } else {
         exception++
         exceptionData.value.push({
           id: Date.now() + Math.random(),
           orderNo: String(orderNo),
-          store: '未知店铺',
-          amount: `¥${Number(amount).toFixed(2)}`,
+          store: '我的旗舰店',
+          amount: `¥${Number(row['到账金额'] || row['amount'] || 0).toFixed(2)}`,
           type: '金额异常',
           reason: '手动对账发现差异',
           time: new Date().toLocaleString('zh-CN'),
@@ -467,10 +435,9 @@ async function handleManualUpload({ file, onFinish, onError }: any) {
         })
       }
     })
-
     manualUploadResult.value = { total, success, exception }
     onFinish()
-  } catch (e) {
+  } catch {
     message.error('文件解析失败，请检查格式')
     onError()
   }
@@ -481,13 +448,12 @@ function submitManualInput() {
     message.warning('请输入订单号')
     return
   }
-  // 模拟比对
   const isMatch = Math.random() > 0.3
   if (!isMatch) {
     exceptionData.value.push({
       id: Date.now(),
       orderNo: manualInput.value.orderNo,
-      store: '手动录入',
+      store: '我的旗舰店',
       amount: `¥${Number(manualInput.value.amount || 0).toFixed(2)}`,
       type: manualInput.value.type || '金额异常',
       reason: manualInput.value.remark || '手动对账发现差异',

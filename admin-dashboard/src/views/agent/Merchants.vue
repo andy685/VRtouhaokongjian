@@ -9,9 +9,6 @@
         <n-input v-model:value="searchText" placeholder="搜索商家名称..." size="small" style="width: 200px;">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
-        <n-button type="primary" @click="showAddModal = true">
-          <template #icon><n-icon :component="AddOutline" /></template> 新增商家
-        </n-button>
       </n-space>
     </div>
 
@@ -59,32 +56,28 @@
     </div>
 
     <!-- 新增/编辑弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" :title="isEdit ? '编辑商家' : '新增商家'" style="width: 520px;" :bordered="false">
-      <n-form ref="formRef" :model="form" :rules="formRules" label-placement="left" label-width="100">
-        <n-form-item label="商家名称" path="name">
-          <n-input v-model:value="form.name" placeholder="请输入商家名称" />
-        </n-form-item>
-        <n-form-item label="联系人" path="contact">
-          <n-input v-model:value="form.contact" placeholder="请输入联系人姓名" />
-        </n-form-item>
-        <n-form-item label="联系电话" path="phone">
-          <n-input v-model:value="form.phone" placeholder="请输入联系电话" />
-        </n-form-item>
-        <n-form-item label="负责区域">
-          <n-select v-model:value="form.region" :options="regionOptions" placeholder="请选择区域" />
-        </n-form-item>
-        <n-form-item label="商家状态">
-          <n-radio-group v-model:value="form.status">
-            <n-radio value="active">正常</n-radio>
-            <n-radio value="pending">待审核</n-radio>
-            <n-radio value="inactive">停用</n-radio>
-          </n-radio-group>
-        </n-form-item>
-      </n-form>
+
+    <!-- 详情弹窗 -->
+    <n-modal :show="showDetailModal" @update:show="(val: boolean) => showDetailModal = val" preset="card" title="商家详情" style="width: 640px;" :bordered="false">
+      <n-descriptions v-if="currentMerchant" label-placement="left" :column="2" bordered>
+        <n-descriptions-item label="商家名称">{{ currentMerchant.name }}</n-descriptions-item>
+        <n-descriptions-item label="商家ID">MC{{ String(currentMerchant.id).padStart(5, '0') }}</n-descriptions-item>
+        <n-descriptions-item label="联系人">{{ currentMerchant.contact }}</n-descriptions-item>
+        <n-descriptions-item label="联系电话">{{ currentMerchant.phone }}</n-descriptions-item>
+        <n-descriptions-item label="负责区域">{{ currentMerchant.region }}</n-descriptions-item>
+        <n-descriptions-item label="商家状态">
+          <n-tag :type="currentMerchant.status === 'active' ? 'success' : currentMerchant.status === 'pending' ? 'warning' : 'default'" size="small">
+            {{ currentMerchant.status === 'active' ? '正常' : currentMerchant.status === 'pending' ? '待审核' : '停用' }}
+          </n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="旗下店铺">{{ currentMerchant.storeCount }} 家</n-descriptions-item>
+        <n-descriptions-item label="会员总数">{{ currentMerchant.memberCount?.toLocaleString() }} 人</n-descriptions-item>
+        <n-descriptions-item label="本月游戏豆充值">{{ currentMerchant.monthRecharge }}</n-descriptions-item>
+        <n-descriptions-item label="合作时间">{{ currentMerchant.createdAt || '-' }}</n-descriptions-item>
+      </n-descriptions>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">取消</n-button>
-          <n-button type="primary" @click="handleSave">保存</n-button>
+          <n-button @click="showDetailModal = false">关闭</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -93,17 +86,11 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NButton, NDataTable, NTag, NSpace, NInput, NModal, NForm, NFormItem, NSelect, NRadioGroup, NRadio, NIcon, useMessage, type FormInst, type FormRules } from 'naive-ui'
-import { SearchOutline, AddOutline, PeopleOutline, StorefrontOutline, TrendingUpOutline, CheckmarkCircleOutline, EyeOutline, CreateOutline } from '@vicons/ionicons5'
+import { NButton, NDataTable, NTag, NSpace, NInput, NModal, NIcon, NDescriptions, NDescriptionsItem, useMessage } from 'naive-ui'
+import { SearchOutline, PeopleOutline, StorefrontOutline, TrendingUpOutline, CheckmarkCircleOutline, EyeOutline } from '@vicons/ionicons5'
 
 const message = useMessage()
 const searchText = ref('')
-
-const regionOptions = [
-  { label: '深圳', value: '深圳' },
-  { label: '广州', value: '广州' },
-  { label: '东莞', value: '东莞' },
-]
 
 const columns = [
   { title: '商家名称', key: 'name', width: 180 },
@@ -119,26 +106,19 @@ const columns = [
   { title: '会员数', key: 'memberCount', width: 90 },
   { title: '本月游戏豆充值', key: 'monthRecharge', width: 150 },
   {
-    title: '操作', key: 'actions', width: 150, fixed: 'right',
-    render: (row: any) => h(NSpace, { size: 'small' }, {
-      default: () => [
-        h(NButton, { size: 'tiny', quaternary: true, type: 'info', onClick: () => openDetail(row) }, {
-          default: () => '详情', icon: () => h(NIcon, { component: EyeOutline, size: 14 })
-        }),
-        h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openEdit(row) }, {
-          default: () => '编辑', icon: () => h(NIcon, { component: CreateOutline, size: 14 })
-        }),
-      ]
+    title: '操作', key: 'actions', width: 80, fixed: 'right',
+    render: (row: any) => h(NButton, { size: 'tiny', quaternary: true, type: 'info', onClick: () => openDetail(row) }, {
+      default: () => '详情', icon: () => h(NIcon, { component: EyeOutline, size: 14 })
     })
   },
 ]
 
 const merchantData = ref([
-  { id: 1, name: '恒然集团', contact: '陈总', phone: '13800001101', region: '深圳', status: 'active', storeCount: 8, memberCount: 3280, monthRecharge: '¥156,800' },
-  { id: 2, name: '南山科创', contact: '赵总', phone: '13800001106', region: '深圳', status: 'active', storeCount: 6, memberCount: 2450, monthRecharge: '¥134,600' },
-  { id: 3, name: '宝安体验中心', contact: '钱总', phone: '13800001109', region: '深圳', status: 'active', storeCount: 2, memberCount: 560, monthRecharge: '¥45,600' },
-  { id: 4, name: '龙岗欢乐时光', contact: '孙总', phone: '13800001110', region: '深圳', status: 'active', storeCount: 1, memberCount: 320, monthRecharge: '¥23,400' },
-  { id: 5, name: '东莞松山湖店', contact: '周总', phone: '13800001111', region: '东莞', status: 'pending', storeCount: 1, memberCount: 0, monthRecharge: '¥0' },
+  { id: 1, name: '恒然集团', contact: '陈总', phone: '13800001101', region: '深圳', status: 'active', storeCount: 8, memberCount: 3280, monthRecharge: '¥156,800', createdAt: '2024-03-15' },
+  { id: 2, name: '南山科创', contact: '赵总', phone: '13800001106', region: '深圳', status: 'active', storeCount: 6, memberCount: 2450, monthRecharge: '¥134,600', createdAt: '2024-05-20' },
+  { id: 3, name: '宝安体验中心', contact: '钱总', phone: '13800001109', region: '深圳', status: 'active', storeCount: 2, memberCount: 560, monthRecharge: '¥45,600', createdAt: '2024-07-08' },
+  { id: 4, name: '龙岗欢乐时光', contact: '孙总', phone: '13800001110', region: '深圳', status: 'active', storeCount: 1, memberCount: 320, monthRecharge: '¥23,400', createdAt: '2024-09-12' },
+  { id: 5, name: '东莞松山湖店', contact: '周总', phone: '13800001111', region: '东莞', status: 'pending', storeCount: 1, memberCount: 0, monthRecharge: '¥0', createdAt: '2026-04-25' },
 ])
 
 const pagination = { pageSize: 10 }
@@ -152,54 +132,13 @@ const filteredData = computed(() => {
   return data
 })
 
-// 新增/编辑
-const showAddModal = ref(false)
-const isEdit = ref(false)
-const currentId = ref<number | null>(null)
-const formRef = ref<FormInst | null>(null)
-const form = ref({ name: '', contact: '', phone: '', region: '', status: 'active' })
-const formRules: FormRules = {
-  name: { required: true, message: '请输入商家名称', trigger: 'blur' },
-  contact: { required: true, message: '请输入联系人', trigger: 'blur' },
-  phone: { required: true, message: '请输入联系电话', trigger: 'blur' },
-}
-
-function openEdit(row: any) {
-  isEdit.value = true
-  currentId.value = row.id
-  form.value = { name: row.name, contact: row.contact, phone: row.phone, region: row.region, status: row.status }
-  showAddModal.value = true
-}
-
 function openDetail(row: any) {
-  message.info(`查看商家详情：${row.name}（待实现）`)
+  currentMerchant.value = row
+  showDetailModal.value = true
 }
 
-function handleSave() {
-  formRef.value?.validate((errors) => {
-    if (errors) return
-    if (isEdit.value && currentId.value) {
-      const idx = merchantData.value.findIndex(d => d.id === currentId.value)
-      if (idx !== -1) {
-        merchantData.value[idx] = { ...merchantData.value[idx], ...form.value }
-        message.success('商家信息已更新')
-      }
-    } else {
-      merchantData.value.unshift({
-        id: Date.now(),
-        ...form.value,
-        storeCount: 0,
-        memberCount: 0,
-        monthRecharge: '¥0',
-      })
-      message.success('商家新增成功')
-    }
-    showAddModal.value = false
-    isEdit.value = false
-    currentId.value = null
-    form.value = { name: '', contact: '', phone: '', region: '', status: 'active' }
-  })
-}
+const showDetailModal = ref(false)
+const currentMerchant = ref<any>(null)
 </script>
 
 <style scoped>

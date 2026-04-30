@@ -19,7 +19,7 @@ const columns = [
   { title: '会员总数', key: 'totalMembers', width: 100 },
   { title: '本月新增', key: 'newThisMonth', width: 100 },
   { title: '储值总额', key: 'totalDeposit', width: 110 },
-  { title: '游戏豆总额', key: 'totalBeans', width: 110 },
+  { title: '游戏币总额', key: 'totalCoins', width: 110 },
   {
     title: () => h('span', { style: 'display:inline-flex;align-items:center;gap:2px;' }, [
       '活跃会员',
@@ -43,11 +43,11 @@ const columns = [
 ]
 
 const data = [
-  { merchant: '恒然集团', totalMembers: 3280, newThisMonth: 156, totalDeposit: 156800, totalBeans: 45200, activeMembers: 2100, churnedMembers: 120 },
-  { merchant: '幻影星空', totalMembers: 1890, newThisMonth: 89, totalDeposit: 98500, totalBeans: 23100, activeMembers: 1200, churnedMembers: 80 },
-  { merchant: '利民街商家', totalMembers: 2150, newThisMonth: 102, totalDeposit: 112000, totalBeans: 28500, activeMembers: 1450, churnedMembers: 65 },
-  { merchant: '党建馆集团', totalMembers: 980, newThisMonth: 45, totalDeposit: 56800, totalBeans: 15200, activeMembers: 680, churnedMembers: 40 },
-  { merchant: '华东展厅', totalMembers: 1560, newThisMonth: 78, totalDeposit: 89200, totalBeans: 19800, activeMembers: 980, churnedMembers: 55 },
+  { merchant: '恒然集团', totalMembers: 3280, newThisMonth: 156, totalDeposit: 156800, totalCoins: 45200, activeMembers: 2100, churnedMembers: 120 },
+  { merchant: '幻影星空', totalMembers: 1890, newThisMonth: 89, totalDeposit: 98500, totalCoins: 23100, activeMembers: 1200, churnedMembers: 80 },
+  { merchant: '利民街商家', totalMembers: 2150, newThisMonth: 102, totalDeposit: 112000, totalCoins: 28500, activeMembers: 1450, churnedMembers: 65 },
+  { merchant: '党建馆集团', totalMembers: 980, newThisMonth: 45, totalDeposit: 56800, totalCoins: 15200, activeMembers: 680, churnedMembers: 40 },
+  { merchant: '华东展厅', totalMembers: 1560, newThisMonth: 78, totalDeposit: 89200, totalCoins: 19800, activeMembers: 980, churnedMembers: 55 },
 ]
 </script>
 

@@ -255,7 +255,15 @@ const menuOptions: MenuOption[] = [
         ]
       },
       { label: '影片分成明细', key: '/shop/film-revenue' },
+    ]
+  },
+  {
+    label: '财务管理',
+    key: 'finance-group',
+    icon: () => h(NIcon, { component: WalletOutline }),
+    children: [
       { label: '结算记录', key: '/shop/settlement' },
+      { label: '对账中心', key: '/shop/reconciliation' },
     ]
   },
   {

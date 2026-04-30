@@ -85,20 +85,22 @@
           </n-input>
 
           <n-badge :value="2" :max="99">
-            <n-button quaternary circle size="small">
+            <n-button quaternary circle size="small" @click="goToMessageCenter">
               <template #icon><n-icon :component="NotificationsOutline" /></template>
             </n-button>
           </n-badge>
 
-          <n-dropdown :options="userMenuOptions" @select="handleUserAction">
-            <n-avatar
-              round
-              size="small"
-              style="background: linear-gradient(135deg, #F59E0B, #D97706); cursor: pointer; margin-left: 12px;"
-            >代</n-avatar>
+          <n-dropdown :options="userMenuOptions" @select="handleUserAction" placement="bottom-end" trigger="click">
+            <div class="user-dropdown-trigger">
+              <n-avatar
+                round
+                size="small"
+                style="background: linear-gradient(135deg, #F59E0B, #D97706);"
+              >代</n-avatar>
+              <span class="user-name">{{ agentName }}</span>
+              <n-icon :component="ChevronDownOutline" size="14" class="dropdown-arrow" />
+            </div>
           </n-dropdown>
-
-          <span class="user-name">{{ agentName }}</span>
         </div>
       </header>
 
@@ -156,9 +158,10 @@ import {
 import type { MenuOption } from 'naive-ui'
 import {
   HomeOutline, PeopleOutline, StorefrontOutline, StatsChartOutline,
-  WalletOutline, SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
+  WalletOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, SearchOutline, NotificationsOutline,
   ServerOutline, BusinessOutline, LogOutOutline, PersonOutline,
+  ShieldCheckmarkOutline, ChevronDownOutline,
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -198,6 +201,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '分润明细', key: '/agent/commission' },
       { label: '结算记录', key: '/agent/settlement' },
+      { label: '提现账户', key: '/agent/bank-account' },
     ]
   },
   {
@@ -207,15 +211,6 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '营收统计', key: '/agent/reports/revenue' },
       { label: '会员统计', key: '/agent/reports/members' },
-    ]
-  },
-  {
-    label: '账户设置',
-    key: 'settings-group',
-    icon: () => h(NIcon, { component: SettingsOutline }),
-    children: [
-      { label: '账户信息', key: '/agent/account' },
-      { label: '安全设置', key: '/agent/account/security' },
     ]
   },
 ]
@@ -228,9 +223,10 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '账户信息', key: 'account', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
+  { label: '代理商信息', key: 'profile' },
+  { label: '安全设置', key: 'security' },
   { type: 'divider', key: 'd1' },
-  { label: '退出登录', key: 'logout', icon: () => h(NIcon, null, { default: () => h(LogOutOutline) }) },
+  { label: '退出登录', key: 'logout' },
 ]
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
@@ -254,6 +250,13 @@ function switchToShop() {
 function handleUserAction(key: string) {
   if (key === 'logout') router.push('/login')
   if (key === 'account') router.push('/agent/account')
+  if (key === 'security') router.push('/agent/account/security')
+  if (key === 'message') router.push('/agent/account/message')
+  if (key === 'profile') router.push('/agent/account')
+}
+
+function goToMessageCenter() {
+  router.push('/agent/account/message')
 }
 </script>
 
@@ -437,6 +440,21 @@ function handleUserAction(key: string) {
   font-weight: 500;
   color: var(--text-secondary);
 }
+
+.user-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.user-dropdown-trigger:hover {
+  background: var(--color-bg-elevated);
+}
+.dropdown-arrow { color: var(--text-muted); }
 
 .page-wrapper {
   flex: 1;

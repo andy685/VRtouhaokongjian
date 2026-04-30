@@ -12,7 +12,7 @@
             <h4>修改密码</h4>
             <p>定期修改密码可以提高账户安全性</p>
           </div>
-          <n-button type="primary" size="small">
+          <n-button type="primary" size="small" @click="showPwdModal = true">
             修改密码
           </n-button>
         </div>
@@ -72,13 +72,66 @@
         </div>
       </div>
     </div>
+
+    <!-- 修改密码弹窗 -->
+    <n-modal v-model:show="showPwdModal" preset="card" title="修改密码" style="width: 460px;" :bordered="false">
+      <n-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-placement="left" label-width="100">
+        <n-form-item label="当前密码" path="oldPwd">
+          <n-input v-model:value="pwdForm.oldPwd" type="password" show-password-on="click" placeholder="请输入当前密码" />
+        </n-form-item>
+        <n-form-item label="新密码" path="newPwd">
+          <n-input v-model:value="pwdForm.newPwd" type="password" show-password-on="click" placeholder="请输入新密码（6-20位）" />
+        </n-form-item>
+        <n-form-item label="确认新密码" path="confirmPwd">
+          <n-input v-model:value="pwdForm.confirmPwd" type="password" show-password-on="click" placeholder="请再次输入新密码" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showPwdModal = false">取消</n-button>
+          <n-button type="primary" @click="handleChangePwd">确认修改</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { NIcon, NButton, NDataTable } from 'naive-ui'
+import { NIcon, NButton, NDataTable, NModal, NForm, NFormItem, NInput, NSpace, useMessage, type FormInst, type FormRules } from 'naive-ui'
 import { LaptopOutline, PhonePortraitOutline } from '@vicons/ionicons5'
+
+const message = useMessage()
+
+// 修改密码
+const showPwdModal = ref(false)
+const pwdFormRef = ref<FormInst | null>(null)
+const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
+
+const pwdRules: FormRules = {
+  oldPwd: { required: true, message: '请输入当前密码', trigger: 'blur' },
+  newPwd: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' },
+  ],
+  confirmPwd: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    {
+      validator: (_rule: any, value: string) => value === pwdForm.value.newPwd,
+      message: '两次输入的密码不一致',
+      trigger: 'blur',
+    },
+  ],
+}
+
+function handleChangePwd() {
+  pwdFormRef.value?.validate((errors) => {
+    if (errors) return
+    message.success('密码修改成功，请重新登录')
+    showPwdModal.value = false
+    pwdForm.value = { oldPwd: '', newPwd: '', confirmPwd: '' }
+  })
+}
 
 const logColumns = [
   {

@@ -18,7 +18,7 @@
             <n-icon :component="TrendingUpOutline" size="24" color="#fff" />
           </div>
           <div class="stat-info">
-            <span class="label">今日游戏豆销售</span>
+            <span class="label">今日游戏币销售</span>
             <span class="value">¥86,580</span>
             <span class="trend up">↑ 12.3%</span>
           </div>
@@ -30,7 +30,7 @@
             <n-icon :component="StorefrontOutline" size="24" color="#fff" />
           </div>
           <div class="stat-info">
-            <span class="label">本周游戏豆销售</span>
+            <span class="label">本周游戏币销售</span>
             <span class="value">¥592,340</span>
             <span class="trend up">↑ 8.5%</span>
           </div>
@@ -42,7 +42,7 @@
             <n-icon :component="WalletOutline" size="24" color="#fff" />
           </div>
           <div class="stat-info">
-            <span class="label">本月游戏豆销售</span>
+            <span class="label">本月游戏币销售</span>
             <span class="value">¥2,156,780</span>
             <span class="trend up">↑ 15.2%</span>
           </div>
@@ -54,7 +54,7 @@
             <n-icon :component="CashOutline" size="24" color="#fff" />
           </div>
           <div class="stat-info">
-            <span class="label">本年游戏豆销售</span>
+            <span class="label">本年游戏币销售</span>
             <span class="value">¥18,934,560</span>
             <span class="trend up">↑ 22.1%</span>
           </div>
@@ -67,7 +67,7 @@
       <n-gi>
         <div class="chart-card">
           <div class="chart-header">
-            <h3>游戏豆销售趋势</h3>
+            <h3>游戏币销售趋势</h3>
             <n-radio-group v-model:value="trendType" size="small">
               <n-radio-button value="week">近7天</n-radio-button>
               <n-radio-button value="month">近30天</n-radio-button>
@@ -80,7 +80,7 @@
       <n-gi>
         <div class="chart-card">
           <div class="chart-header">
-            <h3>商家游戏豆消耗排行 TOP10</h3>
+            <h3>商家游戏币消耗排行 TOP10</h3>
           </div>
           <div class="store-rank">
             <div v-for="(store, idx) in storeRank" :key="store.name" class="rank-item">
@@ -91,7 +91,7 @@
                   <div class="rank-bar" :style="{ width: store.percentage + '%' }"></div>
                 </div>
               </div>
-              <span class="rank-value">{{ store.value.toLocaleString() }}豆</span>
+              <span class="rank-value">{{ store.value.toLocaleString() }}</span>
             </div>
           </div>
         </div>
@@ -102,7 +102,7 @@
       <n-gi>
         <div class="chart-card">
           <div class="chart-header">
-            <h3>游戏豆用途构成</h3>
+            <h3>游戏币用途构成</h3>
           </div>
           <div ref="incomeChartRef" class="chart-container-sm"></div>
         </div>
@@ -175,22 +175,22 @@ const storeRank = ref([
 
 const columns = [
   { title: '日期', key: 'date', width: 120 },
-  { title: '游戏豆销售', key: 'beanSales', render: (row: any) => `¥${row.beanSales.toLocaleString()}` },
-  { title: '销售数量', key: 'beanAmount' },
-  { title: '游戏豆消耗', key: 'beanConsume' },
+  { title: '游戏币销售', key: 'coinSales', render: (row: any) => `¥${row.coinSales.toLocaleString()}` },
+  { title: '销售数量', key: 'coinAmount' },
+  { title: '游戏币消耗', key: 'coinConsume' },
   { title: '店铺数', key: 'stores' },
   { title: '设备在线率', key: 'deviceRate', render: (row: any) => `${row.deviceRate}%` },
   { title: '环比', key: 'trend', render: (row: any) => h('span', { style: `color:${row.trend >= 0 ? '#10B981' : '#EF4444'};font-weight:600;` }, row.trend >= 0 ? `+${row.trend}%` : `${row.trend}%`) },
 ]
 
 const tableData = [
-  { date: '2026-04-20', beanSales: 86580, beanAmount: 86580, beanConsume: 45680, stores: 168, deviceRate: 94.2, trend: 12.3 },
-  { date: '2026-04-19', beanSales: 77230, beanAmount: 77230, beanConsume: 41200, stores: 168, deviceRate: 93.8, trend: 5.6 },
-  { date: '2026-04-18', beanSales: 68960, beanAmount: 68960, beanConsume: 38900, stores: 168, deviceRate: 92.5, trend: -2.1 },
-  { date: '2026-04-17', beanSales: 71340, beanAmount: 71340, beanConsume: 40100, stores: 168, deviceRate: 93.2, trend: 8.9 },
-  { date: '2026-04-16', beanSales: 62260, beanAmount: 62260, beanConsume: 35600, stores: 168, deviceRate: 91.8, trend: -5.2 },
-  { date: '2026-04-15', beanSales: 67880, beanAmount: 67880, beanConsume: 37800, stores: 168, deviceRate: 92.1, trend: 3.8 },
-  { date: '2026-04-14', beanSales: 64010, beanAmount: 64010, beanConsume: 36200, stores: 168, deviceRate: 93.5, trend: 1.2 },
+  { date: '2026-04-20', coinSales: 86580, coinAmount: 86580, coinConsume: 45680, stores: 168, deviceRate: 94.2, trend: 12.3 },
+  { date: '2026-04-19', coinSales: 77230, coinAmount: 77230, coinConsume: 41200, stores: 168, deviceRate: 93.8, trend: 5.6 },
+  { date: '2026-04-18', coinSales: 68960, coinAmount: 68960, coinConsume: 38900, stores: 168, deviceRate: 92.5, trend: -2.1 },
+  { date: '2026-04-17', coinSales: 71340, coinAmount: 71340, coinConsume: 40100, stores: 168, deviceRate: 93.2, trend: 8.9 },
+  { date: '2026-04-16', coinSales: 62260, coinAmount: 62260, coinConsume: 35600, stores: 168, deviceRate: 91.8, trend: -5.2 },
+  { date: '2026-04-15', coinSales: 67880, coinAmount: 67880, coinConsume: 37800, stores: 168, deviceRate: 92.1, trend: 3.8 },
+  { date: '2026-04-14', coinSales: 64010, coinAmount: 64010, coinConsume: 36200, stores: 168, deviceRate: 93.5, trend: 1.2 },
 ]
 
 function initCharts() {
@@ -217,11 +217,11 @@ function initCharts() {
       window.addEventListener('resize', () => chart.resize())
     }
 
-      // 游戏豆用途构成
+      // 游戏币用途构成
     if (incomeChartRef.value) {
       const chart = echarts.init(incomeChartRef.value)
       chart.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: {c}豆 ({d}%)' },
+        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
         series: [{
           type: 'pie', radius: ['45%', '72%'], center: ['50%', '50%'],
           label: { show: true, fontSize: 11, color: '#64748b' },

@@ -22,16 +22,33 @@ import GameBeanSalesDetail from '../views/platform/GameBeanSalesDetail.vue'
 import ContentConsumption from '../views/platform/ContentConsumption.vue'
 import DeviceOverview from '../views/platform/DeviceOverview.vue'
 import MemberCenter from '../views/platform/MemberCenter.vue'
+import MemberList from '../views/platform/MemberList.vue'
 import MemberGrowth from '../views/platform/MemberGrowth.vue'
+import MemberConsumptionRanking from '../views/platform/MemberConsumptionRanking.vue'
+import MemberDepositLog from '../views/platform/MemberDepositLog.vue'
+import MemberCoinsQuery from '../views/platform/MemberCoinsQuery.vue'
+import MemberCoinAdjustLog from '../views/platform/MemberCoinAdjustLog.vue'
+import MemberPrepaidTimesQuery from '../views/platform/MemberPrepaidTimesQuery.vue'
+import MemberTimesAdjustLog from '../views/platform/MemberTimesAdjustLog.vue'
 import OrderFlow from '../views/platform/OrderFlow.vue'
 import SettlementManage from '../views/platform/SettlementManage.vue'
 import SettlementConfig from '../views/platform/SettlementConfig.vue'
 import Reconciliation from '../views/platform/Reconciliation.vue'
+import AgentSettlementManage from '../views/platform/AgentSettlementManage.vue'
+import AgentSettlementConfig from '../views/platform/AgentSettlementConfig.vue'
 import System from '../views/platform/System.vue'
 import AgentDashboard from '../views/agent/Dashboard.vue'
 import AgentMerchants from '../views/agent/Merchants.vue'
 import AgentStores from '../views/agent/Stores.vue'
+import AgentDeviceStats from '../views/agent/DeviceStats.vue'
+import AgentMessage from '../views/agent/Message.vue'
+import AgentRevenueReport from '../views/agent/RevenueReport.vue'
+import AgentMembersReport from '../views/agent/MembersReport.vue'
+import AgentProfile from '../views/agent/AgentProfile.vue'
+import AgentSecurity from '../views/agent/AgentSecurity.vue'
 import AgentCommission from '../views/agent/Commission.vue'
+import AgentSettlement from '../views/agent/Settlement.vue'
+import AgentBankAccount from '../views/agent/BankAccount.vue'
 import Workbench from '../views/shop/Workbench.vue'
 import Members from '../views/shop/Members.vue'
 import Devices from '../views/shop/Devices.vue'
@@ -39,8 +56,6 @@ import DeviceOnlineStats from '../views/shop/DeviceOnlineStats.vue'
 import ReportsShop from '../views/shop/Reports.vue'
 import Products from '../views/shop/Products.vue'
 import ProductDetail from '../views/shop/ProductDetail.vue'
-import Marketing from '../views/shop/Marketing.vue'
-import Settings from '../views/shop/Settings.vue'
 import Recharge from '../views/shop/Recharge.vue'
 import Packages from '../views/shop/Packages.vue'
 import ShopCoupons from '../views/shop/ShopCoupons.vue'
@@ -88,7 +103,7 @@ import MemberDiscount from '../views/shop/MemberDiscount.vue'
 import MemberEdit from '../views/shop/MemberEdit.vue'
 import MemberPointsQuery from '../views/shop/MemberPointsQuery.vue'
 import MemberPointsAdjustLog from '../views/shop/MemberPointsAdjustLog.vue'
-import MemberPrepaidTimesQuery from '../views/shop/MemberPrepaidTimesQuery.vue'
+import MemberPrepaidTimesQueryShop from '../views/shop/MemberPrepaidTimesQuery.vue'
 import TimesAdjustLog from '../views/shop/TimesAdjustLog.vue'
 import AccountBalance from '../views/shop/AccountBalance.vue'
 import AccountRecharge from '../views/shop/AccountRecharge.vue'
@@ -96,6 +111,14 @@ import GameBeanRecharge from '../views/shop/GameBeanRecharge.vue'
 import AccountBills from '../views/shop/AccountBills.vue'
 import OperatingBills from '../views/shop/OperatingBills.vue'
 import ShopSettlement from '../views/shop/Settlement.vue'
+import ShopReconciliation from '../views/shop/Reconciliation.vue'
+import HelpCenterDocs from '../views/platform/HelpCenterDocs.vue'
+import HelpCenterFaq from '../views/platform/HelpCenterFaq.vue'
+import NoticeAnnouncement from '../views/platform/NoticeAnnouncement.vue'
+import NoticePush from '../views/platform/NoticePush.vue'
+import SystemNoticeInbox from '../views/platform/SystemNoticeInbox.vue'
+import PlatformProfile from '../views/platform/account/Profile.vue'
+import PlatformSecurity from '../views/platform/account/Security.vue'
 import ShopInfo from '../views/shop/account/ShopInfo.vue'
 import Profile from '../views/shop/account/Profile.vue'
 import Security from '../views/shop/account/Security.vue'
@@ -136,7 +159,14 @@ const routes: RouteRecordRaw[] = [
       { path: 'gamebean-sales/detail', name: 'PlatformGameBeanSalesDetail', component: GameBeanSalesDetail, meta: { title: '销售明细' } },
       // 会员中心
       { path: 'members', name: 'PlatformMembers', component: MemberCenter, meta: { title: '会员数据' } },
+      { path: 'members/list', name: 'PlatformMembersList', component: MemberList, meta: { title: '会员列表' } },
       { path: 'members/growth', name: 'PlatformMembersGrowth', component: MemberGrowth, meta: { title: '会员增长' } },
+      { path: 'members/ranking', name: 'PlatformMemberRanking', component: MemberConsumptionRanking, meta: { title: '会员消费排行' } },
+      { path: 'members/deposit-log', name: 'PlatformMemberDepositLog', component: MemberDepositLog, meta: { title: '会员储值变更' } },
+      { path: 'members/coins-query', name: 'PlatformMemberCoinsQuery', component: MemberCoinsQuery, meta: { title: '会员游戏币查询' } },
+      { path: 'members/coin-adjust-log', name: 'PlatformMemberCoinAdjustLog', component: MemberCoinAdjustLog, meta: { title: '游戏币调整有效期查询' } },
+      { path: 'members/prepaid-times-query', name: 'PlatformMemberPrepaidTimesQuery', component: MemberPrepaidTimesQuery, meta: { title: '会员预存次数查询' } },
+      { path: 'members/times-adjust-log', name: 'PlatformMemberTimesAdjustLog', component: MemberTimesAdjustLog, meta: { title: '次数调整有效查询' } },
       // 订单流水（重定向到第一个子菜单）
       { path: 'order-flow', redirect: '/platform/order-flow/cashier' },
       { path: 'order-flow/cashier', name: 'PlatformOrderFlowCashier', component: OrderFlow, meta: { title: '收银订单' } },
@@ -149,10 +179,13 @@ const routes: RouteRecordRaw[] = [
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: ContentConsumption, meta: { title: '内容消费大盘' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: DeviceOverview, meta: { title: '设备运行总览' } },
       // 平台财务
-      { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '财务总览' } },
+      { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '营收总览' } },
       { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: SettlementManage, meta: { title: '结算管理' } },
       { path: 'finance/settlement-config', name: 'PlatformSettlementConfig', component: SettlementConfig, meta: { title: '结算配置' } },
       { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: Reconciliation, meta: { title: '对账中心' } },
+      // 代理商结算管理
+      { path: 'finance/agent-settlement', name: 'PlatformAgentSettlement', component: AgentSettlementManage, meta: { title: '代理商结算管理' } },
+      { path: 'finance/agent-settlement-config', name: 'PlatformAgentSettlementConfig', component: AgentSettlementConfig, meta: { title: '代理商结算配置' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: System, meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: System, meta: { title: '告警中心' } },
@@ -160,6 +193,16 @@ const routes: RouteRecordRaw[] = [
       // 运维支持
       { path: 'support/tickets', name: 'PlatformSupportTickets', component: System, meta: { title: '工单系统' } },
       { path: 'support/help', name: 'PlatformSupportHelp', component: System, meta: { title: '帮助中心' } },
+      // 帮助中心系统
+      { path: 'help-center/docs', name: 'HelpCenterDocs', component: HelpCenterDocs, meta: { title: '帮助文档' } },
+      { path: 'help-center/faq', name: 'HelpCenterFaq', component: HelpCenterFaq, meta: { title: 'FAQ' } },
+      // 平台通知系统
+      { path: 'notice/announcement', name: 'NoticeAnnouncement', component: NoticeAnnouncement, meta: { title: '公告管理' } },
+      { path: 'notice/push', name: 'NoticePush', component: NoticePush, meta: { title: '消息推送' } },
+      { path: 'notice/inbox', name: 'SystemNoticeInbox', component: SystemNoticeInbox, meta: { title: '系统通知' } },
+      // 平台账号个人中心
+      { path: 'account/profile', name: 'PlatformAccountProfile', component: PlatformProfile, meta: { title: '个人信息', breadcrumb: [{ label: '个人信息' }] } },
+      { path: 'account/security', name: 'PlatformAccountSecurity', component: PlatformSecurity, meta: { title: '安全设置', breadcrumb: [{ label: '安全设置' }] } },
     ]
   },
 
@@ -200,7 +243,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'member-balance', name: 'ShopMemberBalance', component: MemberBalance, meta: { title: '会员储值变更', breadcrumb: [{ label: '会员管理' }, { label: '会员储值变更' }] } },
       { path: 'member-points-query', name: 'ShopMemberPointsQuery', component: MemberPointsQuery, meta: { title: '会员游戏币查询', breadcrumb: [{ label: '会员管理' }, { label: '会员游戏币查询' }] } },
       { path: 'member-points-adjust-log', name: 'ShopMemberPointsAdjustLog', component: MemberPointsAdjustLog, meta: { title: '游戏币调整有效期查询', breadcrumb: [{ label: '会员管理' }, { label: '游戏币调整有效期查询' }] } },
-      { path: 'member-prepaid-times-query', name: 'ShopMemberPrepaidTimesQuery', component: MemberPrepaidTimesQuery, meta: { title: '会员预存次数查询', breadcrumb: [{ label: '会员管理' }, { label: '会员预存次数查询' }] } },
+      { path: 'member-prepaid-times-query', name: 'ShopMemberPrepaidTimesQuery', component: MemberPrepaidTimesQueryShop, meta: { title: '会员预存次数查询', breadcrumb: [{ label: '会员管理' }, { label: '会员预存次数查询' }] } },
       { path: 'times-adjust-log', name: 'ShopTimesAdjustLog', component: TimesAdjustLog, meta: { title: '次数调整有效期查询', breadcrumb: [{ label: '会员管理' }, { label: '次数调整有效期查询' }] } },
       // 数据报表
       { path: 'daily-sales', name: 'ShopDailySales', component: DailySales, meta: { title: '店铺销售日报', breadcrumb: [{ label: '数据报表' }, { label: '店铺销售日报' }] } },
@@ -224,6 +267,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'gift-order', name: 'ShopGiftOrder', component: GiftOrder, meta: { title: '活动赠送订单', breadcrumb: [{ label: '数据报表' }, { label: '订单查询' }, { label: '活动赠送订单' }] } },
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: FilmRevenue, meta: { title: '影片分成明细', breadcrumb: [{ label: '数据报表' }, { label: '影片分成明细' }] } },
       { path: 'settlement', name: 'ShopSettlement', component: ShopSettlement, meta: { title: '结算记录', breadcrumb: [{ label: '数据报表' }, { label: '结算记录' }] } },
+      { path: 'reconciliation', name: 'ShopReconciliation', component: ShopReconciliation, meta: { title: '对账中心', breadcrumb: [{ label: '数据报表' }, { label: '对账中心' }] } },
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: ShopStoreList, meta: { title: '店铺列表', breadcrumb: [{ label: '系统设置' }, { label: '店铺列表' }] } },
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: OnDemandSettings, meta: { title: '点播设置', breadcrumb: [{ label: '系统设置' }, { label: '点播设置' }] } },
@@ -264,13 +308,15 @@ const routes: RouteRecordRaw[] = [
       { path: 'dashboard', name: 'AgentDashboard', component: AgentDashboard, meta: { title: '首页概览' } },
       { path: 'merchants', name: 'AgentMerchants', component: AgentMerchants, meta: { title: '商家管理' } },
       { path: 'stores', name: 'AgentStores', component: AgentStores, meta: { title: '店铺概览' } },
-      { path: 'stores/devices', name: 'AgentStoreDevices', component: AgentStores, meta: { title: '设备统计' } },
+      { path: 'stores/devices', name: 'AgentStoreDevices', component: AgentDeviceStats, meta: { title: '设备统计' } },
       { path: 'commission', name: 'AgentCommission', component: AgentCommission, meta: { title: '分润明细' } },
-      { path: 'settlement', name: 'AgentSettlement', component: AgentCommission, meta: { title: '结算记录' } },
-      { path: 'reports/revenue', name: 'AgentReportsRevenue', component: AgentDashboard, meta: { title: '营收统计' } },
-      { path: 'reports/members', name: 'AgentReportsMembers', component: AgentDashboard, meta: { title: '会员统计' } },
-      { path: 'account', name: 'AgentAccount', component: AgentDashboard, meta: { title: '账户信息' } },
-      { path: 'account/security', name: 'AgentAccountSecurity', component: AgentDashboard, meta: { title: '安全设置' } },
+      { path: 'settlement', name: 'AgentSettlement', component: AgentSettlement, meta: { title: '结算记录' } },
+      { path: 'bank-account', name: 'AgentBankAccount', component: AgentBankAccount, meta: { title: '提现账户' } },
+      { path: 'reports/revenue', name: 'AgentReportsRevenue', component: AgentRevenueReport, meta: { title: '营收统计' } },
+      { path: 'reports/members', name: 'AgentReportsMembers', component: AgentMembersReport, meta: { title: '会员统计' } },
+      { path: 'account', name: 'AgentAccount', component: AgentProfile, meta: { title: '账户信息' } },
+      { path: 'account/security', name: 'AgentAccountSecurity', component: AgentSecurity, meta: { title: '安全设置' } },
+      { path: 'account/message', name: 'AgentMessage', component: AgentMessage, meta: { title: '消息中心' } },
     ]
   },
 

@@ -5,75 +5,91 @@
         <h1>结算管理</h1>
         <p class="header-desc">管理商家结算周期与打款状态</p>
       </div>
-      <n-space>
-        <!-- 高级筛选 -->
-        <n-date-picker
-          v-model:value="filterDateRange"
-          type="daterange"
-          clearable
-          size="small"
-          style="width: 240px;"
-          placeholder="选择日期范围"
-        />
-        <n-select 
-          v-model:value="filterMerchant" 
-          placeholder="选择商家" 
-          :options="merchantOptions" 
-          size="small" 
-          style="width: 160px;" 
-          clearable 
-        />
-        <n-select v-model:value="filterStatus" placeholder="结算状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
-        <n-button @click="exportToExcel">
-          <template #icon>
-            <n-icon :component="DownloadOutline" />
-          </template>
-          导出Excel
-        </n-button>
-        <n-button type="primary" @click="showBatchModal = true">批量结算</n-button>
-      </n-space>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+    <!-- 财务概览 -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-icon" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+          <n-icon :component="TrendingUpOutline" size="22" color="#fff" />
+        </div>
+        <div class="metric-content">
+          <span class="label">商家营收总额</span>
+          <span class="value">¥2,856,780</span>
+          <span class="trend up">↑ 15.2%</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon" style="background: linear-gradient(135deg, #10B981, #059669);">
           <n-icon :component="WalletOutline" size="22" color="#fff" />
         </div>
-        <div class="stat-content">
-          <span class="label">本月应付</span>
-          <span class="value">¥856,234</span>
+        <div class="metric-content">
+          <span class="label">待结算金额</span>
+          <span class="value warning">¥328,560</span>
+          <span class="sub-text">本月交易中</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #10B981, #059669);">
-          <n-icon :component="CheckmarkCircleOutline" size="22" color="#fff" />
+      <div class="metric-card">
+        <div class="metric-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+          <n-icon :component="CardOutline" size="22" color="#fff" />
         </div>
-        <div class="stat-content">
-          <span class="label">已打款</span>
-          <span class="value">¥727,674</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
-          <n-icon :component="TimeOutline" size="22" color="#fff" />
-        </div>
-        <div class="stat-content">
-          <span class="label">待确认</span>
-          <span class="value warning">¥128,560</span>
+        <div class="metric-content">
+          <span class="label">已结算金额</span>
+          <span class="value">¥1,856,200</span>
+          <span class="sub-text">含服务费</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
-          <n-icon :component="ReceiptOutline" size="22" color="#fff" />
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="charts-grid">
+      <div class="chart-card chart-large">
+        <div class="chart-header">
+          <h3>月度营收趋势</h3>
+          <n-radio-group v-model:value="trendPeriod" size="small">
+            <n-radio-button value="month">近6个月</n-radio-button>
+            <n-radio-button value="year">近一年</n-radio-button>
+          </n-radio-group>
         </div>
-        <div class="stat-content">
-          <span class="label">手续费收入</span>
-          <span class="value">¥4,281</span>
+        <div ref="revenueChartRef" class="chart-container"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>收入构成</h3>
         </div>
+        <div ref="incomeChartRef" class="chart-container"></div>
       </div>
     </div>
 
     <div class="content-card">
+      <!-- 筛选栏 -->
+      <div class="table-toolbar">
+        <n-space>
+          <n-date-picker
+            v-model:value="filterDateRange"
+            type="daterange"
+            clearable
+            size="small"
+            style="width: 240px;"
+            placeholder="选择日期范围"
+          />
+          <n-select 
+            v-model:value="filterMerchant" 
+            placeholder="选择商家" 
+            :options="merchantOptions" 
+            size="small" 
+            style="width: 160px;" 
+            clearable 
+          />
+          <n-select v-model:value="filterStatus" placeholder="结算状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
+        </n-space>
+        <n-space>
+          <n-button @click="exportToExcel">
+            <template #icon><n-icon :component="DownloadOutline" /></template> 导出Excel
+          </n-button>
+          <n-button type="primary" @click="showBatchModal = true">批量结算</n-button>
+        </n-space>
+      </div>
       <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
     </div>
 
@@ -164,21 +180,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed, h, onMounted, onUnmounted, nextTick } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal,
-  NIcon, NDescriptions, NDescriptionsItem, useMessage, NDatePicker, NUpload, NUploadDragger, NImage
+  NIcon, NDescriptions, NDescriptionsItem, useMessage, NDatePicker,
+  NUpload, NUploadDragger, NImage, NRadioGroup, NRadioButton
 } from 'naive-ui'
 import {
-  WalletOutline, CheckmarkCircleOutline, TimeOutline, ReceiptOutline, DownloadOutline, CloudUploadOutline
+  DownloadOutline, CloudUploadOutline,
+  TrendingUpOutline, WalletOutline, CardOutline
 } from '@vicons/ionicons5'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
+import * as echarts from 'echarts/core'
+import { LineChart, PieChart } from 'echarts/charts'
+import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+
+// 注册 ECharts 组件
+echarts.use([LineChart, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer])
 
 const message = useMessage()
 const filterStatus = ref<string | null>(null)
 const filterMerchant = ref<string | null>(null)
 const filterDateRange = ref<[number, number] | null>(null)
+
+// 图表
+const trendPeriod = ref('month')
+const revenueChartRef = ref<HTMLElement | null>(null)
+const incomeChartRef = ref<HTMLElement | null>(null)
+let revenueChart: echarts.ECharts | null = null
+let incomeChart: echarts.ECharts | null = null
 
 const statusOptions = [
   { label: '已打款', value: 'done' },
@@ -474,6 +506,63 @@ function handleVoucherUpload({ file, onFinish }: any) {
   }
   reader.readAsDataURL(file.file)
 }
+
+// 图表初始化
+function initCharts() {
+  nextTick(() => {
+    setTimeout(() => {
+      if (revenueChartRef.value) {
+        revenueChart = echarts.init(revenueChartRef.value)
+        revenueChart.setOption({
+          tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
+          grid: { left: 48, right: 16, top: 24, bottom: 32 },
+          xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
+          yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: '¥{value}k' } },
+          series: [{
+            type: 'line', smooth: true, data: [320, 380, 420, 480, 520, 580],
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59,130,246,0.2)' }, { offset: 1, color: 'rgba(59,130,246,0)' }]) },
+            lineStyle: { width: 3, color: '#3B82F6' },
+            itemStyle: { color: '#3B82F6' }
+          }]
+        })
+      }
+      if (incomeChartRef.value) {
+        incomeChart = echarts.init(incomeChartRef.value)
+        incomeChart.setOption({
+          tooltip: { trigger: 'item', formatter: '{b}: ¥{c}k ({d}%)' },
+          series: [{
+            type: 'pie',
+            radius: ['45%', '72%'],
+            center: ['50%', '50%'],
+            label: { show: true, fontSize: 12, color: '#64748b' },
+            data: [
+              { value: 280, name: 'VR体验', itemStyle: { color: '#3B82F6' } },
+              { value: 180, name: '会员充值', itemStyle: { color: '#10B981' } },
+              { value: 120, name: '实体商品', itemStyle: { color: '#F59E0B' } },
+              { value: 80, name: '其他', itemStyle: { color: '#8B5CF6' } },
+            ]
+          }]
+        })
+      }
+    }, 200)
+  })
+}
+
+function handleResize() {
+  revenueChart?.resize()
+  incomeChart?.resize()
+}
+
+onMounted(() => {
+  initCharts()
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  revenueChart?.dispose()
+  incomeChart?.dispose()
+})
 </script>
 
 <style scoped>
@@ -481,13 +570,26 @@ function handleVoucherUpload({ file, onFinish }: any) {
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
 .header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block; }
 
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; }
-.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.stat-content { display: flex; flex-direction: column; }
-.stat-content .label { font-size: 12px; color: var(--text-muted); }
-.stat-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.stat-content .value.warning { color: #F59E0B; }
+.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.metric-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; }
+.metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.metric-content { display: flex; flex-direction: column; }
+.metric-content .label { font-size: 12px; color: var(--text-muted); }
+.metric-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.metric-content .value.warning { color: #F59E0B; }
+.metric-content .trend { font-size: 12px; color: #10B981; font-weight: 600; }
+.metric-content .sub-text { font-size: 11px; color: var(--text-muted); }
 
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
+.table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+.charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+.chart-card { background: white; border-radius: 16px; padding: 22px; border: 1px solid var(--border-color); }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.chart-header h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.chart-container { width: 100%; height: 280px; }
+
+@media (max-width: 1200px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
 </style>

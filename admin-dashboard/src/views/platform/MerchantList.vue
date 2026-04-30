@@ -10,8 +10,9 @@
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
         <n-select v-model:value="filterStatus" placeholder="全部状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
-        <n-button type="primary" @click="showAddModal = true">
-          <template #icon><n-icon :component="AddOutline" /></template> 新增商家
+        <n-button type="primary" size="small" @click="showAddModal = true">
+          <template #icon><n-icon :component="AddOutline" /></template>
+          新建商家
         </n-button>
       </n-space>
     </div>
@@ -24,7 +25,7 @@
         </div>
         <div class="stat-content">
           <span class="label">商家总数</span>
-          <span class="value">86</span>
+          <span class="value">12</span>
         </div>
       </div>
       <div class="stat-card">
@@ -33,7 +34,7 @@
         </div>
         <div class="stat-content">
           <span class="label">正常营业</span>
-          <span class="value">72</span>
+          <span class="value">10</span>
         </div>
       </div>
       <div class="stat-card">
@@ -41,8 +42,8 @@
           <n-icon :component="TimeOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">待审核</span>
-          <span class="value warning">9</span>
+          <span class="label">待了结算</span>
+          <span class="value warning">36</span>
         </div>
       </div>
       <div class="stat-card">
@@ -50,8 +51,8 @@
           <n-icon :component="StorefrontOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">旗下店铺</span>
-          <span class="value">168</span>
+          <span class="label">本月分润</span>
+          <span class="value">¥128K</span>
         </div>
       </div>
     </div>
@@ -177,7 +178,7 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="商家详情" style="width: 720px;" :bordered="false">
+    <n-modal :show="showDetailModal" @update:show="(val: boolean) => showDetailModal = val" preset="card" title="商家详情" style="width: 720px;" :bordered="false">
       <n-tabs v-if="currentMerchant" type="line">
         <n-tab-pane name="basic" tab="基本信息">
           <n-descriptions label-placement="left" :column="2" bordered>
@@ -190,6 +191,7 @@
             <n-descriptions-item label="旗下店铺">{{ currentMerchant.storeCount }} 家</n-descriptions-item>
             <n-descriptions-item label="会员总数">{{ currentMerchant.memberCount }} 人</n-descriptions-item>
             <n-descriptions-item label="本月营收">{{ currentMerchant.monthRevenue }}</n-descriptions-item>
+            <n-descriptions-item label="本月分润">{{ currentMerchant.monthCommission }}</n-descriptions-item>
             <n-descriptions-item label="手续费率">{{ (currentMerchant.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
             <n-descriptions-item label="商家状态">
               <n-tag :type="statusType(currentMerchant.status)" size="small">{{ statusLabel(currentMerchant.status) }}</n-tag>
@@ -289,7 +291,6 @@ const columns = [
   { title: '联系人', key: 'contact', width: 90 },
   { title: '联系电话', key: 'phone', width: 120 },
   { title: '负责区域', key: 'region', width: 90 },
-  { title: '对应代理商', key: 'agentName', width: 130 },
   {
     title: '状态', key: 'status', width: 80,
     render(row: any) {
@@ -297,9 +298,9 @@ const columns = [
     }
   },
   { title: '旗下店铺', key: 'storeCount', width: 90 },
-  { title: '手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
-  { title: '本月营收', key: 'monthRevenue', width: 110 },
-  { title: '创建时间', key: 'createdAt', width: 110 },
+  { title: '会员数', key: 'memberCount', width: 80 },
+  { title: '本月游戏豆充值', key: 'monthRevenue', width: 130 },
+  { title: '本月分润', key: 'monthCommission', width: 110, render: (row: any) => h('span', { style: 'font-weight: 600; color: #3B82F6;' }, row.monthCommission) },
   {
     title: '操作', key: 'actions', width: 180, fixed: 'right',
     render(row: any) {
@@ -332,42 +333,42 @@ function statusLabel(status: string) {
 const merchantData = ref([
   { 
     id: 1, name: '恒然集团', contact: '陈总', phone: '13800001101', region: '深圳', agentId: 1, agentName: '深圳未来科技', 
-    status: 'active', storeCount: 8, memberCount: 3280, monthRevenue: '¥156,800', feeRate: 0.005, createdAt: '2023-06-01',
+    status: 'active', storeCount: 8, memberCount: 3280, monthRevenue: '¥156,800', monthCommission: '¥23,520', feeRate: 0.005, createdAt: '2023-06-01',
     bankInfo: { bankName: 'ICBC', cardNo: '6222021234567890123', accountName: '陈总', idCard: '440301198001011234' }
   },
   { 
     id: 2, name: '幻影星空', contact: '林总', phone: '13800001102', region: '广州', agentId: 3, agentName: '上海星际娱乐', 
-    status: 'active', storeCount: 5, memberCount: 1890, monthRevenue: '¥98,500', feeRate: 0.005, createdAt: '2023-07-15',
+    status: 'active', storeCount: 5, memberCount: 1890, monthRevenue: '¥98,500', monthCommission: '¥17,730', feeRate: 0.005, createdAt: '2023-07-15',
     bankInfo: { bankName: 'CCB', cardNo: '6217001234567890', accountName: '林总', idCard: '440101198502021234' }
   },
   { 
     id: 3, name: '利民街商家', contact: '张总', phone: '13800001103', region: '北京', agentId: 2, agentName: '北京梦想空间', 
-    status: 'active', storeCount: 3, memberCount: 2150, monthRevenue: '¥112,000', feeRate: 0.006, createdAt: '2023-08-20',
+    status: 'active', storeCount: 3, memberCount: 2150, monthRevenue: '¥112,000', monthCommission: '¥13,440', feeRate: 0.006, createdAt: '2023-08-20',
     bankInfo: null
   },
   { 
     id: 4, name: '党建馆集团', contact: '李总', phone: '13800001104', region: '成都', agentId: 4, agentName: '成都虚拟现实', 
-    status: 'active', storeCount: 2, memberCount: 980, monthRevenue: '¥56,800', feeRate: 0.005, createdAt: '2023-09-10',
+    status: 'active', storeCount: 2, memberCount: 980, monthRevenue: '¥56,800', monthCommission: '¥5,680', feeRate: 0.005, createdAt: '2023-09-10',
     bankInfo: { bankName: 'ABC', cardNo: '6228481234567890', accountName: '李总', idCard: '510102197801011234' }
   },
   { 
     id: 5, name: '华东展厅', contact: '王总', phone: '13800001105', region: '上海', agentId: 3, agentName: '上海星际娱乐', 
-    status: 'pending', storeCount: 4, memberCount: 1560, monthRevenue: '¥89,200', feeRate: 0.005, createdAt: '2023-10-05',
+    status: 'pending', storeCount: 4, memberCount: 1560, monthRevenue: '¥89,200', monthCommission: '¥16,056', feeRate: 0.005, createdAt: '2023-10-05',
     bankInfo: null
   },
   { 
     id: 6, name: '南山科创', contact: '赵总', phone: '13800001106', region: '深圳', agentId: 1, agentName: '深圳未来科技', 
-    status: 'active', storeCount: 6, memberCount: 2450, monthRevenue: '¥134,600', feeRate: 0.004, createdAt: '2023-11-01',
+    status: 'active', storeCount: 6, memberCount: 2450, monthRevenue: '¥134,600', monthCommission: '¥20,190', feeRate: 0.004, createdAt: '2023-11-01',
     bankInfo: { bankName: 'CMB', cardNo: '6214831234567890', accountName: '赵总', idCard: '440303198503031234' }
   },
   { 
     id: 7, name: '天河娱乐', contact: '孙总', phone: '13800001107', region: '广州', agentId: null, agentName: '', 
-    status: 'inactive', storeCount: 1, memberCount: 560, monthRevenue: '¥12,300', feeRate: 0.005, createdAt: '2023-12-10',
+    status: 'inactive', storeCount: 1, memberCount: 560, monthRevenue: '¥12,300', monthCommission: '-', feeRate: 0.005, createdAt: '2023-12-10',
     bankInfo: null
   },
   { 
     id: 8, name: '钱塘体验中心', contact: '周总', phone: '13800001108', region: '杭州', agentId: null, agentName: '', 
-    status: 'active', storeCount: 3, memberCount: 1120, monthRevenue: '¥67,800', feeRate: 0.005, createdAt: '2024-01-08',
+    status: 'active', storeCount: 3, memberCount: 1120, monthRevenue: '¥67,800', monthCommission: '-', feeRate: 0.005, createdAt: '2024-01-08',
     bankInfo: { bankName: 'BOC', cardNo: '6217851234567890', accountName: '周总', idCard: '330102198204041234' }
   },
 ])
@@ -418,6 +419,7 @@ function handleAdd() {
       storeCount: 0,
       memberCount: 0,
       monthRevenue: '¥0',
+      monthCommission: '¥0',
       feeRate: addForm.value.feeRate,
       bankInfo,
       createdAt: new Date().toISOString().slice(0, 10),
