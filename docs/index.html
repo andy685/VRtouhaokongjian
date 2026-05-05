@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>头号空间 - 文档中心</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .header h1 {
+    font-size: 36px;
+    background: linear-gradient(135deg, #818cf8, #c084fc, #e879f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: #94a3b8;
+    font-size: 15px;
+  }
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+  .card:hover {
+    border-color: rgba(99, 102, 241, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+  }
+  .card h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: #e2e8f0;
+  }
+  .card .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+    margin-bottom: 10px;
+  }
+  .card .desc {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    color: #475569;
+    font-size: 13px;
+  }
+  .update-time {
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>头号空间 · 文档中心</h1>
+    <p>VR 头号空间项目文档在线浏览</p>
+  </div>
+
+  <div class="card-list">
+    <a class="card" href="PRD-完整版.html" target="_blank">
+      <div class="badge">产品需求文档</div>
+      <h2>📋 PRD 产品需求文档（完整版）</h2>
+      <p class="desc">包含项目概述、用户画像、功能需求清单、系统架构设计及非功能需求等完整产品定义。</p>
+    </a>
+
+    <a class="card" href="功能规格说明书-v3.0.html" target="_blank">
+      <div class="badge">功能规格说明</div>
+      <h2>🔧 功能规格说明书 v3.0</h2>
+      <p class="desc">详细的子系统模块划分、功能点描述、交互流程及输入输出定义，供研发团队直接使用。</p>
+    </a>
+
+    <a class="card" href="VR终端UI设计预览.html" target="_blank">
+      <div class="badge">UI 设计预览</div>
+      <h2>🎨 VR 终端 UI 设计预览</h2>
+      <p class="desc">VR 头显终端界面设计预览，包含主控台、空间浏览器、社交面板等核心界面。</p>
+    </a>
+  </div>
+
+  <div class="update-time">
+    更新方式：将最新文件覆盖到 docs/ 目录后推送 GitHub 即可自动发布
+  </div>
+
+  <div class="footer">
+    Powered by GitHub Pages
+  </div>
+</div>
+</body>
+</html>
