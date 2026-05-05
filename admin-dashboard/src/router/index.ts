@@ -21,6 +21,7 @@ import GameBeanSales from '../views/platform/GameBeanSales.vue'
 import GameBeanSalesDetail from '../views/platform/GameBeanSalesDetail.vue'
 import ContentConsumption from '../views/platform/ContentConsumption.vue'
 import DeviceOverview from '../views/platform/DeviceOverview.vue'
+import DeviceConfig from '../views/platform/DeviceConfig.vue'
 import MemberCenter from '../views/platform/MemberCenter.vue'
 import MemberList from '../views/platform/MemberList.vue'
 import MemberGrowth from '../views/platform/MemberGrowth.vue'
@@ -179,6 +180,7 @@ const routes: RouteRecordRaw[] = [
       // 数据中心扩展
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: ContentConsumption, meta: { title: '内容消费大盘' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: DeviceOverview, meta: { title: '设备运行总览' } },
+      { path: 'device-config', name: 'PlatformDeviceConfig', component: DeviceConfig, meta: { title: '设备配置管理' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '营收总览' } },
       // 商家分账（自动分账+异常处置模式）

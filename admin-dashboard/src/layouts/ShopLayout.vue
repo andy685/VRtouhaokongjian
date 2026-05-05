@@ -147,7 +147,7 @@ import {
   PersonAddOutline, LogOutOutline, PersonOutline,
   HelpCircleOutline, HomeOutline,
   MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
-  ChevronDownOutline
+  ChevronDownOutline, ConstructOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -267,14 +267,21 @@ const menuOptions: MenuOption[] = [
     ]
   },
   {
+    label: '设备管理',
+    key: 'device-group',
+    icon: () => h(NIcon, { component: ConstructOutline }),
+    children: [
+      { label: '设备列表', key: '/shop/devices' },
+      { label: '设备在线统计', key: '/shop/devices/online-stats' },
+    ]
+  },
+  {
     label: '系统设置',
     key: 'settings-group',
     icon: () => h(NIcon, { component: SettingsOutline }),
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
       { label: '点播设置', key: '/shop/on-demand-settings' },
-      { label: '设备列表', key: '/shop/devices' },
-      { label: '设备在线统计', key: '/shop/devices/online-stats' },
       { label: '影片题材', key: '/shop/film-genres' },
       {
         label: '收银设置',

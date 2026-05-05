@@ -218,6 +218,7 @@ const menuOptions: MenuOption[] = [
       { label: '数据报表', key: '/platform/reports' },
       { label: '内容消费大盘', key: '/platform/content-consumption' },
       { label: '设备运行总览', key: '/platform/device-overview' },
+      { label: '设备配置管理', key: '/platform/device-config' },
     ]
   },
   {
