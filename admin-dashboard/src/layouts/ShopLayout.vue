@@ -203,6 +203,7 @@ const menuOptions: MenuOption[] = [
           { label: '短信服务', key: '/shop/sms' },
         ]
       },
+      { label: '反馈管理', key: '/shop/feedback' },
     ]
   },
   {
@@ -290,6 +291,7 @@ const menuOptions: MenuOption[] = [
           { label: '收银终端', key: '/shop/cashier-terminal' },
           { label: '支付设置', key: '/shop/cashier-settings' },
           { label: '小票设置', key: '/shop/cashier-receipt' },
+          { label: 'IC卡管理', key: '/shop/ic-card' },
         ]
       },
       { label: '游戏币设置', key: '/shop/points-settings' },

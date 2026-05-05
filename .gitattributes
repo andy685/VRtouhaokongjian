@@ -71,3 +71,11 @@
 /docs/versions/PRD-完整版_v1.3.3_20260505_1852.html filter=lfs diff=lfs merge=lfs -text
 /docs/versions/PRD-完整版_v1.3.3_20260505_1905.html filter=lfs diff=lfs merge=lfs -text
 /docs/头号空间-产品需求文档-PRD-v1.3.md filter=lfs diff=lfs merge=lfs -text
+/docs/PRD-完整版_v1.3.3_20260505_2326.html filter=lfs diff=lfs merge=lfs -text
+/docs/PRD-完整版_v1.3.3_20260505_2331.html filter=lfs diff=lfs merge=lfs -text
+/docs/PRD-完整版_v1.3.3_20260505_2332.html filter=lfs diff=lfs merge=lfs -text
+/docs/PRD-完整版_v1.3.3_20260505_2333.html filter=lfs diff=lfs merge=lfs -text
+/docs/versions/PRD-完整版_v1.3.3_20260505_2326.html filter=lfs diff=lfs merge=lfs -text
+/docs/versions/PRD-完整版_v1.3.3_20260505_2331.html filter=lfs diff=lfs merge=lfs -text
+/docs/versions/PRD-完整版_v1.3.3_20260505_2332.html filter=lfs diff=lfs merge=lfs -text
+/docs/versions/PRD-完整版_v1.3.3_20260505_2333.html filter=lfs diff=lfs merge=lfs -text

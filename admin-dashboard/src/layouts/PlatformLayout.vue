@@ -199,7 +199,7 @@ import {
   ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
   GiftOutline, ConstructOutline, ReceiptOutline,
   PulseOutline, HelpCircleOutline, MegaphoneOutline,
-  ShieldCheckmarkOutline
+  ShieldCheckmarkOutline, ChatbubbleOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -328,6 +328,14 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '公告管理', key: '/platform/notice/announcement' },
       { label: '消息推送', key: '/platform/notice/push' },
+    ]
+  },
+  {
+    label: '全平台反馈',
+    key: 'feedback-group',
+    icon: () => h(NIcon, { component: ChatbubbleOutline }),
+    children: [
+      { label: '反馈汇总', key: '/platform/feedback-summary' },
     ]
   },
 ]

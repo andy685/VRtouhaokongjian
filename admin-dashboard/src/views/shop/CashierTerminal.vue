@@ -64,9 +64,12 @@
         </n-form-item>
       </n-form>
       <template #footer>
-        <n-space justify="end">
-          <n-button @click="showEditModal = false">取消</n-button>
-          <n-button type="primary" @click="handleEdit">保存</n-button>
+        <n-space justify="space-between" style="width:100%;">
+          <n-button type="warning" secondary @click="handleResetToken">重置 Token</n-button>
+          <n-space>
+            <n-button @click="showEditModal = false">取消</n-button>
+            <n-button type="primary" @click="handleEdit">保存</n-button>
+          </n-space>
         </n-space>
       </template>
     </n-modal>
@@ -132,11 +135,19 @@ const columns: DataTableColumns<Terminal> = [
   {
     title: 'Token',
     key: 'token',
-    minWidth: 280,
+    minWidth: 340,
     render(row) {
-      return h('span', {
-        style: 'font-family: monospace; font-size: 13px; color: #333; background: #f5f5f5; padding: 2px 8px; border-radius: 4px;'
-      }, row.token)
+      return h(NSpace, { align: 'center', size: 4 }, {
+        default: () => [
+          h('span', {
+            style: 'font-family: monospace; font-size: 12px; color: #333; background: #f5f5f5; padding: 2px 8px; border-radius: 4px;'
+          }, row.token),
+          h(NButton, {
+            size: 'tiny', text: true, type: 'primary',
+            onClick: () => navigator.clipboard.writeText(row.token).then(() => window.$message?.success('Token 已复制'))
+          }, { default: () => '复制' })
+        ]
+      })
     }
   },
   {
@@ -217,6 +228,18 @@ function handleEdit() {
 
 function generateToken() {
   return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16).toUpperCase()).join('')
+}
+
+function handleResetToken() {
+  const newToken = generateToken()
+  if (editingId.value !== null) {
+    const idx = terminalData.value.findIndex(d => d.id === editingId.value)
+    if (idx !== -1) {
+      terminalData.value[idx].token = newToken
+      editForm.value.token = newToken
+      window.$message?.success('Token 已重置，旧 Token 即刻失效')
+    }
+  }
 }
 </script>
 

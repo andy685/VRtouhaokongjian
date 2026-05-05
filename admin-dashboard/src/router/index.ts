@@ -125,6 +125,9 @@ import ShopInfo from '../views/shop/account/ShopInfo.vue'
 import Profile from '../views/shop/account/Profile.vue'
 import Security from '../views/shop/account/Security.vue'
 import Message from '../views/shop/account/Message.vue'
+import ShopFeedback from '../views/shop/Feedback.vue'
+import ShopIcCard from '../views/shop/IcCard.vue'
+import PlatformFeedbackSummary from '../views/platform/FeedbackSummary.vue'
 
 const routes: RouteRecordRaw[] = [
   // ===== 登录页面 =====
@@ -205,6 +208,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'notice/announcement', name: 'NoticeAnnouncement', component: NoticeAnnouncement, meta: { title: '公告管理' } },
       { path: 'notice/push', name: 'NoticePush', component: NoticePush, meta: { title: '消息推送' } },
       { path: 'notice/inbox', name: 'SystemNoticeInbox', component: SystemNoticeInbox, meta: { title: '系统通知' } },
+      // 全平台反馈
+      { path: 'feedback-summary', name: 'PlatformFeedbackSummary', component: PlatformFeedbackSummary, meta: { title: '反馈汇总' } },
       // 平台账号个人中心
       { path: 'account/profile', name: 'PlatformAccountProfile', component: PlatformProfile, meta: { title: '个人信息', breadcrumb: [{ label: '个人信息' }] } },
       { path: 'account/security', name: 'PlatformAccountSecurity', component: PlatformSecurity, meta: { title: '安全设置', breadcrumb: [{ label: '安全设置' }] } },
@@ -239,6 +244,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'sms/create', name: 'ShopSmsCreate', component: SmsCreate, meta: { title: '添加发送任务', breadcrumb: [{ label: '运营管理' }, { label: '短信管理' }, { label: '短信服务', path: '/shop/sms' }, { label: '添加发送任务' }] } },
       { path: 'guide-members', name: 'ShopGuideMembers', component: GuideMembers, meta: { title: '会员管理', breadcrumb: [{ label: '运营管理' }, { label: '会员管理' }] } },
       { path: 'guides', name: 'ShopGuides', component: Guides, meta: { title: '导购管理', breadcrumb: [{ label: '运营管理' }, { label: '导购管理' }] } },
+      // 反馈管理
+      { path: 'feedback', name: 'ShopFeedback', component: ShopFeedback, meta: { title: '反馈管理', breadcrumb: [{ label: '运营管理' }, { label: '反馈管理' }] } },
       // 会员管理
       { path: 'members', name: 'ShopMembers', component: Members, meta: { title: '会员列表', breadcrumb: [{ label: '会员管理' }, { label: '会员列表' }] } },
       { path: 'member-discount', name: 'ShopMemberDiscount', component: MemberDiscount, meta: { title: '设置会员折扣', breadcrumb: [{ label: '会员管理' }, { label: '会员列表', path: '/shop/members' }, { label: '设置会员折扣' }] } },
@@ -283,6 +290,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: CashierTerminal, meta: { title: '收银终端', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '收银终端' }] } },
       { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '支付设置' }] } },
       { path: 'cashier-receipt', name: 'ShopCashierReceipt', component: CashierReceiptSettings, meta: { title: '小票设置', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '小票设置' }] } },
+      { path: 'ic-card', name: 'ShopIcCard', component: ShopIcCard, meta: { title: 'IC卡管理', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: 'IC卡管理' }] } },
       { path: 'points-settings', name: 'ShopPointsSettings', component: PointsSettings, meta: { title: '游戏币设置', breadcrumb: [{ label: '系统设置' }, { label: '游戏币设置' }] } },
       { path: 'system-params', name: 'ShopSystemParams', component: SystemParams, meta: { title: '系统参数', breadcrumb: [{ label: '系统设置' }, { label: '系统参数' }] } },
       { path: 'users', name: 'ShopUsers', component: ShopUsers, meta: { title: '用户列表', breadcrumb: [{ label: '系统设置' }, { label: '用户管理' }, { label: '用户列表' }] } },
