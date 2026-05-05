@@ -7,15 +7,15 @@
       </div>
     </div>
 
-    <!-- 核心指标 -->
+    <!-- 核心指标（当月） -->
     <div class="metrics-grid">
       <div class="metric-card">
-        <div class="metric-label">累计销售总额</div>
+        <div class="metric-label">本月销售总额</div>
         <div class="metric-value">¥{{ metrics.totalSales.toLocaleString() }}</div>
         <div class="metric-trend up">↑ 15.2%</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">累计销售数量</div>
+        <div class="metric-label">本月销售数量</div>
         <div class="metric-value">{{ metrics.totalAmount.toLocaleString() }} 豆</div>
         <div class="metric-trend up">↑ 12.8%</div>
       </div>

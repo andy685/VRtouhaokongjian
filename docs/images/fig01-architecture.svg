@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640">
+  <defs>
+    <marker id="arrowA" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#67e8f9"/>
+    </marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrowC" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowE" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fde047"/>
+    </marker>
+    <marker id="arrowF" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#c084fc"/>
+    </marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+    </marker>
+    <marker id="arrowH" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#bae6fd"/>
+    </marker>
+    <pattern id="blueprintGrid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#0ea5e9" stroke-opacity="0.12" stroke-width="1"/>
+    </pattern>
+    <style>
+    text { font-family: 'SF Mono', 'Fira Code', Menlo, 'Microsoft YaHei', 'SimHei', monospace; }
+    .title { font-size: 30px; font-weight: 700; fill: #e0f2fe; }
+    .subtitle { font-size: 14px; font-weight: 500; fill: #7dd3fc; }
+    .section { font-size: 13px; font-weight: 700; fill: #67e8f9; letter-spacing: 1.4px; }
+    .section-sub { font-size: 12px; font-weight: 500; fill: #7dd3fc; }
+    .node-title { font-size: 18px; font-weight: 700; fill: #e0f2fe; }
+    .node-sub { font-size: 12px; font-weight: 500; fill: #bae6fd; }
+    .node-type { font-size: 11px; font-weight: 700; fill: #7dd3fc; letter-spacing: 0.08em; }
+    .arrow-label { font-size: 12px; font-weight: 600; fill: #e0f2fe; }
+    .legend { font-size: 12px; font-weight: 500; fill: #bae6fd; }
+    .footnote { font-size: 12px; font-weight: 500; fill: #7dd3fc; }
+    </style>
+  </defs>
+  <rect width="960.0" height="640.0" fill="#082f49"/>
+  <text x="480.0" y="56" text-anchor="middle" class="title">头号空间 · 全链路VR体验店运营管理平台</text>
+  <text x="480.0" y="82" text-anchor="middle" class="subtitle">FOUR-LAYER SYSTEM ARCHITECTURE</text>
+  <rect x="30.0" y="90.0" width="900.0" height="100.0" rx="16.0" fill="none" stroke="#0ea5e9" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="48.0" y="114.0" class="section">01 // C端触达层</text>
+  <text x="48.0" y="134.0" class="section-sub">C端消费者唯一入口</text>
+  <rect x="30.0" y="210.0" width="900.0" height="120.0" rx="16.0" fill="none" stroke="#0ea5e9" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="48.0" y="234.0" class="section">02 // 门店运营层</text>
+  <text x="48.0" y="254.0" class="section-sub">VR体验店现场终端</text>
+  <rect x="30.0" y="350.0" width="900.0" height="100.0" rx="16.0" fill="none" stroke="#0ea5e9" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="48.0" y="374.0" class="section">03 // 管理后台层</text>
+  <text x="48.0" y="394.0" class="section-sub">Web管理端</text>
+  <rect x="30.0" y="470.0" width="900.0" height="80.0" rx="16.0" fill="none" stroke="#0ea5e9" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="48.0" y="494.0" class="section">04 // 基础设施层</text>
+  <text x="48.0" y="514.0" class="section-sub">共享服务</text>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#fde047" stroke-width="2.1" marker-end="url(#arrowE)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#fde047" stroke-width="2.1" marker-end="url(#arrowE)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#38bdf8" stroke-width="2.1" marker-end="url(#arrowC)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#38bdf8" stroke-width="2.1" marker-end="url(#arrowC)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#38bdf8" stroke-width="2.1" marker-end="url(#arrowC)"/>
+  <rect x="350.0" y="105.0" width="260.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8" filter="url(#glowBlue)"/>
+  <text x="480.0" y="135.0" text-anchor="middle" class="node-title">📱 C端微信小程序</text>
+  <text x="480.0" y="157.0" text-anchor="middle" class="node-sub">预约 · 会员 · 支付 · 评价</text>
+  <rect x="80.0" y="230.0" width="220.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="190.0" y="260.0" text-anchor="middle" class="node-title">💻 PC收银系统</text>
+  <text x="190.0" y="282.0" text-anchor="middle" class="node-sub">收银开单 / 会员识别 / 充值</text>
+  <rect x="370.0" y="230.0" width="220.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="480.0" y="260.0" text-anchor="middle" class="node-title">🖥️ PC游戏终端</text>
+  <text x="480.0" y="282.0" text-anchor="middle" class="node-sub">选游戏 / 扫码支付 / 引导</text>
+  <rect x="660.0" y="230.0" width="220.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="770.0" y="260.0" text-anchor="middle" class="node-title">🥽 VR头显终端</text>
+  <text x="770.0" y="282.0" text-anchor="middle" class="node-sub">沉浸游戏 / 时长计费 / 结算</text>
+  <rect x="80.0" y="365.0" width="220.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="190.0" y="395.0" text-anchor="middle" class="node-title">🏪 商家管理后台</text>
+  <text x="190.0" y="417.0" text-anchor="middle" class="node-sub">店铺运营 / 会员 / 商品</text>
+  <rect x="370.0" y="365.0" width="220.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="480.0" y="395.0" text-anchor="middle" class="node-title">🤝 代理商系统</text>
+  <text x="480.0" y="417.0" text-anchor="middle" class="node-sub">商家管理 / 分润结算</text>
+  <rect x="660.0" y="365.0" width="220.0" height="60.0" rx="10.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="770.0" y="395.0" text-anchor="middle" class="node-title">🔴 总运营后台</text>
+  <text x="770.0" y="417.0" text-anchor="middle" class="node-sub">全平台管控 / 财务结算</text>
+  <rect x="200.0" y="482.0" width="240.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="320.0" y="507.0" text-anchor="middle" class="node-title">🎮 游戏 SDK (C++ Core + Unity C#)</text>
+  <text x="320.0" y="529.0" text-anchor="middle" class="node-sub">Session管理 / 计费引擎 / 心跳</text>
+  <rect x="520.0" y="482.0" width="240.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="640.0" y="507.0" text-anchor="middle" class="node-title">☁️ 平台后端API / 消息队列</text>
+  <text x="640.0" y="529.0" text-anchor="middle" class="node-sub">REST / WebSocket / MQTT</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">用户触达</text>
+  <rect x="-24.5" y="-14.0" width="49" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">扫码/支付</text>
+  <rect x="-18.0" y="-14.0" width="36" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">预约</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">开单联动</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">设备分配</text>
+  <rect x="-24.5" y="-14.0" width="49" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">API调用</text>
+  <rect x="-24.5" y="-14.0" width="49" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">API调用</text>
+  <rect x="-24.5" y="-14.0" width="49" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">API调用</text>
+  <line x1="42.0" y1="540.0" x2="72.0" y2="540.0" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <text x="82.0" y="544.0" class="legend">数据/业务流</text>
+  <line x1="42.0" y1="562.0" x2="72.0" y2="562.0" stroke="#38bdf8" stroke-width="2.1" marker-end="url(#arrowC)"/>
+  <text x="82.0" y="566.0" class="legend">API调用</text>
+  <line x1="42.0" y1="584.0" x2="72.0" y2="584.0" stroke="#fde047" stroke-width="2.1" marker-end="url(#arrowE)"/>
+  <text x="82.0" y="588.0" class="legend">设备通信</text>
+  <rect x="650.0" y="510.0" width="280.0" height="100.0" fill="#0b3552" stroke="#0ea5e9" stroke-width="1.2"/>
+  <line x1="650.0" y1="528.0" x2="930.0" y2="528.0" stroke="#0ea5e9" stroke-width="1"/>
+  <line x1="650.0" y1="564.0" x2="930.0" y2="564.0" stroke="#0ea5e9" stroke-width="1"/>
+  <text x="790.0" y="523.0" text-anchor="middle" font-size="10" font-weight="600" fill="#7dd3fc">ARCH-001</text>
+  <text x="790.0" y="552.0" text-anchor="middle" font-size="18" font-weight="700" fill="#e0f2fe">SYSTEM ARCHITECTURE</text>
+  <text x="662.0" y="585.0" font-size="9.5" font-weight="600" fill="#7dd3fc">REV: 1.3</text>
+  <text x="790.0" y="585.0" text-anchor="middle" font-size="9.5" font-weight="600" fill="#67e8f9">头号空间 </text>
+  <text x="918.0" y="585.0" text-anchor="end" font-size="9.5" font-weight="600" fill="#7dd3fc">DWG: ARCH-001</text>
+  <text x="42.0" y="624.0" class="footnote">头号空间 PRD | 系统架构图 v1.3</text>
+</svg>

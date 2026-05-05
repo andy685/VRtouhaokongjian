@@ -198,7 +198,7 @@ import {
   SwapHorizontalOutline, SearchOutline, NotificationsOutline,
   ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
   GiftOutline, ConstructOutline, ReceiptOutline,
-  BarChartOutline, PulseOutline, HelpCircleOutline, MegaphoneOutline,
+  PulseOutline, HelpCircleOutline, MegaphoneOutline,
   ShieldCheckmarkOutline
 } from '@vicons/ionicons5'
 
@@ -247,7 +247,6 @@ const menuOptions: MenuOption[] = [
       { label: '会员数据', key: '/platform/members' },
       { label: '会员列表', key: '/platform/members/list' },
       { label: '会员增长', key: '/platform/members/growth' },
-      { type: 'divider', key: 'd-member-1' },
       { label: '会员消费排行', key: '/platform/members/ranking' },
       { label: '会员储值变更', key: '/platform/members/deposit-log' },
       { label: '会员游戏币查询', key: '/platform/members/coins-query' },
@@ -274,6 +273,7 @@ const menuOptions: MenuOption[] = [
     key: 'finance-group',
     icon: () => h(NIcon, { component: WalletOutline }),
     children: [
+      { label: '营收总览', key: '/platform/finance' },
       {
         label: '游戏豆销售',
         key: 'gamebean-sales-group',
@@ -286,17 +286,18 @@ const menuOptions: MenuOption[] = [
         label: '商家结算',
         key: 'merchant-settlement-group',
         children: [
-          { label: '结算管理', key: '/platform/finance/settlement' },
+          { label: '商家分账管理', key: '/platform/finance/settlement' },
           { label: '结算配置', key: '/platform/finance/settlement-config' },
           { label: '对账中心', key: '/platform/finance/reconciliation' },
         ]
       },
       {
-        label: '代理商结算',
+        label: '代理商分润',
         key: 'agent-settlement-group',
         children: [
-          { label: '结算管理', key: '/platform/finance/agent-settlement' },
+          { label: '代理商分账管理', key: '/platform/finance/payouts' },
           { label: '结算配置', key: '/platform/finance/agent-settlement-config' },
+          { label: '阶梯策略配置', key: '/platform/finance/tier-config' },
         ]
       },
     ],
@@ -713,9 +714,9 @@ function handleNoticeClick(item: NoticeItem) {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
 }
 .notice-dot.warning { background: #F59E0B; }
-.notice.dot.error { background: #EF4444; }
-.notice.dot.info { background: #3B82F6; }
-.notice.dot.success { background: #10B981; }
+.notice-dot.error { background: #EF4444; }
+.notice-dot.info { background: #3B82F6; }
+.notice-dot.success { background: #10B981; }
 .notice-body { flex: 1; min-width: 0; }
 .notice-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
 .notice-item.unread .notice-text { font-weight: 500; }

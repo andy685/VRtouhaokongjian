@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 180" width="650" height="180">
+  <rect width="650" height="180" fill="#0f172a" rx="8"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10" fill="#475569"/>
+    </marker>
+  </defs>
+  <style>
+    .lbl{fill:#e2e8f0;font-size:11px;font-weight:600}
+    .sub{fill:#94a3b8;font-size:9px}
+    .ar-lbl{fill:#64748b;font-size:8px}
+    .muted{fill:#94a3b8;font-size:9px}
+    .accent{fill:#a78bfa;font-size:9px}
+    .green{fill:#34d399;font-size:9px}
+    .title{fill:#e2e8f0;font-size:13px;font-weight:600}
+    .box{fill:#1e293b;stroke:#334155;stroke-width:1;rx:6}
+    .box-a{fill:#1e1b4b;stroke:#6366f1;stroke-width:1.5;rx:6}
+    .box-g{fill:#064e3b;stroke:#34d399;stroke-width:1.5;rx:6}
+    .box-r{fill:#450a0a;stroke:#f87171;stroke-width:1.5;rx:6}
+    .box-y{fill:#451a03;stroke:#fb923c;stroke-width:1.5;rx:6}
+    .arrow{stroke:#475569;stroke-width:1.5;fill:none;marker-end:url(#a)}
+    .arrow-d{stroke:#475569;stroke-width:1;fill:none;stroke-dasharray:4,3;marker-end:url(#a)}
+    </style>
+  <text x="30" y="25" class="title">VR头显终端状态流转图 (5个核心状态)</text>
+  <ellipse cx="100" cy="75" rx="45" ry="18" class="box"/><text x="100" y="79" text-anchor="middle" class="lbl">Idle 待机</text>
+  <ellipse cx="230" cy="75" rx="50" ry="18" class="box-a"/><text x="230" y="79" text-anchor="middle" class="lbl">Loading 加载</text>
+  <ellipse cx="390" cy="75" rx="55" ry="18" class="box-g"/><text x="390" y="79" text-anchor="middle" class="lbl">GameRunning 游戏中</text>
+  <ellipse cx="560" cy="75" rx="50" ry="18" class="box-y"/><text x="560" y="79" text-anchor="middle" class="lbl">GameEnded 结束</text>
+  <ellipse cx="390" cy="140" rx="48" ry="18" class="box-r"/><text x="390" y="144" text-anchor="middle" class="lbl">Error 异常</text>
+  <line x1="145" y1="75" x2="180" y2="75" class="arrow"/>
+<text x="162.5" y="72.0" text-anchor="middle" class="ar-lbl">MQTT指令</text>
+  <line x1="280" y1="75" x2="335" y2="75" class="arrow"/>
+<text x="307.5" y="72.0" text-anchor="middle" class="ar-lbl">自动拉起</text>
+  <line x1="445" y1="75" x2="510" y2="75" class="arrow"/>
+<text x="477.5" y="72.0" text-anchor="middle" class="ar-lbl">SDK上报</text>
+  <line x1="560" y1="90" x2="510" y2="132" class="arrow"/>
+<text x="535.0" y="108.0" text-anchor="middle" class="ar-lbl">崩溃/断网</text>
+  <line x1="390" y1="93" x2="390" y2="122" class="arrow"/>
+  <text x="390" y="165" text-anchor="middle" class="muted">Idle → Loading → Running → Ended, Error为异常分支</text>
+  <path d="M570,93 Q620,110 560,138" class="arrow-d"/>
+</svg>

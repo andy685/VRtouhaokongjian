@@ -208,7 +208,7 @@ const settlementData = ref([
     status: 'done',
     statusText: '已打款',
     time: '2026-04-20 14:00',
-    voucher: '',
+    voucher: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280"><rect width="200" height="280" fill="#EEF2FF" rx="8"/><rect x="40" y="30" width="120" height="30" fill="#4F46E5" rx="4" opacity="0.8"/><rect x="30" y="80" width="140" height="2" fill="#C7D2FE"/><text x="100" y="100" text-anchor="middle" font-size="9" fill="#6366F1">拉卡拉电子回执</text><text x="100" y="120" text-anchor="middle" font-size="9" fill="#374151">付款方：头号空间平台</text><text x="100" y="140" text-anchor="middle" font-size="9" fill="#374151">收款方：深圳未来科技</text><text x="100" y="160" text-anchor="middle" font-size="9" fill="#374151">金额：¥133,534.27</text><text x="100" y="180" text-anchor="middle" font-size="9" fill="#374151">流水号：LK2026042001</text><text x="100" y="260" text-anchor="middle" font-size="8" fill="#9CA3AF">平台上传打款凭证</text></svg>'),
     receiptVoucher: '',
     merchantDetails: [
       { merchant: '恒然集团', rechargeAmount: 356800, rate: '15%', amount: 53520 },

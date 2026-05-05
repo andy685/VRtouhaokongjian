@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" width="700" height="300">
+  <rect width="700" height="300" fill="#0f172a" rx="8"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10" fill="#475569"/>
+    </marker>
+  </defs>
+  <style>
+    .lbl{fill:#e2e8f0;font-size:11px;font-weight:600}
+    .sub{fill:#94a3b8;font-size:9px}
+    .ar-lbl{fill:#64748b;font-size:8px}
+    .muted{fill:#94a3b8;font-size:9px}
+    .accent{fill:#a78bfa;font-size:9px}
+    .green{fill:#34d399;font-size:9px}
+    .title{fill:#e2e8f0;font-size:13px;font-weight:600}
+    .box{fill:#1e293b;stroke:#334155;stroke-width:1;rx:6}
+    .box-a{fill:#1e1b4b;stroke:#6366f1;stroke-width:1.5;rx:6}
+    .box-g{fill:#064e3b;stroke:#34d399;stroke-width:1.5;rx:6}
+    .box-r{fill:#450a0a;stroke:#f87171;stroke-width:1.5;rx:6}
+    .box-y{fill:#451a03;stroke:#fb923c;stroke-width:1.5;rx:6}
+    .arrow{stroke:#475569;stroke-width:1.5;fill:none;marker-end:url(#a)}
+    .arrow-d{stroke:#475569;stroke-width:1;fill:none;stroke-dasharray:4,3;marker-end:url(#a)}
+    </style>
+  <text x="30" y="25" class="title">订单全生命周期状态机</text>
+  <ellipse cx="100" cy="70" rx="50" ry="18" class="box"/><text x="100" y="74" text-anchor="middle" class="lbl">已创建</text>
+  <ellipse cx="250" cy="70" rx="50" ry="18" class="box-a"/><text x="250" y="74" text-anchor="middle" class="lbl">已支付</text>
+  <ellipse cx="420" cy="70" rx="50" ry="18" class="box-g"/><text x="420" y="74" text-anchor="middle" class="lbl">处理中</text>
+  <ellipse cx="580" cy="70" rx="50" ry="18" class="box"/><text x="580" y="74" text-anchor="middle" class="lbl">已完成</text>
+  <ellipse cx="180" cy="170" rx="48" ry="18" class="box-r"/><text x="180" y="174" text-anchor="middle" class="lbl">已取消</text>
+  <ellipse cx="360" cy="170" rx="48" ry="18" class="box-y"/><text x="360" y="174" text-anchor="middle" class="lbl">退款中</text>
+  <ellipse cx="510" cy="170" rx="48" ry="18" class="box-r"/><text x="510" y="174" text-anchor="middle" class="lbl">已退款</text>
+  <line x1="150" y1="70" x2="200" y2="70" class="arrow"/>
+<text x="175.0" y="67.0" text-anchor="middle" class="ar-lbl">支付</text>
+  <line x1="300" y1="70" x2="370" y2="70" class="arrow"/>
+<text x="335.0" y="67.0" text-anchor="middle" class="ar-lbl">确认</text>
+  <line x1="470" y1="70" x2="530" y2="70" class="arrow"/>
+<text x="500.0" y="67.0" text-anchor="middle" class="ar-lbl">完成</text>
+  <line x1="100" y1="85" x2="120" y2="155" class="arrow"/>
+<text x="110.0" y="117.0" text-anchor="middle" class="ar-lbl">超时取消</text>
+  <line x1="250" y1="85" x2="300" y2="155" class="arrow"/>
+<text x="275.0" y="117.0" text-anchor="middle" class="ar-lbl">发起退款</text>
+  <line x1="420" y1="85" x2="312" y2="155" class="arrow-d"/>
+<text x="366.0" y="117.0" text-anchor="middle" class="ar-lbl">失败</text>
+  <line x1="408" y1="170" x2="462" y2="170" class="arrow"/>
+<text x="435.0" y="167.0" text-anchor="middle" class="ar-lbl">到账</text>
+  <text x="350" y="230" text-anchor="middle" class="muted">创建→支付→处理→完成(正常) | 取消/退款(异常)</text>
+</svg>

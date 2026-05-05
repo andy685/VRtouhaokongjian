@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" width="960" height="620">
+  <defs>
+    <marker id="arrowA" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#67e8f9"/>
+    </marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrowC" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowE" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fde047"/>
+    </marker>
+    <marker id="arrowF" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#c084fc"/>
+    </marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+    </marker>
+    <marker id="arrowH" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#bae6fd"/>
+    </marker>
+    <pattern id="blueprintGrid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#0ea5e9" stroke-opacity="0.12" stroke-width="1"/>
+    </pattern>
+    <style>
+    text { font-family: 'SF Mono', 'Fira Code', Menlo, 'Microsoft YaHei', 'SimHei', monospace; }
+    .title { font-size: 30px; font-weight: 700; fill: #e0f2fe; }
+    .subtitle { font-size: 14px; font-weight: 500; fill: #7dd3fc; }
+    .section { font-size: 13px; font-weight: 700; fill: #67e8f9; letter-spacing: 1.4px; }
+    .section-sub { font-size: 12px; font-weight: 500; fill: #7dd3fc; }
+    .node-title { font-size: 18px; font-weight: 700; fill: #e0f2fe; }
+    .node-sub { font-size: 12px; font-weight: 500; fill: #bae6fd; }
+    .node-type { font-size: 11px; font-weight: 700; fill: #7dd3fc; letter-spacing: 0.08em; }
+    .arrow-label { font-size: 12px; font-weight: 600; fill: #e0f2fe; }
+    .legend { font-size: 12px; font-weight: 500; fill: #bae6fd; }
+    .footnote { font-size: 12px; font-weight: 500; fill: #7dd3fc; }
+    </style>
+  </defs>
+  <rect width="960.0" height="620.0" fill="#082f49"/>
+  <text x="480.0" y="56" text-anchor="middle" class="title">PC游戏终端 — 状态流转图</text>
+  <text x="480.0" y="82" text-anchor="middle" class="subtitle">STATE DIAGRAM: 9种核心状态</text>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#22d3ee" stroke-width="2.1" marker-end="url(#arrowB)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#c084fc" stroke-width="2.1" marker-end="url(#arrowF)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#fb7185" stroke-width="2.1" marker-end="url(#arrowG)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <path d="M 0.0,0.0" fill="none" stroke="#bae6fd" stroke-width="2.1" marker-end="url(#arrowH)"/>
+  <rect x="380.0" y="40.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="470.0" y="65.0" text-anchor="middle" class="node-title">[*] 启动</text>
+  <text x="470.0" y="87.0" text-anchor="middle" class="node-sub">系统启动</text>
+  <rect x="380.0" y="140.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8" filter="url(#glowBlue)"/>
+  <text x="470.0" y="165.0" text-anchor="middle" class="node-title">① 待机 / Idle</text>
+  <text x="470.0" y="187.0" text-anchor="middle" class="node-sub">Logo + 宣传视频</text>
+  <rect x="130.0" y="260.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="220.0" y="285.0" text-anchor="middle" class="node-title">② 游戏选择</text>
+  <text x="220.0" y="307.0" text-anchor="middle" class="node-sub">卡片网格浏览</text>
+  <rect x="380.0" y="260.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8" filter="url(#glowBlue)"/>
+  <text x="470.0" y="285.0" text-anchor="middle" class="node-title">③ 游戏详情</text>
+  <text x="470.0" y="307.0" text-anchor="middle" class="node-sub">预览 + 开始按钮</text>
+  <rect x="130.0" y="380.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8" filter="url(#glowGreen)"/>
+  <text x="220.0" y="405.0" text-anchor="middle" class="node-title">④ 扫码支付</text>
+  <text x="220.0" y="427.0" text-anchor="middle" class="node-sub">二维码 + 倒计时</text>
+  <rect x="380.0" y="380.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="470.0" y="405.0" text-anchor="middle" class="node-title">⑤ 排队等待</text>
+  <text x="470.0" y="427.0" text-anchor="middle" class="node-sub">设备全满时触发</text>
+  <rect x="640.0" y="380.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="730.0" y="405.0" text-anchor="middle" class="node-title">⑥ 设备分配</text>
+  <text x="730.0" y="427.0" text-anchor="middle" class="node-sub">"请佩戴#03"</text>
+  <rect x="130.0" y="500.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8" filter="url(#glowBlue)"/>
+  <text x="220.0" y="525.0" text-anchor="middle" class="node-title">⑦ 游戏中监控</text>
+  <text x="220.0" y="547.0" text-anchor="middle" class="node-sub">画面镜像 + 倒计时</text>
+  <rect x="640.0" y="500.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="730.0" y="525.0" text-anchor="middle" class="node-title">⑧ 结算评价</text>
+  <text x="730.0" y="547.0" text-anchor="middle" class="node-sub">明细 + 五星评分</text>
+  <rect x="640.0" y="260.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="730.0" y="285.0" text-anchor="middle" class="node-title">⚡ 强制结束</text>
+  <text x="730.0" y="307.0" text-anchor="middle" class="node-sub">店员操作</text>
+  <rect x="380.0" y="500.0" width="180.0" height="50.0" rx="8.0" fill="#0b3b5e" stroke="#67e8f9" stroke-width="1.8"/>
+  <text x="470.0" y="525.0" text-anchor="middle" class="node-title">⚠️ Error</text>
+  <text x="470.0" y="547.0" text-anchor="middle" class="node-sub">故障恢复</text>
+  <rect x="-18.0" y="-14.0" width="36" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">初始化</text>
+  <rect x="-24.5" y="-14.0" width="49" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">触摸/点击</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">点某游戏</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">开始体验</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">支付成功</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">设备全满</text>
+  <rect x="-18.0" y="-14.0" width="36" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">轮到</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">佩戴VR</text>
+  <rect x="-35.0" y="-14.0" width="70" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">游戏结束/时间到</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">强制结束</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">确认离开</text>
+  <rect x="-21.0" y="-14.0" width="42" height="20" rx="6" fill="#082f49" opacity="0.9"/>
+  <text x="0.0" y="0.0" text-anchor="middle" class="arrow-label">故障恢复</text>
+  <line x1="42.0" y1="520.0" x2="72.0" y2="520.0" stroke="#67e8f9" stroke-width="2.1" marker-end="url(#arrowA)"/>
+  <text x="82.0" y="524.0" class="legend">用户操作流</text>
+  <line x1="42.0" y1="542.0" x2="72.0" y2="542.0" stroke="#22d3ee" stroke-width="2.1" marker-end="url(#arrowB)"/>
+  <text x="82.0" y="546.0" class="legend">支付/成功</text>
+  <line x1="42.0" y1="564.0" x2="72.0" y2="564.0" stroke="#fb7185" stroke-width="2.1" marker-end="url(#arrowG)"/>
+  <text x="82.0" y="568.0" class="legend">异常/强制</text>
+  <text x="42.0" y="604.0" class="footnote">头号空间 PRD | PC终端状态图</text>
+</svg>

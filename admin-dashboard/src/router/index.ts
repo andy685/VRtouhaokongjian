@@ -33,9 +33,10 @@ import MemberTimesAdjustLog from '../views/platform/MemberTimesAdjustLog.vue'
 import OrderFlow from '../views/platform/OrderFlow.vue'
 import SettlementManage from '../views/platform/SettlementManage.vue'
 import SettlementConfig from '../views/platform/SettlementConfig.vue'
-import Reconciliation from '../views/platform/Reconciliation.vue'
-import AgentSettlementManage from '../views/platform/AgentSettlementManage.vue'
 import AgentSettlementConfig from '../views/platform/AgentSettlementConfig.vue'
+import Reconciliation from '../views/platform/Reconciliation.vue'
+import TierStrategyConfig from '../views/platform/TierStrategyConfig.vue'
+import PayoutManager from '../views/platform/PayoutManager.vue'
 import System from '../views/platform/System.vue'
 import AgentDashboard from '../views/agent/Dashboard.vue'
 import AgentMerchants from '../views/agent/Merchants.vue'
@@ -180,12 +181,14 @@ const routes: RouteRecordRaw[] = [
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: DeviceOverview, meta: { title: '设备运行总览' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: FinanceOverview, meta: { title: '营收总览' } },
-      { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: SettlementManage, meta: { title: '结算管理' } },
+      // 商家分账（自动分账+异常处置模式）
+      { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: SettlementManage, meta: { title: '商家分账管理' } },
       { path: 'finance/settlement-config', name: 'PlatformSettlementConfig', component: SettlementConfig, meta: { title: '结算配置' } },
       { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: Reconciliation, meta: { title: '对账中心' } },
-      // 代理商结算管理
-      { path: 'finance/agent-settlement', name: 'PlatformAgentSettlement', component: AgentSettlementManage, meta: { title: '代理商结算管理' } },
+      // 代理商分账（自动分账+异常处置模式）
+      { path: 'finance/payouts', name: 'PlatformPayoutManager', component: PayoutManager, meta: { title: '代理商分账管理' } },
       { path: 'finance/agent-settlement-config', name: 'PlatformAgentSettlementConfig', component: AgentSettlementConfig, meta: { title: '代理商结算配置' } },
+      { path: 'finance/tier-config', name: 'PlatformTierConfig', component: TierStrategyConfig, meta: { title: '阶梯策略配置' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: System, meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: System, meta: { title: '告警中心' } },

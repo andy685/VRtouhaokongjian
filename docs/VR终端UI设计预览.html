@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VR头显终端 UI 设计预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #e2e8f0;
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    padding: 40px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 40px;
+    font-size: 14px;
+  }
+  .principle-bar {
+    background: #1e1b2e;
+    border-left: 4px solid #8b5cf6;
+    padding: 16px 24px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .principle-bar strong { color: #a78bfa; }
+  .principle-bar .highlight { color: #fbbf24; }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    background: #181825;
+    border: 1px solid #2d2d44;
+    border-radius: 10px;
+    padding: 12px 18px;
+    text-align: center;
+    min-width: 100px;
+    font-size: 13px;
+  }
+  .flow-step .label { color: #94a3b8; font-size: 11px; }
+  .flow-step .state { color: #a78bfa; font-weight: 600; }
+  .flow-arrow { color: #475569; font-size: 20px; }
+
+  .vr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .vr-card {
+    background: #12121e;
+    border-radius: 16px;
+    border: 1px solid #1e1e35;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .vr-card:hover { border-color: #6366f1; }
+
+  .vr-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #1e1e35;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .state-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-idle { background: #374151; color: #94a3b8; }
+  .badge-loading { background: #1e3a5f; color: #60a5fa; }
+  .badge-game { background: #064e3b; color: #34d399; }
+  .badge-end { background: #451a03; color: #fb923c; }
+  .badge-error { background: #450a0a; color: #f87171; }
+
+  .vr-card-title { font-size: 15px; font-weight: 600; }
+  .vr-card-desc { font-size: 12px; color: #64748b; margin-left: auto; }
+
+  /* VR屏幕模拟 */
+  .vr-screen {
+    aspect-ratio: 16 / 9;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* === Idle === */
+  .idle-logo {
+    width: 80px; height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: 800; color: #fff;
+    animation: idlePulse 4s ease-in-out infinite;
+    box-shadow: 0 0 60px rgba(99,102,241,.25);
+  }
+  @keyframes idlePulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .6; transform: scale(.95); }
+  }
+  .idle-text {
+    position: absolute; bottom: 40px;
+    font-size: 11px; color: #334155;
+    letter-spacing: 2px;
+  }
+
+  /* === Loading === */
+  .loading-content { text-align: center; }
+  .loading-logo {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 22px; font-weight: 800; color: #fff;
+  }
+  .loading-ring {
+    position: relative; width: 44px; height: 44px; margin: 0 auto;
+  }
+  .loading-ring svg { transform: rotate(-90deg); }
+  .loading-ring circle {
+    fill: none; stroke-width: 3;
+    stroke: #1e293b;
+  }
+  .loading-ring .arc {
+    stroke: #6366f1;
+    stroke-dasharray: 113;
+    stroke-dashoffset: 23;
+    stroke-linecap: round;
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); transform-origin: center; } }
+
+  .loading-text {
+    margin-top: 24px; font-size: 12px; color: #475569;
+  }
+
+  /* === Game === */
+  .game-view {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .game-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.4) 100%);
+  }
+  .game-text {
+    position: relative; z-index: 1;
+    font-size: 13px; color: #475569; text-align: center;
+    line-height: 2;
+  }
+  .game-text .check { color: #059669; }
+  .game-text .cross { color: #dc2626; }
+
+  /* === Ended === */
+  .end-message {
+    font-size: 20px;
+    color: #e2e8f0;
+    letter-spacing: 3px;
+    font-weight: 300;
+  }
+  .end-sub {
+    position: absolute; bottom: 30px;
+    font-size: 11px; color: #334155;
+  }
+
+  /* === Error === */
+  .error-message {
+    font-size: 18px;
+    color: #f87171;
+    letter-spacing: 2px;
+    font-weight: 400;
+  }
+  .error-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  /* 流程图 */
+  .flow-diagram {
+    max-width: 1000px;
+    margin: 40px auto;
+    background: #12121e;
+    border-radius: 12px;
+    border: 1px solid #1e1e35;
+    padding: 30px;
+    overflow-x: auto;
+  }
+  .flow-diagram h3 {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 20px;
+    font-weight: 400;
+  }
+  .flow-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .flow-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: #64748b;
+    font-weight: 500;
+    border-bottom: 1px solid #1e1e35;
+  }
+  .flow-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #1a1a2e;
+    color: #94a3b8;
+  }
+  .flow-table .pc { color: #3b82f6; }
+  .flow-table .vr { color: #a78bfa; }
+  .flow-table .sdk { color: #34d399; }
+  .flow-table .no { color: #475569; }
+  .flow-table tr:hover td { color: #e2e8f0; }
+
+  .footer {
+    text-align: center;
+    color: #334155;
+    font-size: 12px;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #1a1a2e;
+  }
+</style>
+</head>
+<body>
+
+<h1>VR 头显终端 · 沉浸式界面设计</h1>
+<p class="subtitle">头号空间 v1.3 — 纯沉浸式体验，零干扰 UI</p>
+
+<div class="principle-bar">
+  <strong>设计原则</strong>：VR 终端<strong class="highlight">不做任何可有可无的 UI</strong>。
+  用户戴上头盔的唯一目的就是沉浸式玩游戏。<br>
+  所有操作（选游戏、支付、监控、结算）全部由 <strong>PC 终端</strong> 完成。
+  VR 终端只负责：加载过渡 → 纯游戏 → 结束提示（3 个必要条件）。
+</div>
+
+<!-- 状态流转 -->
+<div class="flow">
+  <div class="flow-step">
+    <div class="label">待机</div>
+    <div class="state">Idle</div>
+  </div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">
+    <div class="label">收到指令</div>
+    <div class="state">Loading</div>
+  </div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">
+    <div class="label">纯游戏画面</div>
+    <div class="state" style="color:#34d399">GameRunning</div>
+  </div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">
+    <div class="label">结束/异常</div>
+    <div class="state">Ended / Error</div>
+  </div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">
+    <div class="label">回到待机</div>
+    <div class="state">Idle</div>
+  </div>
+</div>
+
+<!-- VR 界面卡片 -->
+<div class="vr-grid">
+
+  <!-- 1. Idle -->
+  <div class="vr-card">
+    <div class="vr-card-header">
+      <span class="state-badge badge-idle">1 · Idle</span>
+      <span class="vr-card-title">待机</span>
+      <span class="vr-card-desc">等待 PC 终端分配</span>
+    </div>
+    <div class="vr-screen">
+      <div class="idle-logo">头</div>
+      <div class="idle-text">等待分配游戏</div>
+    </div>
+    <div style="padding:14px 20px;font-size:12px;color:#64748b;border-top:1px solid #1e1e35;">
+      Logo 常亮浮空，30 秒后自动淡出至纯黑（省电）。用户无任何可交互元素。
+    </div>
+  </div>
+
+  <!-- 2. Loading -->
+  <div class="vr-card">
+    <div class="vr-card-header">
+      <span class="state-badge badge-loading">2 · Loading</span>
+      <span class="vr-card-title">加载中</span>
+      <span class="vr-card-desc">自动加载游戏</span>
+    </div>
+    <div class="vr-screen">
+      <div class="loading-content">
+        <div class="loading-logo">头</div>
+        <div class="loading-ring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18"/>
+            <circle class="arc" cx="22" cy="22" r="18"/>
+          </svg>
+        </div>
+        <div class="loading-text">正在启动游戏...</div>
+      </div>
+    </div>
+    <div style="padding:14px 20px;font-size:12px;color:#64748b;border-top:1px solid #1e1e35;">
+      最多显示 3 秒。游戏进程启动后自动切换至纯游戏画面。用户无需任何操作。
+    </div>
+  </div>
+
+  <!-- 3. GameRunning -->
+  <div class="vr-card">
+    <div class="vr-card-header">
+      <span class="state-badge badge-game">3 · GameRunning</span>
+      <span class="vr-card-title">游戏中</span>
+      <span class="vr-card-desc">纯沉浸 · 0 UI</span>
+    </div>
+    <div class="vr-screen" style="min-height:220px;">
+      <div class="game-view">
+        <div class="game-overlay"></div>
+        <div class="game-text">
+          <span class="check">✦ 无倒计时 HUD</span><br>
+          <span class="check">✦ 无系统菜单入口</span><br>
+          <span class="check">✦ 无进度条叠加</span><br>
+          <span class="cross">✦ SDK 后台默默计时</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:14px 20px;font-size:12px;color:#64748b;border-top:1px solid #1e1e35;">
+      完全沉浸。SDK 在后台做心跳 + 计时 + 摘盔检测，用户零感知。
+    </div>
+  </div>
+
+  <!-- 4. Ended -->
+  <div class="vr-card">
+    <div class="vr-card-header">
+      <span class="state-badge badge-end">4 · GameEnded</span>
+      <span class="vr-card-title">体验结束</span>
+      <span class="vr-card-desc">3 秒自动返回</span>
+    </div>
+    <div class="vr-screen">
+      <div class="end-message">体验已结束<br>请取下头盔</div>
+      <div class="end-sub">3 秒后自动返回待机</div>
+    </div>
+    <div style="padding:14px 20px;font-size:12px;color:#64748b;border-top:1px solid #1e1e35;">
+      一行白色文字，不展示任何消费金额/时长/余额。结算细节请到 PC 终端查看。
+    </div>
+  </div>
+
+  <!-- 5. Error -->
+  <div class="vr-card">
+    <div class="vr-card-header">
+      <span class="state-badge badge-error">5 · Error</span>
+      <span class="vr-card-title">系统异常</span>
+      <span class="vr-card-desc">常驻直到处理</span>
+    </div>
+    <div class="vr-screen">
+      <div class="error-icon">⚠️</div>
+      <div class="error-message">系统异常<br>请联系店员</div>
+    </div>
+    <div style="padding:14px 20px;font-size:12px;color:#64748b;border-top:1px solid #1e1e35;">
+      游戏崩溃/SDK 异常/设备过热时触发。文字常驻不消失。店员在 PC 终端查看日志并重启。
+    </div>
+  </div>
+
+</div>
+
+<!-- 协作矩阵 -->
+<div class="flow-diagram">
+  <h3>VR 终端 ↔ PC 终端 ↔ SDK 协作矩阵</h3>
+  <table class="flow-table">
+    <tr>
+      <th>事件</th><th>PC 终端</th><th>VR 终端</th><th>SDK（后台）</th>
+    </tr>
+    <tr><td>选游戏</td><td class="pc">✅</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>支付</td><td class="pc">✅</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>分配设备</td><td class="pc">✅</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>加载游戏</td><td class="no">—</td><td class="vr">✅ Logo动画</td><td class="sdk">✅</td></tr>
+    <tr><td>计时扣费</td><td class="no">—</td><td class="no">—</td><td class="sdk">✅</td></tr>
+    <tr><td>游戏中 HUD</td><td class="no">—</td><td class="no" style="color:#dc2626;">❌ 不做</td><td class="no">—</td></tr>
+    <tr><td>时间到结束</td><td class="pc">✅ 通知</td><td class="vr">✅ 提示</td><td class="sdk">✅</td></tr>
+    <tr><td>提前结束</td><td class="pc">✅</td><td class="no">—</td><td class="sdk">✅</td></tr>
+    <tr><td>摘头盔超时</td><td class="no">—</td><td class="no">—</td><td class="sdk">✅ 自动结束</td></tr>
+    <tr><td>游戏崩溃</td><td class="pc">✅ 告警</td><td class="vr">✅ 异常提示</td><td class="sdk">✅ 上报</td></tr>
+    <tr><td>呼叫店员</td><td class="pc">✅</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>结算评价</td><td class="pc">✅</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>系统设置</td><td class="pc">✅ 店员操作</td><td class="no">—</td><td class="no">—</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  头号空间 v1.3 · VR 头显终端 UI 设计 · 2026-05-04
+</div>
+
+</body>
+</html>

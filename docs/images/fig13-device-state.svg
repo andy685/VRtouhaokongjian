@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 250" width="650" height="250">
+  <rect width="650" height="250" fill="#0f172a" rx="8"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10" fill="#475569"/>
+    </marker>
+  </defs>
+  <style>
+    .lbl{fill:#e2e8f0;font-size:11px;font-weight:600}
+    .sub{fill:#94a3b8;font-size:9px}
+    .ar-lbl{fill:#64748b;font-size:8px}
+    .muted{fill:#94a3b8;font-size:9px}
+    .accent{fill:#a78bfa;font-size:9px}
+    .green{fill:#34d399;font-size:9px}
+    .title{fill:#e2e8f0;font-size:13px;font-weight:600}
+    .box{fill:#1e293b;stroke:#334155;stroke-width:1;rx:6}
+    .box-a{fill:#1e1b4b;stroke:#6366f1;stroke-width:1.5;rx:6}
+    .box-g{fill:#064e3b;stroke:#34d399;stroke-width:1.5;rx:6}
+    .box-r{fill:#450a0a;stroke:#f87171;stroke-width:1.5;rx:6}
+    .box-y{fill:#451a03;stroke:#fb923c;stroke-width:1.5;rx:6}
+    .arrow{stroke:#475569;stroke-width:1.5;fill:none;marker-end:url(#a)}
+    .arrow-d{stroke:#475569;stroke-width:1;fill:none;stroke-dasharray:4,3;marker-end:url(#a)}
+    </style>
+  <text x="30" y="25" class="title">设备状态机图</text>
+  <ellipse cx="100" cy="70" rx="40" ry="16" class="box"/><text x="100" y="74" text-anchor="middle" class="lbl">离线</text>
+  <ellipse cx="230" cy="70" rx="40" ry="16" class="box-a"/><text x="230" y="74" text-anchor="middle" class="lbl">在线</text>
+  <ellipse cx="370" cy="70" rx="40" ry="16" class="box-g"/><text x="370" y="74" text-anchor="middle" class="lbl">空闲</text>
+  <ellipse cx="510" cy="70" rx="40" ry="16" class="box-y"/><text x="510" y="74" text-anchor="middle" class="lbl">使用中</text>
+  <ellipse cx="230" cy="160" rx="40" ry="16" class="box-r"/><text x="230" y="164" text-anchor="middle" class="lbl">故障</text>
+  <ellipse cx="400" cy="160" rx="40" ry="16" class="box"/><text x="400" y="164" text-anchor="middle" class="lbl">维修中</text>
+  <line x1="140" y1="70" x2="190" y2="70" class="arrow"/>
+  <line x1="270" y1="70" x2="330" y2="70" class="arrow"/>
+  <line x1="410" y1="70" x2="470" y2="70" class="arrow"/>
+  <line x1="100" y1="85" x2="100" y2="145" class="arrow"/>
+  <line x1="100" y1="150" x2="190" y2="155" class="arrow"/>
+  <line x1="370" y1="85" x2="270" y2="145" class="arrow-d"/>
+  <line x1="270" y1="160" x2="360" y2="160" class="arrow"/>
+  <text x="330" y="210" text-anchor="middle" class="muted">离线→在线→空闲→使用中(正常) | 故障→维修(异常)</text>
+</svg>

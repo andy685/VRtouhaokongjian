@@ -9,7 +9,7 @@
 
     <!-- 分润结算配置 -->
     <div class="config-section">
-      <h3 class="section-title"><n-icon :component="CalendarOutline" /> 分润结算配置</h3>
+      <h3 class="section-title">分润结算配置</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="150">
           <n-form-item label="自动结算">
@@ -33,7 +33,7 @@
 
           <n-form-item label="自动打款">
             <n-switch v-model:value="autoSettlement.autoTransfer" />
-            <span class="form-hint">开启后，审核通过的结算单将自动打款到代理商银行卡</span>
+            <span class="form-hint">开启后，审核通过的结算单将通过拉卡拉自动分账到代理商银行卡</span>
           </n-form-item>
         </n-form>
       </n-card>
@@ -41,7 +41,7 @@
 
     <!-- 手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title"><n-icon :component="CardOutline" /> 代理商标续费配置</h3>
+      <h3 class="section-title">手续费配置</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="150">
           <n-form-item label="手续费模式">
@@ -100,13 +100,9 @@
 
     <!-- 打款配置 -->
     <div class="config-section">
-      <h3 class="section-title"><n-icon :component="WalletOutline" /> 打款配置</h3>
+      <h3 class="section-title">打款配置</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="150">
-          <n-form-item label="打款方式">
-            <n-select v-model:value="transferConfig.method" :options="transferMethods" style="width: 240px;" />
-          </n-form-item>
-
           <n-form-item label="打款备注模板">
             <n-input
               v-model:value="transferConfig.remark"
@@ -118,12 +114,12 @@
 
           <n-form-item label="打款通知">
             <n-switch v-model:value="transferConfig.notifyEnabled" />
-            <span class="form-hint">打款成功后通知代理商</span>
+            <span class="form-hint">开启后，分账成功将通知代理商</span>
           </n-form-item>
 
-          <n-form-item label="延迟打款天数">
-            <n-input-number v-model:value="transferConfig.delayDays" :min="0" :max="30" style="width: 160px;" />
-            <span style="margin-left: 8px;">天（审核通过后延迟多少天打款，0=立即）</span>
+          <n-form-item label="打款延迟天数">
+            <n-input-number v-model:value="transferConfig.delayDays" :min="0" :max="30" :step="1" style="width: 120px;" />
+            <span style="margin-left: 8px;">天（结算日后延迟几天执行自动打款）</span>
           </n-form-item>
         </n-form>
       </n-card>
@@ -140,18 +136,17 @@
 import { ref, h } from 'vue'
 import {
   NCard, NForm, NFormItem, NSwitch, NSelect, NInputNumber,
-  NInput, NRadioGroup, NRadio, NIcon, NDataTable, useMessage, NAlert
+  NInput, NRadioGroup, NRadio, NDataTable, NAlert, useMessage
 } from 'naive-ui'
-import { CalendarOutline, CardOutline, WalletOutline } from '@vicons/ionicons5'
 
 const message = useMessage()
 
-// 分润结算配置
+// ==================== 分润结算配置 ====================
 const autoSettlement = ref({
   enabled: true,
-  period: 'weekly',
-  settlementDay: 1,
-  minAmount: 500,
+  period: 'monthly',
+  settlementDay: 5,
+  minAmount: 100,
   autoTransfer: true,
 })
 
@@ -176,9 +171,9 @@ const dayOptions = [
   { label: '每月月末', value: 0 },
 ]
 
-// 手续费配置
+// ==================== 手续费配置 ====================
 const feeConfig = ref({
-  mode: 'global',
+  mode: 'global' as 'global' | 'individual',
   globalRate: 0.005,
   description: '分润结算金额将扣除手续费后打款到银行卡',
   minFee: 1,
@@ -200,19 +195,14 @@ const agentFeeData = ref([
   { agentId: 5, agentName: '武汉创新体验', commissionRate: 14, feeRate: 0.005, customized: false },
 ])
 
-// 打款配置
+// ==================== 打款配置 ====================
 const transferConfig = ref({
-  method: 'auto',
   remark: '分润结算 - {agentName} - {period}',
   notifyEnabled: true,
   delayDays: 1,
 })
 
-const transferMethods = [
-  { label: '自动打款（推荐）', value: 'auto' },
-  { label: '手动打款', value: 'manual' },
-]
-
+// ==================== 保存 ====================
 function handleSave() {
   message.success('代理商结算配置保存成功')
   console.log('保存配置：', {
@@ -229,7 +219,7 @@ function handleSave() {
 .header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block; }
 
 .config-section { margin-bottom: 28px; }
-.section-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 14px; }
 
 .config-card {
   background: white;

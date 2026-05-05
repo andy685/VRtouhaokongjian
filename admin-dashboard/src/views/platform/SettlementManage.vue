@@ -1,178 +1,232 @@
 <template>
   <div class="page-container animate-fade-in">
+    <!-- 页头说明 -->
     <div class="page-header">
       <div>
-        <h1>结算管理</h1>
-        <p class="header-desc">管理商家结算周期与打款状态</p>
+        <h1>商家分账管理</h1>
+        <p class="header-desc">
+          商家结算单生成后<strong class="highlight">正常单自动提交拉卡拉分账</strong>，
+          仅异常单（账户缺失/金额为0等）需人工处理。
+          此页面用于<strong>监控状态</strong>和<strong>处置异常</strong>。
+        </p>
+      </div>
+      <n-space>
+        <n-button @click="handleSyncLakala">
+          <template #icon><n-icon :component="SyncOutline" /></template>
+          同步拉卡拉状态
+        </n-button>
+        <n-button type="warning" @click="showBatchResolveModal = true" :disabled="selectedExceptionKeys.size === 0">
+          批量放行 ({{ selectedExceptionKeys.size }})
+        </n-button>
+      </n-space>
+    </div>
+
+    <!-- 汇总统计卡片区 -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #10B981, #059669);">
+          <n-icon :component="FlashOutline" size="22" color="#fff" />
+        </div>
+        <div class="stat-content">
+          <span class="label">本月自动分润</span>
+          <span class="value success">{{ autoSubmittedCount }}</span>
+          <span class="sub-text">笔 · 共 ¥{{ autoSubmittedAmount.toLocaleString() }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+          <n-icon :component="SyncOutline" size="22" color="#fff" />
+        </div>
+        <div class="stat-content">
+          <span class="label">拉卡拉分账中</span>
+          <span class="value processing">{{ processingCount }}</span>
+          <span class="sub-text">笔 · 共 ¥{{ processingAmount.toLocaleString() }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #6366F1, #4F46E5);">
+          <n-icon :component="CheckmarkDoneOutline" size="22" color="#fff" />
+        </div>
+        <div class="stat-content">
+          <span class="label">本月已到账</span>
+          <span class="value">{{ settledCount }}</span>
+          <span class="sub-text">笔 · 共 ¥{{ settledAmount.toLocaleString() }}</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card-alert">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #EF4444, #DC2626);">
+          <n-icon :component="AlertCircleOutline" size="22" color="#fff" />
+        </div>
+        <div class="stat-content">
+          <span class="label">异常待处理</span>
+          <span class="value alert">{{ exceptionCount }}</span>
+          <span class="sub-text">笔 · 需人工干预</span>
+        </div>
       </div>
     </div>
 
-    <!-- 财务概览 -->
-    <div class="metrics-row">
-      <div class="metric-card">
-        <div class="metric-icon" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
-          <n-icon :component="TrendingUpOutline" size="22" color="#fff" />
-        </div>
-        <div class="metric-content">
-          <span class="label">商家营收总额</span>
-          <span class="value">¥2,856,780</span>
-          <span class="trend up">↑ 15.2%</span>
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon" style="background: linear-gradient(135deg, #10B981, #059669);">
-          <n-icon :component="WalletOutline" size="22" color="#fff" />
-        </div>
-        <div class="metric-content">
-          <span class="label">待结算金额</span>
-          <span class="value warning">¥328,560</span>
-          <span class="sub-text">本月交易中</span>
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
-          <n-icon :component="CardOutline" size="22" color="#fff" />
-        </div>
-        <div class="metric-content">
-          <span class="label">已结算金额</span>
-          <span class="value">¥1,856,200</span>
-          <span class="sub-text">含服务费</span>
-        </div>
-      </div>
-    </div>
+    <!-- 自动化规则提示条 -->
+    <n-alert type="success" :bordered="false" style="margin-bottom: 20px; border-radius: 12px;">
+      <template #header>自动化规则（无需人工操作）</template>
+      符合以下条件的商家结算单将<strong>自动提交拉卡拉分账接口</strong>：
+      收款银行账户完整 且 应发结算金额 ≥ ¥100 且 无申诉/冻结标记。
+      不满足任一条件则进入「异常待处理」队列。
+    </n-alert>
 
-    <!-- 图表区域 -->
-    <div class="charts-grid">
-      <div class="chart-card chart-large">
-        <div class="chart-header">
-          <h3>月度营收趋势</h3>
-          <n-radio-group v-model:value="trendPeriod" size="small">
-            <n-radio-button value="month">近6个月</n-radio-button>
-            <n-radio-button value="year">近一年</n-radio-button>
-          </n-radio-group>
-        </div>
-        <div ref="revenueChartRef" class="chart-container"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>收入构成</h3>
-        </div>
-        <div ref="incomeChartRef" class="chart-container"></div>
-      </div>
-    </div>
-
+    <!-- Tab 状态切换 + 筛选 -->
     <div class="content-card">
-      <!-- 筛选栏 -->
       <div class="table-toolbar">
-        <n-space>
-          <n-date-picker
-            v-model:value="filterDateRange"
-            type="daterange"
-            clearable
-            size="small"
-            style="width: 240px;"
-            placeholder="选择日期范围"
-          />
-          <n-select 
-            v-model:value="filterMerchant" 
-            placeholder="选择商家" 
-            :options="merchantOptions" 
-            size="small" 
-            style="width: 160px;" 
-            clearable 
-          />
-          <n-select v-model:value="filterStatus" placeholder="结算状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
-        </n-space>
-        <n-space>
-          <n-button @click="exportToExcel">
-            <template #icon><n-icon :component="DownloadOutline" /></template> 导出Excel
-          </n-button>
-          <n-button type="primary" @click="showBatchModal = true">批量结算</n-button>
+        <n-tabs v-model:value="activeTab" type="segment" animated size="small">
+          <n-tab-pane name="all" :tab="`全部 (${totalCount})`" />
+          <n-tab-pane name="auto_submitted" :tab="`自动已提交 (${autoSubmittedCount})`" />
+          <n-tab-pane name="processing" :tab="`分账中 (${processingCount})`" />
+          <n-tab-pane name="settled" :tab="`已到账 (${settledCount})`" />
+          <n-tab-pane name="failed" :tab="`分账失败 (${failedCount})`" />
+          <n-tab-pane name="exception" :tab="`⚠ 异常待处 (${exceptionCount})`" />
+        </n-tabs>
+        <n-space align="center">
+          <n-input v-model:value="searchKeyword" placeholder="搜索商家名称/结算单号..." clearable style="width: 220px;">
+            <template #prefix><n-icon :component="SearchOutline" /></template>
+          </n-input>
+          <n-select v-model:value="filterMerchant" placeholder="全部商家" :options="merchantOptions" clearable size="small" style="width: 150px;" />
+          <n-date-picker v-model:value="filterMonth" type="month" clearable size="small" style="width: 140px;" />
         </n-space>
       </div>
-      <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
+
+      <n-data-table
+        :columns="columns"
+        :data="filteredData"
+        :pagination="pagination"
+        :row-key="(row: any) => row.id"
+        :checked-row-keys="Array.from(selectedExceptionKeys)"
+        @update:checked-row-keys="onCheckedChange"
+        striped
+        :row-class-name="rowClassName"
+      />
     </div>
 
-    <!-- 批量结算弹窗 -->
-    <n-modal v-model:show="showBatchModal" preset="card" title="批量结算" style="width: 600px;" :bordered="false">
-      <p style="margin-bottom: 16px; color: #666;">选择要结算的商家记录</p>
-      <n-data-table :columns="batchColumns" :data="pendingData" :pagination="false" size="small" striped />
+    <!-- 详情弹窗 -->
+    <n-modal v-model:show="showDetailModal" preset="card" :title="`结算详情 - ${currentRecord?.no || ''}`" style="width: 780px;" :bordered="false">
+      <template v-if="currentRecord">
+        <!-- 异常标识（始终显示） -->
+        <div v-if="isException(currentRecord)" class="exception-banner" style="margin-bottom: 12px;">
+          <n-icon :component="AlertCircleOutline" size="18" color="#DC2626" />
+          <span><strong>异常拦截</strong> — {{ currentRecord.exceptionReason }}</span>
+        </div>
+
+        <n-tabs v-model:value="detailTab" type="line" animated size="small">
+          <!-- Tab 1: 基本信息 -->
+          <n-tab-pane name="info" tab="基本信息">
+            <n-descriptions label-placement="left" :column="2" bordered size="small">
+              <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
+              <n-descriptions-item label="商家">{{ currentRecord.merchant }}</n-descriptions-item>
+              <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
+              <n-descriptions-item label="店铺数量">{{ currentRecord.storeDetails?.length || 0 }} 家</n-descriptions-item>
+              <n-descriptions-item label="结算总额">
+                <span style="font-weight:700;font-size:16px;color:#4F46E5;">¥{{ currentRecord.amount.toLocaleString() }}</span>
+              </n-descriptions-item>
+              <n-descriptions-item label="手续费率">{{ (currentRecord.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
+              <n-descriptions-item label="手续费">¥{{ currentRecord.fee.toFixed(2) }}</n-descriptions-item>
+              <n-descriptions-item label="预计实付">
+                <span style="font-weight:700;color:#10B981;">¥{{ (currentRecord.amount - currentRecord.fee).toFixed(2) }}</span>
+              </n-descriptions-item>
+              <n-descriptions-item label="分账状态">
+                <n-tag :type="statusType(currentRecord.status)" size="medium" round :bordered="false">{{ statusLabel(currentRecord.status) }}</n-tag>
+              </n-descriptions-item>
+              <n-descriptions-item label="拉卡拉流水号">{{ currentRecord.lakalaNo || '-' }}</n-descriptions-item>
+              <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
+              <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? maskCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
+              <n-descriptions-item label="创建时间">{{ currentRecord.createTime }}</n-descriptions-item>
+              <n-descriptions-item label="到账时间">{{ currentRecord.time !== '-' ? currentRecord.time : '-' }}</n-descriptions-item>
+            </n-descriptions>
+          </n-tab-pane>
+
+          <!-- Tab 2: 店铺明细 -->
+          <n-tab-pane name="stores" tab="店铺明细">
+            <div v-if="currentRecord?.storeDetails?.length">
+              <n-data-table :columns="storeDetailColumns" :data="currentRecord.storeDetails" :pagination="false" size="small" striped />
+            </div>
+            <n-empty v-else description="暂无店铺明细数据" style="padding:40px 0;" />
+          </n-tab-pane>
+
+          <!-- Tab 3: 分账日志 + 打款凭证 -->
+          <n-tab-pane name="log" tab="分账日志">
+            <!-- 打款凭证（已到账时显示） -->
+            <div v-if="currentRecord?.status === 'settled'" style="margin-bottom: 16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:10px;">打款凭证</div>
+              <div v-if="currentRecord.voucher">
+                <n-image :src="currentRecord.voucher" width="200" style="border-radius: 8px;" />
+                <div style="margin-top: 8px;">
+                  <n-button size="small" @click="currentRecord.voucher = undefined; message.success('凭证已删除')">删除凭证</n-button>
+                </div>
+              </div>
+              <n-upload v-else accept="image/*" :max="1" :custom-request="handleVoucherUpload">
+                <n-upload-dragger>
+                  <div style="padding: 20px 0;">
+                    <n-icon size="32" :depth="3"><CloudUploadOutline /></n-icon>
+                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">点击或拖拽上传拉卡拉打款回执凭证</p>
+                  </div>
+                </n-upload-dragger>
+              </n-upload>
+            </div>
+
+            <!-- 时间线日志 -->
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;">操作时间线</div>
+            <n-timeline size="medium">
+              <n-timeline-item
+                v-for="log in currentRecord.logs"
+                :key="log.time"
+                :type="log.type"
+                :title="log.action"
+                :time="log.time"
+                :content="log.detail"
+              />
+            </n-timeline>
+          </n-tab-pane>
+        </n-tabs>
+      </template>
+
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showBatchModal = false">取消</n-button>
-          <n-button type="primary" @click="confirmBatch">确认批量结算</n-button>
+          <n-button @click="showDetailModal = false">关闭</n-button>
+          <n-button v-if="currentRecord?.status === 'exception'" type="warning" @click="handleResolve(currentRecord)">处理后放行</n-button>
+          <n-button v-if="currentRecord?.status === 'failed'" type="primary" @click="handleRetry(currentRecord)">修复后重试</n-button>
+          <n-button v-if="currentRecord?.status === 'processing'" secondary @click="handleQueryOne(currentRecord)">查询拉卡拉状态</n-button>
         </n-space>
       </template>
     </n-modal>
 
-    <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" :title="`结算明细 - ${currentRecord?.no || ''}`" style="width: 800px;" :bordered="false">
-      <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
-        <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
-        <n-descriptions-item label="商家">{{ currentRecord.merchant }}</n-descriptions-item>
-        <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
-        <n-descriptions-item label="总结算金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="手续费率">{{ (currentRecord.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
-        <n-descriptions-item label="总手续费">{{ `¥${currentRecord.fee}` }}</n-descriptions-item>
-        <n-descriptions-item label="实际到账">{{ `¥${(currentRecord.amount - currentRecord.fee).toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="状态">
-          <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
-            {{ currentRecord.statusText }}
-          </n-tag>
+    <!-- 异常处理/放行确认弹窗 -->
+    <n-modal v-model:show="showResolveModal" preset="dialog" type="warning" title="异常处理 - 放行分账">
+      <p>即将对以下异常结算单执行<strong>人工放行</strong>，放行后将立即提交拉卡拉分账：</p>
+      <n-descriptions label-placement="left" :column=1 bordered size="small" style="margin-top:12px;">
+        <n-descriptions-item label="结算单号">{{ resolveTarget?.no }}</n-descriptions-item>
+        <n-descriptions-item label="商家">{{ resolveTarget?.merchant }}</n-descriptions-item>
+        <n-descriptions-item label="原异常原因">{{ resolveTarget?.exceptionReason }}</n-descriptions-item>
+        <n-descriptions-item label="结算金额">
+          <strong style="color:#4F46E5;">¥{{ resolveTarget?.amount?.toLocaleString() }}</strong>
         </n-descriptions-item>
-        <n-descriptions-item label="打款时间">{{ currentRecord.time }}</n-descriptions-item>
       </n-descriptions>
-      
-      <!-- 店铺明细 -->
-      <div style="margin-top: 20px;" v-if="currentRecord?.storeDetails?.length">
-        <n-divider>店铺明细</n-divider>
-        <n-data-table 
-          :columns="storeDetailColumns" 
-          :data="currentRecord.storeDetails" 
-          :pagination="false" 
-          size="small" 
-          striped 
-        />
-      </div>
-      
-      <!-- 打款凭证上传 -->
-      <div style="margin-top: 20px;" v-if="currentRecord?.status === 'done'">
-        <n-divider>打款凭证</n-divider>
-        <div v-if="currentRecord.voucher">
-          <n-image 
-            :src="currentRecord.voucher" 
-            width="200"
-            style="border-radius: 8px;"
-          />
-          <div style="margin-top: 8px;">
-            <n-button size="small" @click="currentRecord.voucher = null; message.success('凭证已删除')">
-              删除凭证
-            </n-button>
-          </div>
-        </div>
-        <n-upload
-          v-else
-          accept="image/*"
-          :max="1"
-          :custom-request="handleVoucherUpload"
-        >
-          <n-upload-dragger>
-            <div style="padding: 20px 0;">
-              <n-icon size="32" :depth="3">
-                <CloudUploadOutline />
-              </n-icon>
-              <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">
-                点击或拖拽上传打款凭证
-              </p>
-            </div>
-          </n-upload-dragger>
-        </n-upload>
-      </div>
-      
-      <template #footer>
+      <n-input v-model:value="resolveNote" type="textarea" placeholder="请输入处理说明（如：已联系商家补全账户信息，现可正常打款）..." :autosize="{ minRows: 2 }" style="margin-top: 12px;" />
+      <template #action>
         <n-space justify="end">
-          <n-button @click="showDetailModal = false">关闭</n-button>
-          <n-button v-if="currentRecord?.status === 'pending'" type="primary" @click="confirmSingle">确认结算</n-button>
+          <n-button @click="showResolveModal = false">取消</n-button>
+          <n-button type="warning" @click="confirmResolve">确认放行</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <!-- 批量放行确认弹窗 -->
+    <n-modal v-model:show="showBatchResolveModal" preset="dialog" type="warning" title="批量放行 - 提交拉卡拉分账">
+      <p>即将人工放行 <strong>{{ selectedExceptionKeys.size }}</strong> 笔异常结算单，合计金额：</p>
+      <p style="font-size:20px;font-weight:700;color:#F59E0B;margin:12px 0;">
+        ¥{{ batchSelectedTotal.toLocaleString() }}
+      </p>
+      <p style="color:#6B7280;font-size:12px;">放行后将立即通过拉卡拉分账接口发起打款。</p>
+      <template #action>
+        <n-space justify="end">
+          <n-button @click="showBatchResolveModal = false">取消</n-button>
+          <n-button type="warning" @click="confirmBatchResolve">确认批量放行</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -180,43 +234,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, h } from 'vue'
 import {
-  NButton, NDataTable, NTag, NSpace, NSelect, NModal,
-  NIcon, NDescriptions, NDescriptionsItem, useMessage, NDatePicker,
-  NUpload, NUploadDragger, NImage, NRadioGroup, NRadioButton
+  NButton, NDataTable, NTag, NSpace, NModal, NTabs, NTabPane,
+  NIcon, NDescriptions, NDescriptionsItem, NDivider, NInput,
+  NTimeline, NTimelineItem, NDatePicker, NAlert, NSelect, NUpload,
+  NUploadDragger, NImage, useMessage
 } from 'naive-ui'
 import {
-  DownloadOutline, CloudUploadOutline,
-  TrendingUpOutline, WalletOutline, CardOutline
+  FlashOutline, SyncOutline, CheckmarkDoneOutline,
+  SearchOutline, AlertCircleOutline, CloudUploadOutline
 } from '@vicons/ionicons5'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
-import * as echarts from 'echarts/core'
-import { LineChart, PieChart } from 'echarts/charts'
-import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-
-// 注册 ECharts 组件
-echarts.use([LineChart, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer])
 
 const message = useMessage()
-const filterStatus = ref<string | null>(null)
+
+// 筛选
+const activeTab = ref('all')
+const searchKeyword = ref('')
 const filterMerchant = ref<string | null>(null)
-const filterDateRange = ref<[number, number] | null>(null)
+const filterMonth = ref<number | null>(null)
+const selectedExceptionKeys = ref<Set<number>>(new Set())
 
-// 图表
-const trendPeriod = ref('month')
-const revenueChartRef = ref<HTMLElement | null>(null)
-const incomeChartRef = ref<HTMLElement | null>(null)
-let revenueChart: echarts.ECharts | null = null
-let incomeChart: echarts.ECharts | null = null
+/**
+ * 状态定义（与代理商分账一致）：
+ * auto_submitted - 正常单，系统自动提交拉卡拉
+ * processing     - 拉卡拉开票中，等待回调
+ * settled        - 已到账
+ * failed         - 拉卡拉开票失败，可修复后重试
+ * exception      - 异常拦截，需人工处理
+ */
+type SettlementStatus = 'auto_submitted' | 'processing' | 'settled' | 'failed' | 'exception'
 
-const statusOptions = [
-  { label: '已打款', value: 'done' },
-  { label: '待打款', value: 'pending' },
-  { label: '处理中', value: 'processing' },
-]
+interface MerchantSettlement {
+  id: number
+  no: string
+  merchant: string
+  period: string
+  amount: number
+  feeRate: number
+  fee: number
+  bankName: string
+  cardNo: string
+  status: SettlementStatus
+  statusText: string
+  exceptionReason?: string
+  lakalaNo?: string
+  time: string
+  createTime: string
+  voucher?: string
+  storeDetails: Array<{ store: string; amount: number; fee: number }>
+  logs: Array<{ action: string; time: string; detail: string; type: 'info' | 'success' | 'warning' | 'error' }>
+}
 
 const merchantOptions = [
   { label: '深圳XX科技公司', value: '深圳XX科技公司' },
@@ -225,371 +293,327 @@ const merchantOptions = [
   { label: '上海WW投资公司', value: '上海WW投资公司' },
 ]
 
-const columns = [
-  { title: '结算单号', key: 'no', width: 150 },
-  { title: '商家', key: 'merchant', width: 160 },
-  { title: '店铺数量', key: 'storeCount', width: 90, render: (row: any) => `${row.storeDetails.length} 家` },
-  { title: '结算周期', key: 'period', width: 160 },
-  { title: '结算金额', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
-  { title: '手续费', key: 'fee', width: 90, render: (row: any) => `¥${row.fee}` },
-  { title: '实际到账', key: 'actualAmount', width: 110, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString()}` },
+// Mock 数据 —— 覆盖商家分账各类场景
+const settlementData = ref<MerchantSettlement[]>([
   {
-    title: '状态',
-    key: 'status',
-    width: 90,
-    render(row: any) {
-      const typeMap: Record<string, string> = { done: 'success', pending: 'warning', processing: 'info' }
-      return h(NTag, { type: typeMap[row.status] as any, size: 'small', bordered: true }, () => row.statusText)
-    }
-  },
-  { title: '打款时间', key: 'time', width: 140 },
-  {
-    title: '操作',
-    key: 'action',
-    width: 120,
-    render(row: any) {
-      return h(NButton, { size: 'tiny', secondary: true, onClick: () => openDetail(row) }, () => '查看明细')
-    }
-  },
-]
-
-const settlementData = ref([
-  { 
-    id: 1, 
-    no: 'ST2026042001', 
-    merchant: '深圳XX科技公司', 
-    period: '2026-04-13 ~ 2026-04-19', 
-    amount: 137963, 
-    feeRate: 0.03, 
-    fee: 4138.89, 
-    status: 'done', 
-    statusText: '已打款', 
-    time: '2026-04-20 10:00',
-    voucher: '',
+    // 场景1：正常单 - 自动提交拉卡拉
+    id: 1, no: 'MS2026042001', merchant: '深圳XX科技公司',
+    period: '2026-04-13 ~ 2026-04-19', amount: 137963, feeRate: 0.03, fee: 4138.89,
+    bankName: '招商银行', cardNo: '6214838888888888888',
+    status: 'auto_submitted', statusText: '自动已提交',
+    lakalaNo: 'LK20260428090001', time: '-', createTime: '2026-04-20 08:00',
     storeDetails: [
       { store: '深圳福田旗舰店', amount: 85623, fee: 2568.69 },
       { store: '南山科技园店', amount: 52340, fee: 1570.20 },
-    ]
+    ],
+    logs: [
+      { action: '结算单生成', time: '2026-04-20 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '自动校验通过', time: '2026-04-20 08:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
+      { action: '已提交拉卡拉', time: '2026-04-20 08:00:02', detail: 'LK20260428090001', type: 'info' as const },
+    ],
   },
-  { 
-    id: 2, 
-    no: 'ST2026042002', 
-    merchant: '广州YY传媒公司', 
-    period: '2026-04-13 ~ 2026-04-19', 
-    amount: 78230, 
-    feeRate: 0.03, 
-    fee: 2346.90, 
-    status: 'pending', 
-    statusText: '待打款', 
-    time: '-',
-    voucher: '',
-    storeDetails: [
-      { store: '广州天河店', amount: 78230, fee: 2346.90 },
-    ]
+  {
+    // 场景2：正常单 - 拉卡拉分账中
+    id: 2, no: 'MS2026042002', merchant: '广州YY传媒公司',
+    period: '2026-04-13 ~ 2026-04-19', amount: 78230, feeRate: 0.03, fee: 2346.90,
+    bankName: '工商银行', cardNo: '6222021234567890123',
+    status: 'processing', statusText: '拉卡拉分账中',
+    lakalaNo: 'LK20260427143002', time: '-', createTime: '2026-04-20 08:00',
+    storeDetails: [{ store: '广州天河店', amount: 78230, fee: 2346.90 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-20 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '自动校验通过', time: '2026-04-20 08:00:01', detail: '自动放行', type: 'success' as const },
+      { action: '已提交拉卡拉', time: '2026-04-27 14:30', detail: 'LK20260427143002', type: 'info' as const },
+      { action: '拉卡拉受理', time: '2026-04-28 09:30', detail: '开票请求已受理，等待回调', type: 'warning' as const },
+    ],
   },
-  { 
-    id: 3, 
-    no: 'ST2026042003', 
-    merchant: '北京ZZ娱乐公司', 
-    period: '2026-04-13 ~ 2026-04-19', 
-    amount: 45680, 
-    feeRate: 0.03, 
-    fee: 1370.40, 
-    status: 'processing', 
-    statusText: '处理中', 
-    time: '-',
-    voucher: '',
-    storeDetails: [
-      { store: '北京朝阳店', amount: 45680, fee: 1370.40 },
-    ]
+  {
+    // 场景3：已到账
+    id: 3, no: 'MS2026041301', merchant: '北京ZZ娱乐公司',
+    period: '2026-04-06 ~ 2026-04-12', amount: 45680, feeRate: 0.03, fee: 1370.40,
+    bankName: '建设银行', cardNo: '6227001234567890123',
+    status: 'settled', statusText: '已到账',
+    lakalaNo: 'LK20260405080003', time: '2026-04-05 10:20', createTime: '2026-04-06 08:00',
+    storeDetails: [{ store: '北京朝阳店', amount: 45680, fee: 1370.40 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-06 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '自动校验通过', time: '2026-04-06 08:00:01', detail: '自动放行', type: 'success' as const },
+      { action: '已提交拉卡拉', time: '2026-04-06 08:00:02', detail: 'LK20260405080003', type: 'info' as const },
+      { action: '拉卡拉受理', time: '2026-04-07 09:00', detail: '开票请求已受理', type: 'warning' as const },
+      { action: '分账成功', time: '2026-04-05 10:20', detail: '拉卡拉异步回调：开票成功，款项已到账', type: 'success' as const },
+    ],
   },
-  { 
-    id: 4, 
-    no: 'ST2026042004', 
-    merchant: '上海WW投资公司', 
-    period: '2026-04-13 ~ 2026-04-19', 
-    amount: 97850, 
-    feeRate: 0.03, 
-    fee: 2935.50, 
-    status: 'pending', 
-    statusText: '待打款', 
-    time: '-',
-    voucher: '',
-    storeDetails: [
-      { store: '上海浦东店', amount: 97850, fee: 2935.50 },
-    ]
+  {
+    // 场景4：异常 - 账户未绑定
+    id: 4, no: 'MS2026042004', merchant: '上海WW投资公司',
+    period: '2026-04-13 ~ 2026-04-19', amount: 97850, feeRate: 0.03, fee: 2935.50,
+    bankName: '-', cardNo: '-',
+    status: 'exception', statusText: '异常待处理',
+    exceptionReason: '收款银行账户未绑定',
+    time: '-', createTime: '2026-04-20 08:00',
+    storeDetails: [{ store: '上海浦东店', amount: 97850, fee: 2935.50 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-20 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '异常拦截', time: '2026-04-20 08:00:01', detail: '收款银行账户未绑定，不符合自动分账条件', type: 'error' as const },
+    ],
+  },
+  {
+    // 场景5：失败 - 拉卡拉开票失败
+    id: 5, no: 'MS2026041302', merchant: '成都新锐科技公司',
+    period: '2026-04-06 ~ 2026-04-12', amount: 32000, feeRate: 0.03, fee: 960,
+    bankName: '交通银行', cardNo: '6222589999999999999',
+    status: 'failed', statusText: '分账失败',
+    exceptionReason: '拉卡拉返回：收款账户名与开户名不一致(ERROR_CODE: BANK_NAME_MISMATCH)',
+    lakalaNo: 'LK20260428100005', time: '-', createTime: '2026-04-06 08:00',
+    storeDetails: [{ store: '成都高新区店', amount: 32000, fee: 960 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-06 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '自动校验通过', time: '2026-04-06 08:00:01', detail: '自动放行', type: 'success' as const },
+      { action: '已提交拉卡拉', time: '2026-04-28 10:00', detail: 'LK20260428100005', type: 'info' as const },
+      { action: '开票失败', time: '2026-04-28 10:05', detail: '拉卡拉返回：账户名与开户名不一致(BANK_NAME_MISMATCH)', type: 'error' as const },
+    ],
   },
 ])
 
-const pagination = { pageSize: 10 }
+// ========== 统计 ==========
+const autoSubmittedCount = computed(() => settlementData.value.filter(d => d.status === 'auto_submitted').length)
+const processingCount = computed(() => settlementData.value.filter(d => d.status === 'processing').length)
+const settledCount = computed(() => settlementData.value.filter(d => d.status === 'settled').length)
+const failedCount = computed(() => settlementData.value.filter(d => d.status === 'failed').length)
+const exceptionCount = computed(() => settlementData.value.filter(d => d.status === 'exception').length)
+const totalCount = computed(() => settlementData.value.length)
 
-const filteredData = computed(() => {
-  let data = [...settlementData.value]
-  
-  // 按状态筛选
-  if (filterStatus.value) {
-    data = data.filter(d => d.status === filterStatus.value)
-  }
-  
-  // 按商家筛选
-  if (filterMerchant.value) {
-    data = data.filter(d => d.merchant === filterMerchant.value)
-  }
-  
-  // 按日期范围筛选
-  if (filterDateRange.value && filterDateRange.value.length === 2) {
-    const [start, end] = filterDateRange.value
-    data = data.filter(d => {
-      const recordDate = new Date(d.period.split(' ~ ')[0])
-      return recordDate.getTime() >= start && recordDate.getTime() <= end
-    })
-  }
-  
-  return data
-})
+const sumBy = (status: SettlementStatus, field: 'amount') =>
+  settlementData.value.filter(d => d.status === status).reduce((s, d) => s + d[field], 0)
 
-// 导出Excel功能
-function exportToExcel() {
-  try {
-    const exportData = filteredData.value.map((item, index) => ({
-      '序号': index + 1,
-      '结算单号': item.no,
-      '商家': item.merchant,
-      '店铺数量': `${item.storeDetails.length} 家`,
-      '结算周期': item.period,
-      '总结算金额': item.amount,
-      '手续费率': `${(item.feeRate * 100).toFixed(1)}%`,
-      '总手续费': item.fee,
-      '实际到账': item.amount - item.fee,
-      '状态': item.statusText,
-      '打款时间': item.time
-    }))
-    
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '结算管理')
-    
-    // 设置列宽
-    ws['!cols'] = [
-      { wch: 6 },  // 序号
-      { wch: 15 }, // 结算单号
-      { wch: 18 }, // 商家
-      { wch: 10 }, // 店铺数量
-      { wch: 20 }, // 结算周期
-      { wch: 12 }, // 总结算金额
-      { wch: 10 }, // 手续费率
-      { wch: 10 }, // 总手续费
-      { wch: 12 }, // 实际到账
-      { wch: 10 }, // 状态
-      { wch: 18 }, // 打款时间
-    ]
-    
-    const fileName = `结算管理_${new Date().toLocaleDateString('zh-CN')}.xlsx`
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    const blob = new Blob([wbout], { type: 'application/octet-stream' })
-    saveAs(blob, fileName)
-    
-    message.success('导出成功')
-  } catch (error) {
-    message.error('导出失败')
-    console.error(error)
-  }
-}
+const autoSubmittedAmount = computed(() => sumBy('auto_submitted', 'amount'))
+const processingAmount = computed(() => sumBy('processing', 'amount'))
+const settledAmount = computed(() => sumBy('settled', 'amount'))
 
-const pendingData = computed(() => settlementData.value.filter(d => d.status === 'pending'))
+// ========== 表格列 ==========
+const columns = [
+  { type: 'selection' },
+  {
+    title: '结算单号', key: 'no', width: 150, ellipsis: { tooltip: true },
+    render: (row: any) => h('span', { style: 'font-family:monospace;font-size:12px;' }, row.no)
+  },
+  { title: '商家', key: 'merchant', width: 160 },
+  { title: '店铺数', key: 'storeCount', width: 70, align: 'center',
+    render: (row: any) => `${row.storeDetails?.length || 0}家`
+  },
+  { title: '周期', key: 'period', width: 160, ellipsis: { tooltip: true } },
+  {
+    title: '结算额(¥)', key: 'amount', width: 110,
+    render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.amount.toLocaleString()}`)
+  },
+  {
+    title: '手续费(¥)', key: 'fee', width: 90,
+    render: (row: any) => row.fee > 0
+      ? `¥${row.fee.toFixed(2)}`
+      : h('span', { style: 'color:#9CA3AF;' }, '-')
+  },
+  {
+    title: '费率', key: 'feeRate', width: 65, align: 'center',
+    render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%`
+  },
+  {
+    title: '状态', key: 'status', width: 110, align: 'center',
+    render: (row: any) => h(NSpace, { size: 2, align: 'center' }, () =>
+      row.status === 'exception' || row.status === 'failed'
+        ? [h(NTag, { type: statusType(row.status), size: 'small', round: true, bordered: false }, () => statusLabel(row.status)),
+           h(NIcon, { component: AlertCircleOutline, size: 14, color: '#EF4444' })]
+        : [h(NTag, { type: statusType(row.status), size: 'small', round: true, bordered: false }, () => statusLabel(row.status))]
+    )
+  },
+  { title: '拉卡拉流水号', key: 'lakalaNo', width: 160, ellipsis: { tooltip: true },
+    render: (row: any) => row.lakalaNo ? h('span', { style: 'font-family:monospace;font-size:11px;color:#6B7280;' }, row.lakalaNo) : '-'
+  },
+  {
+    title: '操作', key: 'actions', width: 85, fixed: 'right' as const,
+    render: (row: any) => h(NButton, { size: 'tiny', secondary: true, type: 'primary', onClick: () => openDetail(row) }, () => '详情'),
+  },
+]
 
 // 店铺明细表格列
 const storeDetailColumns = [
-  { title: '店铺名称', key: 'store', width: 160 },
-  { title: '结算金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '手续费', key: 'fee', width: 100, render: (row: any) => `¥${row.fee}` },
-  { title: '实际到账', key: 'actual', width: 120, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString()}` },
+  { title: '店铺名称', key: 'store', width: 180 },
+  { title: '结算额(¥)', key: 'amount', width: 120, render: (r: any) => `¥${r.amount.toLocaleString()}` },
+  { title: '手续费(¥)', key: 'fee', width: 110, render: (r: any) => `¥${r.fee.toFixed(2)}` },
 ]
 
-// 批量结算
-const showBatchModal = ref(false)
-const batchColumns = [
-  { title: '商家', key: 'merchant' },
-  { title: '店铺数量', key: 'storeCount', width: 90, render: (row: any) => `${row.storeDetails.length} 家` },
-  { title: '结算金额', key: 'amount', render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '状态', key: 'status', render: () => h(NTag, { type: 'warning', size: 'tiny' }, () => '待打款') },
-]
+// ========== 过滤 ==========
+const filteredData = computed(() => {
+  let data = [...settlementData.value]
+  if (activeTab.value !== 'all') data = data.filter(d => d.status === activeTab.value)
+  if (searchKeyword.value) {
+    const kw = searchKeyword.value.toLowerCase()
+    data = data.filter(d => d.merchant.toLowerCase().includes(kw) || d.no.toLowerCase().includes(kw))
+  }
+  if (filterMerchant.value) data = data.filter(d => d.merchant === filterMerchant.value)
+  return data
+})
 
-function confirmBatch() {
-  // 结算前检查：检查是否有异常订单
-  const pendingSettlements = settlementData.value.filter(d => d.status === 'pending')
-  let hasException = false
-  let exceptionCount = 0
-  
-  // 模拟检查：随机决定是否有异常订单
-  if (Math.random() > 0.5) {
-    hasException = true
-    exceptionCount = Math.floor(Math.random() * 5) + 1
-  }
-  
-  if (hasException) {
-    const confirmed = window.confirm(`⚠️ 警告：存在 ${exceptionCount} 笔异常订单，是否继续结算？\n\n点击"取消"暂停结算，先处理异常订单。`)
-    if (!confirmed) {
-      message.warning('已暂停结算，请先处理异常订单')
-      return
-    }
-  }
-  
-  let count = 0
-  settlementData.value.forEach(d => {
-    if (d.status === 'pending') {
-      d.status = 'done'
-      d.statusText = '已打款'
-      d.time = new Date().toLocaleString('zh-CN')
-      count++
-    }
-  })
-  message.success(`已成功结算 ${count} 笔订单`)
-  showBatchModal.value = false
+const pagination = { pageSize: 10 }
+
+function onCheckedChange(keys: (number | string)[]) {
+  selectedExceptionKeys.value = new Set(keys as number[])
+}
+const batchSelectedTotal = computed(() =>
+  Array.from(selectedExceptionKeys.value).reduce((sum, id) => {
+    const r = settlementData.value.find(d => d.id === id)
+    return sum + (r?.amount || 0)
+  }, 0)
+)
+
+function rowClassName(row: any): string {
+  if (row.status === 'exception') return 'row-exception'
+  if (row.status === 'failed') return 'row-failed'
+  return ''
 }
 
-// 详情
-const showDetailModal = ref(false)
-const currentRecord = ref<any>(null)
+function isException(record: MerchantSettlement): boolean {
+  return record.status === 'exception' || record.status === 'failed'
+}
 
-function openDetail(row: any) {
+function statusType(s: SettlementStatus): string {
+  const map: Record<SettlementStatus, string> = {
+    auto_submitted: 'success', processing: 'warning', settled: 'default',
+    failed: 'error', exception: 'error'
+  }
+  return map[s] || 'default'
+}
+function statusLabel(s: SettlementStatus): string {
+  const map: Record<SettlementStatus, string> = {
+    auto_submitted: '已自动提交', processing: '拉卡拉分账中', settled: '已到账',
+    failed: '分账失败', exception: '异常待处理'
+  }
+  return map[s] || s
+}
+function maskCardNo(no: string): string {
+  if (!no) return ''
+  return no.replace(/(\d{4})(?=\d)/g, '$1 ')
+}
+
+// ========== 详情弹窗 ==========
+const showDetailModal = ref(false)
+const detailTab = ref('info')
+const currentRecord = ref<MerchantSettlement | null>(null)
+function openDetail(row: MerchantSettlement) {
   currentRecord.value = row
   showDetailModal.value = true
 }
 
-function confirmSingle() {
-  // 结算前检查：检查是否有异常订单
-  const currentMerchant = currentRecord.value?.merchant
-  let hasException = false
-  let exceptionCount = 0
-  
-  // 模拟检查：随机决定是否有异常订单
-  if (Math.random() > 0.5) {
-    hasException = true
-    exceptionCount = Math.floor(Math.random() * 3) + 1
-  }
-  
-  if (hasException) {
-    const confirmed = window.confirm(`⚠️ 警告：商家"${currentMerchant}"存在 ${exceptionCount} 笔异常订单，是否继续结算？\n\n点击"取消"暂停结算，先处理异常订单。`)
-    if (!confirmed) {
-      message.warning('已暂停结算，请先处理异常订单')
-      return
-    }
-  }
-  
-  if (currentRecord.value) {
-    const idx = settlementData.value.findIndex(d => d.id === currentRecord.value.id)
-    if (idx !== -1) {
-      settlementData.value[idx].status = 'done'
-      settlementData.value[idx].statusText = '已打款'
-      settlementData.value[idx].time = new Date().toLocaleString('zh-CN')
-      message.success('结算成功')
-    }
-  }
+// ========== 异常处理：单个放行 ==========
+const showResolveModal = ref(false)
+const resolveTarget = ref<MerchantSettlement | null>(null)
+const resolveNote = ref('')
+function handleResolve(record: MerchantSettlement) {
+  resolveTarget.value = record
+  showResolveModal.value = true
+}
+function confirmResolve() {
+  if (!resolveTarget.value) return
+  const r = resolveTarget.value
+  r.status = 'auto_submitted'
+  r.statusText = '已自动提交'
+  r.logs.push({
+    action: '人工放行', time: new Date().toLocaleString('zh-CN'),
+    detail: resolveNote.value || '管理员人工审核后放行，将重新提交拉卡拉', type: 'success' as const
+  })
+  message.success(`${r.no} 已放行，将自动提交拉卡拉分账`)
+  showResolveModal.value = false
+  resolveNote.value = ''
+}
+
+// ========== 失败重试 ==========
+function handleRetry(record: MerchantSettlement) {
+  record.status = 'auto_submitted'
+  record.statusText = '已自动提交'
+  record.exceptionReason = undefined
+  record.logs.push({
+    action: '重新提交', time: new Date().toLocaleString('zh-CN'),
+    detail: '管理员修复问题后手动重试，将重新提交拉卡拉', type: 'warning' as const
+  })
+  message.success(`${record.no} 已重新提交`)
   showDetailModal.value = false
 }
 
-// 上传打款凭证
+// ========== 单笔查询拉卡拉状态 ==========
+function handleQueryOne(record: MerchantSettlement) {
+  message.info(`正在查询 ${record.lakalaNo} 的拉卡拉分账状态...`)
+}
+
+// ========== 批量放行 ==========
+const showBatchResolveModal = ref(false)
+function confirmBatchResolve() {
+  let count = 0
+  settlementData.value.forEach(d => {
+    if (selectedExceptionKeys.value.has(d.id) && (d.status === 'exception' || d.status === 'failed')) {
+      d.status = 'auto_submitted'
+      d.statusText = '已自动提交'
+      d.exceptionReason = undefined
+      d.logs.push({ action: '批量放行', time: new Date().toLocaleString('zh-CN'), detail: '管理员批量人工放行', type: 'success' as const })
+      count++
+    }
+  })
+  selectedExceptionKeys.value.clear()
+  showBatchResolveModal.value = false
+  message.success(`已批量放行 ${count} 笔异常结算单，将自动提交拉卡拉`)
+}
+
+// ========== 同步拉卡拉状态 ==========
+function handleSyncLakala() {
+  message.info('正在同步拉卡拉分账状态...')
+  setTimeout(() => { message.success('拉卡拉分账状态已同步（共更新 0 条）') }, 1500)
+}
+
+// ========== 打款凭证上传 ==========
 function handleVoucherUpload({ file, onFinish }: any) {
   if (!currentRecord.value) return
-  
-  // 模拟上传，实际应该调用API
   const reader = new FileReader()
   reader.onload = (e) => {
-    const idx = settlementData.value.findIndex(d => d.id === currentRecord.value.id)
+    const idx = settlementData.value.findIndex(d => d.id === currentRecord.value!.id)
     if (idx !== -1) {
       settlementData.value[idx].voucher = e.target?.result as string
+      currentRecord.value = settlementData.value[idx]
       message.success('凭证上传成功')
     }
     onFinish()
   }
   reader.readAsDataURL(file.file)
 }
-
-// 图表初始化
-function initCharts() {
-  nextTick(() => {
-    setTimeout(() => {
-      if (revenueChartRef.value) {
-        revenueChart = echarts.init(revenueChartRef.value)
-        revenueChart.setOption({
-          tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
-          grid: { left: 48, right: 16, top: 24, bottom: 32 },
-          xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
-          yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: '¥{value}k' } },
-          series: [{
-            type: 'line', smooth: true, data: [320, 380, 420, 480, 520, 580],
-            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59,130,246,0.2)' }, { offset: 1, color: 'rgba(59,130,246,0)' }]) },
-            lineStyle: { width: 3, color: '#3B82F6' },
-            itemStyle: { color: '#3B82F6' }
-          }]
-        })
-      }
-      if (incomeChartRef.value) {
-        incomeChart = echarts.init(incomeChartRef.value)
-        incomeChart.setOption({
-          tooltip: { trigger: 'item', formatter: '{b}: ¥{c}k ({d}%)' },
-          series: [{
-            type: 'pie',
-            radius: ['45%', '72%'],
-            center: ['50%', '50%'],
-            label: { show: true, fontSize: 12, color: '#64748b' },
-            data: [
-              { value: 280, name: 'VR体验', itemStyle: { color: '#3B82F6' } },
-              { value: 180, name: '会员充值', itemStyle: { color: '#10B981' } },
-              { value: 120, name: '实体商品', itemStyle: { color: '#F59E0B' } },
-              { value: 80, name: '其他', itemStyle: { color: '#8B5CF6' } },
-            ]
-          }]
-        })
-      }
-    }, 200)
-  })
-}
-
-function handleResize() {
-  revenueChart?.resize()
-  incomeChart?.resize()
-}
-
-onMounted(() => {
-  initCharts()
-  window.addEventListener('resize', handleResize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-  revenueChart?.dispose()
-  incomeChart?.dispose()
-})
 </script>
 
 <style scoped>
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block; }
+.header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.6; max-width: 600px; }
+.header-desc .highlight { color: #10B981; font-weight: 600; }
 
-.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-.metric-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; }
-.metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.metric-content { display: flex; flex-direction: column; }
-.metric-content .label { font-size: 12px; color: var(--text-muted); }
-.metric-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.metric-content .value.warning { color: #F59E0B; }
-.metric-content .trend { font-size: 12px; color: #10B981; font-weight: 600; }
-.metric-content .sub-text { font-size: 11px; color: var(--text-muted); }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; }
+.stat-card-alert { border: 2px solid #FEE2E2; background: linear-gradient(135deg, #FEFEFE, #FEF2F2); }
+.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-content { display: flex; flex-direction: column; }
+.stat-content .label { font-size: 12px; color: var(--text-muted); }
+.stat-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.stat-content .value.processing { color: #F59E0B; }
+.stat-content .value.success { color: #10B981; }
+.stat-content .value.alert { color: #EF4444; }
+.stat-content .sub-text { font-size: 11px; color: var(--text-muted); }
 
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
 .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 
-.charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
-.chart-card { background: white; border-radius: 16px; padding: 22px; border: 1px solid var(--border-color); }
-.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.chart-header h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-.chart-container { width: 100%; height: 280px; }
-
-@media (max-width: 1200px) {
-  .charts-grid { grid-template-columns: 1fr; }
+.exception-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; background: #FEF2F2;
+  border: 1px solid #FECACA; border-radius: 8px;
+  color: #991B1B; font-size: 13px; margin-bottom: 16px;
 }
+
+:::deep(.row-exception td) { background: #FFFBEB !important; }
+:::deep(.row-exception td:first-child) { border-left: 3px solid #F59E0B; }
+:::deep(.row-failed td) { background: #FEF2F2 !important; }
+:::deep(.row-failed td:first-child) { border-left: 3px solid #EF4444; }
 </style>
