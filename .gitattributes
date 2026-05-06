@@ -85,3 +85,4 @@
 /docs/versions/PRD-完整版_v1.3.3_20260506_0310.html filter=lfs diff=lfs merge=lfs -text
 /docs/versions/PRD-完整版_v1.3.3_20260506_0314.html filter=lfs diff=lfs merge=lfs -text
 /docs/versions/PRD-完整版_v1.3.3_20260506_0316.html filter=lfs diff=lfs merge=lfs -text
+/docs/暂停计费与异常恢复流程图.png filter=lfs diff=lfs merge=lfs -text
