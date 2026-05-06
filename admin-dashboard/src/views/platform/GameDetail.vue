@@ -168,28 +168,40 @@
               </div>
             </div>
             <div class="form-group">
-              <label>上线状态</label>
-              <n-space :size="8">
-                <n-button
-                  size="small"
-                  :type="gameData.status === 'online' ? 'success' : 'default'"
-                  :dashed="gameData.status !== 'online'"
-                  @click="gameData.status = 'online'"
-                >上架</n-button>
-                <n-button
-                  size="small"
-                  :type="gameData.status === 'offline' ? 'warning' : 'default'"
-                  :dashed="gameData.status !== 'offline'"
-                  @click="gameData.status = 'offline'"
-                >下架</n-button>
-                <n-button
-                  size="small"
-                  :type="gameData.status === 'draft' ? 'info' : 'default'"
-                  :dashed="gameData.status !== 'draft'"
-                  @click="gameData.status = 'draft'"
-                >草稿</n-button>
-              </n-space>
-            </div>
+                <label>上线状态</label>
+                <n-space :size="8">
+                  <n-button
+                    size="small"
+                    :type="gameData.status === 'online' ? 'success' : 'default'"
+                    :dashed="gameData.status !== 'online'"
+                    @click="gameData.status = 'online'"
+                  >上架</n-button>
+                  <n-button
+                    size="small"
+                    :type="gameData.status === 'offline' ? 'warning' : 'default'"
+                    :dashed="gameData.status !== 'offline'"
+                    @click="gameData.status = 'offline'"
+                  >下架</n-button>
+                  <n-button
+                    size="small"
+                    :type="gameData.status === 'draft' ? 'info' : 'default'"
+                    :dashed="gameData.status !== 'draft'"
+                    @click="gameData.status = 'draft'"
+                  >草稿</n-button>
+                </n-space>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>排序号</label>
+                  <n-input-number v-model:value="gameData.sortOrder" :min="1" :max="999" style="width:100%" placeholder="数值越小越靠前">
+                    <template #suffix>号</template>
+                  </n-input-number>
+                </div>
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <n-checkbox v-model:checked="gameData.recommended">标记为推荐游戏</n-checkbox>
+                </div>
+              </div>
           </div>
         </section>
 
@@ -354,6 +366,8 @@ const gameData = ref({
   videoUrl: '',
   videoCover: '',
   status: 'draft',
+  sortOrder: 10,
+  recommended: false,
 })
 
 

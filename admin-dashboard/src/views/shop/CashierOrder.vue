@@ -88,7 +88,7 @@
         <span class="method-text">原路退款</span>
       </div>
       <div class="refund-detail" v-if="detailRow">
-        <span v-for="(pay, idx) in paymentMethods" :key="idx">{{ pay.method }}：¥{{ pay.amount.toFixed(2) }}</span>
+        <span v-for="(pay, idx) in paymentMethods" :key="idx" :style="{color: pay.color, display:'block', marginBottom:'4px', fontSize:'13px'}">{{ pay.method }}：¥{{ pay.amount.toFixed(2) }}</span>
       </div>
       <template #footer>
         <n-space justify="end">
@@ -110,6 +110,14 @@
         <n-descriptions-item label="应收金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="优惠金额">¥{{ detailRow.discount.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="实收金额">¥{{ detailRow.paid.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="支付方式">
+          <span v-if="detailRow.paymentContent && detailRow.paymentContent !== '待支付'">
+            <span v-for="(pay, idx) in getPaymentDetail(detailRow.paymentContent)" :key="idx" style="display:block;font-size:12px;line-height:1.8;">
+              <span :style="{color: pay.color}">{{ pay.method }}</span>：¥{{ pay.amount.toFixed(2) }}
+            </span>
+          </span>
+          <span v-else style="color:#999;">{{ detailRow.paymentContent || '--' }}</span>
+        </n-descriptions-item>
         <n-descriptions-item label="已退金额">¥{{ detailRow.refunded.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="来源">{{ detailRow.source || '收银系统' }}</n-descriptions-item>
         <n-descriptions-item label="交易时间">{{ detailRow.createTime }}</n-descriptions-item>
@@ -163,6 +171,25 @@ const showDetail = ref(false)
 const showRefund = ref(false)
 const detailRow = ref<any>(null)
 const refundRemark = ref('')
+
+function getPaymentDetail(paymentContent: string) {
+  if (!paymentContent || paymentContent === '待支付') return []
+  const parts = paymentContent.split(/[,，]/)
+  return parts.map((p: string) => {
+    const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
+    if (match) {
+      const method = match[1]
+      const amount = parseFloat(match[2])
+      const color = method.includes('预存款') || method.includes('余额') ? '#6366f1'
+        : method.includes('微信') ? '#07c160'
+        : method.includes('支付宝') ? '#1677ff'
+        : method.includes('游戏币') ? '#f59e0b'
+        : '#64748b'
+      return { method, amount, color }
+    }
+    return null
+  }).filter(Boolean)
+}
 
 const filterShop = ref<string | null>(null)
 const filterOrderNo = ref('')
@@ -223,16 +250,7 @@ const refundTotalAmount = computed(() => {
 })
 
 const paymentMethods = computed(() => {
-  if (!detailRow.value?.paymentContent) return []
-  const parts = detailRow.value.paymentContent.split(/[,，]/)
-  return parts.map((p: string) => {
-    const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
-    if (match) {
-      return { method: match[1], amount: parseFloat(match[2]) }
-    }
-    const numMatch = p.match(/([\d.]+)/)
-    return { method: '现金', amount: parseFloat(numMatch?.[1] || '0') }
-  })
+  return getPaymentDetail(detailRow.value?.paymentContent || '')
 })
 
 const pagination = { pageSize: 15 }
@@ -256,7 +274,35 @@ const columns: DataTableColumns = [
   { title: '应付总额', key: 'amount', width: 100, align: 'center', render: (row: any) => row.amount },
   { title: '优惠金额', key: 'discount', width: 100, align: 'center', render: (row: any) => row.discount },
   { title: '实收总额', key: 'paid', width: 100, align: 'center', render: (row: any) => row.paid },
-  { title: '支付内容', key: 'paymentContent', minWidth: 140, align: 'center' },
+  {
+    title: '支付方式',
+    key: 'paymentContent',
+    minWidth: 160,
+    align: 'center',
+    render(row: any) {
+      if (!row.paymentContent || row.paymentContent === '待支付') return h('span', { style: 'color:#999;' }, row.paymentContent || '--')
+      const parts = row.paymentContent.split(/[,，]/)
+      const tags = parts.map((p: string) => {
+        const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
+        if (match) {
+          const method = match[1]
+          const amount = parseFloat(match[2])
+          const color = method.includes('预存款') || method.includes('余额') ? '#6366f1'
+            : method.includes('微信') ? '#07c160'
+            : method.includes('支付宝') ? '#1677ff'
+            : method.includes('游戏币') ? '#f59e0b'
+            : '#64748b'
+          return { method, amount, color }
+        }
+        return null
+      }).filter(Boolean)
+      return h('div', { style: 'display:flex;flex-direction:column;gap:2px;align-items:center;' },
+        tags.map((t: any) =>
+          h('span', { style: `font-size:11px;color:${t.color};font-weight:500;` }, `${t.method} ¥${t.amount.toFixed(2)}`)
+        )
+      )
+    },
+  },
   {
     title: '订单状态',
     key: 'status',
@@ -298,6 +344,17 @@ const discountColumns: DataTableColumns = [
 ]
 
 const rawData = ref([
+  // 混合支付示例：预存款 + 微信支付
+  {
+    orderNo: 'MX202605070001', shop: '利民街小展厅', member: '张小明（13912345678）', product: '过山车VR', amount: 38, discount: 1.90, paid: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', createTime: '2026-05-07 10:30', status: '完成',
+    refunded: 0, remark: '会员95折+游戏币抵扣', source: '小程序',
+    items: [
+      { name: '过山车VR', originalPrice: 38.00, price: 36.10, quantity: 1, subtotal: 36.10, remark: '金卡95折', refundedQty: 0, refundAmount: 0 },
+    ],
+    discounts: [
+      { type: '会员折扣', name: '金卡95折', amount: 1.90, action: '自动抵扣' },
+    ],
+  },
   {
     orderNo: '585317365644510507768770', shop: '利民街小展厅', member: '散客（未知）', product: '暗黑战场', amount: 80, discount: 0, paid: 80, paymentContent: '现金:80.00元', createTime: '2025-01-11 11:00', status: '完成',
     refunded: 0, remark: '', source: '收银系统',

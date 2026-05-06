@@ -92,6 +92,22 @@ const showFilter = ref(false)
 const showDetail = ref(false)
 const currentOrder = ref<any>(null)
 
+function parsePayments(paymentContent: string) {
+  if (!paymentContent) return []
+  const parts = paymentContent.split(/[,，]/)
+  return parts.map((p: string) => {
+    const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
+    if (match) {
+      const method = match[1]; const amount = parseFloat(match[2])
+      const color = method.includes('预存款') || method.includes('余额') ? '#6366f1'
+        : method.includes('微信') ? '#07c160' : method.includes('支付宝') ? '#1677ff'
+        : method.includes('游戏币') ? '#f59e0b' : method.includes('现金') ? '#64748b' : '#64748b'
+      return { method, amount, color }
+    }
+    return null
+  }).filter(Boolean)
+}
+
 const filterShop = ref<string | null>(null)
 const filterDevice = ref('')
 const filterGameFilm = ref('')
@@ -125,6 +141,22 @@ const columns: DataTableColumns = [
   { title: '类型', key: 'type', width: 90, align: 'center' },
   { title: '时长', key: 'duration', width: 90, align: 'center' },
   { title: '金额', key: 'amount', width: 100, align: 'center', render: (row: any) => `¥${row.amount.toFixed(2)}` },
+  {
+    title: '支付方式',
+    key: 'paymentContent',
+    width: 150,
+    align: 'center',
+    render: (row: any) => {
+      if (!row.paymentContent) return row.payMethod || '--'
+      const pays = parsePayments(row.paymentContent)
+      if (pays.length === 1) {
+        return h('span', { style: `color:${pays[0].color};font-size:12px;font-weight:500;` }, pays[0].method)
+      }
+      return h('div', { style: 'display:flex;flex-direction:column;gap:1px;' },
+        pays.map((p: any) => h('span', { style: `color:${p.color};font-size:11px;font-weight:500;` }, `${p.method} ¥${p.amount.toFixed(2)}`))
+      )
+    },
+  },
   { title: '会员', key: 'member', width: 130, align: 'center' },
   { title: '创建时间', key: 'createTime', width: 160, align: 'center' },
   { title: '状态', key: 'status', width: 90, align: 'center', render: (row: any) => h(NTag, { type: statusType(row.status), size: 'small' }, { default: () => row.status }) },
@@ -137,65 +169,74 @@ const detailColumns: DataTableColumns = [
 ]
 
 const rawData = ref([
+  // 混合支付示例（预存款+微信支付）
   {
-    orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '星际穿越', type: 'VR', duration: '15分钟', amount: 48.00, member: '散客', createTime: '2023-07-25 12:54', status: '已完成',
+    orderNo: 'MX202605070003', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '过山车VR', type: 'VR', duration: '10分钟', amount: 36.10, member: '张小明(139****5678)', createTime: '2026-05-07 11:00', status: '已完成', paymentContent: '预存款:26.10,微信支付:10.00',
+    details: [
+      { item: '支付方式', content: '预存款+微信支付' },
+      { item: '优惠', content: '金卡95折, 游戏币抵扣260币' },
+      { item: '实付', content: '微信支付 ¥10.00' },
+    ], payMethod: '混合支付',
+  },
+  {
+    orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '星际穿越', type: 'VR', duration: '15分钟', amount: 48.00, member: '散客', createTime: '2023-07-25 12:54', status: '已完成', paymentContent: '微信支付:48.00',
     details: [
       { item: '点播内容', content: '星际穿越' },
       { item: '设备名称', content: '幻影飞碟' },
       { item: '体验人数', content: '2人' },
       { item: '支付方式', content: '直接支付' },
       { item: '支付金额', content: '¥48.00' },
-    ]
+    ], payMethod: '微信支付',
   },
   {
-    orderNo: 'OD202307250002', shop: '利民街小展厅', device: '暗黑机甲22版', gameFilm: '机甲风暴', type: 'VR', duration: '20分钟', amount: 58.00, member: '138****1234', createTime: '2023-07-25 11:30', status: '已完成',
+    orderNo: 'OD202307250002', shop: '利民街小展厅', device: '暗黑机甲22版', gameFilm: '机甲风暴', type: 'VR', duration: '20分钟', amount: 58.00, member: '138****1234', createTime: '2023-07-25 11:30', status: '已完成', paymentContent: '余额:58.00',
     details: [
       { item: '点播内容', content: '机甲风暴' },
       { item: '设备名称', content: '暗黑机甲22版' },
       { item: '体验人数', content: '1人' },
       { item: '支付方式', content: '会员消费' },
       { item: '支付金额', content: '¥58.00' },
-    ]
+    ], payMethod: '余额',
   },
   {
-    orderNo: 'OD202307250003', shop: '利民街小展厅', device: '暗黑战场[主控端]', gameFilm: '僵尸围城', type: 'VR', duration: '10分钟', amount: 38.00, member: '139****5678', createTime: '2023-07-25 10:47', status: '进行中',
+    orderNo: 'OD202307250003', shop: '利民街小展厅', device: '暗黑战场[主控端]', gameFilm: '僵尸围城', type: 'VR', duration: '10分钟', amount: 38.00, member: '139****5678', createTime: '2023-07-25 10:47', status: '进行中', paymentContent: '预存次数:38.00',
     details: [
       { item: '点播内容', content: '僵尸围城' },
       { item: '设备名称', content: '暗黑战场[主控端]' },
       { item: '体验人数', content: '1人' },
       { item: '支付方式', content: '预存次数' },
       { item: '支付金额', content: '¥38.00' },
-    ]
+    ], payMethod: '预存次数',
   },
   {
-    orderNo: 'OD202307250004', shop: '利民街小展厅', device: '悬浮骑兵', gameFilm: '极速飞车', type: 'VR', duration: '12分钟', amount: 28.00, member: '137****9012', createTime: '2023-07-25 10:33', status: '已完成',
+    orderNo: 'OD202307250004', shop: '利民街小展厅', device: '悬浮骑兵', gameFilm: '极速飞车', type: 'VR', duration: '12分钟', amount: 28.00, member: '137****9012', createTime: '2023-07-25 10:33', status: '已完成', paymentContent: '套票抵扣:28.00',
     details: [
       { item: '点播内容', content: '极速飞车' },
       { item: '设备名称', content: '悬浮骑兵' },
       { item: '体验人数', content: '1人' },
       { item: '支付方式', content: '套票抵扣' },
       { item: '支付金额', content: '¥28.00' },
-    ]
+    ], payMethod: '套票抵扣',
   },
   {
-    orderNo: 'OD202307250005', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '深海探险', type: '银幕', duration: '25分钟', amount: 68.00, member: '136****3456', createTime: '2023-07-25 09:15', status: '已取消',
+    orderNo: 'OD202307250005', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '深海探险', type: '银幕', duration: '25分钟', amount: 68.00, member: '136****3456', createTime: '2023-07-25 09:15', status: '已取消', paymentContent: '微信支付:68.00',
     details: [
       { item: '点播内容', content: '深海探险' },
       { item: '设备名称', content: '幻影飞碟' },
       { item: '体验人数', content: '3人' },
       { item: '支付方式', content: '直接支付' },
       { item: '支付金额', content: '¥68.00' },
-    ]
+    ], payMethod: '微信支付',
   },
   {
-    orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑机甲22版', gameFilm: '恐龙世界', type: 'VR', duration: '18分钟', amount: 52.00, member: '散客', createTime: '2023-07-25 08:40', status: '已完成',
+    orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑机甲22版', gameFilm: '恐龙世界', type: 'VR', duration: '18分钟', amount: 52.00, member: '散客', createTime: '2023-07-25 08:40', status: '已完成', paymentContent: '微信支付:52.00',
     details: [
       { item: '点播内容', content: '恐龙世界' },
       { item: '设备名称', content: '暗黑机甲22版' },
       { item: '体验人数', content: '2人' },
       { item: '支付方式', content: '直接支付' },
       { item: '支付金额', content: '¥52.00' },
-    ]
+    ], payMethod: '微信支付',
   },
 ])
 

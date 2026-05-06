@@ -84,27 +84,52 @@ const storeOptions = [
   { label: '华东展厅', value: 5 },
 ]
 
+// 支付方式解析
+function parsePayments(paymentContent: string) {
+  if (!paymentContent || paymentContent === '待支付') return []
+  const parts = paymentContent.split(/[,，]/)
+  return parts.map((p: string) => {
+    const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
+    if (match) {
+      const method = match[1]
+      const amount = parseFloat(match[2])
+      const color = method.includes('预存款') || method.includes('余额') ? '#6366f1'
+        : method.includes('微信') ? '#07c160'
+        : method.includes('支付宝') ? '#1677ff'
+        : method.includes('游戏币') ? '#f59e0b'
+        : method.includes('现金') ? '#64748b'
+        : method.includes('后台') ? '#94a3b8'
+        : '#64748b'
+      return { method, amount, color }
+    }
+    return null
+  }).filter(Boolean)
+}
+
 // ===== Mock 数据 =====
 const allData = ref([
+  // 收银订单 - 混合支付示例
+  { id: 0, orderNo: 'MX202605070001', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 10:30:00', status: '已完成', items: '过山车VR×1' },
   // 收银订单
-  { id: 1, orderNo: 'CO202309160001', merchant: '恒然集团', store: '恒然分部展厅', type: '收银订单', amount: 128, payMethod: '微信支付', time: '2023-09-16 16:25:10', status: '已完成', items: 'VR体验×1, 饮料×2' },
-  { id: 2, orderNo: 'CO202309160003', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 256, payMethod: '支付宝', time: '2023-09-16 16:15:22', status: '已完成', items: '套餐A×1' },
-  { id: 3, orderNo: 'CO202309160005', merchant: '华东展厅', store: '华东展厅', type: '收银订单', amount: 88, payMethod: '微信支付', time: '2023-09-16 16:05:18', status: '已完成', items: '单次体验×1' },
+  { id: 1, orderNo: 'CO202309160001', merchant: '恒然集团', store: '恒然分部展厅', type: '收银订单', amount: 128, paymentContent: '微信支付:128.00', time: '2023-09-16 16:25:10', status: '已完成', items: 'VR体验×1, 饮料×2' },
+  { id: 3, orderNo: 'CO202309160005', merchant: '华东展厅', store: '华东展厅', type: '收银订单', amount: 88, paymentContent: '微信支付:88.00', time: '2023-09-16 16:05:18', status: '已完成', items: '单次体验×1' },
   // 点播系统订单
-  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45, payMethod: '会员余额', time: '2023-09-16 16:20:33', status: '已完成', vodName: '过山车VR' },
-  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30, payMethod: '游戏豆', time: '2023-09-16 16:10:45', status: '已完成', vodName: '恐怖医院' },
+  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', vodName: '过山车VR' },
+  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', vodName: '恐怖医院' },
+  // 点播系统订单 - 混合支付示例（预存款抵扣后微信支付）
+  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', vodName: '过山车VR' },
   // 手动扣费订单
-  { id: 6, orderNo: 'MD202309160006', merchant: '恒然集团', store: '恒然分部展厅', type: '手动扣费订单', amount: 20, payMethod: '现金', time: '2023-09-16 15:55:30', status: '已完成', operator: '店员A', reason: '设备损耗扣费' },
-  { id: 7, orderNo: 'MD202309160008', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '手动扣费订单', amount: 15, payMethod: '会员余额', time: '2023-09-16 15:40:12', status: '已完成', operator: '店员B', reason: '超时扣费' },
+  { id: 6, orderNo: 'MD202309160006', merchant: '恒然集团', store: '恒然分部展厅', type: '手动扣费订单', amount: 20, paymentContent: '现金:20.00', time: '2023-09-16 15:55:30', status: '已完成', operator: '店员A', reason: '设备损耗扣费' },
+  { id: 7, orderNo: 'MD202309160008', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '手动扣费订单', amount: 15, paymentContent: '余额:15.00', time: '2023-09-16 15:40:12', status: '已完成', operator: '店员B', reason: '超时扣费' },
   // 修改储值订单
-  { id: 8, orderNo: 'MB202309160009', merchant: '恒然集团', store: '恒然分部展厅', type: '修改储值订单', amount: 200, payMethod: '微信支付', time: '2023-09-16 15:30:00', status: '已完成', changeType: '充值', balanceBefore: 320, balanceAfter: 520 },
-  { id: 9, orderNo: 'MB202309160010', merchant: '利民街商家', store: '利民街大展厅', type: '修改储值订单', amount: -50, payMethod: '后台调整', time: '2023-09-16 15:20:00', status: '已完成', changeType: '扣减', balanceBefore: 150, balanceAfter: 100 },
+  { id: 8, orderNo: 'MB202309160009', merchant: '恒然集团', store: '恒然分部展厅', type: '修改储值订单', amount: 200, paymentContent: '微信支付:200.00', time: '2023-09-16 15:30:00', status: '已完成', changeType: '充值', balanceBefore: 320, balanceAfter: 520 },
+  { id: 9, orderNo: 'MB202309160010', merchant: '利民街商家', store: '利民街大展厅', type: '修改储值订单', amount: -50, paymentContent: '后台调整:-50.00', time: '2023-09-16 15:20:00', status: '已完成', changeType: '扣减', balanceBefore: 150, balanceAfter: 100 },
   // 游戏币兑换订单
-  { id: 10, orderNo: 'GB202309160007', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '游戏币兑换订单', amount: 50, payMethod: '微信支付', time: '2023-09-16 15:48:12', status: '已完成', beanAmount: 500 },
-  { id: 11, orderNo: 'GB202309160011', merchant: '华东展厅', store: '华东展厅', type: '游戏币兑换订单', amount: 100, payMethod: '支付宝', time: '2023-09-16 15:10:00', status: '已完成', beanAmount: 1000 },
+  { id: 10, orderNo: 'GB202309160007', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '游戏币兑换订单', amount: 50, paymentContent: '微信支付:50.00', time: '2023-09-16 15:48:12', status: '已完成', beanAmount: 500 },
+  { id: 11, orderNo: 'GB202309160011', merchant: '华东展厅', store: '华东展厅', type: '游戏币兑换订单', amount: 100, paymentContent: '支付宝:100.00', time: '2023-09-16 15:10:00', status: '已完成', beanAmount: 1000 },
   // 活动赠送订单
-  { id: 12, orderNo: 'PR202309160012', merchant: '恒然集团', store: '恒然分部展厅', type: '活动赠送订单', amount: 0, payMethod: '赠送', time: '2023-09-16 14:00:00', status: '已完成', promoName: '新用户注册送', giftContent: '游戏币×100' },
-  { id: 13, orderNo: 'PR202309160013', merchant: '党建馆集团', store: '党建馆', type: '活动赠送订单', amount: 0, payMethod: '赠送', time: '2023-09-16 13:45:00', status: '已完成', promoName: '生日礼遇', giftContent: '免费体验券×1' },
+  { id: 12, orderNo: 'PR202309160012', merchant: '恒然集团', store: '恒然分部展厅', type: '活动赠送订单', amount: 0, paymentContent: '赠送:0.00', time: '2023-09-16 14:00:00', status: '已完成', promoName: '新用户注册送', giftContent: '游戏币×100' },
+  { id: 13, orderNo: 'PR202309160013', merchant: '党建馆集团', store: '党建馆', type: '活动赠送订单', amount: 0, paymentContent: '赠送:0.00', time: '2023-09-16 13:45:00', status: '已完成', promoName: '生日礼遇', giftContent: '免费体验券×1' },
 ])
 
 // ===== 表格列定义 =====
@@ -113,7 +138,22 @@ const baseColumns = [
   { title: '商家', key: 'merchant', minWidth: 130 },
   { title: '店铺', key: 'store', minWidth: 170 },
   { title: '金额', key: 'amount', width: 90, render: (row: any) => `¥${row.amount}` },
-  { title: '支付方式', key: 'payMethod', width: 110 },
+  {
+    title: '支付方式',
+    key: 'paymentContent',
+    width: 150,
+    render: (row: any) => {
+      const pays = parsePayments(row.paymentContent)
+      if (pays.length === 0) return '--'
+      if (pays.length === 1) {
+        const p = pays[0]
+        return h('span', { style: `color:${p.color};font-weight:500;font-size:12px;` }, p.method)
+      }
+      return h('div', { style: 'display:flex;flex-direction:column;gap:1px;' },
+        pays.map((p: any) => h('span', { style: `color:${p.color};font-size:11px;font-weight:500;` }, `${p.method} ¥${p.amount.toFixed(2)}`))
+      )
+    },
+  },
   { title: '状态', key: 'status', width: 90, render: (row: any) => h(NTag, { size: 'small' as const, type: 'success' as const, bordered: false }, () => row.status) },
   { title: '时间', key: 'time', minWidth: 160 },
   { 

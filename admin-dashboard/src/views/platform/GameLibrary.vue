@@ -10,6 +10,10 @@
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
         <n-select v-model:value="filterStatus" placeholder="全部状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
+        <n-select v-model:value="sortField" :options="sortOptions" size="small" style="width: 140px;" />
+        <n-button size="small" :type="sortAsc ? 'default' : 'primary'" secondary @click="sortAsc = !sortAsc">
+          <template #icon><n-icon :component="sortAsc ? ArrowUpOutline : ArrowDownOutline" /></template>
+        </n-button>
         <n-button type="primary" @click="$router.push('/platform/games/add')">
           <template #icon><n-icon :component="AddOutline" /></template> 添加游戏
         </n-button>
@@ -62,9 +66,18 @@
         <div class="game-cover" :style="{ background: game.gradient }">
           <span class="game-icon">{{ game.icon }}</span>
           <div class="game-badge" :class="game.status">{{ game.statusText }}</div>
+          <div v-if="game.recommended" class="rec-badge">推荐</div>
+          <div class="cover-hover-actions">
+            <n-button size="tiny" :type="game.recommended ? 'warning' : 'default'" dashed @click.stop="toggleRecommend(game)" class="quick-rec-btn">
+              {{ game.recommended ? '取消推荐' : '设为推荐' }}
+            </n-button>
+          </div>
         </div>
         <div class="game-info">
-          <h4>{{ game.name }}</h4>
+          <div class="game-title-row">
+            <h4>{{ game.name }}</h4>
+            <span class="sort-order">#{{ game.sortOrder }}</span>
+          </div>
           <div class="game-meta">
             <span>时长 {{ game.duration }}分钟</span>
             <span>{{ game.playCount }}次体验</span>
@@ -76,7 +89,7 @@
           <div class="game-tags">
             <n-tag v-for="tag in game.tags" :key="tag" size="tiny" bordered>{{ tag }}</n-tag>
           </div>
-      <div class="game-actions">
+          <div class="game-actions">
             <n-button size="tiny" quaternary @click="$router.push(`/platform/games/${game.id}`)">详情</n-button>
             <n-button size="tiny" type="primary" secondary @click="$router.push(`/platform/games/${game.id}?edit=1`)">编辑</n-button>
           </div>
@@ -93,12 +106,22 @@ import {
 } from 'naive-ui'
 import {
   SearchOutline, AddOutline, GameControllerOutline, CheckmarkCircleOutline,
-  PencilOutline, EyeOutline
+  PencilOutline, EyeOutline, ArrowUpOutline, ArrowDownOutline
 } from '@vicons/ionicons5'
 
 const message = useMessage()
 const searchText = ref('')
 const filterStatus = ref<string | null>(null)
+const sortField = ref('sortOrder')
+const sortAsc = ref(true)
+
+const sortOptions = [
+  { label: '排序号', value: 'sortOrder' },
+  { label: '游戏名称', value: 'name' },
+  { label: '体验次数', value: 'playCountNum' },
+  { label: '评分', value: 'rating' },
+  { label: '上架时间', value: 'id' },
+]
 
 const statusOptions = [
   { label: '全部', value: null },
@@ -109,15 +132,20 @@ const statusOptions = [
 ]
 
 const games = ref([
-  { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', rating: 4.9, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线', tags: ['刺激', '热门', '全年龄'] },
-  { id: 2, name: '恐怖医院', icon: '🏥', duration: 15, playCount: '12.3k', rating: 4.7, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', status: 'online', statusText: '已上线', tags: ['恐怖', '成人', '沉浸'] },
-  { id: 3, name: '极速赛车', icon: '🏎️', duration: 8, playCount: '10.5k', rating: 4.8, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', status: 'online', statusText: '已上线', tags: ['竞速', '热门', '全年龄'] },
-  { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', rating: 4.6, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'] },
-  { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', rating: 4.5, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'] },
-  { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', rating: 4.8, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'] },
-  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', rating: 4.4, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'] },
-  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', rating: 4.3, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'] },
+  { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', playCountNum: 15800, rating: 4.9, sortOrder: 1, recommended: true, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线', tags: ['刺激', '热门', '全年龄'] },
+  { id: 2, name: '恐怖医院', icon: '🏥', duration: 15, playCount: '12.3k', playCountNum: 12300, rating: 4.7, sortOrder: 3, recommended: true, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', status: 'online', statusText: '已上线', tags: ['恐怖', '成人', '沉浸'] },
+  { id: 3, name: '极速赛车', icon: '🏎️', duration: 8, playCount: '10.5k', playCountNum: 10500, rating: 4.8, sortOrder: 2, recommended: false, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', status: 'online', statusText: '已上线', tags: ['竞速', '热门', '全年龄'] },
+  { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', playCountNum: 8900, rating: 4.6, sortOrder: 4, recommended: false, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'] },
+  { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', playCountNum: 7200, rating: 4.5, sortOrder: 5, recommended: false, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'] },
+  { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', playCountNum: 6800, rating: 4.8, sortOrder: 6, recommended: false, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'] },
+  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'] },
+  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'] },
 ])
+
+function toggleRecommend(game: any) {
+  game.recommended = !game.recommended
+  message.success(game.recommended ? `「${game.name}」已设为推荐` : `「${game.name}」已取消推荐`)
+}
 
 const filteredGames = computed(() => {
   let data = [...games.value]
@@ -127,6 +155,15 @@ const filteredGames = computed(() => {
   if (filterStatus.value) {
     data = data.filter(g => g.status === filterStatus.value)
   }
+  // Sort: recommended always first, then by selected field
+  data.sort((a, b) => {
+    if (a.recommended !== b.recommended) return a.recommended ? -1 : 1
+    const dir = sortAsc.value ? 1 : -1
+    const field = sortField.value as keyof typeof a
+    const av = a[field], bv = b[field]
+    if (typeof av === 'string' && typeof bv === 'string') return dir * av.localeCompare(bv)
+    return dir * ((av as number) - (bv as number))
+  })
   return data
 })
 
@@ -160,7 +197,13 @@ const filteredGames = computed(() => {
 .game-badge.offline { background: rgba(100,116,139,0.9); }
 
 .game-info { padding: 14px; }
-.game-info h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.game-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.game-info h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
+.sort-order { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+.rec-badge { position: absolute; top: 10px; left: 10px; background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(245,158,11,0.4); }
+.cover-hover-actions { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; background: rgba(0,0,0,0.5); }
+.game-cover:hover .cover-hover-actions { opacity: 1; }
+.quick-rec-btn { font-size: 11px; }
 .game-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
 .game-rating { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
 .game-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
