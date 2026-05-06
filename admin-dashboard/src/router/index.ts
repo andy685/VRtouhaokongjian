@@ -14,6 +14,7 @@ import AgentList from '../views/platform/AgentList.vue'
 import GameLibrary from '../views/platform/GameLibrary.vue'
 import GameDetail from '../views/platform/GameDetail.vue'
 import ContentDistribute from '../views/platform/ContentDistribute.vue'
+import BannerManage from '../views/platform/BannerManage.vue'
 import UserList from '../views/platform/UserList.vue'
 import RolePermission from '../views/platform/RolePermission.vue'
 import FinanceOverview from '../views/platform/FinanceOverview.vue'
@@ -156,6 +157,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'games/add', name: 'PlatformGameAdd', component: GameDetail, meta: { title: '新增游戏' } },
       { path: 'games/:id', name: 'PlatformGameDetail', component: GameDetail, meta: { title: '游戏详情' } },
       { path: 'content', name: 'PlatformContent', component: ContentDistribute, meta: { title: '内容分发' } },
+      { path: 'banners', name: 'PlatformBanners', component: BannerManage, meta: { title: 'Banner 管理' } },
       // 平台账号
       { path: 'users', name: 'PlatformUsers', component: UserList, meta: { title: '账号管理' } },
       { path: 'users/roles', name: 'PlatformUsersRoles', component: RolePermission, meta: { title: '角色权限' } },

@@ -238,6 +238,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '游戏库', key: '/platform/games' },
       { label: '内容分发', key: '/platform/content' },
+      { label: '小程序Banner', key: '/platform/banners' },
     ]
   },
   {
