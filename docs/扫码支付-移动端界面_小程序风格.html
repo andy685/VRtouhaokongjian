@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>扫码支付 - 小程序风格</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #0b0b14;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 32px;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  /* ===== 手机壳 ===== */
+  .phone {
+    width: 375px;
+    background: #13131f;
+    border-radius: 36px;
+    border: 5px solid #2a2a3e;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  .phone .status-bar {
+    height: 44px;
+    background: #0f0f1a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+  .phone .status-bar .time { font-size: 14px; font-weight: 700; color: #fff; }
+  .phone .status-bar .icons { display: flex; gap: 3px; align-items: center; font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 1px; }
+  .phone .body { min-height: 700px; padding-bottom: 20px; }
+  .phone .body.pay-body { min-height: 740px; }
+
+  /* ===== 导航栏 ===== */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    background: #0f0f1a;
+    position: relative;
+  }
+  .nav-bar .back {
+    position: absolute;
+    left: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: rgba(255,255,255,0.8);
+    cursor: default;
+  }
+  .nav-bar .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .nav-bar .right-action {
+    position: absolute;
+    right: 16px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    cursor: default;
+  }
+
+  /* ===== 会员信息卡 - 小程序风格紫色渐变 ===== */
+  .member-card {
+    margin: 12px 16px;
+    background: linear-gradient(145deg, #4f1b8a, #7c3aed, #8b5cf6);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 8px 28px rgba(124,58,237,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .member-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .member-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .member-card .top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .member-card .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.2);
+  }
+  .member-card .info { flex: 1; }
+  .member-card .info .name {
+    font-size: 16px; font-weight: 700; color: #fff;
+    letter-spacing: 0.3px;
+  }
+  .member-card .info .tags {
+    display: flex; gap: 6px; margin-top: 4px;
+  }
+  .member-card .info .tags span {
+    font-size: 10px; padding: 2px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+  }
+  .member-assets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .member-assets .item {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+  }
+  .member-assets .item .val {
+    font-size: 15px; font-weight: 700; color: #fff;
+  }
+  .member-assets .item .lbl {
+    font-size: 9px; color: rgba(255,255,255,0.6); margin-top: 2px;
+  }
+
+  /* ===== 卡片通用 ===== */
+  .card {
+    margin: 12px 16px;
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .card .card-title {
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ===== 商品项目 ===== */
+  .order-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .order-item .icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .order-item .icon.purple { background: rgba(139,92,246,0.15); }
+  .order-item .info { flex: 1; }
+  .order-item .info .name { font-size: 14px; font-weight: 600; color: #fff; }
+  .order-item .info .desc { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+  .order-item .price { font-size: 15px; font-weight: 700; color: #fff; }
+
+  /* ===== 费用明细 ===== */
+  .fee-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: rgba(255,255,255,0.5); padding: 5px 0;
+  }
+  .fee-row .deduct-label { color: #a78bfa; font-weight: 500; }
+  .fee-row .deduct-val { color: #a78bfa; font-weight: 500; }
+  .fee-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 6px 0; }
+
+  .pay-summary-inner {
+    margin-top: 4px;
+  }
+  .pay-summary-inner .sub-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: rgba(255,255,255,0.35); padding: 2px 0 2px 14px;
+  }
+  .pay-summary-inner .sub-row .sv { color: rgba(167,139,250,0.5); }
+
+  .total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0 0;
+  }
+  .total-row .label { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .total-row .amount { font-size: 20px; font-weight: 700; color: #fff; }
+  .total-row .amount.purple { color: #a78bfa; font-size: 22px; }
+
+  /* ===== 支付方式 ===== */
+  .payment-card {
+    margin: 12px 16px;
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .payment-card .pay-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #07c160, #06ad56);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .payment-card .info { flex: 1; }
+  .payment-card .info .name { font-size: 14px; font-weight: 600; color: #fff; }
+  .payment-card .info .sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+  .payment-card .check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #8b5cf6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .payment-card .check::after {
+    content: ''; width: 12px; height: 12px;
+    border-radius: 50%; background: #8b5cf6;
+  }
+
+  /* ===== 确认支付按钮 ===== */
+  .pay-btn {
+    margin: 16px 16px 0;
+    height: 50px;
+    border-radius: 25px;
+    background: linear-gradient(145deg, #7c3aed, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    cursor: default;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pay-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* ===== 加载动画 ===== */
+  .loading-area {
+    text-align: center;
+    padding: 60px 0 30px;
+  }
+  .loading-area .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(255,255,255,0.06);
+    border-top-color: #8b5cf6;
+    border-right-color: #6366f1;
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-area .loading-title {
+    font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px;
+  }
+  .loading-area .loading-desc {
+    font-size: 12px; color: rgba(255,255,255,0.35);
+  }
+
+  .pay-amount-card {
+    margin: 16px 16px;
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 20px 18px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .pay-amount-card .big-amount {
+    font-size: 32px; font-weight: 800; color: #fff;
+    letter-spacing: -1px;
+  }
+  .pay-amount-card .big-amount .currency {
+    font-size: 20px; font-weight: 600; color: rgba(255,255,255,0.4);
+  }
+  .pay-amount-card .pay-desc {
+    font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 6px;
+  }
+
+  /* ===== 成功页 ===== */
+  .success-area {
+    text-align: center;
+    padding: 40px 0 24px;
+  }
+  .success-area .check-icon {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 34px;
+    color: #10b981;
+    border: 2px solid rgba(16,185,129,0.2);
+  }
+  .success-area .success-title {
+    font-size: 20px; font-weight: 700; color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .success-area .success-sub {
+    font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 4px;
+  }
+
+  .success-detail {
+    margin: 16px 16px;
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .success-detail .s-row {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: rgba(255,255,255,0.5); padding: 6px 0;
+  }
+  .success-detail .s-row .s-val { color: rgba(255,255,255,0.8); }
+  .success-detail .s-row .s-highlight { color: #a78bfa; font-weight: 600; }
+  .success-detail .s-row .s-green { color: #10b981; font-weight: 600; }
+  .success-detail .s-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0; }
+
+  /* ===== 设备提示 ===== */
+  .device-hint {
+    margin: 12px 16px;
+    padding: 14px 16px;
+    background: rgba(139,92,246,0.08);
+    border: 1px solid rgba(139,92,246,0.15);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+  }
+  .device-hint strong { color: #a78bfa; font-weight: 600; }
+
+  /* ===== 按钮 ===== */
+  .return-btn {
+    margin: 16px 16px 0;
+    height: 46px;
+    border-radius: 23px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    cursor: default;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.2s;
+  }
+
+  /* ===== 失败页 ===== */
+  .fail-area {
+    text-align: center;
+    padding: 40px 0 16px;
+  }
+  .fail-area .fail-icon {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: rgba(239,68,68,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 30px;
+    color: #ef4444;
+    border: 2px solid rgba(239,68,68,0.15);
+  }
+  .fail-area .fail-title {
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+
+  .fail-reason {
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.8;
+    border: 1px solid rgba(255,255,255,0.04);
+    margin: 12px 16px;
+  }
+  .fail-reason .fail-main { color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+  .fail-reason .reasons {
+    margin-top: 4px; padding-left: 16px;
+    list-style: none;
+  }
+  .fail-reason .reasons li {
+    font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 3px;
+    position: relative;
+  }
+  .fail-reason .reasons li::before {
+    content: '·';
+    position: absolute;
+    left: -10px;
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  .fail-actions {
+    margin: 16px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .fail-actions .btn-primary {
+    height: 46px;
+    border-radius: 23px;
+    background: linear-gradient(145deg, #7c3aed, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    cursor: default;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.25);
+  }
+  .fail-actions .btn-secondary {
+    height: 46px;
+    border-radius: 23px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    cursor: default;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .phone-label {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    margin: 8px 0 4px;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 页面 1: 待支付（含抵扣计算） ===== -->
+<div>
+  <div class="phone-label">① 待支付</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">●●●● ○</span>
+    </div>
+    <div class="nav-bar">
+      <span class="back">‹</span>
+      <span class="title">扫码支付</span>
+    </div>
+    <div class="body">
+      <!-- 会员信息 -->
+      <div class="member-card">
+        <div class="top-row">
+          <div class="avatar">👤</div>
+          <div class="info">
+            <div class="name">张小明</div>
+            <div class="tags">
+              <span>金卡</span>
+              <span>95折</span>
+            </div>
+          </div>
+        </div>
+        <div class="member-assets">
+          <div class="item"><div class="val">¥256</div><div class="lbl">预存款</div></div>
+          <div class="item"><div class="val">1,280</div><div class="lbl">游戏币</div></div>
+          <div class="item"><div class="val">2张</div><div class="lbl">套票</div></div>
+          <div class="item"><div class="val">5次</div><div class="lbl">预存次数</div></div>
+        </div>
+      </div>
+
+      <!-- 消费项目 -->
+      <div class="card">
+        <div class="card-title">消费项目</div>
+        <div class="order-item">
+          <div class="icon purple">🎢</div>
+          <div class="info">
+            <div class="name">过山车VR</div>
+            <div class="desc">时长 10 分钟 · 沉浸式体验</div>
+          </div>
+          <div class="price">¥38.00</div>
+        </div>
+      </div>
+
+      <!-- 费用计算过程 -->
+      <div class="card">
+        <div class="card-title">费用明细</div>
+        <div class="pay-summary-inner">
+          <div class="fee-row">
+            <span>项目原价</span>
+            <span>¥38.00</span>
+          </div>
+          <div class="fee-row">
+            <span class="deduct-label">会员折扣 (95折)</span>
+            <span class="deduct-val">-¥1.90</span>
+          </div>
+          <div class="fee-divider"></div>
+          <div class="fee-row">
+            <span>折后金额</span>
+            <span style="color:rgba(255,255,255,0.7);">¥36.10</span>
+          </div>
+          <div class="fee-divider"></div>
+          <div class="fee-row">
+            <span class="deduct-label" style="font-size:13px;">抵扣</span>
+            <span class="deduct-val" style="font-size:13px;">-¥26.10</span>
+          </div>
+          <div class="sub-row">
+            <span>会员折扣抵扣</span>
+            <span class="sv">-¥1.90</span>
+          </div>
+          <div class="sub-row">
+            <span>游戏币抵扣 (260币 × ¥0.1)</span>
+            <span class="sv">-¥26.00</span>
+          </div>
+          <div class="fee-divider"></div>
+          <div class="total-row">
+            <span class="label">还需支付</span>
+            <span class="amount purple">¥10.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 微信支付 -->
+      <div class="payment-card">
+        <div class="pay-icon">微</div>
+        <div class="info">
+          <div class="name">微信支付</div>
+          <div class="sub">推荐使用微信支付</div>
+        </div>
+        <div class="check"></div>
+      </div>
+
+      <div class="pay-btn">确认支付 ¥10.00</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 页面 2: 支付中 ===== -->
+<div>
+  <div class="phone-label">② 支付中</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">●●●● ○</span>
+    </div>
+    <div class="nav-bar">
+      <span class="back">‹</span>
+      <span class="title">扫码支付</span>
+    </div>
+    <div class="body pay-body">
+      <div class="loading-area">
+        <div class="spinner"></div>
+        <div class="loading-title">支付处理中...</div>
+        <div class="loading-desc">正在拉起微信支付</div>
+      </div>
+      <div class="pay-amount-card">
+        <div class="big-amount"><span class="currency">¥</span>10.00</div>
+        <div class="pay-desc">过山车VR · 微信支付</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 页面 3: 支付成功 ===== -->
+<div>
+  <div class="phone-label">③ 支付成功</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">●●●● ○</span>
+    </div>
+    <div class="nav-bar">
+      <span class="back">‹</span>
+      <span class="title">支付结果</span>
+    </div>
+    <div class="body">
+      <div class="success-area">
+        <div class="check-icon">✓</div>
+        <div class="success-title">支付成功</div>
+        <div class="success-sub">¥10.00 · 微信支付</div>
+      </div>
+
+      <div class="success-detail">
+        <div class="s-row"><span>游戏</span><span class="s-val">过山车VR</span></div>
+        <div class="s-row"><span>时长</span><span class="s-val">10 分钟</span></div>
+        <div class="s-row"><span>微信支付</span><span class="s-val">¥10.00</span></div>
+        <div class="s-divider"></div>
+        <div class="s-row"><span>游戏币抵扣</span><span class="s-highlight">-260 币</span></div>
+        <div class="s-row"><span>会员优惠</span><span class="s-green">-¥1.90</span></div>
+        <div class="s-divider"></div>
+        <div class="s-row"><span>当前预存款</span><span class="s-val">¥256.00</span></div>
+        <div class="s-row"><span>当前游戏币</span><span class="s-val">1,020 币</span></div>
+      </div>
+
+      <div class="device-hint">
+        🎮 请佩戴 <strong>#03 头盔</strong> 开始体验
+      </div>
+
+      <div class="return-btn">返回收银台</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 页面 4: 扫码失败 ===== -->
+<div>
+  <div class="phone-label">④ 扫码失败</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">●●●● ○</span>
+    </div>
+    <div class="nav-bar">
+      <span class="back">‹</span>
+      <span class="title">扫码支付</span>
+    </div>
+    <div class="body">
+      <div class="fail-area">
+        <div class="fail-icon">✕</div>
+        <div class="fail-title">扫描失败</div>
+      </div>
+
+      <div class="fail-reason">
+        <div class="fail-main">未能识别付款二维码</div>
+        <ul class="reasons">
+          <li>二维码已过期，请刷新后重试</li>
+          <li>二维码格式不正确</li>
+          <li>摄像头未对准二维码</li>
+        </ul>
+      </div>
+
+      <div class="fail-actions">
+        <div class="btn-primary">重新扫描</div>
+        <div class="btn-secondary">手动输入会员号</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
