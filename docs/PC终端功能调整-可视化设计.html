@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PC终端 · 头显管理 — 三Tab完整UI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 50%,#0d1b2a 100%);
+  min-height:100vh;color:#fff;padding:40px 20px;
+}
+.container{max-width:1400px;margin:0 auto}
+
+/* 顶部 */
+.top{text-align:center;margin-bottom:40px}
+.top h1{font-size:36px;font-weight:700;background:linear-gradient(90deg,#00d4ff,#0099ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px}
+.top p{color:#8ba4be;font-size:15px}
+.top .sub{color:#6b8aa0;font-size:12px;margin-top:6px}
+
+/* 入口路径 */
+.path{
+  background:rgba(16,30,50,0.6);border:1px solid rgba(0,212,255,0.2);
+  border-radius:16px;padding:20px 28px;margin-bottom:40px;
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;
+}
+.ps{
+  padding:8px 16px;background:linear-gradient(145deg,#1a3a5c,#0d2847);
+  border-radius:8px;border:1px solid rgba(0,212,255,0.2);text-align:center;font-size:12px;
+}
+.ps .pi{font-size:20px;display:block;margin-bottom:2px}
+.ps.act{border-color:#00d4ff;box-shadow:0 0 12px rgba(0,212,255,.2)}
+.pa{color:#00d4ff;font-size:18px}
+
+/* 页面卡片 — 统一尺寸 */
+.card{
+  background:rgba(16,30,50,0.7);border:1px solid rgba(0,212,255,0.2);
+  border-radius:20px;overflow:hidden;margin-bottom:40px;backdrop-filter:blur(10px);
+}
+.titlebar{
+  background:linear-gradient(90deg,#1a3a5c,#0d2847);
+  padding:12px 22px;display:flex;align-items:center;gap:8px;
+}
+.d{width:10px;height:10px;border-radius:50%}
+.dr{background:#ff5f56}.dy{background:#ffbd2e}.dg{background:#27ca40}
+.tltxt{margin-left:8px;font-size:12px;color:#8ba4be}
+
+/* 主布局: 左列表+右内容 */
+.layout{display:flex;min-height:520px}
+
+/* 左侧设备列表 — 固定尺寸 */
+.leftp{
+  width:230px;flex-shrink:0;border-right:1px solid rgba(0,212,255,0.1);
+  padding:18px 14px;
+}
+.lt{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
+}
+.lt span{font-size:13px;font-weight:600}
+.bindb{
+  padding:5px 12px;background:linear-gradient(90deg,#00d4ff,#0099ff);
+  border:none;border-radius:5px;color:#fff;font-size:10px;cursor:pointer;
+}
+.di{
+  padding:10px;border-radius:8px;margin-bottom:6px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.di.s{background:rgba(0,212,255,0.1);border:1px solid #00d4ff50}
+.di.ns{background:rgba(0,212,255,0.02);border:1px solid rgba(0,212,255,0.06)}
+.di.of{opacity:0.45}
+.di .ic{font-size:20px}
+.di .nm{font-size:12px;font-weight:500}
+.di .st{font-size:9px;margin-top:2px}
+.di .st.on{color:#27ca40}
+.di .st.off{color:#8ba4be}
+
+/* 右侧内容 */
+.rightp{flex:1;padding:18px 22px}
+
+/* 设备头 */
+.dh{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:12px;border-bottom:1px solid rgba(0,212,255,0.07);margin-bottom:14px;
+}
+.dh .av{
+  width:36px;height:36px;background:linear-gradient(135deg,#00d4ff12,#0099ff12);
+  border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.dh .dm{flex:1}
+.dh .dm .dn{font-size:14px;font-weight:600}
+.dh .dm .ds{font-size:10px;color:#8ba4be;margin-top:1px}
+.dh .db{
+  padding:3px 10px;border-radius:5px;font-size:10px;
+  background:rgba(39,202,64,0.15);color:#27ca40;
+}
+
+/* Tab栏 */
+.tb{
+  display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid rgba(0,212,255,0.07);
+}
+.tb .ti{
+  padding:8px 14px;font-size:12px;color:#8ba4be;cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.tb .ti.a{color:#00d4ff;border-bottom-color:#00d4ff}
+
+/* ===== Tab1: 信息 ===== */
+.ig{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.ic{
+  background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.07);
+  border-radius:9px;padding:12px 14px;
+}
+.ic .il{font-size:9px;color:#8ba4be;margin-bottom:3px}
+.ic .iv{font-size:13px;font-weight:500}
+.ic .iv.h{color:#00d4ff}
+
+.ilist{
+  background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.07);
+  border-radius:9px;padding:12px 14px;
+}
+.ilist .ill{font-size:10px;color:#8ba4be;margin-bottom:6px}
+.gts{display:flex;gap:5px;flex-wrap:wrap}
+.gt{
+  padding:3px 8px;background:rgba(0,212,255,0.06);border-radius:5px;
+  font-size:10px;display:flex;align-items:center;gap:3px;
+}
+.gt .vr{font-size:8px;color:#8ba4be}
+
+/* ===== Tab2: 参数设置 ===== */
+.pg{margin-bottom:20px}
+.pl{font-size:11px;color:#8ba4be;display:block;margin-bottom:8px;font-weight:500}
+.pl .un{font-weight:400;color:#6b8aa0}
+
+/* IPD 滑块 */
+.isr{display:flex;align-items:center;gap:12px}
+.is{
+  flex:1;height:7px;background:rgba(0,212,255,0.12);border-radius:3px;position:relative;
+}
+.it{height:100%;background:linear-gradient(90deg,#00d4ff,#0099ff);border-radius:3px;width:55%}
+.ik{
+  position:absolute;left:55%;top:50%;transform:translate(-50%,-50%);
+  width:20px;height:20px;background:#fff;
+  border-radius:50%;box-shadow:0 2px 10px rgba(0,212,255,0.5);
+  border:3px solid #00d4ff;cursor:pointer;
+}
+.illbl{font-size:10px;color:#8ba4be;min-width:32px}
+.ivl{font-size:15px;font-weight:700;color:#00d4ff;min-width:50px;text-align:right}
+.isc{display:flex;justify-content:space-between;margin-top:4px;padding:0 4px}
+.isc span{font-size:9px;color:#6b8aa0}
+
+/* 刷新率 */
+.hzs{display:flex;gap:6px}
+.hzo{
+  padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.1);color:#8ba4be;text-align:center;
+}
+.hzo .hzv{display:block;font-weight:600;font-size:14px}
+.hzo .hzsb{font-size:9px;color:#6b8aa0;margin-top:1px}
+.hzo.s{
+  background:rgba(0,212,255,0.1);border-color:#00d4ff;color:#00d4ff;
+  box-shadow:0 0 8px rgba(0,212,255,.1);
+}
+.hzo.s .hzsb{color:#00d4ff70}
+
+/* 分辨率 */
+.res{display:flex;gap:6px}
+.re{
+  flex:1;padding:8px;border-radius:7px;font-size:11px;cursor:pointer;
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.1);color:#8ba4be;text-align:center;
+}
+.re .rv{display:block;font-weight:600;font-size:12px}
+.re .rs{font-size:9px;color:#6b8aa0;margin-top:1px}
+.re.s{background:rgba(0,212,255,0.1);border-color:#00d4ff;color:#00d4ff}
+
+/* 亮度 */
+.br{display:flex;align-items:center;gap:10px}
+.bs{
+  flex:1;height:5px;background:rgba(0,212,255,0.12);border-radius:2px;position:relative;
+}
+.bf{height:100%;background:linear-gradient(90deg,#00d4ff,#0099ff);border-radius:2px;width:75%}
+.bk{
+  position:absolute;left:75%;top:50%;transform:translate(-50%,-50%);
+  width:16px;height:16px;background:#fff;border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,212,255,0.4);border:3px solid #00d4ff;cursor:pointer;
+}
+.bv{font-size:12px;font-weight:600;color:#00d4ff;min-width:36px;text-align:right}
+
+/* 开关 */
+.tr{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid rgba(0,212,255,0.05);
+}
+.tr:last-child{border-bottom:none}
+.tl{font-size:12px}
+.tsw{
+  width:38px;height:22px;background:#27ca40;border-radius:11px;
+  position:relative;cursor:pointer;
+}
+.tsw::after{
+  content:'';position:absolute;right:2px;top:2px;
+  width:18px;height:18px;background:#fff;border-radius:50%;
+}
+.tsw.off{background:rgba(0,212,255,0.2)}
+.tsw.off::after{right:auto;left:2px}
+
+/* 预设 */
+.prs{display:flex;gap:6px;flex-wrap:wrap}
+.pr{
+  padding:8px 14px;border-radius:7px;font-size:11px;cursor:pointer;
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.08);color:#8ba4be;text-align:center;
+}
+.pr .prc{font-size:14px;display:block;margin-bottom:2px}
+.pr.s{background:rgba(0,212,255,0.1);border-color:#00d4ff;color:#00d4ff}
+
+/* 同步状态 */
+.sync{
+  margin-top:4px;padding:10px 14px;border-radius:7px;
+  background:rgba(39,202,64,0.07);border:1px solid rgba(39,202,64,0.12);
+  display:flex;align-items:center;gap:6px;
+}
+.sync .sc{color:#27ca40;font-size:14px}
+.sync .st{font-size:11px;color:#27ca40}
+.sync .ss{font-size:9px;color:#8ba4be;margin-left:auto}
+
+/* 按钮动作 */
+.ar{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,212,255,0.07)}
+.bp{
+  flex:1;padding:12px;font-size:13px;font-weight:600;
+  background:linear-gradient(90deg,#00d4ff,#0099ff);border:none;border-radius:8px;color:#fff;cursor:pointer;
+}
+.bs2{
+  padding:12px 18px;font-size:12px;
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.12);border-radius:8px;color:#00d4ff;cursor:pointer;
+}
+
+/* ===== Tab3: 安装游戏 ===== */
+.frow{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.sbx{
+  flex:1;padding:8px 12px;background:rgba(0,0,0,0.3);
+  border:1px solid rgba(0,212,255,0.12);border-radius:7px;color:#fff;font-size:12px;outline:none;
+}
+.sbx::placeholder{color:#6b8aa0}
+.cl{display:flex;gap:3px;flex-wrap:wrap}
+.ci{
+  padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.08);color:#8ba4be;
+}
+.ci.a{background:rgba(0,212,255,0.12);border-color:#00d4ff30;color:#00d4ff}
+
+/* 游戏网格 */
+.gl{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.gc{
+  background:rgba(0,212,255,0.02);border:1px solid rgba(0,212,255,0.08);
+  border-radius:10px;overflow:hidden;cursor:pointer;position:relative;
+}
+.gc:hover{border-color:#00d4ff50}
+.gc.s{border-color:#00d4ff;background:rgba(0,212,255,0.07)}
+.gc.in{opacity:0.5}
+.gth{
+  height:68px;background:linear-gradient(135deg,#1a4a6e,#0d3a5c);
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+}
+.gbd{padding:8px 10px}
+.gln{font-size:12px;font-weight:500;margin-bottom:2px}
+.glm{font-size:9px;color:#8ba4be}
+.glm .gd{display:inline-block;width:2px;height:2px;background:#8ba4be;border-radius:50%;margin:0 4px;vertical-align:middle}
+
+.gsb{
+  position:absolute;top:5px;right:5px;
+  padding:1px 6px;border-radius:3px;font-size:9px;
+}
+.gsb.ok{background:rgba(39,202,64,0.18);color:#27ca40}
+.gsb.ne{background:rgba(0,212,255,0.18);color:#00d4ff}
+.gsb.up{background:rgba(255,189,46,0.18);color:#ffbd2e}
+
+.gchk{
+  position:absolute;top:5px;left:5px;width:20px;height:20px;
+  border-radius:50%;border:2px solid rgba(0,212,255,0.25);
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  background:transparent;
+}
+.gc.s .gchk{background:#00d4ff;border-color:#00d4ff}
+
+/* 底部 */
+.ifs{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:14px;border-top:1px solid rgba(0,212,255,0.07);
+}
+.ifs .si{font-size:12px;color:#8ba4be}
+.ifs .si b{color:#fff}
+.bps{
+  padding:10px 28px;font-size:13px;font-weight:600;
+  background:linear-gradient(90deg,#00d4ff,#0099ff);border:none;
+  border-radius:8px;color:#fff;cursor:pointer;
+}
+.bps:disabled{opacity:0.35;cursor:not-allowed}
+
+/* 进度 */
+.pa2{
+  margin-top:14px;padding:14px;border-radius:8px;
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.1);
+}
+.pi2{
+  display:flex;align-items:center;gap:10px;margin-bottom:8px;
+}
+.pi2:last-child{margin-bottom:0}
+.pgn{font-size:12px;min-width:80px}
+.pb2{flex:1;height:5px;background:rgba(0,212,255,0.1);border-radius:2px;overflow:hidden}
+.pf2{height:100%;border-radius:2px}
+.pf2.doing{background:linear-gradient(90deg,#00d4ff,#0099ff)}
+.pf2.done{background:#27ca40;width:100%}
+.pf2.wait{background:#8ba4be;width:0}
+.ppc{font-size:11px;min-width:38px;text-align:right}
+.ps2{font-size:10px;color:#8ba4be}
+
+/* ===== 绑定流程 ===== */
+.bind-modal{
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.7);border-radius:12px;padding:30px;
+  min-height:440px;
+}
+.bind-box{
+  background:linear-gradient(145deg,#1a3a5c,#0d2847);
+  border-radius:16px;padding:28px;width:340px;
+  border:1px solid rgba(0,212,255,0.25);text-align:center;
+}
+.bind-box h3{font-size:16px;margin-bottom:16px}
+.qr-area{
+  width:180px;height:180px;margin:0 auto 14px;position:relative;
+  background:#fff;border-radius:10px;overflow:hidden;
+}
+.qr-pattern{
+  width:130px;height:130px;margin:25px auto 0;
+  background:repeating-linear-gradient(0deg,#000 0px,#000 3px,#fff 3px,#fff 6px);
+  opacity:0.7;
+}
+.qr-scanline{
+  position:absolute;left:0;right:0;height:2px;
+  background:#00d4ff;box-shadow:0 0 8px #00d4ff;
+  animation:scan 2s linear infinite;
+}
+@keyframes scan{0%{top:6px}50%{top:calc(100%-6px)}100%{top:6px}}
+.bind-hint{font-size:11px;color:#8ba4be;margin-bottom:12px;line-height:1.6}
+.paircode{font-size:20px;font-weight:700;color:#00d4ff;letter-spacing:4px;margin:10px 0}
+.bind-btns{display:flex;gap:10px}
+.bind-btns button{
+  flex:1;padding:12px;border-radius:8px;border:none;font-size:12px;cursor:pointer;
+}
+.bind-sec{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:#00d4ff}
+.bind-pri{background:linear-gradient(90deg,#00d4ff,#0099ff);color:#fff}
+
+/* 解绑确认 */
+.unbind-confirm{
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.7);border-radius:12px;padding:30px;
+  min-height:440px;
+}
+.unbind-box{
+  background:linear-gradient(145deg,#1a3a5c,#0d2847);
+  border-radius:16px;padding:28px;width:320px;
+  border:1px solid rgba(255,71,87,0.25);text-align:center;
+}
+.unbind-box .ub-icon{font-size:40px;margin-bottom:10px}
+.unbind-box h3{font-size:16px;margin-bottom:6px}
+.unbind-box .ub-desc{font-size:12px;color:#8ba4be;margin-bottom:16px;line-height:1.6}
+.unbind-dev-info{
+  background:rgba(0,212,255,0.05);border-radius:8px;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:16px;text-align:left;
+}
+.unbind-btns{display:flex;gap:10px}
+.unbind-btns button{
+  flex:1;padding:12px;border-radius:8px;border:none;font-size:12px;cursor:pointer;
+}
+.unbind-danger{background:linear-gradient(90deg,#ff4757,#ff6b81);color:#fff}
+.unbind-cancel{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);color:#00d4ff}
+
+@media(max-width:960px){
+  .layout{flex-direction:column}
+  .leftp{width:100%;border-right:none;border-bottom:1px solid rgba(0,212,255,0.1)}
+  .gl{grid-template-columns:repeat(2,1fr)}
+  .bind-modal,.unbind-confirm{min-height:300px}
+}
+@media(max-width:600px){.gl{grid-template-columns:1fr}.ig{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="top">
+    <h1>PC终端 · 头显管理统一页面</h1>
+    <p>四张完整 UI 图 · 统一尺寸 · 统一左列表 + 右内容布局</p>
+    <div class="sub">Settings → 头显管理 Tab → 选中设备 → 切换三 Tab</div>
+  </div>
+
+  <!-- 路径 -->
+  <div class="path">
+    <div class="ps"><span class="pi">🏠</span>PC终端</div>
+    <span class="pa">···</span>
+    <div class="ps"><span class="pi">🔐</span>长按⚙️+密码</div>
+    <span class="pa">→</span>
+    <div class="ps act"><span class="pi">⚙️</span>Settings → 头显管理</div>
+    <span class="pa">→</span>
+    <div class="ps act"><span class="pi">🥽</span>当前选中: Pico #01</div>
+    <span class="pa">→</span>
+    <div class="ps" style="border-color:#00d4ff30;"><span class="pi">📋⚙️📲</span>三Tab切换</div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 图1: Tab1 设备信息 -->
+  <!-- ============================== -->
+  <div class="card">
+    <div class="titlebar">
+      <span class="d dr"></span><span class="d dy"></span><span class="d dg"></span>
+      <span class="tltxt">图 1/3 · Tab「📋 设备信息」</span>
+    </div>
+    <div class="layout">
+      <!-- 左 -->
+      <div class="leftp">
+        <div class="lt"><span>🥽 我的设备</span><button class="bindb">+ 绑定</button></div>
+        <div class="di s"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #01</div><div class="st on">🟢 在线 · 游戏中</div></div></div>
+        <div class="di ns"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #02</div><div class="st on">🟢 在线 · 待机</div></div></div>
+        <div class="di of"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #03</div><div class="st off">⚪ 离线</div></div></div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(0,212,255,0.06);font-size:10px;color:#8ba4be;display:flex;gap:12px;">
+          <span>总计 3</span><span style="color:#27ca40;">在线 2</span>
+        </div>
+      </div>
+      <!-- 右 -->
+      <div class="rightp">
+        <div class="dh">
+          <div class="av">🥽</div>
+          <div class="dm"><div class="dn">Pico 4 Pro #01</div><div class="ds">序列号: PC4P2024A01234 · 固件 v5.4.1</div></div>
+          <span class="db">🟢 在线 · 游戏中</span>
+        </div>
+        <div class="tb">
+          <div class="ti a">📋 设备信息</div>
+          <div class="ti">⚙️ 参数设置</div>
+          <div class="ti">📲 安装游戏</div>
+        </div>
+        <!-- 信息内容 -->
+        <div class="ig">
+          <div class="ic"><div class="il">瞳距 (IPD)</div><div class="iv h">64.5mm</div></div>
+          <div class="ic"><div class="il">刷新率</div><div class="iv h">90Hz</div></div>
+          <div class="ic"><div class="il">渲染分辨率</div><div class="iv">自动（2688×2688）</div></div>
+          <div class="ic">
+            <div class="il">存储</div><div class="iv">12.4GB / 64GB</div>
+            <div style="margin-top:4px;height:3px;background:rgba(0,212,255,0.1);border-radius:1px;overflow:hidden;">
+              <div style="width:19%;height:100%;background:linear-gradient(90deg,#00d4ff,#0099ff);border-radius:1px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ilist">
+          <div class="ill">已安装游戏（5个）</div>
+          <div class="gts">
+            <span class="gt">🎢 极速过山车 <span class="vr">v2.1</span></span>
+            <span class="gt">🏴‍☠️ 海盗冒险 <span class="vr">v1.3</span></span>
+            <span class="gt">🎵 节奏光剑 <span class="vr">v3.0</span></span>
+            <span class="gt">🔫 僵尸射击 <span class="vr">v1.0</span></span>
+            <span class="gt">🌍 太空漫步 <span class="vr">v2.0</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 图2: Tab2 参数设置 -->
+  <!-- ============================== -->
+  <div class="card">
+    <div class="titlebar">
+      <span class="d dr"></span><span class="d dy"></span><span class="d dg"></span>
+      <span class="tltxt">图 2/3 · Tab「⚙️ 参数设置」</span>
+    </div>
+    <div class="layout">
+      <!-- 左 -->
+      <div class="leftp">
+        <div class="lt"><span>🥽 我的设备</span><button class="bindb">+ 绑定</button></div>
+        <div class="di s"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #01</div><div class="st on">🟢 在线 · 游戏中</div></div></div>
+        <div class="di ns"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #02</div><div class="st on">🟢 在线 · 待机</div></div></div>
+        <div class="di of"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #03</div><div class="st off">⚪ 离线</div></div></div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(0,212,255,0.06);font-size:10px;color:#8ba4be;display:flex;gap:12px;">
+          <span>总计 3</span><span style="color:#27ca40;">在线 2</span>
+        </div>
+      </div>
+      <!-- 右 -->
+      <div class="rightp">
+        <div class="dh">
+          <div class="av">🥽</div>
+          <div class="dm"><div class="dn">Pico 4 Pro #01</div><div class="ds">序列号: PC4P2024A01234 · 固件 v5.4.1</div></div>
+          <span class="db">🟢 在线 · 游戏中</span>
+        </div>
+        <div class="tb">
+          <div class="ti">📋 设备信息</div>
+          <div class="ti a">⚙️ 参数设置</div>
+          <div class="ti">📲 安装游戏</div>
+        </div>
+        <!-- 参数内容 -->
+        <div style="overflow-y:auto;max-height:430px;padding-right:4px;">
+
+          <div class="pg">
+            <label class="pl">👁️ 瞳距微调 <span class="un">IPD (Interpupillary Distance)</span></label>
+            <div class="isr">
+              <span class="illbl">58</span>
+              <div class="is">
+                <div class="it"></div>
+                <div class="ik"></div>
+              </div>
+              <span class="illbl">72mm</span>
+              <div class="ivl">64.5mm</div>
+            </div>
+            <div class="isc"><span>58</span><span>62</span><span>65</span><span>68</span><span>72</span></div>
+          </div>
+
+          <div class="pg">
+            <label class="pl">🖥️ 刷新率</label>
+            <div class="hzs">
+              <div class="hzo"><span class="hzv">72Hz</span><span class="hzsb">省电</span></div>
+              <div class="hzo s"><span class="hzv">90Hz</span><span class="hzsb">推荐</span></div>
+              <div class="hzo"><span class="hzv">120Hz</span><span class="hzsb">高性能</span></div>
+            </div>
+          </div>
+
+          <div class="pg">
+            <label class="pl">🖼️ 渲染分辨率</label>
+            <div class="res">
+              <div class="re"><span class="rv">自动</span><span class="rs">推荐</span></div>
+              <div class="re s"><span class="rv">高品质</span><span class="rs">2688×2688</span></div>
+              <div class="re"><span class="rv">高性能</span><span class="rs">1920×1920</span></div>
+            </div>
+          </div>
+
+          <!-- 亮度 -->
+          <div class="pg">
+            <label class="pl">🔆 屏幕亮度</label>
+            <div class="br">
+              <span style="font-size:14px;">🌑</span>
+              <div class="bs"><div class="bf"></div><div class="bk"></div></div>
+              <span style="font-size:14px;">☀️</span>
+              <div class="bv">75%</div>
+            </div>
+          </div>
+
+          <!-- 开关 -->
+          <div class="pg">
+            <div class="tr"><span class="tl">🔊 音量限制（保护听力）</span><div class="tsw"></div></div>
+            <div class="tr"><span class="tl">😴 自动待机（无人佩戴）</span><div class="tsw"></div></div>
+            <div class="tr"><span class="tl">📶 仅闲时后台更新</span><div class="tsw off"></div></div>
+          </div>
+
+          <!-- 预设 -->
+          <div class="pg">
+            <label class="pl">📌 预设方案（点击快速切换）</label>
+            <div class="prs">
+              <div class="pr s"><span class="prc">👤</span>成人模式 · 65mm · 90Hz</div>
+              <div class="pr"><span class="prc">👶</span>儿童模式 · 58mm · 72Hz</div>
+              <div class="pr"><span class="prc">⚡</span>高性能 · 65mm · 120Hz</div>
+            </div>
+          </div>
+
+          <!-- 同步 -->
+          <div class="sync">
+            <span class="sc">✓</span>
+            <span class="st">当前参数已同步到头显</span>
+            <span class="ss">最后同步: 刚刚</span>
+          </div>
+
+          <!-- 按钮 -->
+          <div class="ar">
+            <button class="bp">💾 保存并同步</button>
+            <button class="bs2">恢复到预设</button>
+            <button class="bs2">📤 应用到全部</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 图3: Tab3 安装游戏 -->
+  <!-- ============================== -->
+  <div class="card">
+    <div class="titlebar">
+      <span class="d dr"></span><span class="d dy"></span><span class="d dg"></span>
+      <span class="tltxt">图 3/3 · Tab「📲 安装游戏」</span>
+    </div>
+    <div class="layout">
+      <!-- 左 -->
+      <div class="leftp">
+        <div class="lt"><span>🥽 我的设备</span><button class="bindb">+ 绑定</button></div>
+        <div class="di s"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #01</div><div class="st on">🟢 在线 · 游戏中</div></div></div>
+        <div class="di ns"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #02</div><div class="st on">🟢 在线 · 待机</div></div></div>
+        <div class="di of"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #03</div><div class="st off">⚪ 离线</div></div></div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(0,212,255,0.06);font-size:10px;color:#8ba4be;display:flex;gap:12px;">
+          <span>总计 3</span><span style="color:#27ca40;">在线 2</span>
+        </div>
+      </div>
+      <!-- 右 -->
+      <div class="rightp">
+        <div class="dh">
+          <div class="av">🥽</div>
+          <div class="dm"><div class="dn">Pico 4 Pro #01</div><div class="ds">序列号: PC4P2024A01234 · 固件 v5.4.1</div></div>
+          <span class="db">🟢 在线 · 游戏中</span>
+        </div>
+        <div class="tb">
+          <div class="ti">📋 设备信息</div>
+          <div class="ti">⚙️ 参数设置</div>
+          <div class="ti a">📲 安装游戏</div>
+        </div>
+        <!-- 安装内容 -->
+        <div style="overflow-y:auto;max-height:430px;padding-right:4px;">
+
+          <!-- 搜索 -->
+          <div class="frow">
+            <input class="sbx" placeholder="🔍 搜索游戏名称..." readonly>
+            <div class="cl">
+              <span class="ci a">🕹️ 全部</span>
+              <span class="ci">🎬 动作</span>
+              <span class="ci">🏴‍☠️ 冒险</span>
+              <span class="ci">🔫 射击</span>
+              <span class="ci">🎵 音乐</span>
+              <span class="ci">🌍 模拟</span>
+            </div>
+          </div>
+
+          <!-- 游戏网格 -->
+          <div class="gl">
+
+            <div class="gc in">
+              <span class="gsb ok">✓ 已安装</span>
+              <div class="gth">🎢</div>
+              <div class="gbd">
+                <div class="gln">极速过山车</div>
+                <div class="glm">动作 <span class="gd"></span> 256MB <span class="gd"></span> v2.1</div>
+              </div>
+            </div>
+
+            <div class="gc s">
+              <span class="gchk">✓</span>
+              <span class="gsb ne">可选</span>
+              <div class="gth">🏴‍☠️</div>
+              <div class="gbd">
+                <div class="gln">海盗冒险</div>
+                <div class="glm">冒险 <span class="gd"></span> 512MB <span class="gd"></span> v1.3</div>
+              </div>
+            </div>
+
+            <div class="gc">
+              <span class="gchk"></span>
+              <span class="gsb ne">可选</span>
+              <div class="gth">🎵</div>
+              <div class="gbd">
+                <div class="gln">节奏光剑</div>
+                <div class="glm">音乐 <span class="gd"></span> 380MB <span class="gd"></span> v3.0</div>
+              </div>
+            </div>
+
+            <div class="gc">
+              <span class="gchk"></span>
+              <span class="gsb ne">可选</span>
+              <div class="gth">🔫</div>
+              <div class="gbd">
+                <div class="gln">僵尸射击</div>
+                <div class="glm">射击 <span class="gd"></span> 720MB <span class="gd"></span> v1.0</div>
+              </div>
+            </div>
+
+            <div class="gc">
+              <span class="gchk"></span>
+              <span class="gsb ne">可选</span>
+              <div class="gth">🌍</div>
+              <div class="gbd">
+                <div class="gln">太空漫步</div>
+                <div class="glm">模拟 <span class="gd"></span> 1.2GB <span class="gd"></span> v2.0</div>
+              </div>
+            </div>
+
+            <div class="gc">
+              <span class="gchk"></span>
+              <span class="gsb up">🔄 可更新</span>
+              <div class="gth">🏎️</div>
+              <div class="gbd">
+                <div class="gln">赛车狂飙</div>
+                <div class="glm">竞速 <span class="gd"></span> 650MB <span class="gd"></span> v1.2→1.3</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 底部 -->
+          <div class="ifs">
+            <div class="si">已选 <b>1</b> 个游戏，共 <b>512MB</b></div>
+            <button class="bps">📤 推送到 Pico 4 Pro #01</button>
+          </div>
+
+          <!-- 进度 -->
+          <div class="pa2">
+            <div style="font-size:11px;font-weight:500;margin-bottom:10px;">📊 推送进度</div>
+            <div class="pi2">
+              <span class="pgn">🏴‍☠️ 海盗冒险</span>
+              <div class="pb2"><div class="pf2 doing" style="width:68%;"></div></div>
+              <span class="ppc" style="color:#00d4ff;">68%</span>
+              <span class="ps2">5.2 MB/s · 约35s</span>
+            </div>
+            <div class="pi2">
+              <span class="pgn" style="color:#27ca40;">✓ 极速过山车</span>
+              <div class="pb2"><div class="pf2 done"></div></div>
+              <span class="ppc" style="color:#27ca40;">完成</span>
+              <span class="ps2">已安装</span>
+            </div>
+            <div class="pi2">
+              <span class="pgn" style="color:#8ba4be;">⏳ 僵尸射击</span>
+              <div class="pb2"><div class="pf2 wait"></div></div>
+              <span class="ppc" style="color:#8ba4be;">排队中</span>
+              <span class="ps2"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 图4: 绑定 & 解绑流程 -->
+  <!-- ============================== -->
+  <div class="card">
+    <div class="titlebar">
+      <span class="d dr"></span><span class="d dy"></span><span class="d dg"></span>
+      <span class="tltxt">图 4/4 · 绑定新设备 / 解绑设备</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:520px;">
+      <!-- 左：绑定流程 -->
+      <div style="border-right:1px solid rgba(0,212,255,0.1);">
+        <!-- 头部 -->
+        <div style="padding:14px 20px;border-bottom:1px solid rgba(0,212,255,0.07);display:flex;align-items:center;gap:8px;">
+          <span style="background:linear-gradient(90deg,#00d4ff,#0099ff);padding:2px 10px;border-radius:4px;font-size:10px;color:#fff;font-weight:600;">步骤 1</span>
+          <span style="font-size:13px;font-weight:600;">点击「+ 绑定」</span>
+        </div>
+        <div class="bind-modal">
+          <div class="bind-box">
+            <h3>📷 扫码绑定无线头显</h3>
+            <div class="qr-area">
+              <div class="qr-pattern"></div>
+              <div class="qr-scanline"></div>
+            </div>
+            <div class="bind-hint">
+              请在 Pico 头显上操作：<br>
+              「设置 → 设备连接 → 扫码配对」
+            </div>
+            <div style="font-size:11px;color:#8ba4be;">或输入配对码</div>
+            <div class="paircode">8X2P-9KL4</div>
+            <div class="bind-btns">
+              <button class="bind-sec">↩ 手动输入</button>
+              <button class="bind-pri">🔄 刷新二维码</button>
+            </div>
+            <div style="margin-top:14px;padding:10px;background:rgba(39,202,64,0.08);border:1px solid rgba(39,202,64,0.15);border-radius:8px;">
+              <div style="font-size:12px;color:#27ca40;">✅ 绑定成功</div>
+              <div style="font-size:10px;color:#8ba4be;margin-top:4px;">
+                Pico 4 Pro #04 · 序列号: PC4P2024B05678<br>
+                已通过连接测试 · 固件 v5.4.1
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid rgba(0,212,255,0.07);font-size:11px;color:#8ba4be;display:flex;gap:16px;">
+          <span>🔌 连接方式: WiFi Direct</span>
+          <span>⏱️ 二维码有效期: 5分钟</span>
+        </div>
+      </div>
+      <!-- 右：解绑流程 -->
+      <div>
+        <div style="padding:14px 20px;border-bottom:1px solid rgba(0,212,255,0.07);display:flex;align-items:center;gap:8px;">
+          <span style="background:#ff4757;padding:2px 10px;border-radius:4px;font-size:10px;color:#fff;font-weight:600;">步骤 2</span>
+          <span style="font-size:13px;font-weight:600;">解绑 / 移除设备</span>
+        </div>
+        <div class="unbind-confirm">
+          <div class="unbind-box">
+            <div class="ub-icon">⚠️</div>
+            <h3>确认解绑设备？</h3>
+            <div class="ub-desc">
+              解绑后该设备将断开连接，<br>
+              已安装的游戏仍保留在设备上<br>
+              后续可重新扫码绑定
+            </div>
+            <div class="unbind-dev-info">
+              <span style="font-size:20px;">🥽</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;">Pico 4 Pro #03</div>
+                <div style="font-size:10px;color:#8ba4be;">序列号: PC4P2024A00567 · 离线</div>
+              </div>
+            </div>
+            <div class="unbind-btns">
+              <button class="unbind-cancel">取消</button>
+              <button class="unbind-danger">✕ 确认解绑</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid rgba(0,212,255,0.07);font-size:11px;color:#8ba4be;">
+          <span>💡 离线设备显示红色 ✕ 操作按钮，点击弹出确认框</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px;color:#8ba4be;font-size:12px;">
+    头号空间 · PC终端头显管理统一页面 v2.3 · 三Tab完整UI展示 · 2026-05-07
+  </div>
+
+</div>
+</body>
+</html>
