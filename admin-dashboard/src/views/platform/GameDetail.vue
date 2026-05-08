@@ -224,6 +224,69 @@
           </div>
         </section>
 
+        <!-- 运营配置（v1.4 新增） -->
+        <section class="card form-card">
+          <div class="card-head">
+            <h4>运营配置</h4>
+            <n-tag size="small" type="info" bordered>v1.4</n-tag>
+          </div>
+          <div class="form-body">
+            <!-- 游戏豆消耗 -->
+            <div class="form-group">
+              <label>游戏豆消耗 <n-text depth="3">（玩家每玩一次消耗的游戏豆数）</n-text></label>
+              <n-input-number v-model:value="gameData.gameBeanCost" :min="0" :max="99999" style="width:100%">
+                <template #suffix>个/次</template>
+              </n-input-number>
+            </div>
+
+            <!-- 游戏类型 -->
+            <div class="form-group">
+              <label>游戏类型</label>
+              <n-radio-group v-model:value="gameData.gameType">
+                <n-radio-button value="standalone" label="单机游戏">单机游戏</n-radio-button>
+                <n-radio-button value="link" label="链接游戏">链接游戏</n-radio-button>
+              </n-radio-group>
+            </div>
+
+            <!-- 链接游戏的 URL -->
+            <div v-if="gameData.gameType === 'link'" class="form-group">
+              <label>游戏链接地址</label>
+              <n-input v-model:value="gameData.linkUrl" placeholder="https:// 或 steam:// 等外部游戏启动链接" size="large" />
+              <n-text depth="3" style="font-size:11px;margin-top:4px;">填写外部游戏/应用的链接或协议地址，PC 终端将通过该链接启动游戏</n-text>
+            </div>
+
+            <!-- 时长限制 -->
+            <div class="form-group">
+              <label>时长限制 <n-text depth="3">（时间到了以后自动结束游戏）</n-text></label>
+              <div class="form-row-2">
+                <n-switch v-model:value="gameData.timeLimitEnabled" />
+                <template v-if="gameData.timeLimitEnabled">
+                  <n-input-number
+                    v-model:value="gameData.timeLimitMinutes"
+                    :min="1" :max="999" style="width:100%"
+                    placeholder="限制时长"
+                  >
+                    <template #suffix>分钟</template>
+                  </n-input-number>
+                </template>
+                <span v-else style="color:#999;font-size:12px;">不限制游戏时长</span>
+              </div>
+            </div>
+
+            <!-- 付费模式 -->
+            <div class="form-group">
+              <label>付费模式</label>
+              <n-radio-group v-model:value="gameData.payMode">
+                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一人花钱运行游戏</n-radio-button>
+                <n-radio-button value="multi" label="多人付费">👥 多人付费 — 多人共同花钱运行游戏</n-radio-button>
+              </n-radio-group>
+              <n-text depth="3" style="font-size:11px;margin-top:4px;">
+                单人付费：一名玩家付费后运行游戏；多人付费：多名玩家分摊费用后共同进入游戏
+              </n-text>
+            </div>
+          </div>
+        </section>
+
         <!-- 语言与设备 -->
         <section class="card form-card">
           <div class="card-head"><h4>语言与设备</h4></div>
@@ -259,7 +322,8 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   NButton, NInput, NRate, NIcon, NSpace, NDynamicTags, NTag, NSelect,
   NCheckbox, NInputNumber, NDatePicker, NBreadcrumb,
-  NBreadcrumbItem, NSlider, NUpload, useMessage
+  NBreadcrumbItem, NSlider, NUpload, NRadioGroup, NRadioButton,
+  NSwitch, NText, useMessage
 } from 'naive-ui'
 import {
   PlayOutline, AddOutline, VideocamOutline,
@@ -368,6 +432,20 @@ const gameData = ref({
   status: 'draft',
   sortOrder: 10,
   recommended: false,
+
+  // ===== 运营配置（v1.4 新增） =====
+  // 游戏豆消耗（个/次）
+  gameBeanCost: 0,
+  // 游戏类型：standalone-单机游戏, link-链接游戏
+  gameType: 'standalone',
+  // 链接游戏地址
+  linkUrl: '',
+  // 时长限制开关
+  timeLimitEnabled: false,
+  // 时长限制（分钟）
+  timeLimitMinutes: 10,
+  // 付费模式：single-单人付费, multi-多人付费
+  payMode: 'single',
 })
 
 
@@ -399,6 +477,8 @@ function loadGameData(id: string) {
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
       spaceRequired: '无限制', supportDevices: ['HTC Vive', 'Oculus'],
       videoUrl: '', videoCover: '', status: 'online',
+      gameBeanCost: 20, gameType: 'standalone', linkUrl: '',
+      timeLimitEnabled: true, timeLimitMinutes: 10, payMode: 'single',
     },
     '2': {
       id: 2, name: '末日大灾灭', icon: '💀', rating: 4.7,
@@ -410,6 +490,8 @@ function loadGameData(id: string) {
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
       spaceRequired: '2m x 3m', supportDevices: ['HTC Vive'],
       videoUrl: '', videoCover: '', status: 'online',
+      gameBeanCost: 30, gameType: 'standalone', linkUrl: '',
+      timeLimitEnabled: true, timeLimitMinutes: 15, payMode: 'multi',
     },
   }
 
