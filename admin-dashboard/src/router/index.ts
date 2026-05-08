@@ -55,6 +55,7 @@ import AgentBankAccount from '../views/agent/BankAccount.vue'
 import Workbench from '../views/shop/Workbench.vue'
 import Members from '../views/shop/Members.vue'
 import Devices from '../views/shop/Devices.vue'
+import DeviceBind from '../views/shop/DeviceBind.vue'
 import DeviceOnlineStats from '../views/shop/DeviceOnlineStats.vue'
 import ReportsShop from '../views/shop/Reports.vue'
 import Products from '../views/shop/Products.vue'
@@ -287,7 +288,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: OnDemandSettings, meta: { title: '点播设置', breadcrumb: [{ label: '系统设置' }, { label: '点播设置' }] } },
       { path: 'devices', name: 'ShopDevices', component: Devices, meta: { title: '设备列表', breadcrumb: [{ label: '系统设置' }, { label: '设备列表' }] } },
       { path: 'devices/control', name: 'ShopDevicesControl', component: Devices, meta: { title: '远程控制', breadcrumb: [{ label: '系统设置' }, { label: '设备列表', path: '/shop/devices' }, { label: '远程控制' }] } },
-      { path: 'devices/online-stats', name: 'ShopDeviceOnlineStats', component: DeviceOnlineStats, meta: { title: '设备在线统计', breadcrumb: [{ label: '系统设置' }, { label: '设备在线统计' }] } },
+      { path: 'devices/bind', name: 'ShopDeviceBind', component: DeviceBind, meta: { title: '设备绑定管理', breadcrumb: [{ label: '系统设置' }, { label: '设备管理' }, { label: '设备绑定管理' }] } },
+      { path: 'devices/online-stats', name: 'ShopDeviceOnlineStats', component: DeviceOnlineStats, meta: { title: '设备在线统计', breadcrumb: [{ label: '系统设置' }, { label: '设备管理' }, { label: '设备在线统计' }] } },
       { path: 'film-genres', name: 'ShopFilmGenres', component: FilmGenres, meta: { title: '影片题材', breadcrumb: [{ label: '系统设置' }, { label: '影片题材' }] } },
       { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: CashierTerminal, meta: { title: '收银终端', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '收银终端' }] } },
       { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '支付设置' }] } },

@@ -244,32 +244,55 @@
               <label>游戏类型</label>
               <n-radio-group v-model:value="gameData.gameType">
                 <n-radio-button value="standalone" label="单机游戏">单机游戏</n-radio-button>
-                <n-radio-button value="link" label="链接游戏">链接游戏</n-radio-button>
+                <n-radio-button value="online" label="联机游戏">联机游戏</n-radio-button>
               </n-radio-group>
-            </div>
-
-            <!-- 链接游戏的 URL -->
-            <div v-if="gameData.gameType === 'link'" class="form-group">
-              <label>游戏链接地址</label>
-              <n-input v-model:value="gameData.linkUrl" placeholder="https:// 或 steam:// 等外部游戏启动链接" size="large" />
-              <n-text depth="3" style="font-size:11px;margin-top:4px;">填写外部游戏/应用的链接或协议地址，PC 终端将通过该链接启动游戏</n-text>
+              <n-text depth="3" style="font-size:11px;margin-top:4px;">
+                单机游戏：单人独立体验；联机游戏：支持多台 VR 设备联网共同游戏
+              </n-text>
             </div>
 
             <!-- 时长限制 -->
             <div class="form-group">
-              <label>时长限制 <n-text depth="3">（时间到了以后自动结束游戏）</n-text></label>
-              <div class="form-row-2">
-                <n-switch v-model:value="gameData.timeLimitEnabled" />
-                <template v-if="gameData.timeLimitEnabled">
-                  <n-input-number
-                    v-model:value="gameData.timeLimitMinutes"
-                    :min="1" :max="999" style="width:100%"
-                    placeholder="限制时长"
-                  >
-                    <template #suffix>分钟</template>
-                  </n-input-number>
-                </template>
-                <span v-else style="color:#999;font-size:12px;">不限制游戏时长</span>
+              <label>时长限制</label>
+              <div class="time-limit-card">
+                <div class="time-limit-header">
+                  <div class="time-limit-info">
+                    <span class="time-limit-icon">⏱</span>
+                    <div>
+                      <div class="time-limit-title">游戏时长限制</div>
+                      <div class="time-limit-desc">时间到了以后自动结束游戏</div>
+                    </div>
+                  </div>
+                  <n-switch v-model:value="gameData.timeLimitEnabled" size="medium" />
+                </div>
+                <transition name="fade-slide">
+                  <div v-if="gameData.timeLimitEnabled" class="time-limit-body">
+                    <div class="time-limit-slider-area">
+                      <div class="time-limit-slider-label">
+                        <span>限制时长</span>
+                        <span class="time-limit-value">{{ gameData.timeLimitMinutes }} <small>分钟</small></span>
+                      </div>
+                      <n-slider
+                        v-model:value="gameData.timeLimitMinutes"
+                        :min="1" :max="180" :step="1"
+                        :marks="{ 5: '5min', 15: '15min', 30: '30min', 60: '1h', 120: '2h', 180: '3h' }"
+                      />
+                      <div class="time-limit-presets">
+                        <span
+                          v-for="preset in timePresets"
+                          :key="preset.value"
+                          class="preset-chip"
+                          :class="{ active: gameData.timeLimitMinutes === preset.value }"
+                          @click="gameData.timeLimitMinutes = preset.value"
+                        >{{ preset.label }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="time-limit-unlimited">
+                    <span>♾️</span>
+                    <span>不限制游戏时长，玩家可一直体验直到手动结束</span>
+                  </div>
+                </transition>
               </div>
             </div>
 
@@ -307,7 +330,7 @@
             </div>
             <div class="form-group">
               <label>支持设备</label>
-              <n-dynamic-tags v-model:value="gameData.supportDevices" />
+              <n-select v-model:value="gameData.supportDevices" :options="deviceOptions" multiple placeholder="选择兼容的 VR 设备" />
             </div>
           </div>
         </section>
@@ -386,6 +409,43 @@ const languageOptions = [
   { label: '多语言', value: 'multi' },
 ]
 
+// 支持设备选项
+const deviceOptions = [
+  { label: 'HTC Vive', value: 'HTC Vive' },
+  { label: 'HTC Vive Pro', value: 'HTC Vive Pro' },
+  { label: 'HTC Vive XR Elite', value: 'HTC Vive XR Elite' },
+  { label: 'Oculus Rift', value: 'Oculus Rift' },
+  { label: 'Oculus Rift S', value: 'Oculus Rift S' },
+  { label: 'Meta Quest', value: 'Meta Quest' },
+  { label: 'Meta Quest 2', value: 'Meta Quest 2' },
+  { label: 'Meta Quest 3', value: 'Meta Quest 3' },
+  { label: 'Meta Quest 3S', value: 'Meta Quest 3S' },
+  { label: 'Meta Quest Pro', value: 'Meta Quest Pro' },
+  { label: 'Pico Neo 3', value: 'Pico Neo 3' },
+  { label: 'Pico 4', value: 'Pico 4' },
+  { label: 'Pico 4 Pro', value: 'Pico 4 Pro' },
+  { label: 'Pico 4 Ultra', value: 'Pico 4 Ultra' },
+  { label: 'Valve Index', value: 'Valve Index' },
+  { label: 'PlayStation VR', value: 'PS VR' },
+  { label: 'PlayStation VR2', value: 'PS VR2' },
+  { label: 'Apple Vision Pro', value: 'Apple Vision Pro' },
+  { label: 'Bigscreen Beyond', value: 'Bigscreen Beyond' },
+  { label: 'Samsung Gear VR', value: 'Samsung Gear VR' },
+  { label: 'Windows Mixed Reality', value: 'Windows Mixed Reality' },
+]
+
+// 时长预设快速选项
+const timePresets = [
+  { label: '3分钟', value: 3 },
+  { label: '5分钟', value: 5 },
+  { label: '10分钟', value: 10 },
+  { label: '15分钟', value: 15 },
+  { label: '30分钟', value: 30 },
+  { label: '1小时', value: 60 },
+  { label: '2小时', value: 120 },
+  { label: '3小时', value: 180 },
+]
+
 // 游戏数据
 const gameData = ref({
   id: null as number | null,
@@ -436,10 +496,9 @@ const gameData = ref({
   // ===== 运营配置（v1.4 新增） =====
   // 游戏豆消耗（个/次）
   gameBeanCost: 0,
-  // 游戏类型：standalone-单机游戏, link-链接游戏
+  // 游戏类型：standalone-单机游戏, online-联机游戏
   gameType: 'standalone',
-  // 链接游戏地址
-  linkUrl: '',
+  // 联机游戏
   // 时长限制开关
   timeLimitEnabled: false,
   // 时长限制（分钟）
@@ -477,7 +536,7 @@ function loadGameData(id: string) {
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
       spaceRequired: '无限制', supportDevices: ['HTC Vive', 'Oculus'],
       videoUrl: '', videoCover: '', status: 'online',
-      gameBeanCost: 20, gameType: 'standalone', linkUrl: '',
+      gameBeanCost: 20, gameType: 'standalone',
       timeLimitEnabled: true, timeLimitMinutes: 10, payMode: 'single',
     },
     '2': {
@@ -490,7 +549,7 @@ function loadGameData(id: string) {
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
       spaceRequired: '2m x 3m', supportDevices: ['HTC Vive'],
       videoUrl: '', videoCover: '', status: 'online',
-      gameBeanCost: 30, gameType: 'standalone', linkUrl: '',
+      gameBeanCost: 30, gameType: 'standalone',
       timeLimitEnabled: true, timeLimitMinutes: 15, payMode: 'multi',
     },
   }
@@ -986,6 +1045,125 @@ onMounted(() => {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   padding: 0 20px 4px;
+}
+
+/* ===== 时长限制卡片 ===== */
+.time-limit-card {
+  background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
+  border: 1px solid #e0e7f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.time-limit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.7);
+}
+.time-limit-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.time-limit-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.time-limit-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+.time-limit-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+.time-limit-body {
+  padding: 16px 20px 20px;
+  border-top: 1px solid #e0e7f0;
+  background: rgba(255,255,255,0.5);
+}
+.time-limit-slider-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.time-limit-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #64748b;
+}
+.time-limit-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #6366f1;
+  font-family: 'Orbitron', 'SF Mono', monospace;
+}
+.time-limit-value small {
+  font-size: 12px;
+  font-weight: 400;
+  color: #94a3b8;
+}
+.time-limit-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.preset-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: #64748b;
+  background: rgba(99,102,241,0.06);
+  border: 1px solid rgba(99,102,241,0.12);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.preset-chip:hover {
+  background: rgba(99,102,241,0.12);
+  color: #6366f1;
+}
+.preset-chip.active {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
+}
+.time-limit-unlimited {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+  border-top: 1px solid #e0e7f0;
+}
+.time-limit-unlimited span:first-child {
+  font-size: 24px;
+}
+
+/* 切换动画 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.25s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* 响应式 */

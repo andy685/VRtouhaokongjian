@@ -4,138 +4,160 @@
       <h1 class="page-title">设备运行总览</h1>
     </div>
 
-    <!-- 核心指标（真实计算，非 mock） -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">设备总数</div>
-        <div class="metric-value">{{ summary.totalDevices }}</div>
-        <div class="metric-sub">在线 {{ summary.onlineDevices }} / 离线 {{ summary.offlineDevices }}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">平均在线率</div>
-        <div class="metric-value" :style="{ color: summary.avgOnlineRate >= 90 ? '#10B981' : '#F59E0B' }">
-          {{ summary.avgOnlineRate }}%
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">故障设备</div>
-        <div class="metric-value" :style="{ color: summary.faultDevices > 0 ? '#EF4444' : '#10B981' }">
-          {{ summary.faultDevices }}
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">预警商家</div>
-        <div class="metric-value" :style="{ color: summary.alertMerchants > 0 ? '#EF4444' : '#10B981' }">
-          {{ summary.alertMerchants }}
-        </div>
-        <div class="metric-sub">在线率 &lt; 80%</div>
-      </div>
-    </div>
+    <n-tabs type="line" animated style="overflow:visible;">
 
-    <!-- 筛选栏 -->
-    <div class="filter-bar">
-      <n-select
-        v-model:value="filterMerchant"
-        :options="merchantOptions"
-        placeholder="全部商家"
-        style="width: 150px; flex-shrink: 0;"
-        clearable
-        size="small"
-      />
-      <n-input
-        v-model:value="filterKeyword"
-        placeholder="搜索店铺名称"
-        style="width: 180px; flex-shrink: 0;"
-        size="small"
-        clearable
-      />
-    </div>
+      <!-- ========== Tab 1: 主机监控 ========== -->
+      <n-tab-pane name="hosts" tab="🖥️ 主机监控" style="overflow:visible;">
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">主机总数</div><div class="metric-value">{{ hostSummary.total }}</div><div class="metric-sub">在线 {{ hostSummary.online }} / 离线 {{ hostSummary.offline }}</div></div>
+          <div class="metric-card"><div class="metric-label">平均在线率</div><div class="metric-value" :style="{color:hostSummary.avgRate>=90?'#10B981':'#F59E0B'}">{{ hostSummary.avgRate }}%</div></div>
+          <div class="metric-card"><div class="metric-label">故障主机</div><div class="metric-value" :style="{color:hostSummary.fault>0?'#EF4444':'#10B981'}">{{ hostSummary.fault }}</div></div>
+          <div class="metric-card"><div class="metric-label">CPU 平均使用率</div><div class="metric-value" style="color:#6366f1">{{ hostSummary.avgCpu }}%</div></div>
+        </div>
+        <div class="filter-bar">
+          <n-select v-model:value="hostFilterMerchant" :options="merchantOpts" placeholder="全部商家" style="width:150px;" clearable size="small" @update:value="hostFilterStore = null" />
+          <n-select v-model:value="hostFilterStore" :options="hostStoreOpts" placeholder="全部店铺" style="width:150px;" size="small" :disabled="hostFilterMerchant === null" />
+          <n-input v-model:value="hostFilterKeyword" placeholder="搜索主机名称" style="width:180px;" clearable size="small" />
+        </div>
+        <div class="table-card">
+          <n-data-table :columns="hostMonitorColumns" :data="filteredHostMonitor" :bordered="false" :single-line="false" size="small" striped />
+        </div>
+      </n-tab-pane>
 
-    <!-- 数据表格 -->
-    <div class="table-card">
-      <n-data-table
-        :columns="columns"
-        :data="filteredData"
-        :bordered="false"
-        :single-line="false"
-        size="small"
-        striped
-      />
-    </div>
+      <!-- ========== Tab 2: 头显监控 ========== -->
+      <n-tab-pane name="headsets" tab="🥽 头显监控" style="overflow:visible;">
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">头显总数</div><div class="metric-value">{{ hsSummary.total }}</div><div class="metric-sub">使用中 {{ hsSummary.inUse }} / 空闲 {{ hsSummary.idle }}</div></div>
+          <div class="metric-card"><div class="metric-label">在线头显</div><div class="metric-value" :style="{color:hsSummary.onlineRate>=85?'#10B981':'#F59E0B'}">{{ hsSummary.onlineRate }}%</div></div>
+          <div class="metric-card"><div class="metric-label">低电量预警</div><div class="metric-value" :style="{color:hsSummary.lowBattery>0?'#EF4444':'#10B981'}">{{ hsSummary.lowBattery }} 台</div></div>
+          <div class="metric-card"><div class="metric-label">已绑定主机</div><div class="metric-value" style="color:#6366f1">{{ hsSummary.boundRate }}%</div></div>
+        </div>
+        <div class="filter-bar">
+          <n-select v-model:value="hsFilterMerchant" :options="merchantOpts" placeholder="全部商家" style="width:150px;" clearable size="small" @update:value="hsFilterStore = null" />
+          <n-select v-model:value="hsFilterStore" :options="hsStoreOpts" placeholder="全部店铺" style="width:150px;" size="small" :disabled="hsFilterMerchant === null" />
+          <n-select v-model:value="hsFilterStatus" :options="hsStatusOpts" placeholder="全部状态" style="width:130px;" clearable size="small" />
+          <n-input v-model:value="hsFilterKeyword" placeholder="搜索头显名称/SN码" style="width:200px;" clearable size="small" />
+        </div>
+        <div class="table-card">
+          <n-data-table :columns="hsMonitorColumns" :data="filteredHsMonitor" :bordered="false" :single-line="false" size="small" striped />
+        </div>
+      </n-tab-pane>
+
+    </n-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
-import { NDataTable, NTag, NSelect, NTabs, NTab, NInput } from 'naive-ui'
+import { NDataTable, NTag, NSelect, NTabs, NTabPane, NInput, NSpace } from 'naive-ui'
 
-// ─── 数据（带商家字段，真实计算）─────────────
-const rawData = ref([
-  { merchant: '恒然集团', store: '恒然分部展厅', total: 6, online: 5, offline: 1, fault: 0, onlineRate: '83%', utilization: '72%', lastHeartbeat: '2023-09-16 16:30:00' },
-  { merchant: '恒然集团', store: '恒然科技园店', total: 8, online: 8, offline: 0, fault: 0, onlineRate: '100%', utilization: '85%', lastHeartbeat: '2023-09-16 16:29:45' },
-  { merchant: '利民街商家', store: '利民街大展厅', total: 10, online: 9, offline: 1, fault: 0, onlineRate: '90%', utilization: '68%', lastHeartbeat: '2023-09-16 16:28:20' },
-  { merchant: '利民街商家', store: '利民街小展厅', total: 4, online: 4, offline: 0, fault: 0, onlineRate: '100%', utilization: '75%', lastHeartbeat: '2023-09-16 16:27:55' },
-  { merchant: '党建馆集团', store: '党建馆', total: 5, online: 4, offline: 0, fault: 1, onlineRate: '80%', utilization: '60%', lastHeartbeat: '2023-09-16 16:25:10' },
-  { merchant: '华东展厅', store: '华东展厅', total: 7, online: 6, offline: 1, fault: 0, onlineRate: '86%', utilization: '70%', lastHeartbeat: '2023-09-16 16:26:40' },
+// ─── 公共数据 ──────────────────────────────────────
+const merchantNames = ['恒然集团', '利民街商家', '党建馆集团', '华东展厅', '卓远科技']
+const merchantOpts = computed(() => merchantNames.map(m => ({ label: m, value: m })))
+
+// ─── 主机监控数据 ─────────────────────────────────
+interface HostMonitor { merchant: string; store: string; hostName: string; serialNo: string; status: 'online' | 'offline' | 'fault'; cpu: number; mem: number; disk: number; uptime: string; boundHeadsetCount: number; lastHeartbeat: string }
+const hostMonitorData = ref<HostMonitor[]>([
+  { merchant: '恒然集团', store: '恒然科技园店', hostName: '主机 #01', serialNo: 'PCT-001', status: 'online', cpu: 32, mem: 55, disk: 68, uptine: '7d 12h', boundHeadsetCount: 3, lastHeartbeat: '2026-05-08 09:30:00' },
+  { merchant: '恒然集团', store: '恒然科技园店', hostName: '主机 #02', serialNo: 'PCT-002', status: 'online', cpu: 78, mem: 82, disk: 72, uptine: '3d 05h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:29:45' },
+  { merchant: '恒然集团', store: '恒然分部展厅', hostName: '主机 #03', serialNo: 'PCT-003', status: 'online', cpu: 15, mem: 30, disk: 45, uptine: '15d 08h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:28:20' },
+  { merchant: '利民街商家', store: '利民街小展厅', hostName: '主机 #04', serialNo: 'PCT-004', status: 'offline', cpu: 0, mem: 0, disk: 0, uptine: '--', boundHeadsetCount: 0, lastHeartbeat: '2026-05-07 18:00:00' },
+  { merchant: '利民街商家', store: '利民街小展厅', hostName: '主机 #05', serialNo: 'PCT-005', status: 'online', cpu: 45, mem: 60, disk: 55, uptine: '10d 03h', boundHeadsetCount: 1, lastHeartbeat: '2026-05-08 09:27:55' },
+  { merchant: '卓远科技', store: '卓远萧山区店', hostName: '主机 #06', serialNo: 'PCT-006', status: 'fault', cpu: 0, mem: 0, disk: 0, uptine: '--', boundHeadsetCount: 0, lastHeartbeat: '2026-05-06 14:30:00' },
+  { merchant: '党建馆集团', store: '党建馆', hostName: '主机 #07', serialNo: 'PCT-007', status: 'online', cpu: 22, mem: 45, disk: 60, uptine: '20d 01h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:26:40' },
 ])
+// 处理 uptime 字段名不一致
+hostMonitorData.value.forEach(d => { (d as any).uptime = (d as any).uptine; delete (d as any).uptine })
 
-// ─── 筛选 ──────────────────────────────────────
-const filterMerchant = ref<string | null>(null)
-const filterStatus = ref<'all' | 'online' | 'offline' | 'fault'>('all')
-const filterKeyword = ref('')
+const hostSummary = computed(() => {
+  const all = hostMonitorData.value; const total = all.length; const online = all.filter(d => d.status === 'online').length; const offline = all.filter(d => d.status === 'offline').length; const fault = all.filter(d => d.status === 'fault').length
+  const rates = all.filter(d => d.status === 'online'); const avgCpu = rates.length ? Math.round(rates.reduce((s,d) => s+d.cpu, 0) / rates.length) : 0
+  return { total, online, offline, fault, avgRate: total ? Math.round(online / total * 100) : 0, avgCpu }
+})
 
-const merchantOptions = computed(() =>
-  [...new Set(rawData.value.map(d => d.merchant))].map(m => ({ label: m, value: m }))
-)
-
-const rateNum = (r: string) => parseInt(r.replace('%', ''))
-
-const filteredData = computed(() => {
-  let d = rawData.value
-  if (filterMerchant.value) d = d.filter(i => i.merchant === filterMerchant.value)
-  if (filterKeyword.value) d = d.filter(i => i.store.includes(filterKeyword.value))
-  if (filterStatus.value === 'online') d = d.filter(i => i.online > 0)
-  if (filterStatus.value === 'offline') d = d.filter(i => i.offline > 0)
-  if (filterStatus.value === 'fault') d = d.filter(i => i.fault > 0)
+const hostFilterMerchant = ref<string | null>(null); const hostFilterStore = ref<string | null>(null); const hostFilterKeyword = ref('')
+const hostStoreOpts = computed(() => {
+  if (!hostFilterMerchant.value) return []
+  return [...new Set(hostMonitorData.value.filter(i => i.merchant === hostFilterMerchant.value).map(i => i.store))].map(s => ({ label: s, value: s }))
+})
+const filteredHostMonitor = computed(() => {
+  let d = hostMonitorData.value
+  if (hostFilterMerchant.value) d = d.filter(i => i.merchant === hostFilterMerchant.value)
+  if (hostFilterStore.value) d = d.filter(i => i.store === hostFilterStore.value)
+  if (hostFilterKeyword.value) { const kw = hostFilterKeyword.value.toLowerCase(); d = d.filter(i => i.hostName.toLowerCase().includes(kw) || i.serialNo.toLowerCase().includes(kw)) }
   return d
 })
 
-// ─── 汇总指标（真实计算）────────────────────────
-const summary = computed(() => {
-  const all = rawData.value
-  const total = all.reduce((s, i) => s + i.total, 0)
-  const online = all.reduce((s, i) => s + i.online, 0)
-  const offline = all.reduce((s, i) => s + i.offline, 0)
-  const fault = all.reduce((s, i) => s + i.fault, 0)
-  const rates = all.map(i => rateNum(i.onlineRate))
-  const avg = Math.round(rates.reduce((s, r) => s + r, 0) / rates.length)
-  const alerts = new Set(all.filter(i => rateNum(i.onlineRate) < 80).map(i => i.merchant)).size
-  return { totalDevices: total, onlineDevices: online, offlineDevices: offline, faultDevices: fault, avgOnlineRate: avg, alertMerchants: alerts }
-})
-
-// ─── 表格列 ─────────────────────────────────────
-const renderRateTag = (rate: string) => {
-  const n = rateNum(rate)
-  const type = n >= 90 ? 'success' : n >= 80 ? 'warning' : 'error'
-  return h(NTag, { type, size: 'small', bordered: false }, { default: () => rate })
+const statusRender = (s: string) => { const m: Record<string,any> = { online:{type:'success',label:'在线'}, offline:{type:'default',label:'离线'}, fault:{type:'warning',label:'故障'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
+const usageBar = (v: number) => {
+  const color = v > 80 ? '#EF4444' : v > 60 ? '#F59E0B' : '#10B981'
+  return h('div', { style: 'display:flex;align-items:center;gap:6px;' }, [
+    h('div', { style: `width:60px;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;` }, [h('div', { style: `width:${v}%;height:100%;background:${color};border-radius:3px;` })]),
+    h('span', { style: `font-size:11px;color:${color};font-weight:600;min-width:28px;` }, `${v}%`),
+  ])
 }
 
-const columns = [
-  { title: '商家', key: 'merchant', minWidth: 120 },
-  { title: '店铺', key: 'store', minWidth: 160, sorter: 'default' as const },
-  { title: '设备总数', key: 'total', width: 90, sorter: (a: any, b: any) => a.total - b.total },
-  { title: '在线数', key: 'online', width: 80, sorter: (a: any, b: any) => a.online - b.online },
-  { title: '离线数', key: 'offline', width: 80, sorter: (a: any, b: any) => a.offline - b.offline },
-  { title: '故障数', key: 'fault', width: 80, sorter: (a: any, b: any) => a.fault - b.fault },
-  {
-    title: '在线率',
-    key: 'onlineRate',
-    width: 90,
-    sorter: (a: any, b: any) => rateNum(a.onlineRate) - rateNum(b.onlineRate),
-    render: (row: any) => renderRateTag(row.onlineRate),
-  },
-  { title: '今日利用率', key: 'utilization', width: 100 },
-  { title: '最后心跳', key: 'lastHeartbeat', minWidth: 160 },
+const hostMonitorColumns = [
+  { title: '商家', key: 'merchant', minWidth: 100 }, { title: '店铺', key: 'store', minWidth: 130 }, { title: '主机名称', key: 'hostName', minWidth: 100 },
+  { title: '编号', key: 'serialNo', width: 90 }, { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: any) => statusRender(row.status) },
+  { title: 'CPU', key: 'cpu', width: 100, render: (row: any) => usageBar(row.cpu) },
+  { title: '内存', key: 'mem', width: 100, render: (row: any) => usageBar(row.mem) },
+  { title: '磁盘', key: 'disk', width: 100, render: (row: any) => usageBar(row.disk) },
+  { title: '运行时长', key: 'uptime', width: 90 }, { title: '绑定头显', key: 'boundHeadsetCount', width: 80, align:'center' as const },
+  { title: '最后心跳', key: 'lastHeartbeat', minWidth: 150 },
+]
+
+// ─── 头显监控数据 ─────────────────────────────────
+interface HsMonitor { merchant: string; store: string; hsName: string; sn: string; model: string; status: string; battery: number; boundHost: string; firmware: string; lastHeartbeat: string }
+const hsMonitorData = ref<HsMonitor[]>([
+  { merchant: '恒然集团', store: '恒然科技园店', hsName: 'Pico 4 Pro #01', sn: 'SN100001A', model: 'Pico 4 Pro', status: 'in_use', battery: 85, boundHost: '主机 #01', firmware: 'v5.4.1', lastHeartbeat: '2026-05-08 09:29:50' },
+  { merchant: '恒然集团', store: '恒然科技园店', hsName: 'Pico 4 Pro #02', sn: 'SN100002B', model: 'Pico 4 Pro', status: 'idle', battery: 65, boundHost: '主机 #01', firmware: 'v5.4.1', lastHeartbeat: '2026-05-08 09:28:10' },
+  { merchant: '恒然集团', store: '恒然科技园店', hsName: 'Meta Quest 3 #01', sn: 'SN200001A', model: 'Meta Quest 3', status: 'charging', battery: 30, boundHost: '主机 #01', firmware: 'v72.0', lastHeartbeat: '2026-05-08 08:50:00' },
+  { merchant: '恒然集团', store: '恒然分部展厅', hsName: 'Pico 4 #01', sn: 'SN100003C', model: 'Pico 4', status: 'in_use', battery: 72, boundHost: '主机 #03', firmware: 'v5.4.1', lastHeartbeat: '2026-05-08 09:28:15' },
+  { merchant: '利民街商家', store: '利民街小展厅', hsName: 'Pico Neo 3 #01', sn: 'SN300001A', model: 'Pico Neo 3', status: 'offline', battery: 0, boundHost: '--', firmware: 'v4.8.0', lastHeartbeat: '2026-05-07 18:00:00' },
+  { merchant: '利民街商家', store: '利民街小展厅', hsName: 'Pico 4 #02', sn: 'SN100004D', model: 'Pico 4', status: 'idle', battery: 92, boundHost: '主机 #05', firmware: 'v5.3.0', lastHeartbeat: '2026-05-08 09:27:50' },
+  { merchant: '卓远科技', store: '卓远萧山区店', hsName: 'Pico 4 Pro #03', sn: 'SN100005E', model: 'Pico 4 Pro', status: 'fault', battery: 0, boundHost: '主机 #06', firmware: 'v5.4.1', lastHeartbeat: '2026-05-06 14:30:00' },
+])
+
+const hsSummary = computed(() => {
+  const all = hsMonitorData.value; const total = all.length; const inUse = all.filter(d => d.status === 'in_use').length; const idle = all.filter(d => d.status === 'idle').length
+  const online = all.filter(d => d.status !== 'offline' && d.status !== 'fault').length; const lowBattery = all.filter(d => d.battery > 0 && d.battery < 30).length
+  const bound = all.filter(d => d.boundHost !== '--').length
+  return { total, inUse, idle, onlineRate: total ? Math.round(online / total * 100) : 0, lowBattery, boundRate: total ? Math.round(bound / total * 100) : 0 }
+})
+
+const hsFilterMerchant = ref<string | null>(null); const hsFilterStore = ref<string | null>(null); const hsFilterStatus = ref<string | null>(null); const hsFilterKeyword = ref('')
+const hsStatusOpts = [{ label: '空闲', value: 'idle' }, { label: '使用中', value: 'in_use' }, { label: '充电', value: 'charging' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
+const hsStoreOpts = computed(() => {
+  if (!hsFilterMerchant.value) return []
+  return [...new Set(hsMonitorData.value.filter(i => i.merchant === hsFilterMerchant.value).map(i => i.store))].map(s => ({ label: s, value: s }))
+})
+const filteredHsMonitor = computed(() => {
+  let d = hsMonitorData.value
+  if (hsFilterMerchant.value) d = d.filter(i => i.merchant === hsFilterMerchant.value)
+  if (hsFilterStore.value) d = d.filter(i => i.store === hsFilterStore.value)
+  if (hsFilterStatus.value) d = d.filter(i => i.status === hsFilterStatus.value)
+  if (hsFilterKeyword.value) { const kw = hsFilterKeyword.value.toLowerCase(); d = d.filter(i => i.hsName.toLowerCase().includes(kw) || i.sn.toLowerCase().includes(kw)) }
+  return d
+})
+
+const hsStatusRender = (s: string) => { const m: Record<string,any> = { idle:{type:'info',label:'空闲'}, in_use:{type:'success',label:'使用中'}, charging:{type:'warning',label:'充电'}, offline:{type:'default',label:'离线'}, fault:{type:'error',label:'故障'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
+const batteryRender = (v: number) => {
+  if (v === 0) return h('span', { style:'color:#94a3b8;font-size:12px;' }, '--')
+  const color = v > 50 ? '#10B981' : v > 20 ? '#F59E0B' : '#EF4444'
+  return h('div', { style:'display:flex;align-items:center;gap:4px;' }, [
+    h('div', { style: `width:36px;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;` }, [h('div', { style: `width:${v}%;height:100%;background:${color};border-radius:3px;` })]),
+    h('span', { style: `font-size:11px;color:${color};font-weight:600;` }, `${v}%`),
+  ])
+}
+
+const hsMonitorColumns = [
+  { title: '商家', key: 'merchant', minWidth: 100 }, { title: '店铺', key: 'store', minWidth: 130 },
+  { title: '头显名称', key: 'hsName', minWidth: 140 }, { title: 'SN 码', key: 'sn', width: 110 },
+  { title: '型号', key: 'model', width: 110 }, { title: '状态', key: 'status', width: 80, align:'center' as const, render: (row: any) => hsStatusRender(row.status) },
+  { title: '电量', key: 'battery', width: 80, render: (row: any) => batteryRender(row.battery) },
+  { title: '绑定主机', key: 'boundHost', width: 100, align:'center' as const },
+  { title: '固件', key: 'firmware', width: 80 }, { title: '最后心跳', key: 'lastHeartbeat', minWidth: 150 },
 ]
 </script>
 
@@ -143,14 +165,11 @@ const columns = [
 .page-container { padding: 20px 24px; }
 .page-header { margin-bottom: 20px; }
 .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
-
 .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 .metric-card { background: white; border-radius: 12px; padding: 16px 20px; border: 1px solid var(--border-color); }
 .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
 .metric-value { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-primary); }
 .metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-.filter-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-
+.filter-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; position:relative; z-index:1; }
 .table-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); }
 </style>

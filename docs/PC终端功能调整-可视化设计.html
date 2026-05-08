@@ -9,9 +9,9 @@
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
   background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 50%,#0d1b2a 100%);
-  min-height:100vh;color:#fff;padding:40px 20px;
+  min-height:100vh;color:#fff;padding:24px 12px;
 }
-.container{max-width:1400px;margin:0 auto}
+.container{max-width:1640px;margin:0 auto}
 
 /* 顶部 */
 .top{text-align:center;margin-bottom:40px}
@@ -316,39 +316,16 @@ body{
 
 /* ===== 绑定流程 ===== */
 .bind-modal{
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:flex-start;justify-content:center;
   background:rgba(0,0,0,0.7);border-radius:12px;padding:30px;
   min-height:440px;
 }
 .bind-box{
   background:linear-gradient(145deg,#1a3a5c,#0d2847);
-  border-radius:16px;padding:28px;width:340px;
-  border:1px solid rgba(0,212,255,0.25);text-align:center;
+  border-radius:16px;padding:28px;width:380px;
+  border:1px solid rgba(0,212,255,0.25);
 }
-.bind-box h3{font-size:16px;margin-bottom:16px}
-.qr-area{
-  width:180px;height:180px;margin:0 auto 14px;position:relative;
-  background:#fff;border-radius:10px;overflow:hidden;
-}
-.qr-pattern{
-  width:130px;height:130px;margin:25px auto 0;
-  background:repeating-linear-gradient(0deg,#000 0px,#000 3px,#fff 3px,#fff 6px);
-  opacity:0.7;
-}
-.qr-scanline{
-  position:absolute;left:0;right:0;height:2px;
-  background:#00d4ff;box-shadow:0 0 8px #00d4ff;
-  animation:scan 2s linear infinite;
-}
-@keyframes scan{0%{top:6px}50%{top:calc(100%-6px)}100%{top:6px}}
-.bind-hint{font-size:11px;color:#8ba4be;margin-bottom:12px;line-height:1.6}
-.paircode{font-size:20px;font-weight:700;color:#00d4ff;letter-spacing:4px;margin:10px 0}
-.bind-btns{display:flex;gap:10px}
-.bind-btns button{
-  flex:1;padding:12px;border-radius:8px;border:none;font-size:12px;cursor:pointer;
-}
-.bind-sec{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:#00d4ff}
-.bind-pri{background:linear-gradient(90deg,#00d4ff,#0099ff);color:#fff}
+.bind-box h3{font-size:16px;margin-bottom:16px;text-align:center}
 
 /* 解绑确认 */
 .unbind-confirm{
@@ -375,11 +352,11 @@ body{
 .unbind-danger{background:linear-gradient(90deg,#ff4757,#ff6b81);color:#fff}
 .unbind-cancel{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);color:#00d4ff}
 
-@media(max-width:960px){
+@media(max-width:1100px){
   .layout{flex-direction:column}
   .leftp{width:100%;border-right:none;border-bottom:1px solid rgba(0,212,255,0.1)}
   .gl{grid-template-columns:repeat(2,1fr)}
-  .bind-modal,.unbind-confirm{min-height:300px}
+  .bind-box{width:100%}
 }
 @media(max-width:600px){.gl{grid-template-columns:1fr}.ig{grid-template-columns:1fr}}
 </style>
@@ -418,7 +395,13 @@ body{
       <!-- 左 -->
       <div class="leftp">
         <div class="lt"><span>🥽 我的设备</span><button class="bindb">+ 绑定</button></div>
-        <div class="di s"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #01</div><div class="st on">🟢 在线 · 游戏中</div></div></div>
+        <div style="padding:6px 8px;margin-bottom:4px;background:rgba(255,189,46,0.08);border:1px solid rgba(255,189,46,0.2);border-radius:8px;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:16px;">🥽</span>
+          <div>
+            <div class="nm" style="display:flex;align-items:center;gap:4px;">Pico 4 Pro #01 <span style="font-size:8px;background:rgba(255,189,46,0.25);color:#ffbd2e;padding:1px 5px;border-radius:3px;">主设备</span></div>
+            <div class="st on">🟢 在线 · 73%</div>
+          </div>
+        </div>
         <div class="di ns"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #02</div><div class="st on">🟢 在线 · 待机</div></div></div>
         <div class="di of"><span class="ic">🥽</span><div><div class="nm">Pico 4 Pro #03</div><div class="st off">⚪ 离线</div></div></div>
         <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(0,212,255,0.06);font-size:10px;color:#8ba4be;display:flex;gap:12px;">
@@ -429,8 +412,15 @@ body{
       <div class="rightp">
         <div class="dh">
           <div class="av">🥽</div>
-          <div class="dm"><div class="dn">Pico 4 Pro #01</div><div class="ds">序列号: PC4P2024A01234 · 固件 v5.4.1</div></div>
-          <span class="db">🟢 在线 · 游戏中</span>
+          <div class="dm">
+            <div class="dn">Pico 4 Pro #01 <span style="font-size:9px;background:rgba(255,189,46,0.2);color:#ffbd2e;padding:1px 6px;border-radius:3px;margin-left:4px;">主设备</span></div>
+            <div class="ds" style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span>SN: PA9410MGK3310080G</span>
+              <span>IP: 192.168.8.90</span>
+              <span>固件 v5.4.1</span>
+            </div>
+          </div>
+          <span class="db">🟢 在线</span>
         </div>
         <div class="tb">
           <div class="ti a">📋 设备信息</div>
@@ -438,16 +428,48 @@ body{
           <div class="ti">📲 安装游戏</div>
         </div>
         <!-- 信息内容 -->
-        <div class="ig">
-          <div class="ic"><div class="il">瞳距 (IPD)</div><div class="iv h">64.5mm</div></div>
-          <div class="ic"><div class="il">刷新率</div><div class="iv h">90Hz</div></div>
-          <div class="ic"><div class="il">渲染分辨率</div><div class="iv">自动（2688×2688）</div></div>
-          <div class="ic">
-            <div class="il">存储</div><div class="iv">12.4GB / 64GB</div>
-            <div style="margin-top:4px;height:3px;background:rgba(0,212,255,0.1);border-radius:1px;overflow:hidden;">
-              <div style="width:19%;height:100%;background:linear-gradient(90deg,#00d4ff,#0099ff);border-radius:1px;"></div>
+        <div class="ig" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="ic"><div class="il">📟 设备号</div><div class="iv h">#001</div></div>
+          <div class="ic"><div class="il">🔑 SN 码</div><div class="iv" style="font-size:11px;font-family:monospace;">PA9410MGK3310080G</div></div>
+          <div class="ic"><div class="il">🌐 IP 地址</div><div class="iv">192.168.8.90</div></div>
+          <div class="ic"><div class="il">📶 状态</div><div class="iv" style="color:#27ca40;">在线</div></div>
+          <div class="ic"><div class="il">📡 连接方式</div><div class="iv">WiFi Direct</div></div>
+          <div class="ic"><div class="il">⏱️ 连接延迟</div><div class="iv">8ms</div></div>
+        </div>
+        <!-- 电量信息 -->
+        <div class="ilist" style="margin-bottom:12px;">
+          <div class="ill">🔋 电量状态</div>
+          <div style="display:flex;gap:10px;">
+            <div style="flex:1;background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.07);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;margin-bottom:4px;">🥽</div>
+              <div style="font-size:9px;color:#8ba4be;margin-bottom:2px;">头显</div>
+              <div style="font-size:16px;font-weight:700;color:#27ca40;">73%</div>
+              <div style="margin-top:4px;height:4px;background:rgba(0,212,255,0.1);border-radius:2px;overflow:hidden;">
+                <div style="width:73%;height:100%;background:linear-gradient(90deg,#27ca40,#27ca40);border-radius:2px;"></div>
+              </div>
+            </div>
+            <div style="flex:1;background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.07);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;margin-bottom:4px;">🕹️</div>
+              <div style="font-size:9px;color:#8ba4be;margin-bottom:2px;">左手柄</div>
+              <div style="font-size:16px;font-weight:700;color:#ff6b35;">20%</div>
+              <div style="margin-top:4px;height:4px;background:rgba(0,212,255,0.1);border-radius:2px;overflow:hidden;">
+                <div style="width:20%;height:100%;background:linear-gradient(90deg,#ff6b35,#ff6b35);border-radius:2px;"></div>
+              </div>
+            </div>
+            <div style="flex:1;background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.07);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;margin-bottom:4px;">🕹️</div>
+              <div style="font-size:9px;color:#8ba4be;margin-bottom:2px;">右手柄</div>
+              <div style="font-size:16px;font-weight:700;color:#27ca40;">100%</div>
+              <div style="margin-top:4px;height:4px;background:rgba(0,212,255,0.1);border-radius:2px;overflow:hidden;">
+                <div style="width:100%;height:100%;background:linear-gradient(90deg,#27ca40,#27ca40);border-radius:2px;"></div>
+              </div>
             </div>
           </div>
+        </div>
+        <!-- 操作按钮 -->
+        <div class="ar" style="margin-top:0;border-top:none;">
+          <button class="bp" style="background:linear-gradient(90deg,#00d4ff,#0099ff);">📺 投屏</button>
+          <button class="bs2" style="background:rgba(255,71,87,0.1);border-color:rgba(255,71,87,0.25);color:#ff4757;">🔌 关闭设备</button>
         </div>
         <div class="ilist">
           <div class="ill">已安装游戏（5个）</div>
@@ -738,33 +760,44 @@ body{
         </div>
         <div class="bind-modal">
           <div class="bind-box">
-            <h3>📷 扫码绑定无线头显</h3>
-            <div class="qr-area">
-              <div class="qr-pattern"></div>
-              <div class="qr-scanline"></div>
-            </div>
-            <div class="bind-hint">
-              请在 Pico 头显上操作：<br>
-              「设置 → 设备连接 → 扫码配对」
-            </div>
-            <div style="font-size:11px;color:#8ba4be;">或输入配对码</div>
-            <div class="paircode">8X2P-9KL4</div>
-            <div class="bind-btns">
-              <button class="bind-sec">↩ 手动输入</button>
-              <button class="bind-pri">🔄 刷新二维码</button>
-            </div>
-            <div style="margin-top:14px;padding:10px;background:rgba(39,202,64,0.08);border:1px solid rgba(39,202,64,0.15);border-radius:8px;">
-              <div style="font-size:12px;color:#27ca40;">✅ 绑定成功</div>
-              <div style="font-size:10px;color:#8ba4be;margin-top:4px;">
-                Pico 4 Pro #04 · 序列号: PC4P2024B05678<br>
-                已通过连接测试 · 固件 v5.4.1
+            <h3>🔗 输入 SN 码绑定头显</h3>
+            <div style="position:relative;margin-bottom:16px;">
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input style="flex:1;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.25);border-radius:8px;color:#fff;font-size:14px;outline:none;font-family:monospace;letter-spacing:1px;" placeholder="输入头显 SN 码" value="SN100006F" />
+                <button style="padding:10px 18px;background:linear-gradient(90deg,#00d4ff,#0099ff);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">搜索</button>
               </div>
+              <div style="margin-top:6px;font-size:10px;color:#6b8aa0;text-align:left;">
+                💡 同一 WiFi 网络下自动连接，无需额外操作
+              </div>
+            </div>
+            <div style="padding:14px;background:rgba(39,202,64,0.08);border:1px solid rgba(39,202,64,0.15);border-radius:10px;text-align:left;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:14px;">🥽</span>
+                <span style="font-size:13px;font-weight:600;color:#e2e8f0;">Pico 4 Pro #04</span>
+                <span style="font-size:10px;color:#6b8aa0;font-family:monospace;">SN: SN100006F</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:10px;color:#27ca40;">🟢 已发现设备</span>
+                <span style="font-size:10px;color:#6b8aa0;">固件 v5.4.1 · 电量 82%</span>
+              </div>
+              <div style="padding:6px 10px;background:rgba(0,212,255,0.08);border-radius:6px;display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:#00d4ff;">📶 WiFi Direct</span>
+                <span style="font-size:10px;color:#27ca40;">已连接</span>
+                <span style="margin-left:auto;font-size:10px;color:#6b8aa0;">延迟 8ms</span>
+              </div>
+              <div style="margin-top:10px;text-align:center;">
+                <button style="padding:8px 32px;background:linear-gradient(90deg,#00d4ff,#0099ff);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">确认绑定</button>
+              </div>
+            </div>
+            <div style="margin-top:10px;padding:8px 12px;background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.08);border-radius:8px;font-size:11px;color:#8ba4be;text-align:left;line-height:1.6;">
+              <strong style="color:#e2e8f0;">绑定流程：</strong><br>
+              ① 在 PC 终端输入头显的 SN 码 → ② 系统搜索同一 WiFi 网络下的设备 → ③ 发现设备后自动建立连接 → ④ 确认绑定
             </div>
           </div>
         </div>
         <div style="padding:12px 20px;border-top:1px solid rgba(0,212,255,0.07);font-size:11px;color:#8ba4be;display:flex;gap:16px;">
-          <span>🔌 连接方式: WiFi Direct</span>
-          <span>⏱️ 二维码有效期: 5分钟</span>
+          <span>🔌 连接方式: WiFi Direct (同网段)</span>
+          <span>⏱️ 搜索超时: 30秒</span>
         </div>
       </div>
       <!-- 右：解绑流程 -->
@@ -780,7 +813,7 @@ body{
             <div class="ub-desc">
               解绑后该设备将断开连接，<br>
               已安装的游戏仍保留在设备上<br>
-              后续可重新扫码绑定
+              后续可重新输入 SN 码绑定
             </div>
             <div class="unbind-dev-info">
               <span style="font-size:20px;">🥽</span>

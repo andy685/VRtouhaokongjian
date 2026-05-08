@@ -88,8 +88,8 @@
             <span>{{ game.rating }}</span>
           </div>
           <div class="game-meta-sub">
-            <span class="sub-tag" :class="game.gameType === 'link' ? 'tag-link' : 'tag-standalone'">
-              {{ game.gameType === 'link' ? '🔗 链接游戏' : '💿 单机游戏' }}
+            <span class="sub-tag" :class="game.gameType === 'online' ? 'tag-online' : 'tag-standalone'">
+              {{ game.gameType === 'online' ? '🌐 联机游戏' : '💿 单机游戏' }}
             </span>
             <span class="sub-tag" :class="game.payMode === 'multi' ? 'tag-multi' : 'tag-single'">
               {{ game.payMode === 'multi' ? '👥 多人付费' : '👤 单人付费' }}
@@ -148,8 +148,8 @@ const games = ref([
   { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', playCountNum: 8900, rating: 4.6, sortOrder: 4, recommended: false, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'], gameBeanCost: 10, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 20 },
   { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', playCountNum: 7200, rating: 4.5, sortOrder: 5, recommended: false, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'], gameBeanCost: 0, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 12 },
   { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', playCountNum: 6800, rating: 4.8, sortOrder: 6, recommended: false, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'], gameBeanCost: 35, gameType: 'standalone', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 30 },
-  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'], gameBeanCost: 0, gameType: 'link', linkUrl: 'https://music-vr.example.com', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 25 },
-  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'], gameBeanCost: 18, gameType: 'link', linkUrl: 'steam://run/spacewalk', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 18 },
+  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'], gameBeanCost: 0, gameType: 'online', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 25 },
+  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'], gameBeanCost: 18, gameType: 'online', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 18 },
 ])
 
 function toggleRecommend(game: any) {
@@ -218,7 +218,7 @@ const filteredGames = computed(() => {
 .game-meta-sub { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
 .sub-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; background: #f0f0f0; color: #666; }
 .sub-tag.tag-standalone { background: #e8f4fd; color: #0284c7; }
-.sub-tag.tag-link { background: #fef3c7; color: #b45309; }
+.sub-tag.tag-online { background: #fef3c7; color: #b45309; }
 .sub-tag.tag-single { background: #f0fdf4; color: #15803d; }
 .sub-tag.tag-multi { background: #fdf2f8; color: #be185d; }
 .sub-tag.tag-time { background: #f5f3ff; color: #6d28d9; }
