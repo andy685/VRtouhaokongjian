@@ -228,7 +228,7 @@
         <section class="card form-card">
           <div class="card-head">
             <h4>运营配置</h4>
-            <n-tag size="small" type="info" bordered>v1.4</n-tag>
+            <n-tag size="small" type="info" bordered>v1.5</n-tag>
           </div>
           <div class="form-body">
             <!-- 游戏豆消耗 -->
@@ -239,9 +239,21 @@
               </n-input-number>
             </div>
 
-            <!-- 游戏类型 -->
+            <!-- 运行平台（v1.5 新增） -->
             <div class="form-group">
-              <label>游戏类型</label>
+              <label>运行平台 <n-text depth="3">（游戏在哪个设备上运行）</n-text></label>
+              <n-radio-group v-model:value="gameData.runPlatform">
+                <n-radio-button value="host" label="主机游戏">🖥️ 主机游戏 — 串流到头显设备</n-radio-button>
+                <n-radio-button value="allInOne" label="VR头显一体机">🥽 VR头显一体机游戏</n-radio-button>
+              </n-radio-group>
+              <n-text depth="3" style="font-size:11px;margin-top:4px;">
+                主机游戏：游戏在 PC 主机上运行，画面串流到头显；VR头显一体机：游戏直接在头显上运行
+              </n-text>
+            </div>
+
+            <!-- 玩法模式（原游戏类型） -->
+            <div class="form-group">
+              <label>玩法模式</label>
               <n-radio-group v-model:value="gameData.gameType">
                 <n-radio-button value="standalone" label="单机游戏">单机游戏</n-radio-button>
                 <n-radio-button value="online" label="联机游戏">联机游戏</n-radio-button>
@@ -493,10 +505,12 @@ const gameData = ref({
   sortOrder: 10,
   recommended: false,
 
-  // ===== 运营配置（v1.4 新增） =====
+  // ===== 运营配置（v1.5 新增） =====
+  // 运行平台：host-主机游戏（串流到头显）, allInOne-VR头显一体机
+  runPlatform: 'host',
   // 游戏豆消耗（个/次）
   gameBeanCost: 0,
-  // 游戏类型：standalone-单机游戏, online-联机游戏
+  // 玩法模式：standalone-单机游戏, online-联机游戏
   gameType: 'standalone',
   // 联机游戏
   // 时长限制开关
@@ -536,7 +550,7 @@ function loadGameData(id: string) {
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
       spaceRequired: '无限制', supportDevices: ['HTC Vive', 'Oculus'],
       videoUrl: '', videoCover: '', status: 'online',
-      gameBeanCost: 20, gameType: 'standalone',
+      runPlatform: 'host', gameBeanCost: 20, gameType: 'standalone',
       timeLimitEnabled: true, timeLimitMinutes: 10, payMode: 'single',
     },
     '2': {
@@ -549,7 +563,7 @@ function loadGameData(id: string) {
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
       spaceRequired: '2m x 3m', supportDevices: ['HTC Vive'],
       videoUrl: '', videoCover: '', status: 'online',
-      gameBeanCost: 30, gameType: 'standalone',
+      runPlatform: 'allInOne', gameBeanCost: 30, gameType: 'standalone',
       timeLimitEnabled: true, timeLimitMinutes: 15, payMode: 'multi',
     },
   }
