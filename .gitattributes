@@ -1,3 +1,4 @@
+*.rp filter=lfs diff=lfs merge=lfs -text
 /designs/huanying_after_login_click.png filter=lfs diff=lfs merge=lfs -text
 /designs/huanying_headed.png filter=lfs diff=lfs merge=lfs -text
 /designs/huanying_loggedin.png filter=lfs diff=lfs merge=lfs -text
