@@ -60,16 +60,16 @@ const merchantStoreMap: Record<string, string[]> = {
 const merchantOptions = computed(() => merchantNames.map(m => ({ label: m, value: m })))
 
 // ─── 主机统计 ─────────────────────────────────────
-interface HostStat { merchant: string; shop: string; hostName: string; serial: string; status: string; cpu: number; mem: number; bound: number; lastHb: string }
+interface HostStat { merchant: string; shop: string; hostName: string; serial: string; macAddress: string; status: string; cpu: number; mem: number; bound: number; lastHb: string }
 const hostData = ref<HostStat[]>([
-  { merchant: '恒然集团', shop: '深圳福田旗舰店', hostName: '主机 #01', serial: 'PCT-001', status: 'online', cpu: 32, mem: 55, bound: 3, lastHb: '2026-05-08 11:40:00' },
-  { merchant: '恒然集团', shop: '深圳福田旗舰店', hostName: '主机 #02', serial: 'PCT-002', status: 'online', cpu: 78, mem: 82, bound: 2, lastHb: '2026-05-08 11:39:20' },
-  { merchant: '恒然集团', shop: '南山科技园店', hostName: '主机 #03', serial: 'PCT-003', status: 'online', cpu: 15, mem: 30, bound: 2, lastHb: '2026-05-08 11:38:45' },
-  { merchant: '南山科创', shop: '南山科创店', hostName: '主机 #04', serial: 'PCT-004', status: 'offline', cpu: 0, mem: 0, bound: 0, lastHb: '2026-05-07 22:10:30' },
-  { merchant: '宝安体验', shop: '宝安体验中心', hostName: '主机 #05', serial: 'PCT-005', status: 'online', cpu: 45, mem: 60, bound: 1, lastHb: '2026-05-08 11:35:00' },
-  { merchant: '幻影星空', shop: '广州天河店', hostName: '主机 #06', serial: 'PCT-006', status: 'fault', cpu: 0, mem: 0, bound: 0, lastHb: '2026-05-07 15:20:00' },
-  { merchant: '利民街', shop: '利民街小展厅', hostName: '主机 #07', serial: 'PCT-007', status: 'online', cpu: 22, mem: 45, bound: 2, lastHb: '2026-05-08 11:37:00' },
-  { merchant: '利民街', shop: '利民街大展厅', hostName: '主机 #08', serial: 'PCT-008', status: 'online', cpu: 55, mem: 70, bound: 1, lastHb: '2026-05-08 11:33:20' },
+  { merchant: '恒然集团', shop: '深圳福田旗舰店', hostName: '主机 #01', serial: 'PCT-001', macAddress: '00:1A:2B:01:07:0D', status: 'online', cpu: 32, mem: 55, bound: 3, lastHb: '2026-05-08 11:40:00' },
+  { merchant: '恒然集团', shop: '深圳福田旗舰店', hostName: '主机 #02', serial: 'PCT-002', macAddress: '00:1A:2B:02:0E:1A', status: 'online', cpu: 78, mem: 82, bound: 2, lastHb: '2026-05-08 11:39:20' },
+  { merchant: '恒然集团', shop: '南山科技园店', hostName: '主机 #03', serial: 'PCT-003', macAddress: '00:1A:2B:03:15:27', status: 'online', cpu: 15, mem: 30, bound: 2, lastHb: '2026-05-08 11:38:45' },
+  { merchant: '南山科创', shop: '南山科创店', hostName: '主机 #04', serial: 'PCT-004', macAddress: '00:1A:2B:04:1C:34', status: 'offline', cpu: 0, mem: 0, bound: 0, lastHb: '2026-05-07 22:10:30' },
+  { merchant: '宝安体验', shop: '宝安体验中心', hostName: '主机 #05', serial: 'PCT-005', macAddress: '00:1A:2B:05:23:41', status: 'online', cpu: 45, mem: 60, bound: 1, lastHb: '2026-05-08 11:35:00' },
+  { merchant: '幻影星空', shop: '广州天河店', hostName: '主机 #06', serial: 'PCT-006', macAddress: '00:1A:2B:06:2A:4E', status: 'fault', cpu: 0, mem: 0, bound: 0, lastHb: '2026-05-07 15:20:00' },
+  { merchant: '利民街', shop: '利民街小展厅', hostName: '主机 #07', serial: 'PCT-007', macAddress: '00:1A:2B:07:31:5B', status: 'online', cpu: 22, mem: 45, bound: 2, lastHb: '2026-05-08 11:37:00' },
+  { merchant: '利民街', shop: '利民街大展厅', hostName: '主机 #08', serial: 'PCT-008', macAddress: '00:1A:2B:08:38:68', status: 'online', cpu: 55, mem: 70, bound: 1, lastHb: '2026-05-08 11:33:20' },
 ])
 
 const hostFilterMerchant = ref<string | null>(null); const hostFilterStore = ref<string | null>(null); const hostFilterKeyword = ref('')
@@ -94,7 +94,9 @@ const hostSummary = computed(() => {
 const hostStatusRender = (s: string) => { const m: Record<string,any> = { online:{type:'success',label:'在线'}, offline:{type:'default',label:'离线'}, fault:{type:'warning',label:'故障'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
 const hostColumns = [
   { title: '商家', key: 'merchant', minWidth: 100 }, { title: '店铺', key: 'shop', minWidth: 130 }, { title: '主机名称', key: 'hostName', minWidth: 100 },
-  { title: '编号', key: 'serial', width: 90 }, { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: any) => hostStatusRender(row.status) },
+  { title: '编号', key: 'serial', width: 90 },
+  { title: 'MAC 地址', key: 'macAddress', width: 140, render: (row: any) => h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;' }, row.macAddress) },
+  { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: any) => hostStatusRender(row.status) },
   { title: 'CPU', key: 'cpu', width: 70, align:'center' as const, render: (row: any) => row.cpu ? h('span', { style: `color:${row.cpu>80?'#EF4444':row.cpu>60?'#F59E0B':'#10B981'};font-weight:600` }, `${row.cpu}%`) : '--' },
   { title: '内存', key: 'mem', width: 70, align:'center' as const, render: (row: any) => row.mem ? h('span', { style: `color:${row.mem>80?'#EF4444':row.mem>60?'#F59E0B':'#10B981'};font-weight:600` }, `${row.mem}%`) : '--' },
   { title: '绑定头显', key: 'bound', width: 80, align:'center' as const },

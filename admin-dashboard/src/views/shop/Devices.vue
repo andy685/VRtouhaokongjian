@@ -178,17 +178,18 @@ const filteredHostDevices = computed(() => {
   return list
 })
 
-interface ShopHost { id: number; serialNo: string; name: string; specs: string; osVersion: string; status: string; merchant: string; store: string; boundHeadsetCount: number; boundHeadsetIds: number[]; createdAt: string; vodPassword: string }
+interface ShopHost { id: number; serialNo: string; name: string; specs: string; osVersion: string; status: string; merchant: string; store: string; macAddress: string; boundHeadsetCount: number; boundHeadsetIds: number[]; createdAt: string; vodPassword: string }
 const hostDevices = ref<ShopHost[]>([
-  { id: 1, serialNo: 'PCT-001', name: '主机 #01', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', boundHeadsetCount: 3, boundHeadsetIds: [101, 102, 103], createdAt: '2026-03-10', vodPassword: '' },
-  { id: 2, serialNo: 'PCT-002', name: '主机 #02', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-10', vodPassword: '' },
-  { id: 3, serialNo: 'PCT-003', name: '主机 #03', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然分部展厅', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-15', vodPassword: '' },
-  { id: 4, serialNo: 'PCT-004', name: '主机 #04', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'offline', merchant: '利民街商家', store: '利民街小展厅', boundHeadsetCount: 0, boundHeadsetIds: [], createdAt: '2026-03-20', vodPassword: '' },
-  { id: 5, serialNo: 'PCT-005', name: '主机 #05', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '利民街商家', store: '利民街小展厅', boundHeadsetCount: 1, boundHeadsetIds: [], createdAt: '2026-04-01', vodPassword: '123456' },
+  { id: 1, serialNo: 'PCT-001', name: '主机 #01', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', macAddress: '00:1A:2B:01:07:0D', boundHeadsetCount: 3, boundHeadsetIds: [101, 102, 103], createdAt: '2026-03-10', vodPassword: '' },
+  { id: 2, serialNo: 'PCT-002', name: '主机 #02', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', macAddress: '00:1A:2B:02:0E:1A', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-10', vodPassword: '' },
+  { id: 3, serialNo: 'PCT-003', name: '主机 #03', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然分部展厅', macAddress: '00:1A:2B:03:15:27', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-15', vodPassword: '' },
+  { id: 4, serialNo: 'PCT-004', name: '主机 #04', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'offline', merchant: '利民街商家', store: '利民街小展厅', macAddress: '00:1A:2B:04:1C:34', boundHeadsetCount: 0, boundHeadsetIds: [], createdAt: '2026-03-20', vodPassword: '' },
+  { id: 5, serialNo: 'PCT-005', name: '主机 #05', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '利民街商家', store: '利民街小展厅', macAddress: '00:1A:2B:05:23:41', boundHeadsetCount: 1, boundHeadsetIds: [], createdAt: '2026-04-01', vodPassword: '123456' },
 ])
 
 const hostColumns: DataTableColumns<ShopHost> = [
   { title: '主机编号', key: 'serialNo', width: 100 }, { title: '名称', key: 'name', minWidth: 100 },
+  { title: 'MAC 地址', key: 'macAddress', width: 140, render: (row: ShopHost) => h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;' }, row.macAddress) },
   { title: '硬件配置', key: 'specs', minWidth: 180 }, { title: '系统版本', key: 'osVersion', minWidth: 150 },
   { title: '所属商家', key: 'merchant', minWidth: 100 }, { title: '所属门店', key: 'store', minWidth: 120 },
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: ShopHost) => h(NTag, { size:'small', type: row.status === 'online' ? 'success' : 'default' }, { default: () => row.status === 'online' ? '在线' : '离线' }) },
