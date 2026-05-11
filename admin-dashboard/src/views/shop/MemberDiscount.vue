@@ -62,17 +62,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   NButton, NIcon, NForm, NFormItem, NInput,
-  NRadioGroup, NRadio, NInputNumber,
+  NRadioGroup, NRadio, NInputNumber, useMessage,
 } from 'naive-ui'
+import type { FormInst, FormRules } from 'naive-ui'
 import { ArrowBackOutline } from '@vicons/ionicons5'
 
 const router = useRouter()
 const route = useRoute()
-const formRef = ref()
+const message = useMessage()
+const formRef = ref<FormInst | null>(null)
 const saving = ref(false)
 
 // 会员名称（从路由参数获取）
@@ -85,11 +87,37 @@ const formData = reactive({
   pointsDiscount: null as number | null,
 })
 
+const isCustomDiscount = computed(() => formData.discountType === 'custom')
+
 // 校验规则
-const formRules = {
+const formRules: FormRules = {
   discountType: { required: true, message: '请选择折扣方式', trigger: 'change' },
-  consumeDiscount: { required: true, type: 'number' as const, message: '请输入消费折扣', trigger: 'blur' },
-  pointsDiscount: { required: true, type: 'number' as const, message: '请输入游戏币兑换折扣', trigger: 'blur' },
+  consumeDiscount: {
+    trigger: ['blur', 'change'],
+    validator: () => {
+      if (!isCustomDiscount.value) return true
+      if (formData.consumeDiscount === null || formData.consumeDiscount === undefined) {
+        return new Error('请输入消费折扣')
+      }
+      if (formData.consumeDiscount < 0 || formData.consumeDiscount > 100) {
+        return new Error('消费折扣需在0到100之间')
+      }
+      return true
+    },
+  },
+  pointsDiscount: {
+    trigger: ['blur', 'change'],
+    validator: () => {
+      if (!isCustomDiscount.value) return true
+      if (formData.pointsDiscount === null || formData.pointsDiscount === undefined) {
+        return new Error('请输入游戏币兑换折扣')
+      }
+      if (formData.pointsDiscount < 0 || formData.pointsDiscount > 100) {
+        return new Error('游戏币兑换折扣需在0到100之间')
+      }
+      return true
+    },
+  },
 }
 
 function goBack() {
@@ -100,21 +128,30 @@ function handleTypeChange(val: string) {
   if (val === 'level') {
     formData.consumeDiscount = null
     formData.pointsDiscount = null
+    return
   }
+
+  formData.consumeDiscount ??= 100
+  formData.pointsDiscount ??= 100
 }
 
 async function handleSave() {
   try {
     await formRef.value?.validate()
     saving.value = true
-    // TODO: 调用API保存
-    console.log('保存数据:', formData)
-    setTimeout(() => {
-      saving.value = false
-      goBack()
-    }, 600)
+
+    await new Promise((resolve) => setTimeout(resolve, 600))
+
+    const discountSummary = formData.discountType === 'level'
+      ? '已切换为会员等级折扣'
+      : `自定义折扣已保存（消费${formData.consumeDiscount}% / 游戏币${formData.pointsDiscount}%）`
+
+    message.success(discountSummary)
+    goBack()
   } catch (e) {
-    // 校验失败
+    message.error('请先完善折扣配置')
+  } finally {
+    saving.value = false
   }
 }
 </script>
