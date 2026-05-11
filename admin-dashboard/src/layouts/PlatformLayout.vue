@@ -237,7 +237,7 @@ const menuOptions: MenuOption[] = [
     icon: () => h(NIcon, { component: GameControllerOutline }),
     children: [
       { label: '游戏库', key: '/platform/games' },
-      { label: '游戏分类', key: '/platform/game-categories' },
+      { label: '游戏题材', key: '/platform/game-categories' },
       { label: '内容分发', key: '/platform/content' },
       { label: '小程序Banner', key: '/platform/banners' },
     ]

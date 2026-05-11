@@ -133,7 +133,7 @@ const coreStats = ref([
     trendIcon: ChevronUpOutline,
   },
   {
-    label: '本月分润',
+    label: '上月分润',
     value: '¥128,430',
     gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
     icon: WalletOutline,

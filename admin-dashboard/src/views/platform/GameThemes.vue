@@ -1,8 +1,8 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>游戏分类</h1>
-      <n-button type="primary" @click="openAdd">+ 添加分类</n-button>
+      <h1>游戏题材</h1>
+      <n-button type="primary" @click="openAdd">+ 添加题材</n-button>
     </div>
 
     <!-- 分类列表 -->
@@ -11,9 +11,9 @@
     </n-card>
 
     <!-- 添加/编辑分类弹窗 -->
-    <n-modal v-model:show="showModal" preset="card" :title="isEdit ? '编辑游戏分类' : '添加游戏分类'" style="width: 480px;" :bordered="false">
+    <n-modal v-model:show="showModal" preset="card" :title="isEdit ? '编辑游戏题材' : '添加游戏题材'" style="width: 480px;" :bordered="false">
       <n-form :model="formData" label-placement="top">
-        <n-form-item label="分类名称">
+        <n-form-item label="题材名称">
           <n-input v-model:value="formData.name" placeholder="如：科幻冒险" />
         </n-form-item>
         <n-form-item label="排序">
@@ -37,7 +37,7 @@
         <div style="width: 28px; height: 28px; border-radius: 50%; background: #FBBF24; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <span style="color: #fff; font-size: 16px; font-weight: bold;">!</span>
         </div>
-        <span style="font-size: 15px; color: #333;">确定删除当前分类，是否继续？</span>
+        <span style="font-size: 15px; color: #333;">确定删除当前题材，是否继续？</span>
       </div>
       <template #footer>
         <n-space justify="end">
@@ -58,7 +58,7 @@ import {
 import type { DataTableColumns } from 'naive-ui'
 import { PencilOutline, TrashOutline } from '@vicons/ionicons5'
 
-interface GameCategory {
+interface GameTheme {
   id: number
   sort: number
   name: string
@@ -71,7 +71,7 @@ const showModal = ref(false)
 const showDeleteModal = ref(false)
 const isEdit = ref(false)
 const editingId = ref<number | null>(null)
-const deleteTarget = ref<GameCategory | null>(null)
+const deleteTarget = ref<GameTheme | null>(null)
 
 const formData = ref({
   name: '',
@@ -81,7 +81,7 @@ const formData = ref({
 
 const pagination = { pageSize: 10 }
 
-const tableData = ref<GameCategory[]>([
+const tableData = ref<GameTheme[]>([
   { id: 1, sort: 1, name: '科幻冒险', count: 28, plays: 5860, status: true },
   { id: 2, sort: 2, name: '极限运动', count: 18, plays: 4280, status: true },
   { id: 3, sort: 3, name: '海洋探索', count: 15, plays: 3560, status: true },
@@ -90,7 +90,9 @@ const tableData = ref<GameCategory[]>([
   { id: 6, sort: 6, name: '音乐节奏', count: 8, plays: 1580, status: true },
 ])
 
-const columns: DataTableColumns<GameCategory> = [
+const columns: DataTableColumns<GameTheme> = [
+  { title: '排序', key: 'sort', width: 80 },
+  { title: '题材名称', key: 'name', width: 200 },
   { title: '排序', key: 'sort', width: 80 },
   { title: '分类名称', key: 'name', width: 200 },
   { title: '游戏数量', key: 'count', width: 120 },
@@ -134,7 +136,7 @@ function openAdd() {
   showModal.value = true
 }
 
-function openEdit(row: GameCategory) {
+function openEdit(row: GameTheme) {
   isEdit.value = true
   editingId.value = row.id
   formData.value = {
@@ -147,7 +149,7 @@ function openEdit(row: GameCategory) {
 
 function handleSubmit() {
   if (!formData.value.name.trim()) {
-    window.$message?.warning('请输入分类名称')
+    window.$message?.warning('请输入题材名称')
     return
   }
 
@@ -177,7 +179,7 @@ function handleSubmit() {
   showModal.value = false
 }
 
-function handleDelete(row: GameCategory) {
+function handleDelete(row: GameTheme) {
   deleteTarget.value = row
   showDeleteModal.value = true
 }

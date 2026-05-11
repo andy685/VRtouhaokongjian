@@ -113,7 +113,7 @@
 
       <div class="sub-metrics-row">
         <div class="sub-metric-card">
-          <span class="sub-label">当月已打款</span>
+          <span class="sub-label">上月已打款</span>
           <span class="sub-value">¥756,300</span>
           <span class="sub-detail">占应发分润 84.7%</span>
         </div>

@@ -30,7 +30,7 @@
       <!-- Tab 3: 第三方外围设备 -->
       <n-tab-pane name="thirdparty" tab="🔌 第三方外围设备">
         <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
-          <n-button type="primary" size="small" @click="showAddModal = true"><template #icon><n-icon :component="AddOutline" /></template>添加第三方设备</n-button>
+          <n-button type="primary" size="small" @click="openAddThirdParty"><template #icon><n-icon :component="AddOutline" /></template>添加第三方设备</n-button>
         </div>
         <n-alert type="warning" :bordered="false" style="margin-bottom:16px;">第三方外围设备由商家自行管理，如扭蛋机、体感机等非核心VR设备。</n-alert>
         <n-data-table :columns="thirdPartyColumns" :data="filteredThirdParty" :pagination="{pageSize:10}" :bordered="false" striped size="small" />
@@ -120,7 +120,7 @@
     </n-modal>
 
     <!-- 第三方设备弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" title="增加第三方设备" style="width:520px;" :bordered="false">
+    <n-modal v-model:show="showAddModal" preset="card" :title="isEditThirdParty ? '编辑第三方设备' : '增加第三方设备'" style="width:520px;" :bordered="false">
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="140">
         <n-form-item label="店铺选择" path="shop"><n-select v-model:value="addForm.shop" :options="shopOptions.filter(s=>s.value!=='all')" placeholder="请选择" /></n-form-item>
         <n-form-item label="设备名称" path="name"><n-input v-model:value="addForm.name" placeholder="请输入" /></n-form-item>
@@ -130,11 +130,33 @@
         <n-form-item label="支付方式" path="payMethods"><n-checkbox-group v-model:value="addForm.payMethods"><n-space><n-checkbox value="member">会员储值支付</n-checkbox><n-checkbox value="wechat">平台支付（微信）</n-checkbox><n-checkbox value="staff">员工扫码</n-checkbox></n-space></n-checkbox-group></n-form-item>
         <n-form-item label="描述" path="desc"><n-input v-model:value="addForm.desc" type="textarea" :maxlength="50" show-count :rows="4" /></n-form-item>
       </n-form>
-      <template #footer><n-space justify="center" style="width:100%;"><n-button type="primary" style="width:160px;" @click="handleAdd">增加</n-button></n-space></template>
+      <template #footer><n-space justify="center" style="width:100%;"><n-button type="primary" style="width:160px;" @click="handleThirdPartySubmit">{{ isEditThirdParty ? '保存修改' : '增加' }}</n-button></n-space></template>
     </n-modal>
     <n-modal v-model:show="showDeleteModal" preset="card" title="提示" style="width:420px;" :bordered="false" :closable="false">
-      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;"><div style="width:28px;height:28px;border-radius:50%;background:#FBBF24;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#fff;font-size:16px;font-weight:bold;">!</span></div><span style="font-size:15px;color:#333;">确定删除当前设备，是否继续？</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;"><div style="width:28px;height:28px;border-radius:50%;background:#FBBF24;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#fff;font-size:16px;font-weight:bold;">!</span></div><span style="font-size:15px;color:#333;">确定删除第三方设备「{{ deleteTarget?.name }}」，是否继续？</span></div>
       <template #footer><n-space justify="end"><n-button @click="showDeleteModal=false">取消</n-button><n-button type="primary" @click="confirmDelete">确定</n-button></n-space></template>
+    </n-modal>
+
+    <!-- 修改点播系统密码弹窗 -->
+    <n-modal v-model:show="showPwdModal" preset="card" :title="`修改点播系统密码 - ${pwdHost?.name}`" style="width:420px;" :bordered="false">
+      <div style="padding:8px 0;">
+        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">密码默认为空，设置后点播系统需输入密码验证身份。</n-alert>
+        <n-form label-placement="top">
+          <n-form-item label="新密码">
+            <n-input v-model:value="pwdNew" type="password" placeholder="请输入新密码（留空则不设密码）" show-password-on="mousedown" clearable />
+          </n-form-item>
+          <n-form-item label="确认新密码">
+            <n-input v-model:value="pwdConfirm" type="password" placeholder="请再次输入新密码" show-password-on="mousedown" clearable />
+          </n-form-item>
+        </n-form>
+        <div v-if="pwdError" style="padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:12px;color:#991b1b;">{{ pwdError }}</div>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="closePwdModal">取消</n-button>
+          <n-button type="primary" @click="confirmPwd">保存并应用</n-button>
+        </n-space>
+      </template>
     </n-modal>
   </div>
 </template>
@@ -156,13 +178,13 @@ const filteredHostDevices = computed(() => {
   return list
 })
 
-interface ShopHost { id: number; serialNo: string; name: string; specs: string; osVersion: string; status: string; merchant: string; store: string; boundHeadsetCount: number; boundHeadsetIds: number[]; createdAt: string }
+interface ShopHost { id: number; serialNo: string; name: string; specs: string; osVersion: string; status: string; merchant: string; store: string; boundHeadsetCount: number; boundHeadsetIds: number[]; createdAt: string; vodPassword: string }
 const hostDevices = ref<ShopHost[]>([
-  { id: 1, serialNo: 'PCT-001', name: '主机 #01', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', boundHeadsetCount: 3, boundHeadsetIds: [101, 102, 103], createdAt: '2026-03-10' },
-  { id: 2, serialNo: 'PCT-002', name: '主机 #02', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-10' },
-  { id: 3, serialNo: 'PCT-003', name: '主机 #03', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然分部展厅', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-15' },
-  { id: 4, serialNo: 'PCT-004', name: '主机 #04', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'offline', merchant: '利民街商家', store: '利民街小展厅', boundHeadsetCount: 0, boundHeadsetIds: [], createdAt: '2026-03-20' },
-  { id: 5, serialNo: 'PCT-005', name: '主机 #05', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '利民街商家', store: '利民街小展厅', boundHeadsetCount: 1, boundHeadsetIds: [], createdAt: '2026-04-01' },
+  { id: 1, serialNo: 'PCT-001', name: '主机 #01', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', boundHeadsetCount: 3, boundHeadsetIds: [101, 102, 103], createdAt: '2026-03-10', vodPassword: '' },
+  { id: 2, serialNo: 'PCT-002', name: '主机 #02', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-10', vodPassword: '' },
+  { id: 3, serialNo: 'PCT-003', name: '主机 #03', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然分部展厅', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-15', vodPassword: '' },
+  { id: 4, serialNo: 'PCT-004', name: '主机 #04', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'offline', merchant: '利民街商家', store: '利民街小展厅', boundHeadsetCount: 0, boundHeadsetIds: [], createdAt: '2026-03-20', vodPassword: '' },
+  { id: 5, serialNo: 'PCT-005', name: '主机 #05', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '利民街商家', store: '利民街小展厅', boundHeadsetCount: 1, boundHeadsetIds: [], createdAt: '2026-04-01', vodPassword: '123456' },
 ])
 
 const hostColumns: DataTableColumns<ShopHost> = [
@@ -171,8 +193,9 @@ const hostColumns: DataTableColumns<ShopHost> = [
   { title: '所属商家', key: 'merchant', minWidth: 100 }, { title: '所属门店', key: 'store', minWidth: 120 },
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: ShopHost) => h(NTag, { size:'small', type: row.status === 'online' ? 'success' : 'default' }, { default: () => row.status === 'online' ? '在线' : '离线' }) },
   { title: '绑定头显', key: 'boundHeadsetCount', width: 80, align:'center' as const, render: (row: ShopHost) => h(NTag, { size:'small', type:'info' }, { default: () => `${row.boundHeadsetCount}台` }) },
-  { title: '操作', key: 'actions', width: 130, align:'center' as const, render: (row: ShopHost) => h(NSpace, { size:4 }, { default: () => [
+  { title: '操作', key: 'actions', width: 200, align:'center' as const, render: (row: ShopHost) => h(NSpace, { size:4 }, { default: () => [
     h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openHostBind(row) }, { default: () => '绑定头显' }),
+    h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => openPwdModal(row) }, { default: () => '修改点播系统密码' }),
   ]}) },
 ]
 
@@ -308,14 +331,113 @@ const thirdPartyColumns: DataTableColumns<ThirdPartyDevice> = [
   { title: '启用状态', key: 'status', width: 90, align:'center' as const, render: (row: ThirdPartyDevice) => h(NTag, { size:'small', type: row.status === 'enabled' ? 'success' : 'error' }, { default: () => row.status === 'enabled' ? '启用' : '禁用' }) },
   { title: '在线状态', key: 'onlineStatus', width: 90, align:'center' as const, render: (row: ThirdPartyDevice) => h(NTag, { size:'small', type: row.onlineStatus === 'online' ? 'success' : 'error' }, { default: () => row.onlineStatus === 'online' ? '在线' : '离线' }) },
   { title: '单价', key: 'price', width: 80, align:'center' as const }, { title: '游戏币', key: 'points', width: 70, align:'center' as const },
+  { title: '操作', key: 'actions', width: 120, align:'center' as const, render: (row: ThirdPartyDevice) => h(NSpace, { size:4 }, { default: () => [
+    h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openEditThirdParty(row) }, { default: () => '编辑' }),
+    h(NButton, { size:'tiny', text:true, type:'error', onClick: () => handleThirdPartyDelete(row) }, { default: () => '删除' }),
+  ]}) },
 ]
 
 // ── 第三方 CRUD ────────────────────────────────
 const showAddModal = ref(false); const showDeleteModal = ref(false); const addFormRef = ref<FormInst | null>(null)
+const isEditThirdParty = ref(false)
+const editThirdPartyId = ref<number | null>(null)
 const addForm = ref({ name: '', shop: '', price: 20.00, coins: 3, status: 'enabled' as 'enabled'|'disabled', payMethods: ['member'] as string[], desc: '' })
 const addRules: FormRules = { shop: { required: true, message: '请选择店铺', trigger: 'change' }, name: { required: true, message: '请输入设备名称', trigger: 'blur' } }
-function handleAdd() { addFormRef.value?.validate(e => { if (e) return; thirdPartyDevices.value.unshift({ id: Date.now(), shop: addForm.value.shop, name: addForm.value.name, token: `tp_${Math.random().toString(36).slice(2,10)}`, status: addForm.value.status, onlineStatus: 'online', price: addForm.value.price, points: addForm.value.coins, payMethods: addForm.value.payMethods, desc: addForm.value.desc }); showAddModal.value = false; addForm.value = { name:'', shop:'', price:20.00, coins:3, status:'enabled', payMethods:['member'], desc:'' } }) }
-function confirmDelete() { showDeleteModal.value = false }
+const deleteTarget = ref<ThirdPartyDevice | null>(null)
+
+function openAddThirdParty() {
+  isEditThirdParty.value = false; editThirdPartyId.value = null
+  addForm.value = { name:'', shop:'', price:20.00, coins:3, status:'enabled', payMethods:['member'], desc:'' }
+  showAddModal.value = true
+}
+
+function openEditThirdParty(row: ThirdPartyDevice) {
+  isEditThirdParty.value = true; editThirdPartyId.value = row.id
+  addForm.value = {
+    name: row.name, shop: row.shop, price: row.price, coins: row.points,
+    status: row.status, payMethods: [...row.payMethods], desc: row.desc
+  }
+  showAddModal.value = true
+}
+
+function handleThirdPartySubmit() {
+  addFormRef.value?.validate(e => {
+    if (e) return
+    if (isEditThirdParty.value && editThirdPartyId.value !== null) {
+      const idx = thirdPartyDevices.value.findIndex(d => d.id === editThirdPartyId.value)
+      if (idx !== -1) {
+        thirdPartyDevices.value[idx] = {
+          ...thirdPartyDevices.value[idx],
+          name: addForm.value.name, shop: addForm.value.shop,
+          price: addForm.value.price, points: addForm.value.coins,
+          status: addForm.value.status, payMethods: [...addForm.value.payMethods],
+          desc: addForm.value.desc
+        }
+      }
+      ;(window as any).$message?.success(`设备「${addForm.value.name}」已更新`)
+    } else {
+      thirdPartyDevices.value.unshift({
+        id: Date.now(), shop: addForm.value.shop, name: addForm.value.name,
+        token: `tp_${Math.random().toString(36).slice(2,10)}`,
+        status: addForm.value.status, onlineStatus: 'online',
+        price: addForm.value.price, points: addForm.value.coins,
+        payMethods: [...addForm.value.payMethods], desc: addForm.value.desc
+      })
+      ;(window as any).$message?.success(`设备「${addForm.value.name}」已添加`)
+    }
+    showAddModal.value = false
+    addForm.value = { name:'', shop:'', price:20.00, coins:3, status:'enabled', payMethods:['member'], desc:'' }
+  })
+}
+function handleThirdPartyDelete(row: ThirdPartyDevice) { deleteTarget.value = row; showDeleteModal.value = true }
+function confirmDelete() {
+  if (deleteTarget.value) {
+    const idx = thirdPartyDevices.value.findIndex(d => d.id === deleteTarget.value!.id)
+    if (idx !== -1) thirdPartyDevices.value.splice(idx, 1)
+    ;(window as any).$message?.success(`设备「${deleteTarget.value.name}」已删除`)
+  }
+  showDeleteModal.value = false; deleteTarget.value = null
+}
+
+// ── 修改点播系统密码 ─────────────────────────────
+const showPwdModal = ref(false)
+const pwdHost = ref<ShopHost | null>(null)
+const pwdNew = ref('')
+const pwdConfirm = ref('')
+const pwdError = ref('')
+
+function openPwdModal(host: ShopHost) {
+  pwdHost.value = host
+  pwdNew.value = ''
+  pwdConfirm.value = ''
+  pwdError.value = ''
+  showPwdModal.value = true
+}
+
+function closePwdModal() {
+  showPwdModal.value = false
+  pwdHost.value = null
+  pwdNew.value = ''
+  pwdConfirm.value = ''
+  pwdError.value = ''
+}
+
+function confirmPwd() {
+  if (!pwdHost.value) return
+
+  // 密码一致性校验
+  if (pwdNew.value !== pwdConfirm.value) {
+    pwdError.value = '两次输入的密码不一致，请重新输入'
+    return
+  }
+
+  // 保存密码（空字符串表示不设密码）
+  pwdHost.value.vodPassword = pwdNew.value
+
+  const label = pwdNew.value ? `已设置为「${pwdNew.value}」` : '已清除密码（不设密码）'
+  ;(window as any).$message?.success(`主机「${pwdHost.value.name}」点播系统密码修改成功，${label}`)
+  closePwdModal()
+}
 </script>
 
 <style scoped>

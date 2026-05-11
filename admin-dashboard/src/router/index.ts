@@ -129,7 +129,7 @@ import Message from '../views/shop/account/Message.vue'
 import ShopFeedback from '../views/shop/Feedback.vue'
 import ShopIcCard from '../views/shop/IcCard.vue'
 import PlatformFeedbackSummary from '../views/platform/FeedbackSummary.vue'
-import GameCategories from '../views/platform/GameCategories.vue'
+import GameThemes from '../views/platform/GameThemes.vue'
 
 const routes: RouteRecordRaw[] = [
   // ===== 登录页面 =====
@@ -159,7 +159,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'games/:id', name: 'PlatformGameDetail', component: GameDetail, meta: { title: '游戏详情' } },
       { path: 'content', name: 'PlatformContent', component: ContentDistribute, meta: { title: '内容分发' } },
       { path: 'banners', name: 'PlatformBanners', component: BannerManage, meta: { title: 'Banner 管理' } },
-      { path: 'game-categories', name: 'PlatformGameCategories', component: GameCategories, meta: { title: '游戏分类' } },
+      { path: 'game-categories', name: 'PlatformGameCategories', component: GameThemes, meta: { title: '游戏题材' } },
       // 平台账号
       { path: 'users', name: 'PlatformUsers', component: UserList, meta: { title: '账号管理' } },
       { path: 'users/roles', name: 'PlatformUsersRoles', component: RolePermission, meta: { title: '角色权限' } },
@@ -291,7 +291,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'devices/control', name: 'ShopDevicesControl', component: Devices, meta: { title: '远程控制', breadcrumb: [{ label: '系统设置' }, { label: '设备列表', path: '/shop/devices' }, { label: '远程控制' }] } },
       { path: 'devices/bind', name: 'ShopDeviceBind', component: DeviceBind, meta: { title: '设备绑定管理', breadcrumb: [{ label: '系统设置' }, { label: '设备管理' }, { label: '设备绑定管理' }] } },
       { path: 'devices/online-stats', name: 'ShopDeviceOnlineStats', component: DeviceOnlineStats, meta: { title: '设备在线统计', breadcrumb: [{ label: '系统设置' }, { label: '设备管理' }, { label: '设备在线统计' }] } },
-      // 游戏分类已迁移至总运营后台 -> /platform/game-categories
+      // 游戏题材已迁移至总运营后台 -> /platform/game-categories
       { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: CashierTerminal, meta: { title: '收银终端', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '收银终端' }] } },
       { path: 'cashier-settings', name: 'ShopCashierSettings', component: CashierSettings, meta: { title: '支付设置', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '支付设置' }] } },
       { path: 'cashier-receipt', name: 'ShopCashierReceipt', component: CashierReceiptSettings, meta: { title: '小票设置', breadcrumb: [{ label: '系统设置' }, { label: '收银设置' }, { label: '小票设置' }] } },

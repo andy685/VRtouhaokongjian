@@ -128,8 +128,8 @@
             </div>
             <div class="form-row-2">
               <div class="form-group">
-                <label>游戏分类 <n-text depth="3">（多选，由总运营后台统一管理）</n-text></label>
-                <n-select v-model:value="gameData.categories" :options="categoryOptions" multiple placeholder="选择分类" />
+                <label>游戏题材 <n-text depth="3">（多选，由总运营后台统一管理）</n-text></label>
+                <n-select v-model:value="gameData.categories" :options="categoryOptions" multiple placeholder="选择题材" />
               </div>
               <div class="form-group">
                 <label>当前版本</label>
@@ -401,7 +401,7 @@ const tagOptions = [
   { label: '放松', value: '放松' },
 ]
 
-// 分类选项（由总运营后台「游戏分类」页面统一管理）
+// 题材选项（由总运营后台「游戏题材」页面统一管理）
 const categoryOptions = [
   { label: '科幻冒险', value: 'scifi' },
   { label: '极限运动', value: 'extreme' },

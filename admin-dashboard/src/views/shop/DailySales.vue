@@ -208,7 +208,7 @@ function getDayData(dateStr: string) {
   const business = [
     { id: 1, store: '卓远萝岗区店', business: '预存充值', revenueAmount: Math.round(b1 * 52), refundAmount: Math.round(b1 * 2) },
     { id: 2, store: '卓远萝岗区店', business: '开卡费', revenueAmount: Math.round(b1 * 12.8), refundAmount: 0 },
-    { id: 3, store: '卓远萝岗区店', business: '直播卖打赏赚', revenueAmount: Math.round(b1 * 8.6), refundAmount: Math.round(b1 * 0.5) },
+    { id: 3, store: '卓远萝岗区店', business: '游戏点播', revenueAmount: Math.round(b1 * 8.6), refundAmount: Math.round(b1 * 0.5) },
     { id: 4, store: '卓远萝岗区店', business: '项目套餐', revenueAmount: Math.round(b1 * 55.2), refundAmount: Math.round(b1 * 3) },
     { id: 5, store: '合计', business: '', revenueAmount: Math.round(b1 * 128.6), refundAmount: Math.round(b1 * 5.5), isTotal: true },
   ]

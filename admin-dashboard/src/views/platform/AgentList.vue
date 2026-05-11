@@ -39,7 +39,7 @@
           <n-icon :component="TrendingUpOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">本月分润</span>
+          <span class="label">上月分润</span>
           <span class="value">¥128,560</span>
         </div>
       </div>
@@ -193,7 +193,7 @@
             <n-descriptions-item label="旗下商家">{{ currentAgent.merchantCount }} 家</n-descriptions-item>
             <n-descriptions-item label="管辖店铺">{{ currentAgent.storeCount }} 家</n-descriptions-item>
             <n-descriptions-item label="本月游戏豆充值">{{ currentAgent.monthRecharge }}</n-descriptions-item>
-            <n-descriptions-item label="本月分润">{{ currentAgent.monthCommission }}</n-descriptions-item>
+            <n-descriptions-item label="上月分润">{{ currentAgent.monthCommission }}</n-descriptions-item>
             <n-descriptions-item label="状态">
               <n-tag :type="currentAgent.status === 'active' ? 'success' : 'default'" size="small">
                 {{ currentAgent.status === 'active' ? '正常' : '停用' }}
@@ -275,7 +275,7 @@ const columns = [
   { title: '手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
   { title: '管辖店铺', key: 'storeCount', width: 100 },
   { title: '本月游戏豆充值', key: 'monthRecharge', width: 150 },
-  { title: '本月分润', key: 'monthCommission', width: 120 },
+  { title: '上月分润', key: 'monthCommission', width: 120 },
   {
     title: '状态',
     key: 'status',

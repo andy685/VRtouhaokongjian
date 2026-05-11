@@ -38,20 +38,11 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
-          <n-icon :component="TimeOutline" size="22" color="#fff" />
-        </div>
-        <div class="stat-content">
-          <span class="label">待了结算</span>
-          <span class="value warning">36</span>
-        </div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
           <n-icon :component="StorefrontOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">本月分润</span>
+          <span class="label">上月分润</span>
           <span class="value">¥128K</span>
         </div>
       </div>
@@ -494,7 +485,7 @@ function handleDelete(row: any) {
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
 .header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block; }
 
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
 .stat-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; }
 .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .stat-content { display: flex; flex-direction: column; }

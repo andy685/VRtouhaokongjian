@@ -22,9 +22,6 @@
         <n-form-item label="姓名">
           <n-input v-model:value="formData.name" placeholder="请输入姓名" style="width: 360px;" />
         </n-form-item>
-        <n-form-item label="工号">
-          <n-input v-model:value="formData.employeeNo" placeholder="工号（可选）" style="width: 360px;" />
-        </n-form-item>
         <n-form-item label="手机号">
           <n-input v-model:value="formData.phone" placeholder="请输入手机号" style="width: 360px;" />
         </n-form-item>
@@ -91,7 +88,7 @@ const message = useMessage()
 const formData = ref({
   name: '管理员',
   accountId: 'PLT-00001',
-  employeeNo: 'OPS-001',
+
   phone: '138****0001',
   email: 'admin@platform.com',
   department: '平台运营部',

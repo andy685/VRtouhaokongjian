@@ -107,7 +107,7 @@
     <div class="section-card">
       <div class="section-title">
         <span class="title-bar"></span>
-        <span>渠道营收占比</span>
+        <span>业务营收占比</span>
         <span class="section-sub">{{ displayDateLabel || '全部数据' }}</span>
       </div>
       <div class="channel-stats">
@@ -402,16 +402,20 @@ const trendData = computed(() => {
   }))
 })
 
-// ===== 渠道占比数据 =====
+// ===== 业务营收占比 =====
 const channelData = computed(() => {
   const data = filteredData.value
-  const offline = data.reduce((s, d) => s + d.offlineRevenue, 0)
-  const wechat = data.reduce((s, d) => s + d.wechatRevenue, 0)
-  const total = offline + wechat
+  const prepaid = data.reduce((s, d) => s + d.offlinePrepaid, 0)
+  const pkg = data.reduce((s, d) => s + d.offlinePackage, 0)
+  const device = data.reduce((s, d) => s + d.offlineDevice, 0)
+  const goods = data.reduce((s, d) => s + d.offlineGoods, 0)
+  const total = prepaid + pkg + device + goods
   if (total === 0) return []
   return [
-    { key: 'offline', name: '线下营收', percent: Math.round(offline / total * 100), color: '#3B82F6' },
-    { key: 'wechat', name: '小程序营收', percent: Math.round(wechat / total * 100), color: '#10B981' },
+    { key: 'prepaid', name: '会员充值', percent: Math.round(prepaid / total * 100), color: '#3B82F6' },
+    { key: 'package', name: '项目套餐', percent: Math.round(pkg / total * 100), color: '#10B981' },
+    { key: 'device', name: '游戏点播', percent: Math.round(device / total * 100), color: '#F59E0B' },
+    { key: 'goods', name: '商品销售', percent: Math.round(goods / total * 100), color: '#8B5CF6' },
   ]
 })
 

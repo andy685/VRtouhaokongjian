@@ -28,16 +28,6 @@
           </div>
 
           <div class="info-item">
-            <div class="info-label">性别</div>
-            <n-select
-              v-model:value="formData.gender"
-              :options="genderOptions"
-              placeholder="请选择性别"
-              style="width: 300px;"
-            />
-          </div>
-
-          <div class="info-item">
             <div class="info-label">手机号码</div>
             <n-input
               v-model:value="formData.phone"
@@ -179,16 +169,9 @@ const formData = ref({
   name: '王小丫',
   phone: '138****8888',
   email: 'wangxiaoya@touhaokongjian.com',
-  gender: 'female',
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=王小丫'
 })
 
-// 性别选项
-const genderOptions = [
-  { label: '男', value: 'male' },
-  { label: '女', value: 'female' },
-  { label: '其他', value: 'other' }
-]
 
 // 弹窗控制
 const showBindEmailModal = ref(false)

@@ -49,14 +49,14 @@ const calculateTrend = (name: string) => {
 
 const data = ref(
   [
-    { name: '过山车VR', type: '游戏', totalPlays: 12580, totalBeans: 251600, storeCount: 45, avgCost: 20 },
-    { name: '星际穿越', type: '影片', totalPlays: 8920, totalBeans: 133800, storeCount: 38, avgCost: 15 },
-    { name: '恐怖医院', type: '游戏', totalPlays: 8200, totalBeans: 123000, storeCount: 35, avgCost: 15 },
-    { name: '极速赛车', type: '游戏', totalPlays: 7600, totalBeans: 114000, storeCount: 32, avgCost: 15 },
-    { name: '海洋世界', type: '影片', totalPlays: 6500, totalBeans: 78000, storeCount: 30, avgCost: 12 },
-    { name: '恐龙世界', type: '影片', totalPlays: 5400, totalBeans: 64800, storeCount: 28, avgCost: 12 },
-    { name: '飞行模拟器', type: '游戏', totalPlays: 4800, totalBeans: 67200, storeCount: 25, avgCost: 14 },
-    { name: '鬼屋惊魂', type: '游戏', totalPlays: 4200, totalBeans: 58800, storeCount: 22, avgCost: 14 },
+    { name: '过山车VR', totalPlays: 12580, totalBeans: 251600, storeCount: 45, avgCost: 20 },
+    { name: '星际穿越', totalPlays: 8920, totalBeans: 133800, storeCount: 38, avgCost: 15 },
+    { name: '恐怖医院', totalPlays: 8200, totalBeans: 123000, storeCount: 35, avgCost: 15 },
+    { name: '极速赛车', totalPlays: 7600, totalBeans: 114000, storeCount: 32, avgCost: 15 },
+    { name: '海洋世界', totalPlays: 6500, totalBeans: 78000, storeCount: 30, avgCost: 12 },
+    { name: '恐龙世界', totalPlays: 5400, totalBeans: 64800, storeCount: 28, avgCost: 12 },
+    { name: '飞行模拟器', totalPlays: 4800, totalBeans: 67200, storeCount: 25, avgCost: 14 },
+    { name: '鬼屋惊魂', totalPlays: 4200, totalBeans: 58800, storeCount: 22, avgCost: 14 },
   ].map(item => ({
     ...item,
     trend: calculateTrend(item.name)
@@ -67,12 +67,11 @@ const data = ref(
 const trendExplanation = '趋势计算逻辑：\n对比最近7天 vs 前7天的点播次数总和\n\n• 增长率 > 5%：↗ 上升（绿色）\n• 增长率 < -5%：↘ 下降（红色）\n• 其余情况：→ 平稳（灰色）'
 
 const columns = [
-  { title: '内容名称', key: 'name', minWidth: 160 },
-  { title: '类型', key: 'type', width: 90 },
+  { title: '游戏名称', key: 'name', minWidth: 160 },
   { title: '总点播次数', key: 'totalPlays', width: 110 },
   { title: '总消耗游戏豆', key: 'totalBeans', width: 120 },
   { title: '覆盖店铺数', key: 'storeCount', width: 110 },
-  { title: '平均单次消耗', key: 'avgCost', width: 120 },
+  { title: '游戏豆/次', key: 'avgCost', width: 120 },
   {
     title: () => h('div', { style: 'display:inline-flex;align-items:center;gap:4px;' }, [
       h('span', '趋势'),

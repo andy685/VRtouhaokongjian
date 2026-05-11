@@ -15,7 +15,6 @@
             </n-button>
           </div>
           <div class="balance-actions">
-            <n-button type="primary" ghost class="action-btn" @click="handleWithdraw">去提现</n-button>
             <n-button type="primary" class="action-btn" @click="handleRecharge">去充值</n-button>
           </div>
         </div>
