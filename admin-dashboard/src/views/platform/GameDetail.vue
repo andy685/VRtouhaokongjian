@@ -128,8 +128,8 @@
             </div>
             <div class="form-row-2">
               <div class="form-group">
-                <label>游戏分类</label>
-                <n-select v-model:value="gameData.category" :options="categoryOptions" placeholder="选择分类" />
+                <label>游戏分类 <n-text depth="3">（多选，由总运营后台统一管理）</n-text></label>
+                <n-select v-model:value="gameData.categories" :options="categoryOptions" multiple placeholder="选择分类" />
               </div>
               <div class="form-group">
                 <label>当前版本</label>
@@ -401,16 +401,14 @@ const tagOptions = [
   { label: '放松', value: '放松' },
 ]
 
-// 分类选项
+// 分类选项（由总运营后台「游戏分类」页面统一管理）
 const categoryOptions = [
-  { label: '动作冒险', value: 'action' },
-  { label: '恐怖悬疑', value: 'horror' },
-  { label: '竞速赛车', value: 'racing' },
-  { label: '射击对战', value: 'shooting' },
-  { label: '模拟经营', value: 'simulation' },
-  { label: '休闲益智', value: 'casual' },
-  { label: '教育科普', value: 'education' },
-  { label: '音乐节奏', value: 'music' },
+  { label: '科幻冒险', value: 'scifi' },
+  { label: '极限运动', value: 'extreme' },
+  { label: '海洋探索', value: 'ocean' },
+  { label: '亲子娱乐', value: 'family' },
+  { label: '恐怖惊悚', value: 'horror' },
+  { label: '音乐节奏', value: 'rhythm' },
 ]
 
 // 语言选项
@@ -465,7 +463,7 @@ const gameData = ref({
   icon: '',
   rating: 4.5,
   tags: [] as string[],
-  category: '' as string,
+  categories: [] as string[],
   description: '',
   duration: 10,
   size: '',
@@ -543,8 +541,9 @@ function loadGameData(id: string) {
     '1': {
       id: 1, name: '过山车VR', icon: '🎢', rating: 4.9,
       tags: ['热门', '全年龄', '刺激'],
+      categories: ['scifi', 'rhythm'],
       description: '体验身临其境的VR过山车之旅！穿越壮观的虚拟世界，感受失重与速度的极致刺激。',
-      category: 'action', duration: 10, size: '256M', version: 'v2.3.1', publishTime: 1713576800,
+      duration: 10, size: '256M', version: 'v2.3.1', publishTime: 1713576800,
       supportShooting: false, supportWalking: true, supportSeated: true,
       multiPlayer: false, hasVoiceChat: false, hasLeaderboard: true,
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
@@ -556,8 +555,9 @@ function loadGameData(id: string) {
     '2': {
       id: 2, name: '末日大灾灭', icon: '💀', rating: 4.7,
       tags: ['惊悚恐怖', '竞技射击', '最新VR'],
+      categories: ['horror', 'extreme'],
       description: '面对日益强悍的僵尸浪潮围困，人类与僵尸迎来最终对决。',
-      category: 'shooting', duration: 15, size: '500M', version: 'v1.8.5', publishTime: 1713490400,
+      duration: 15, size: '500M', version: 'v1.8.5', publishTime: 1713490400,
       supportShooting: true, supportWalking: true, supportSeated: false,
       multiPlayer: true, hasVoiceChat: true, hasLeaderboard: true,
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',

@@ -255,7 +255,7 @@ const menuOptions: MenuOption[] = [
           { label: '活动赠送订单', key: '/shop/gift-order' },
         ]
       },
-      { label: '影片分成明细', key: '/shop/film-revenue' },
+      { label: '游戏分成明细', key: '/shop/film-revenue' },
     ]
   },
   {
@@ -283,7 +283,6 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
       { label: '点播设置', key: '/shop/on-demand-settings' },
-      { label: '影片题材', key: '/shop/film-genres' },
       {
         label: '收银设置',
         key: 'cashier-settings-group',

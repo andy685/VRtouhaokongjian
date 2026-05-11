@@ -1,7 +1,7 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>影片分成明细</h1>
+      <h1>游戏分成明细</h1>
       <n-space>
         <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width: 140px;" placeholder="所属店铺" clearable />
         <n-select v-model:value="filmType" :options="filmOptions" size="small" style="width: 120px;" />

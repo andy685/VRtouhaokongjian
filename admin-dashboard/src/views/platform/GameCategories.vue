@@ -1,26 +1,20 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>影片题材</h1>
-      <n-button type="primary" @click="openAdd">+ 添加题材</n-button>
+      <h1>游戏分类</h1>
+      <n-button type="primary" @click="openAdd">+ 添加分类</n-button>
     </div>
 
-    <!-- 题材列表 -->
+    <!-- 分类列表 -->
     <n-card class="table-card">
       <n-data-table :columns="columns" :data="tableData" :pagination="pagination" />
     </n-card>
 
-    <!-- 添加/编辑题材弹窗 -->
-    <n-modal v-model:show="showModal" preset="card" :title="isEdit ? '编辑影片题材' : '添加影片题材'" style="width: 480px;" :bordered="false">
+    <!-- 添加/编辑分类弹窗 -->
+    <n-modal v-model:show="showModal" preset="card" :title="isEdit ? '编辑游戏分类' : '添加游戏分类'" style="width: 480px;" :bordered="false">
       <n-form :model="formData" label-placement="top">
-        <n-form-item label="题材名称">
+        <n-form-item label="分类名称">
           <n-input v-model:value="formData.name" placeholder="如：科幻冒险" />
-        </n-form-item>
-        <n-form-item label="题材编码">
-          <n-input v-model:value="formData.code" placeholder="如：scifi" />
-        </n-form-item>
-        <n-form-item label="题材图标">
-          <n-input v-model:value="formData.icon" placeholder="图标名称或URL" />
         </n-form-item>
         <n-form-item label="排序">
           <n-input-number v-model:value="formData.sort" :min="0" style="width: 100%;" />
@@ -43,7 +37,7 @@
         <div style="width: 28px; height: 28px; border-radius: 50%; background: #FBBF24; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <span style="color: #fff; font-size: 16px; font-weight: bold;">!</span>
         </div>
-        <span style="font-size: 15px; color: #333;">确定删除当前题材，是否继续？</span>
+        <span style="font-size: 15px; color: #333;">确定删除当前分类，是否继续？</span>
       </div>
       <template #footer>
         <n-space justify="end">
@@ -64,12 +58,10 @@ import {
 import type { DataTableColumns } from 'naive-ui'
 import { PencilOutline, TrashOutline } from '@vicons/ionicons5'
 
-interface Genre {
+interface GameCategory {
   id: number
   sort: number
   name: string
-  code: string
-  icon: string
   count: number
   plays: number
   status: boolean
@@ -79,32 +71,29 @@ const showModal = ref(false)
 const showDeleteModal = ref(false)
 const isEdit = ref(false)
 const editingId = ref<number | null>(null)
-const deleteTarget = ref<Genre | null>(null)
+const deleteTarget = ref<GameCategory | null>(null)
 
 const formData = ref({
   name: '',
-  code: '',
-  icon: '',
   sort: 0,
   status: true
 })
 
 const pagination = { pageSize: 10 }
 
-const tableData = ref<Genre[]>([
-  { id: 1, sort: 1, name: '科幻冒险', code: 'scifi', icon: '', count: 28, plays: 5860, status: true },
-  { id: 2, sort: 2, name: '极限运动', code: 'extreme', icon: '', count: 18, plays: 4280, status: true },
-  { id: 3, sort: 3, name: '海洋探索', code: 'ocean', icon: '', count: 15, plays: 3560, status: true },
-  { id: 4, sort: 4, name: '亲子娱乐', code: 'family', icon: '', count: 22, plays: 5120, status: true },
-  { id: 5, sort: 5, name: '恐怖惊悚', code: 'horror', icon: '', count: 12, plays: 2860, status: false },
-  { id: 6, sort: 6, name: '音乐节奏', code: 'rhythm', icon: '', count: 8, plays: 1580, status: true },
+const tableData = ref<GameCategory[]>([
+  { id: 1, sort: 1, name: '科幻冒险', count: 28, plays: 5860, status: true },
+  { id: 2, sort: 2, name: '极限运动', count: 18, plays: 4280, status: true },
+  { id: 3, sort: 3, name: '海洋探索', count: 15, plays: 3560, status: true },
+  { id: 4, sort: 4, name: '亲子娱乐', count: 22, plays: 5120, status: true },
+  { id: 5, sort: 5, name: '恐怖惊悚', count: 12, plays: 2860, status: false },
+  { id: 6, sort: 6, name: '音乐节奏', count: 8, plays: 1580, status: true },
 ])
 
-const columns: DataTableColumns<Genre> = [
+const columns: DataTableColumns<GameCategory> = [
   { title: '排序', key: 'sort', width: 80 },
-  { title: '题材名称', key: 'name', width: 150 },
-  { title: '编码', key: 'code', width: 120 },
-  { title: '影片数量', key: 'count', width: 120 },
+  { title: '分类名称', key: 'name', width: 200 },
+  { title: '游戏数量', key: 'count', width: 120 },
   { title: '播放量', key: 'plays', width: 120 },
   {
     title: '状态',
@@ -141,17 +130,15 @@ const columns: DataTableColumns<Genre> = [
 function openAdd() {
   isEdit.value = false
   editingId.value = null
-  formData.value = { name: '', code: '', icon: '', sort: tableData.value.length + 1, status: true }
+  formData.value = { name: '', sort: tableData.value.length + 1, status: true }
   showModal.value = true
 }
 
-function openEdit(row: Genre) {
+function openEdit(row: GameCategory) {
   isEdit.value = true
   editingId.value = row.id
   formData.value = {
     name: row.name,
-    code: row.code,
-    icon: row.icon,
     sort: row.sort,
     status: row.status
   }
@@ -160,11 +147,7 @@ function openEdit(row: Genre) {
 
 function handleSubmit() {
   if (!formData.value.name.trim()) {
-    window.$message?.warning('请输入题材名称')
-    return
-  }
-  if (!formData.value.code.trim()) {
-    window.$message?.warning('请输入题材编码')
+    window.$message?.warning('请输入分类名称')
     return
   }
 
@@ -174,8 +157,6 @@ function handleSubmit() {
       tableData.value[idx] = {
         ...tableData.value[idx],
         name: formData.value.name,
-        code: formData.value.code,
-        icon: formData.value.icon,
         sort: formData.value.sort,
         status: formData.value.status
       }
@@ -187,8 +168,6 @@ function handleSubmit() {
       id: newId,
       sort: formData.value.sort,
       name: formData.value.name,
-      code: formData.value.code,
-      icon: formData.value.icon,
       count: 0,
       plays: 0,
       status: formData.value.status
@@ -198,7 +177,7 @@ function handleSubmit() {
   showModal.value = false
 }
 
-function handleDelete(row: Genre) {
+function handleDelete(row: GameCategory) {
   deleteTarget.value = row
   showDeleteModal.value = true
 }
