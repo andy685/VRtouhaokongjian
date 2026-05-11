@@ -43,11 +43,12 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NIcon, NTag, NDatePicker, NSelect
+  NCard, NDataTable, NButton, NSpace, NIcon, NTag, NDatePicker, NSelect, useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { TrophyOutline, MedalOutline } from '@vicons/ionicons5'
 
+const message = useMessage()
 const dateRange = ref<[number, number] | null>(null)
 const timeRange = ref('month')
 const timeOptions = [
@@ -97,7 +98,34 @@ const tableData = ref([
 ])
 
 function exportData() {
-  console.log('导出数据')
+  const headers = ['排名', '会员姓名', '手机号', '会员等级', '累计消费', '消费次数', '最近消费', '活跃度']
+  const rows = tableData.value.map((item) => [
+    item.rank,
+    item.name,
+    item.phone,
+    item.level,
+    item.totalConsume,
+    item.visitCount,
+    item.lastConsume,
+    `${item.activity}%`,
+  ])
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+
+  link.href = url
+  link.download = `会员消费排行-${timeRange.value}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+
+  message.success('排行数据已导出')
 }
 </script>
 
