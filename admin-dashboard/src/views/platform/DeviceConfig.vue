@@ -92,6 +92,7 @@
         <n-form-item label="设备类型" path="deviceType"><n-select v-model:value="addHostForm.deviceType" :options="hostTypeOpts" placeholder="选择设备类型" /></n-form-item>
         <n-form-item label="硬件配置" path="specs"><n-input v-model:value="addHostForm.specs" placeholder="CPU/内存/存储/显卡" /></n-form-item>
         <n-form-item label="系统版本" path="osVersion"><n-input v-model:value="addHostForm.osVersion" placeholder="如：Windows 11 Kiosk v2.1" /></n-form-item>
+        <n-form-item label="MAC 地址" path="macAddress"><n-input v-model:value="addHostForm.macAddress" placeholder="如：00:1A:2B:3C:4D:5E" /></n-form-item>
         <n-form-item label="备注" path="notes"><n-input v-model:value="addHostForm.notes" type="textarea" :rows="2" /></n-form-item>
       </n-form>
       <template #footer><n-space justify="center"><n-button @click="showAddHostModal=false">取消</n-button><n-button type="primary" @click="handleAddHost">录入</n-button></n-space></template>
@@ -117,6 +118,7 @@
         <n-form-item label="设备类型"><n-select v-model:value="editHostForm.deviceType" :options="hostTypeOpts" /></n-form-item>
         <n-form-item label="硬件配置"><n-input v-model:value="editHostForm.specs" /></n-form-item>
         <n-form-item label="系统版本"><n-input v-model:value="editHostForm.osVersion" /></n-form-item>
+        <n-form-item label="MAC 地址"><n-input v-model:value="editHostForm.macAddress" placeholder="如：00:1A:2B:3C:4D:5E" /></n-form-item>
         <n-form-item label="状态">
           <n-radio-group v-model:value="editHostForm.status">
             <n-radio value="online">在线</n-radio>
@@ -219,7 +221,7 @@ const merchantOpts = computed(() => merchantNames.map(m => ({ label: m, value: m
 function getStoreOpts(merchant: string) { if (!merchant) return []; return (merchantStoreMap[merchant] || []).map(s => ({ label: s, value: s })) }
 
 // ─── 主机管理 ──────────────────────────────────────
-interface HostDevice { id: number; serialNo: string; name: string; deviceType: string; specs: string; osVersion: string; status: 'online' | 'offline' | 'fault'; merchant: string; store: string; token: string; boundHeadsets: number[]; createdAt: string }
+interface HostDevice { id: number; serialNo: string; name: string; deviceType: string; specs: string; macAddress: string; osVersion: string; status: 'online' | 'offline' | 'fault'; merchant: string; store: string; token: string; boundHeadsets: number[]; createdAt: string }
 const hostTypeNames = ['悬浮骑兵', '暗黑行者', '暗黑机甲', '幻影飞碟', '通用主机']
 function genHosts(): HostDevice[] {
   const r: HostDevice[] = []; const specs = ['i5-12400/16GB/512GB SSD', 'i7-12700/32GB/1TB SSD', 'i9-13900/64GB/2TB SSD']
@@ -228,7 +230,8 @@ function genHosts(): HostDevice[] {
     const m = merchantNames[i % 5]
     const stores = merchantStoreMap[m] || []
     const ss = i > 5 && stores.length > 0 ? stores[i % stores.length] : '--'
-    r.push({ id: i, serialNo: `PCT-${String(i).padStart(3,'0')}`, name: `主机 #${String(i).padStart(2,'0')}`, deviceType: hostTypeNames[i % hostTypeNames.length], specs: specs[i%3], osVersion: 'Windows 11 Kiosk v2.1', status: s, merchant: i > 5 ? m : '--', store: i > 5 ? ss : '--', token: i > 5 ? `tk_host_${i}` : '--', boundHeadsets: [], createdAt: '2026-03-10' })
+    const mac = `00:1A:2B:${String(i).padStart(3,'0').slice(0,2)}:${String(i*7).padStart(2,'0')}:${String(i*13).padStart(2,'0')}`
+    r.push({ id: i, serialNo: `PCT-${String(i).padStart(3,'0')}`, name: `主机 #${String(i).padStart(2,'0')}`, deviceType: hostTypeNames[i % hostTypeNames.length], specs: specs[i%3], macAddress: mac, osVersion: 'Windows 11 Kiosk v2.1', status: s, merchant: i > 5 ? m : '--', store: i > 5 ? ss : '--', token: i > 5 ? `tk_host_${i}` : '--', boundHeadsets: [], createdAt: '2026-03-10' })
   }
   return r
 }
@@ -250,7 +253,7 @@ const filteredHosts = computed(() => {
   if (hostFilterStore.value) list = list.filter(d => d.store === hostFilterStore.value)
   if (hostFilterType.value) list = list.filter(d => d.deviceType === hostFilterType.value)
   if (hostFilterStatus.value) list = list.filter(d => d.status === hostFilterStatus.value)
-  if (hostFilterKeyword.value) { const kw = hostFilterKeyword.value.toLowerCase(); list = list.filter(d => d.serialNo.toLowerCase().includes(kw) || d.name.toLowerCase().includes(kw)) }
+  if (hostFilterKeyword.value) { const kw = hostFilterKeyword.value.toLowerCase(); list = list.filter(d => d.serialNo.toLowerCase().includes(kw) || d.name.toLowerCase().includes(kw) || d.macAddress.toLowerCase().includes(kw)) }
   return list
 })
 function resetHostFilter() { hostFilterMerchant.value = null; hostFilterStore.value = null; hostFilterType.value = null; hostFilterStatus.value = null; hostFilterKeyword.value = '' }
@@ -264,6 +267,7 @@ const hostColumns = [
   { type: 'selection' as const, width: 40 }, { title: '主机编号', key: 'serialNo', width: 110 }, { title: '名称', key: 'name', minWidth: 120 },
   { title: '设备类型', key: 'deviceType', width: 100, render: (row: HostDevice) => h(NTag, { size:'small', type:'info', bordered:false }, { default: () => row.deviceType }) },
   { title: '硬件配置', key: 'specs', minWidth: 180 }, { title: '系统版本', key: 'osVersion', minWidth: 160 },
+  { title: 'MAC 地址', key: 'macAddress', width: 140, render: (row: HostDevice) => h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;' }, row.macAddress) },
   { title: '所属商家', key: 'merchant', minWidth: 100 }, { title: '所属门店', key: 'store', minWidth: 120 },
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: HostDevice) => hostStatusRender(row.status) },
   { title: '绑定头显', key: 'boundHeadsets', width: 80, align:'center' as const, render: (row: HostDevice) => h(NTag, { size:'small', type:'info' }, { default: () => `${row.boundHeadsets.length}台` }) },
@@ -283,7 +287,7 @@ const hostColumns = [
   },
 ]
 
-const showEditHostModal = ref(false); const editHostForm = ref({ id: 0, serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', status: 'online' as 'online' | 'offline' | 'fault' })
+const showEditHostModal = ref(false); const editHostForm = ref({ id: 0, serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', macAddress: '', status: 'online' as 'online' | 'offline' | 'fault' })
 const showUnassignModal = ref(false); const unassignTarget = ref<HostDevice | null>(null)
 function confirmUnassign() {
   const row = unassignTarget.value; if (!row) return
@@ -292,17 +296,17 @@ function confirmUnassign() {
   showUnassignModal.value = false; unassignTarget.value = null
   ;(window as any).$message?.info(`已取消分配：${row.name}`)
 }
-function openEditHost(row: HostDevice) { editHostForm.value = { id: row.id, serialNo: row.serialNo, name: row.name, deviceType: row.deviceType, specs: row.specs, osVersion: row.osVersion, status: row.status }; showEditHostModal.value = true }
+function openEditHost(row: HostDevice) { editHostForm.value = { id: row.id, serialNo: row.serialNo, name: row.name, deviceType: row.deviceType, specs: row.specs, osVersion: row.osVersion, macAddress: row.macAddress, status: row.status }; showEditHostModal.value = true }
 function handleEditHost() {
   const idx = hosts.value.findIndex(d => d.id === editHostForm.value.id)
   if (idx !== -1) { hosts.value[idx] = { ...hosts.value[idx], ...editHostForm.value }; (window as any).$message?.success('主机信息已更新') }
   showEditHostModal.value = false
 }
 const showAddHostModal = ref(false); const addHostFormRef = ref<FormInst | null>(null)
-const addHostForm = ref({ serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', notes: '' })
-const hostRules: FormRules = { serialNo: { required: true, message: '请输入主机编号', trigger: 'blur' }, name: { required: true, message: '请输入主机名称', trigger: 'blur' }, deviceType: { required: true, message: '请选择设备类型', trigger: 'change' } }
+const addHostForm = ref({ serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', macAddress: '', notes: '' })
+const hostRules: FormRules = { serialNo: { required: true, message: '请输入主机编号', trigger: 'blur' }, name: { required: true, message: '请输入主机名称', trigger: 'blur' }, deviceType: { required: true, message: '请选择设备类型', trigger: 'change' }, macAddress: { required: true, message: '请输入 MAC 地址', trigger: 'blur' } }
 function handleAddHost() {
-  addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', osVersion: addHostForm.value.osVersion || '--', status: 'online', merchant: '--', store: '--', token: '--', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', notes:'' }; (window as any).$message?.success('主机已录入') })
+  addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', macAddress: addHostForm.value.macAddress, osVersion: addHostForm.value.osVersion || '--', status: 'online', merchant: '--', store: '--', token: '--', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', macAddress:'', notes:'' }; (window as any).$message?.success('主机已录入') })
 }
 function handleAllocHost() {
   allocHostFormRef.value?.validate(e => { if (e) return; const d = hosts.value.find(d => d.id === allocHostForm.value.deviceId); if (d) { d.merchant = allocHostForm.value.merchant; d.store = allocHostForm.value.store; d.token = `tk_host_${Date.now().toString(36)}` }; showAllocHostModal.value = false; (window as any).$message?.success(`主机已分配给 ${allocHostForm.value.store}`) })
