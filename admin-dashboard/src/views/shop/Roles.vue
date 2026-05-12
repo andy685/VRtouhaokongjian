@@ -309,7 +309,7 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
           key: 'settings-module', label: '系统设置', checked: false, expanded: false,
           children: [
             { key: 'store-list', label: '店铺列表', checked: false, expanded: false },
-            { key: 'on-demand-settings', label: '点播设置', checked: false, expanded: false },
+            { key: 'on-demand-settings', label: '待机画面', checked: false, expanded: false },
             { key: 'devices', label: '设备列表', checked: false, expanded: false },
             { key: 'users', label: '用户列表', checked: false, expanded: false },
             { key: 'roles', label: '角色列表', checked: false, expanded: false },

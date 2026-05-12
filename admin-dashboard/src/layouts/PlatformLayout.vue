@@ -339,6 +339,14 @@ const menuOptions: MenuOption[] = [
       { label: '反馈汇总', key: '/platform/feedback-summary' },
     ]
   },
+  {
+    label: '短信管理',
+    key: 'sms-group',
+    icon: icon(ChatbubbleOutline),
+    children: [
+      { label: '短信模板审核', key: '/platform/sms-template-audit' },
+    ]
+  },
 ]
 
 const currentRoute = computed(() => route.path)

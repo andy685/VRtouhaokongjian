@@ -282,7 +282,7 @@ const menuOptions: MenuOption[] = [
     icon: () => h(NIcon, { component: SettingsOutline }),
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
-      { label: '点播设置', key: '/shop/on-demand-settings' },
+      { label: '待机画面', key: '/shop/on-demand-settings' },
       {
         label: '收银设置',
         key: 'cashier-settings-group',
@@ -293,7 +293,6 @@ const menuOptions: MenuOption[] = [
           { label: 'IC卡管理', key: '/shop/ic-card' },
         ]
       },
-      { label: '游戏币设置', key: '/shop/points-settings' },
       { label: '系统参数', key: '/shop/system-params' },
       {
         label: '用户管理',

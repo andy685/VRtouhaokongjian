@@ -67,6 +67,28 @@
         <p style="color:#999;font-size:13px;margin-top:12px">二维码有效期5分钟</p>
       </div>
     </n-modal>
+
+    <!-- 绑定IC卡 -->
+    <n-modal v-model:show="showBindIcModal" preset="card" title="绑定IC卡" style="width:460px" :bordered="false">
+      <p v-if="currentUser?.icCardNo" style="text-align:center;padding:20px 0;">
+        <n-tag type="success" size="large">已绑定 IC卡: {{ currentUser.icCardNo }}</n-tag>
+        <div style="margin-top:16px"><n-button type="error" size="small" @click="unbindIc">解除绑定</n-button></div>
+      </p>
+      <n-form v-else ref="icFormRef" :model="icForm" :rules="icRules" label-placement="left" label-width="100">
+        <n-form-item label="卡号" path="cardNo">
+          <n-input v-model:value="icForm.cardNo" placeholder="收银端烧录后显示的卡号" />
+        </n-form-item>
+        <n-form-item label="备注" path="notes">
+          <n-input v-model:value="icForm.notes" placeholder="选填" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showBindIcModal = false">取消</n-button>
+          <n-button v-if="!currentUser?.icCardNo" type="primary" @click="bindIc">确认绑定</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -77,7 +99,7 @@ import { AddOutline, SearchOutline, CreateOutline, TrashOutline } from '@vicons/
 
 const message = useMessage()
 
-interface User { id:number; role:string; account:string; name:string; phone:string; email:string; status:boolean; createTime:string; wxBound:boolean; wxName?:string; shops:string[] }
+interface User { id:number; role:string; account:string; name:string; phone:string; email:string; status:boolean; createTime:string; wxBound:boolean; wxName?:string; shops:string[]; icCardNo?:string }
 
 const filter = ref({ role:null as string|null, status:null as boolean|null, keyword:'' })
 const roleFilterOptions = [{label:'店长',value:'店长'},{label:'收银员',value:'收银员'}]
@@ -93,7 +115,7 @@ const shopOptions = [
 function resetFilter(){ filter.value={role:null,status:null,keyword:''} }
 
 const allUsers = ref<User[]>([
-  {id:1,role:'收银员',account:'18998311111',name:'张三',phone:'18998311111',email:'zhangsan@vr.com',status:true,createTime:'2023-05-19 10:54',wxBound:false,shops:['利民街小展厅']},
+  {id:1,role:'收银员',account:'18998311111',name:'张三',phone:'18998311111',email:'zhangsan@vr.com',status:true,createTime:'2023-05-19 10:54',wxBound:false,shops:['利民街小展厅'],icCardNo:'IC-0001'},
   {id:2,role:'店长',account:'hehai',name:'he',phone:'189989898989',email:'hehai@vr.com',status:true,createTime:'2023-05-13 17:11',wxBound:true,wxName:'海哥',shops:['利民街小展厅','卓远亚运城店']},
   {id:3,role:'店长',account:'mxw72304',name:'马小文',phone:'18688872712',email:'mxw@vr.com',status:true,createTime:'2023-05-13 16:55',wxBound:false,shops:['卓远萝岗区店']},
   {id:4,role:'店长',account:'luming',name:'luming',phone:'18602015721',email:'lm@vr.com',status:true,createTime:'2023-05-13 16:52',wxBound:false,shops:['卓远萧山区店']},
@@ -130,12 +152,19 @@ const columns: DataTableColumns<User> = [
     render(row){ return h(NTag,{size:'small',type:row.status?'success':'error',bordered:true},()=>row.status?'正常':'禁用') }
   },
   { title:'创建时间', key:'createTime', width:160 },
-  { title:'操作', key:'actions', width:200, fixed:'right', align:'center',
+  { title:'IC卡', key:'icCardNo', width:100, align:'center',
+    render(row){
+      if(row.icCardNo) return h(NTag,{size:'small',type:'success',bordered:false},()=>row.icCardNo)
+      return h(NTag,{size:'small',type:'default',bordered:false},()=>'未绑定')
+    }
+  },
+  { title:'操作', key:'actions', width:240, fixed:'right', align:'center',
     render(row){
       return h(NSpace,{justify:'center',size:4},{
         default:()=>[
           h(NButton,{size:'tiny',text:true,type:'primary',onClick:()=>openEdit(row)},{default:()=>'编辑'}),
-          h(NButton,{size:'tiny',text:true,type:'info',onClick:()=>openBindWx(row)},{default:()=>'绑定微信'}),
+          h(NButton,{size:'tiny',text:true,type:'info',onClick:()=>openBindWx(row)},{default:()=>'微信'}),
+          h(NButton,{size:'tiny',text:true,type:row.icCardNo?'default':'warning',onClick:()=>openBindIc(row)},{default:()=>row.icCardNo?'IC卡':'绑定IC卡'}),
           h(NButton,{size:'tiny',text:true,type:'error',onClick:()=>handleDelete(row)},{default:()=>'删除'}),
         ]
       })
@@ -228,6 +257,38 @@ function unbindWx(){
     message.success('已解除绑定')
   }
   showBindWxModal.value=false
+}
+
+// IC卡绑定
+const showBindIcModal = ref(false)
+const icFormRef = ref<FormInst|null>(null)
+const icForm = ref({ cardNo:'', notes:'' })
+const icRules: FormRules = {
+  cardNo: { required:true, message:'请输入卡号', trigger:'blur' },
+}
+
+function openBindIc(row:User){
+  currentUser.value=row
+  icForm.value={cardNo:'', notes:''}
+  showBindIcModal.value=true
+}
+
+function bindIc(){
+  if(!currentUser.value) return
+  icFormRef.value?.validate(e=>{
+    if(e) return
+    currentUser.value!.icCardNo=icForm.value.cardNo
+    showBindIcModal.value=false
+    message.success('IC卡绑定成功')
+  })
+}
+
+function unbindIc(){
+  if(currentUser.value){
+    currentUser.value.icCardNo=undefined
+    message.success('IC卡已解绑')
+  }
+  showBindIcModal.value=false
 }
 
 // 删除

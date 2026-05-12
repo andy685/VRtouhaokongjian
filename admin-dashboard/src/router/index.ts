@@ -81,6 +81,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'notice/inbox', name: 'SystemNoticeInbox', component: () => import('../views/platform/SystemNoticeInbox.vue'), meta: { title: '系统通知' } },
       // 反馈
       { path: 'feedback-summary', name: 'PlatformFeedbackSummary', component: () => import('../views/platform/FeedbackSummary.vue'), meta: { title: '反馈汇总' } },
+      // 短信模板审核
+      { path: 'sms-template-audit', name: 'PlatformSmsTemplateAudit', component: () => import('../views/platform/SmsTemplateAudit.vue'), meta: { title: '短信模板审核' } },
       // 个人中心
       { path: 'account/profile', name: 'PlatformAccountProfile', component: () => import('../views/platform/account/Profile.vue'), meta: { title: '个人信息', breadcrumb: [{ label: '个人信息' }] } },
       { path: 'account/security', name: 'PlatformAccountSecurity', component: () => import('../views/platform/account/Security.vue'), meta: { title: '安全设置', breadcrumb: [{ label: '安全设置' }] } },
@@ -148,7 +150,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'reconciliation', name: 'ShopReconciliation', component: () => import('../views/shop/Reconciliation.vue'), meta: { title: '对账中心' } },
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: () => import('../views/shop/ShopStoreList.vue'), meta: { title: '店铺列表' } },
-      { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: () => import('../views/shop/OnDemandSettings.vue'), meta: { title: '点播设置' } },
+      { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: () => import('../views/shop/OnDemandSettings.vue'), meta: { title: '待机画面' } },
       { path: 'devices', name: 'ShopDevices', component: () => import('../views/shop/Devices.vue'), meta: { title: '设备列表' } },
       { path: 'devices/control', name: 'ShopDevicesControl', component: () => import('../views/shop/Devices.vue'), meta: { title: '远程控制' } },
       { path: 'devices/bind', name: 'ShopDeviceBind', component: () => import('../views/shop/DeviceBind.vue'), meta: { title: '设备绑定管理' } },

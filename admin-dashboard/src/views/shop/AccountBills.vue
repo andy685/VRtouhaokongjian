@@ -203,7 +203,7 @@ const operatingBillsData = [
   { id: 113, store: '利民街大展厅', type: '短信发送', device: '', film: '消费回访', people: 600, before: 475, amount: -30, after: 445, time: '2023-09-16 14:45:18' },
   { id: 114, store: '恒然分部展厅', type: '运营充值', device: '', film: '', people: 0, before: 445, amount: 80, after: 525, time: '2023-09-16 14:30:45' },
   { id: 115, store: '幻影星空馆 NO.8088', type: '短信发送', device: '', film: '退款通知', people: 400, before: 525, amount: -20, after: 505, time: '2023-09-16 14:30:45' },
-  { id: 116, store: '华东展厅', type: '短信发送', device: '', film: '积分兑换通知', people: 350, before: 445, amount: -17, after: 428, time: '2023-09-16 13:50:10' },
+  { id: 116, store: '华东展厅', type: '短信发送', device: '', film: '游戏豆兑换通知', people: 350, before: 445, amount: -17, after: 428, time: '2023-09-16 13:50:10' },
   { id: 117, store: '恒然分部展厅', type: '短信发送', device: '', film: '优惠券到期提醒', people: 900, before: 428, amount: -45, after: 383, time: '2023-09-16 13:35:28' },
   { id: 118, store: '幻影星空馆 NO.8088', type: '短信发送', device: '', film: '会员等级变更', people: 250, before: 383, amount: -12, after: 371, time: '2023-09-16 13:20:15' },
   { id: 119, store: '利民街大展厅', type: '短信发送', device: '', film: '预约确认', people: 500, before: 371, amount: -25, after: 346, time: '2023-09-16 13:05:42' },
