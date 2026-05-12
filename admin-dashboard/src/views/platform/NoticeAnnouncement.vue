@@ -27,7 +27,7 @@
         :data="filteredData"
         :pagination="{ pageSize: 10 }"
         striped
-        :row-key="(row: any) => row.id"
+        :row-key="noticeRowKey"
       />
     </div>
 
@@ -200,6 +200,7 @@ function openEditor(data?: NoticeItem) {
 function handleFilter() {}
 function saveDraft() { showEditor.value = false; message.success('已存为草稿') }
 function publish() { showEditor.value = false; message.success(editId.value ? '修改成功' : '发布成功') }
+const noticeRowKey = (row: any) => row.id
 </script>
 
 <style scoped>

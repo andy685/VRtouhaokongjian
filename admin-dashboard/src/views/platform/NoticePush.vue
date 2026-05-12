@@ -14,7 +14,7 @@
 
     <!-- Tab: 手动推送 / 自动通知 -->
     <div class="content-card">
-      <n-tabs v-model:value="activeTab" type="line" animated>
+      <n-tabs v-model:value="activeTab" type="line">
         <!-- ===== Tab1: 手动推送 ===== -->
         <n-tab-pane name="manual" tab="手动推送">
           <div class="filter-bar">
@@ -28,7 +28,7 @@
             :data="filteredMessages"
             :pagination="{ pageSize: 10 }"
             striped
-            :row-key="(row: any) => row.id"
+            :row-key="rowKey"
           />
         </n-tab-pane>
 
@@ -40,7 +40,7 @@
             :data="autoRules"
             :pagination="{ pageSize: 8 }"
             striped
-            :row-key="(row: any) => row.id"
+            :row-key="rowKey"
           />
         </n-tab-pane>
       </n-tabs>
@@ -524,6 +524,7 @@ function saveRule() { showRuleModal.value = false; message.success(editRuleId.va
 // ========== 通用 ==========
 function handleFilter() {}
 function handleSend() { showSendModal.value = false; message.success('消息发送任务已创建') }
+const rowKey = (row: any) => row.id
 </script>
 
 <style scoped>

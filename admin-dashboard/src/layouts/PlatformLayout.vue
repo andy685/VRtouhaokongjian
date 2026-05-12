@@ -133,11 +133,7 @@
 
       <!-- 页面内容 -->
       <div class="page-wrapper animate-fade-in">
-        <router-view v-slot="{ Component }">
-          <keep-alive>
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
+        <router-view />
       </div>
     </main>
 
@@ -207,12 +203,15 @@ const route = useRoute()
 const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 
+// 稳定的 h() 引用，避免每次渲染重建 VNode
+const icon = (comp: any) => () => h(NIcon, null, () => h(comp))
+
 // 菜单配置 - 二级菜单结构
 const menuOptions: MenuOption[] = [
   {
     label: '数据中心',
     key: 'dashboard-group',
-    icon: () => h(NIcon, { component: GridOutline }),
+    icon: icon(GridOutline),
     children: [
       { label: '大屏看板', key: '/platform/dashboard' },
       { label: '数据报表', key: '/platform/reports' },
@@ -224,7 +223,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '店铺管理',
     key: 'stores-group',
-    icon: () => h(NIcon, { component: StorefrontOutline }),
+    icon: icon(StorefrontOutline),
     children: [
       { label: '商家管理', key: '/platform/merchants' },
       { label: '店铺列表', key: '/platform/stores' },
@@ -234,7 +233,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '内容中心',
     key: 'content-group',
-    icon: () => h(NIcon, { component: GameControllerOutline }),
+    icon: icon(GameControllerOutline),
     children: [
       { label: '游戏库', key: '/platform/games' },
       { label: '游戏题材', key: '/platform/game-categories' },
@@ -245,7 +244,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '会员中心',
     key: 'member-group',
-    icon: () => h(NIcon, { component: PeopleOutline }),
+    icon: icon(PeopleOutline),
     children: [
       { label: '会员数据', key: '/platform/members' },
       { label: '会员列表', key: '/platform/members/list' },
@@ -261,7 +260,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '订单流水',
     key: 'order-flow-group',
-    icon: () => h(NIcon, { component: ReceiptOutline }),
+    icon: icon(ReceiptOutline),
     children: [
       { label: '收银订单', key: '/platform/order-flow/cashier' },
       { label: '点播系统订单', key: '/platform/order-flow/vod' },
@@ -274,7 +273,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '平台财务',
     key: 'finance-group',
-    icon: () => h(NIcon, { component: WalletOutline }),
+    icon: icon(WalletOutline),
     children: [
       { label: '营收总览', key: '/platform/finance' },
       {
@@ -308,7 +307,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '平台账号',
     key: 'users-group',
-    icon: () => h(NIcon, { component: PeopleOutline }),
+    icon: icon(PeopleOutline),
     children: [
       { label: '账号管理', key: '/platform/users' },
       { label: '角色权限', key: '/platform/users/roles' },
@@ -317,7 +316,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '帮助中心系统',
     key: 'help-center-group',
-    icon: () => h(NIcon, { component: HelpCircleOutline }),
+    icon: icon(HelpCircleOutline),
     children: [
       { label: '帮助文档', key: '/platform/help-center/docs' },
       { label: 'FAQ', key: '/platform/help-center/faq' },
@@ -326,7 +325,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '平台通知系统',
     key: 'notice-group',
-    icon: () => h(NIcon, { component: MegaphoneOutline }),
+    icon: icon(MegaphoneOutline),
     children: [
       { label: '公告管理', key: '/platform/notice/announcement' },
       { label: '消息推送', key: '/platform/notice/push' },
@@ -335,7 +334,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '全平台反馈',
     key: 'feedback-group',
-    icon: () => h(NIcon, { component: ChatbubbleOutline }),
+    icon: icon(ChatbubbleOutline),
     children: [
       { label: '反馈汇总', key: '/platform/feedback-summary' },
     ]
@@ -350,10 +349,10 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '个人信息', key: 'profile', icon: () => h(NIcon, null, { default: () => h(PersonOutline) }) },
-  { label: '安全设置', key: 'security', icon: () => h(NIcon, null, { default: () => h(ShieldCheckmarkOutline) }) },
+  { label: '个人信息', key: 'profile', icon: icon(PersonOutline) },
+  { label: '安全设置', key: 'security', icon: icon(ShieldCheckmarkOutline) },
   { type: 'divider', key: 'd1' },
-  { label: '退出登录', key: 'logout', icon: () => h(NIcon, null, { default: () => h(LogOutOutline) }) },
+  { label: '退出登录', key: 'logout', icon: icon(LogOutOutline) },
 ]
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
