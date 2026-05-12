@@ -5,29 +5,35 @@
       <n-select v-model:value="currentShop" :options="shopOptions" size="small" style="width: 200px;" />
     </div>
 
-    <!-- 一、播放控制 -->
+    <!-- 游戏体验控制 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">播放控制</div>
+        <div class="card-title">🎮 游戏体验控制</div>
       </template>
-      <n-form label-placement="left" label-width="160">
-        <n-form-item label="播放模式">
+      <n-form label-placement="left" label-width="170">
+        <n-form-item label="体验模式">
           <n-radio-group v-model:value="settings.playMode">
             <n-space>
-              <n-radio value="single">单次播放（播完自动停止）</n-radio>
-              <n-radio value="loop">循环播放（结束后自动重播）</n-radio>
-              <n-radio value="autoNext">自动续播（播放推荐内容）</n-radio>
+              <n-radio value="single">单次体验（体验结束自动停止）</n-radio>
+              <n-radio value="autoNext">自动换玩（结束后推荐其他游戏）</n-radio>
+              <n-radio value="unlimited">不限时畅玩（按时段计费）</n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
-        <n-form-item label="音量默认设置">
+        <n-form-item label="单次体验时长上限">
+          <n-input-number v-model:value="settings.maxSessionDuration" :min="5" :max="180" style="width: 150px;">
+            <template #suffix>分钟</template>
+          </n-input-number>
+          <span class="form-hint">超过时长自动弹出续费提示</span>
+        </n-form-item>
+        <n-form-item label="头显默认音量">
           <n-slider v-model:value="settings.defaultVolume" :min="0" :max="100" style="width: 300px;" />
           <span style="margin-left: 12px; color: #666;">{{ settings.defaultVolume }}%</span>
         </n-form-item>
         <n-form-item label="顾客可调音量">
           <n-switch v-model:value="settings.allowVolumeAdjust" />
         </n-form-item>
-        <n-form-item label="中途暂停策略">
+        <n-form-item label="游戏中途暂停策略">
           <n-radio-group v-model:value="settings.pausePolicy">
             <n-space>
               <n-radio value="free">自由暂停（不计时）</n-radio>
@@ -36,92 +42,127 @@
             </n-space>
           </n-radio-group>
         </n-form-item>
+        <n-form-item label="游戏启动前确认">
+          <n-switch v-model:value="settings.confirmBeforeLaunch" />
+          <span class="form-hint">启动游戏前弹出确认弹窗，防止误操作扣费</span>
+        </n-form-item>
+      </n-form>
+    </n-card>
+
+    <!-- 头显参数默认值 -->
+    <n-card class="settings-card">
+      <template #header>
+        <div class="card-title">🥽 头显参数默认值</div>
+      </template>
+      <n-form label-placement="left" label-width="170">
+        <n-form-item label="默认瞳距(IPD)">
+          <n-input-number v-model:value="settings.defaultIpd" :min="54" :max="74" style="width: 150px;">
+            <template #suffix>mm</template>
+          </n-input-number>
+          <span class="form-hint">顾客未手动调节时的默认值，范围 54-74mm</span>
+        </n-form-item>
+        <n-form-item label="默认刷新率">
+          <n-radio-group v-model:value="settings.defaultRefreshRate">
+            <n-space>
+              <n-radio :value="72">72Hz</n-radio>
+              <n-radio :value="90">90Hz（推荐）</n-radio>
+              <n-radio :value="120">120Hz</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item label="默认亮度">
+          <n-slider v-model:value="settings.defaultBrightness" :min="0" :max="100" style="width: 300px;" />
+          <span style="margin-left: 12px; color: #666;">{{ settings.defaultBrightness }}%</span>
+        </n-form-item>
+        <n-form-item label="允许顾客调节以上参数">
+          <n-switch v-model:value="settings.allowUserAdjust" />
+          <span class="form-hint">开启后顾客可在启动前自定义IPD/刷新率/亮度</span>
+        </n-form-item>
+      </n-form>
+    </n-card>
+
+    <!-- 游戏推荐与排序 -->
+    <n-card class="settings-card">
+      <template #header>
+        <div class="card-title">🎯 游戏推荐与排序</div>
+      </template>
+      <n-form label-placement="left" label-width="170">
+        <n-form-item label="首页游戏排序策略">
+          <n-radio-group v-model:value="settings.recommendStrategy">
+            <n-space>
+              <n-radio value="hot">按热度排序（体验次数最多）</n-radio>
+              <n-radio value="new">按上新排序（最新上线）</n-radio>
+              <n-radio value="price">按价格排序</n-radio>
+              <n-radio value="manual">手动排序（后台拖拽）</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item label="按分类展示">
+          <n-switch v-model:value="settings.showCategory" />
+          <span class="form-hint">顾客端按射击/冒险/休闲等游戏类型分类展示</span>
+        </n-form-item>
+        <n-form-item label="显示游戏时长">
+          <n-switch v-model:value="settings.showDuration" />
+          <span class="form-hint">在游戏卡片上展示预估体验时长</span>
+        </n-form-item>
+        <n-form-item label="显示所需游戏豆">
+          <n-switch v-model:value="settings.showGameCoins" />
+          <span class="form-hint">在游戏卡片上展示所需游戏豆数量</span>
+        </n-form-item>
+        <n-form-item label="显示游戏评分">
+          <n-switch v-model:value="settings.showScore" />
+          <span class="form-hint">在游戏卡片上展示玩家评分</span>
+        </n-form-item>
       </n-form>
     </n-card>
 
     <!-- 待机画面 -->
     <n-card class="settings-card">
       <template #header>
-        <div class="card-title">待机画面</div>
+        <div class="card-title">🖥️ 待机画面</div>
       </template>
-      <n-form label-placement="left" label-width="160">
+      <n-form label-placement="left" label-width="170">
         <n-form-item label="待机显示内容">
           <n-radio-group v-model:value="settings.idleContent">
-            <n-space>
-              <n-radio value="poster">店铺宣传海报</n-radio>
-              <n-radio value="video">品牌宣传视频</n-radio>
-              <n-radio value="gamePreview">热门游戏预览</n-radio>
-              <n-radio value="qrCode">扫码关注/注册二维码</n-radio>
+            <n-space vertical>
+              <n-radio value="gamePreview">热门游戏预览视频（循环播放）</n-radio>
+              <n-radio value="poster">宣传海报轮播</n-radio>
+              <n-radio value="qrCode">扫码注册会员二维码</n-radio>
+              <n-radio value="black">息屏（节能模式）</n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
-        <n-form-item v-if="settings.idleContent === 'poster'" label="上传海报">
+        <n-form-item v-if="settings.idleContent === 'poster'" label="上传宣传海报">
           <n-upload
             action="/api/upload"
             list-type="image-card"
             :max="5"
             v-model:file-list="posterList"
           />
-          <span class="form-hint">最多上传5张，待机时轮播展示</span>
+          <span class="form-hint">最多5张，待机时轮播展示，建议尺寸 1920×1080</span>
         </n-form-item>
-        <n-form-item v-if="settings.idleContent === 'video'" label="上传视频">
+        <n-form-item v-if="settings.idleContent === 'gamePreview'" label="上传游戏预告片">
           <n-space align="center">
             <n-upload
               action="/api/upload"
-              accept=".mp4,.mov,.avi,.mkv"
-              :max="1"
-              v-model:file-list="videoList"
-            >
-              <n-button type="primary">上传视频</n-button>
-            </n-upload>
-            <span class="form-hint">支持 mp4 / mov / avi / mkv 格式，待机时循环播放</span>
-          </n-space>
-        </n-form-item>
-        <n-form-item v-if="settings.idleContent === 'gamePreview'" label="上传预览视频">
-          <n-space align="center">
-            <n-upload
-              action="/api/upload"
-              accept=".mp4,.mov,.avi,.mkv"
+              accept=".mp4,.mov"
               :max="5"
               v-model:file-list="gamePreviewList"
             >
               <n-button type="primary">上传视频</n-button>
             </n-upload>
-            <span class="form-hint">支持 mp4 / mov / avi / mkv 格式，最多5个热门游戏预览</span>
+            <span class="form-hint">最多5个热门游戏预告片，待机时循环播放，支持 mp4 格式</span>
           </n-space>
         </n-form-item>
-        <n-form-item label="待机切换时间">
-          <n-input-number v-model:value="settings.idleSwitchInterval" :min="5" style="width: 150px;">
+        <n-form-item label="待机超时时间">
+          <n-input-number v-model:value="settings.idleSwitchInterval" :min="10" :max="300" style="width: 150px;">
             <template #suffix>秒</template>
           </n-input-number>
-          <span class="form-hint">无操作时多久进入待机画面</span>
+          <span class="form-hint">无操作后多久进入待机画面</span>
         </n-form-item>
         <n-form-item label="待机背景音乐">
           <n-switch v-model:value="settings.idleMusic" />
           <span class="form-hint">待机时播放轻音乐</span>
-        </n-form-item>
-      </n-form>
-    </n-card>
-
-    <!-- 内容展示 -->
-    <n-card class="settings-card">
-      <template #header>
-        <div class="card-title">内容展示</div>
-      </template>
-      <n-form label-placement="left" label-width="160">
-        <n-form-item label="首页推荐策略">
-          <n-radio-group v-model:value="settings.recommendStrategy">
-            <n-space>
-              <n-radio value="hot">按热度排序</n-radio>
-              <n-radio value="new">按上新排序</n-radio>
-              <n-radio value="price">按价格排序</n-radio>
-              <n-radio value="manual">手动置顶</n-radio>
-            </n-space>
-          </n-radio-group>
-        </n-form-item>
-        <n-form-item label="分类显示">
-          <n-switch v-model:value="settings.showCategory" />
-          <span class="form-hint">顾客端按游戏类型分类展示</span>
         </n-form-item>
       </n-form>
     </n-card>
@@ -140,10 +181,11 @@
 import { ref } from 'vue'
 import {
   NCard, NForm, NFormItem, NSwitch, NInputNumber, NRadioGroup, NRadio,
-  NCheckboxGroup, NCheckbox, NSpace, NButton, NSelect, NSlider, NUpload,
-  type UploadFileInfo
+  NSpace, NButton, NSelect, NSlider, NUpload,
+  type UploadFileInfo, useMessage
 } from 'naive-ui'
 
+const message = useMessage()
 const currentShop = ref('卓远亚运城店')
 
 const shopOptions = [
@@ -155,44 +197,62 @@ const shopOptions = [
 ]
 
 const posterList = ref<UploadFileInfo[]>([])
-const videoList = ref<UploadFileInfo[]>([])
 const gamePreviewList = ref<UploadFileInfo[]>([])
 
 const settings = ref({
-  // 播放控制
-  playMode: 'single' as 'single' | 'loop' | 'autoNext',
+  // 游戏体验控制
+  playMode: 'single' as 'single' | 'autoNext' | 'unlimited',
+  maxSessionDuration: 30,
   defaultVolume: 70,
   allowVolumeAdjust: true,
   pausePolicy: 'limit' as 'free' | 'limit' | 'charge',
+  confirmBeforeLaunch: true,
 
-  // 待机画面
-  idleContent: 'poster' as 'poster' | 'video' | 'gamePreview' | 'qrCode',
-  idleSwitchInterval: 30,
-  idleMusic: true,
+  // 头显参数
+  defaultIpd: 63,
+  defaultRefreshRate: 90,
+  defaultBrightness: 80,
+  allowUserAdjust: true,
 
-  // 内容展示
+  // 游戏推荐
   recommendStrategy: 'hot' as 'hot' | 'new' | 'price' | 'manual',
   showCategory: true,
+  showDuration: true,
+  showGameCoins: true,
+  showScore: true,
+
+  // 待机画面
+  idleContent: 'gamePreview' as 'gamePreview' | 'poster' | 'qrCode' | 'black',
+  idleSwitchInterval: 30,
+  idleMusic: true,
 })
 
 function saveSettings() {
-  console.log('保存设置', { shop: currentShop.value, settings: settings.value })
+  message.success('点播设置已保存')
 }
 
 function resetSettings() {
   settings.value = {
     playMode: 'single',
+    maxSessionDuration: 30,
     defaultVolume: 70,
     allowVolumeAdjust: true,
     pausePolicy: 'limit',
-    idleContent: 'poster',
-    idleSwitchInterval: 30,
-    idleMusic: true,
+    confirmBeforeLaunch: true,
+    defaultIpd: 63,
+    defaultRefreshRate: 90,
+    defaultBrightness: 80,
+    allowUserAdjust: true,
     recommendStrategy: 'hot',
     showCategory: true,
+    showDuration: true,
+    showGameCoins: true,
+    showScore: true,
+    idleContent: 'gamePreview',
+    idleSwitchInterval: 30,
+    idleMusic: true,
   }
   posterList.value = []
-  videoList.value = []
   gamePreviewList.value = []
 }
 </script>
