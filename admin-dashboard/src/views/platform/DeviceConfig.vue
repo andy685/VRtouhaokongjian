@@ -4,7 +4,7 @@
       <h1 class="page-title">设备配置管理</h1>
     </div>
 
-    <n-tabs type="line" animated style="overflow:visible;">
+    <n-tabs type="line" style="overflow:visible;">
       <!-- ========== Tab 1: 设备类型 ========== -->
       <n-tab-pane name="types" tab="📦 设备类型">
         <div class="section-toolbar">
@@ -15,7 +15,7 @@
         <n-data-table :columns="typeColumns" :data="deviceTypes" :bordered="false" size="small" striped />
       </n-tab-pane>
 
-      <!-- ========== Tab 2: 主机管理 ========== -->
+      <!-- ========== Tab 2: 主机管理（含Token） ========== -->
       <n-tab-pane name="hosts" tab="🖥️ 主机管理" style="overflow:visible;">
         <div class="stats-row">
           <div class="stat-card"><span class="stat-num">{{ hosts.length }}</span><span class="stat-lbl">主机总数</span></div>
@@ -58,16 +58,7 @@
         <n-data-table :columns="headsetColumns" :data="filteredHeadsets" :bordered="false" size="small" striped :row-key="(row:any)=>row.id" />
       </n-tab-pane>
 
-      <!-- ========== Tab 4: Token 管理 ========== -->
-      <n-tab-pane name="tokens" tab="🔑 Token 管理">
-        <div class="filter-bar">
-          <n-select v-model:value="tokenFilterStatus" :options="[{label:'全部状态',value:''},{label:'有效',value:'active'},{label:'已过期',value:'expired'},{label:'已吊销',value:'revoked'}]" style="width:130px;" clearable size="small" />
-          <n-input v-model:value="tokenFilterKeyword" placeholder="搜索设备名称/Token" style="width:240px;" clearable size="small" />
-        </div>
-        <n-data-table :columns="tokenColumns" :data="filteredTokens" :bordered="false" size="small" striped />
-      </n-tab-pane>
-
-      <!-- ========== Tab 5: OTA 升级 ========== -->
+      <!-- ========== Tab 4: OTA 升级 ========== -->
       <n-tab-pane name="ota" tab="📡 OTA 升级">
         <div class="section-toolbar"><n-button type="primary" size="small" @click="showOtaModal = true"><template #icon><n-icon :component="CloudUploadOutline" /></template>上传升级包</n-button></div>
         <n-data-table :columns="otaColumns" :data="otaPackages" :bordered="false" size="small" striped />
@@ -221,7 +212,7 @@ const merchantOpts = computed(() => merchantNames.map(m => ({ label: m, value: m
 function getStoreOpts(merchant: string) { if (!merchant) return []; return (merchantStoreMap[merchant] || []).map(s => ({ label: s, value: s })) }
 
 // ─── 主机管理 ──────────────────────────────────────
-interface HostDevice { id: number; serialNo: string; name: string; deviceType: string; specs: string; macAddress: string; osVersion: string; status: 'online' | 'offline' | 'fault'; merchant: string; store: string; token: string; boundHeadsets: number[]; createdAt: string }
+interface HostDevice { id: number; serialNo: string; name: string; deviceType: string; specs: string; macAddress: string; osVersion: string; status: 'online' | 'offline' | 'fault'; merchant: string; store: string; token: string; tokenStatus: 'active' | 'none'; boundHeadsets: number[]; createdAt: string }
 const hostTypeNames = ['悬浮骑兵', '暗黑行者', '暗黑机甲', '幻影飞碟', '通用主机']
 function genHosts(): HostDevice[] {
   const r: HostDevice[] = []; const specs = ['i5-12400/16GB/512GB SSD', 'i7-12700/32GB/1TB SSD', 'i9-13900/64GB/2TB SSD']
@@ -231,7 +222,7 @@ function genHosts(): HostDevice[] {
     const stores = merchantStoreMap[m] || []
     const ss = i > 5 && stores.length > 0 ? stores[i % stores.length] : '--'
     const mac = `00:1A:2B:${String(i).padStart(3,'0').slice(0,2)}:${String(i*7).padStart(2,'0')}:${String(i*13).padStart(2,'0')}`
-    r.push({ id: i, serialNo: `PCT-${String(i).padStart(3,'0')}`, name: `主机 #${String(i).padStart(2,'0')}`, deviceType: hostTypeNames[i % hostTypeNames.length], specs: specs[i%3], macAddress: mac, osVersion: 'Windows 11 Kiosk v2.1', status: s, merchant: i > 5 ? m : '--', store: i > 5 ? ss : '--', token: i > 5 ? `tk_host_${i}` : '--', boundHeadsets: [], createdAt: '2026-03-10' })
+    r.push({ id: i, serialNo: `PCT-${String(i).padStart(3,'0')}`, name: `主机 #${String(i).padStart(2,'0')}`, deviceType: hostTypeNames[i % hostTypeNames.length], specs: specs[i%3], macAddress: mac, osVersion: 'Windows 11 Kiosk v2.1', status: s, merchant: i > 5 ? m : '--', store: i > 5 ? ss : '--', token: i > 5 ? `tk_host_${i}` : '--', tokenStatus: i > 5 ? 'active' : 'none', boundHeadsets: [], createdAt: '2026-03-10' })
   }
   return r
 }
@@ -263,6 +254,8 @@ const showAllocHostModal = ref(false); const allocHostFormRef = ref<FormInst | n
 const allocHostForm = ref({ deviceId: 0, deviceName: '', serialNo: '', merchant: '', store: '' })
 const allocRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
 
+function genToken() { return `tk_host_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}` }
+
 const hostColumns = [
   { type: 'selection' as const, width: 40 }, { title: '主机编号', key: 'serialNo', width: 110 }, { title: '名称', key: 'name', minWidth: 120 },
   { title: '设备类型', key: 'deviceType', width: 100, render: (row: HostDevice) => h(NTag, { size:'small', type:'info', bordered:false }, { default: () => row.deviceType }) },
@@ -272,17 +265,34 @@ const hostColumns = [
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: HostDevice) => hostStatusRender(row.status) },
   { title: '绑定头显', key: 'boundHeadsets', width: 80, align:'center' as const, render: (row: HostDevice) => h(NTag, { size:'small', type:'info' }, { default: () => `${row.boundHeadsets.length}台` }) },
   {
-    title: '操作', key: 'actions', width: 160, align:'center' as const,
+    title: 'Token', key: 'token', minWidth: 140,
+    render: (row: HostDevice) => {
+      if (row.tokenStatus === 'none' || !row.token) return h(NTag, { size:'small', type:'default' }, { default: () => '未分配' })
+      return h(NSpace, { align:'center', size:4 }, { default: () => [
+        h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;max-width:100px;overflow:hidden;text-overflow:ellipsis;' }, `${row.token.slice(0, 12)}...`),
+        h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => navigator.clipboard.writeText(row.token).then(() => (window as any).$message?.success('已复制')) }, { default: () => '复制' }),
+      ]})
+    }
+  },
+  {
+    title: '操作', key: 'actions', width: 260, align:'center' as const,
     render: (row: HostDevice) => {
       const btns: any[] = [
-        h(NButton, { size:'tiny', text:true, type:'primary', style:'margin-right:8px;', onClick: () => openEditHost(row) }, { default: () => '编辑' })
+        h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openEditHost(row) }, { default: () => '编辑' })
       ]
       if (row.merchant === '--') {
         btns.push(h(NButton, { size:'tiny', text:true, type:'info', onClick: () => { allocHostForm.value = { deviceId:row.id, deviceName:row.name, serialNo:row.serialNo, merchant:'', store:'' }; showAllocHostModal.value = true } }, { default: () => '分配' }))
       } else {
         btns.push(h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => { unassignTarget.value = row; showUnassignModal.value = true } }, { default: () => '取消分配' }))
       }
-      return btns
+      if (row.tokenStatus === 'active') {
+        btns.push(h('span', { style:'margin:0 2px;color:#ddd;' }, '|'))
+        btns.push(h(NButton, { size:'tiny', text:true, type:'error', onClick: () => { row.tokenStatus = 'none'; row.token = '--'; (window as any).$message?.warning(`Token 已吊销：${row.name}`) } }, { default: () => '吊销Token' }))
+      } else if (row.merchant !== '--') {
+        btns.push(h('span', { style:'margin:0 2px;color:#ddd;' }, '|'))
+        btns.push(h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => { row.token = genToken(); row.tokenStatus = 'active'; (window as any).$message?.success(`Token 已重新生成`) } }, { default: () => '生成Token' }))
+      }
+      return h('div', { style:'display:flex;align-items:center;gap:4px;justify-content:center;' }, btns)
     }
   },
 ]
@@ -291,10 +301,10 @@ const showEditHostModal = ref(false); const editHostForm = ref({ id: 0, serialNo
 const showUnassignModal = ref(false); const unassignTarget = ref<HostDevice | null>(null)
 function confirmUnassign() {
   const row = unassignTarget.value; if (!row) return
-  row.merchant = '--'; row.store = '--'; row.token = '--'
+  row.merchant = '--'; row.store = '--'; row.token = '--'; row.tokenStatus = 'none'
   selectedHostIds.value = selectedHostIds.value.filter(id => id !== row.id)
   showUnassignModal.value = false; unassignTarget.value = null
-  ;(window as any).$message?.info(`已取消分配：${row.name}`)
+  ;(window as any).$message?.info(`已取消分配：${row.name}，Token 已自动吊销`)
 }
 function openEditHost(row: HostDevice) { editHostForm.value = { id: row.id, serialNo: row.serialNo, name: row.name, deviceType: row.deviceType, specs: row.specs, osVersion: row.osVersion, macAddress: row.macAddress, status: row.status }; showEditHostModal.value = true }
 function handleEditHost() {
@@ -306,10 +316,10 @@ const showAddHostModal = ref(false); const addHostFormRef = ref<FormInst | null>
 const addHostForm = ref({ serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', macAddress: '', notes: '' })
 const hostRules: FormRules = { serialNo: { required: true, message: '请输入主机编号', trigger: 'blur' }, name: { required: true, message: '请输入主机名称', trigger: 'blur' }, deviceType: { required: true, message: '请选择设备类型', trigger: 'change' }, macAddress: { required: true, message: '请输入 MAC 地址', trigger: 'blur' } }
 function handleAddHost() {
-  addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', macAddress: addHostForm.value.macAddress, osVersion: addHostForm.value.osVersion || '--', status: 'online', merchant: '--', store: '--', token: '--', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', macAddress:'', notes:'' }; (window as any).$message?.success('主机已录入') })
+  addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', macAddress: addHostForm.value.macAddress, osVersion: addHostForm.value.osVersion || '--', status: 'online', merchant: '--', store: '--', token: '--', tokenStatus: 'none', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', macAddress:'', notes:'' }; (window as any).$message?.success('主机已录入') })
 }
 function handleAllocHost() {
-  allocHostFormRef.value?.validate(e => { if (e) return; const d = hosts.value.find(d => d.id === allocHostForm.value.deviceId); if (d) { d.merchant = allocHostForm.value.merchant; d.store = allocHostForm.value.store; d.token = `tk_host_${Date.now().toString(36)}` }; showAllocHostModal.value = false; (window as any).$message?.success(`主机已分配给 ${allocHostForm.value.store}`) })
+  allocHostFormRef.value?.validate(e => { if (e) return; const d = hosts.value.find(d => d.id === allocHostForm.value.deviceId); if (d) { d.merchant = allocHostForm.value.merchant; d.store = allocHostForm.value.store; d.token = `tk_host_${Date.now().toString(36)}`; d.tokenStatus = 'active' }; showAllocHostModal.value = false; (window as any).$message?.success(`主机已分配给 ${allocHostForm.value.store}`) })
 }
 
 // ─── 头显管理 ──────────────────────────────────────
@@ -366,23 +376,6 @@ const headsetRules: FormRules = { name: { required: true, message: '请输入头
 function handleAddHeadset() {
   addHeadsetFormRef.value?.validate(e => { if (e) return; headsets.value.unshift({ id: Date.now(), name: addHeadsetForm.value.name, model: addHeadsetForm.value.model, sn: addHeadsetForm.value.sn, firmware: addHeadsetForm.value.firmware || '--', status: 'offline', merchant: '--', store: '--', boundHostId: null, batteryLevel: 0, ipd: 63, createdAt: new Date().toISOString().slice(0,10) }); showAddHeadsetModal.value = false; addHeadsetForm.value = { name:'', model:'', sn:'', firmware:'', notes:'' }; (window as any).$message?.success('头显已录入') })
 }
-
-// ─── Token 管理 ────────────────────────────────────
-interface TokenItem { id: number; deviceName: string; deviceType: string; store: string; token: string; status: 'active' | 'expired' | 'revoked'; createdAt: string; lastUsed: string }
-const tokenData = ref<TokenItem[]>([
-  { id: 1, deviceName: '主机 #01', deviceType: '主机', store: '利民街小展厅', token: 'tk_host_abc123', status: 'active', createdAt: '2026-03-01', lastUsed: '2026-05-08 09:30:00' },
-  { id: 2, deviceName: 'Pico 4 Pro #01', deviceType: '头显', store: '利民街小展厅', token: 'tk_hs_def456', status: 'active', createdAt: '2026-03-15', lastUsed: '2026-05-07 18:22:00' },
-  { id: 3, deviceName: '主机 #02', deviceType: '主机', store: '恒然科技园店', token: 'tk_host_ghi789', status: 'active', createdAt: '2026-03-10', lastUsed: '2026-05-08 08:15:00' },
-  { id: 4, deviceName: 'Pico 4 #03', deviceType: '头显', store: '恒然分部展厅', token: 'tk_hs_jkl012', status: 'expired', createdAt: '2026-02-01', lastUsed: '2026-04-30 12:00:00' },
-  { id: 5, deviceName: 'Meta Quest 3 #01', deviceType: '头显', store: '卓远萧山区店', token: 'tk_hs_mno345', status: 'revoked', createdAt: '2026-01-10', lastUsed: '2026-04-25 10:30:00' },
-])
-const tokenFilterStatus = ref(''); const tokenFilterKeyword = ref('')
-const filteredTokens = computed(() => { let list = tokenData.value; if (tokenFilterStatus.value) list = list.filter(t => t.status === tokenFilterStatus.value); if (tokenFilterKeyword.value) { const kw = tokenFilterKeyword.value.toLowerCase(); list = list.filter(t => t.deviceName.toLowerCase().includes(kw) || t.token.toLowerCase().includes(kw)) }; return list })
-const tokenColumns = [
-  { title: '设备名称', key: 'deviceName', minWidth: 140 }, { title: '设备类型', key: 'deviceType', width: 80 }, { title: '所属店铺', key: 'store', minWidth: 120 },
-  { title: 'Token', key: 'token', minWidth: 200, render: (row: TokenItem) => h(NSpace, { align:'center', size:4 }, { default: () => [h('span', { style: 'font-family: monospace; font-size:12px;' }, row.token), h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => navigator.clipboard.writeText(row.token) }, { default: () => '复制' })] }) },
-  { title: '状态', key: 'status', width: 80, align:'center' as const, render: (row: TokenItem) => { const m: Record<string,any> = { active:{type:'success' as const,label:'有效'}, expired:{type:'warning' as const,label:'已过期'}, revoked:{type:'error' as const,label:'已吊销'} }; return h(NTag, { size:'small', type: m[row.status]?.type }, { default: () => m[row.status]?.label }) } },
-]
 
 // ─── OTA 升级 ──────────────────────────────────────
 interface OtaPackage { id: number; name: string; targetType: string; version: string; size: string; status: 'pending' | 'publishing' | 'done' | 'failed'; notes: string; createdAt: string }
