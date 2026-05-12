@@ -1,17 +1,28 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  optimizeDeps: {
-    exclude: [],
-    include: []
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 将 Vue 核心和路由拆为独立 chunk
+          'vue-core': ['vue', 'vue-router', 'pinia'],
+          // 将 Naive UI 拆为独立 chunk（体积较大）
+          'naive-ui': ['naive-ui'],
+          // 图标库单独拆分
+          icons: ['@vicons/ionicons5'],
+          // 图表库单独拆分
+          charts: ['echarts', 'vue-echarts'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
   },
-  // 禁用依赖扫描（Vite 8 使用 rolldown，无法处理 .vue 文件导入）
   server: {
     fs: {
-      strict: false
-    }
-  }
+      strict: false,
+    },
+  },
 })

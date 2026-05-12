@@ -90,7 +90,7 @@
               remote
               :options="filteredMerchantOptions"
               :loading="merchantLoading"
-              on-search="(q:string) => merchantSearch = q"
+              :on-search="onMerchantSearch"
               placeholder="输入商家名称搜索..."
               clearable
             />
@@ -104,7 +104,7 @@
               remote
               :options="filteredAgentOptions"
               :loading="agentLoading"
-              on-search="(q:string) => agentSearch = q"
+              :on-search="onAgentSearch"
               placeholder="输入代理商名称搜索..."
               clearable
             />
@@ -118,7 +118,7 @@
               remote
               :options="filteredShopOptions"
               :loading="shopLoading"
-              on-search="(q:string) => shopSearch = q"
+              :on-search="onShopSearch"
               placeholder="输入店铺名称搜索..."
               clearable
             />
@@ -132,7 +132,7 @@
               remote
               :options="filteredPersonOptions"
               :loading="personLoading"
-              on-search="(q:string) => personSearch = q"
+              :on-search="onPersonSearch"
               placeholder="输入姓名或手机号搜索..."
               clearable
             />
@@ -362,8 +362,13 @@ const filteredPersonOptions = computed(() => {
   return allPersons.value.filter(p => p.label.toLowerCase().includes(kw))
 })
 
+// 稳定的 on-search 回调引用（避免内联箭头函数导致 n-select 重渲染）
+const onMerchantSearch = (q: string) => { merchantSearch.value = q }
+const onAgentSearch = (q: string) => { agentSearch.value = q }
+const onShopSearch = (q: string) => { shopSearch.value = q }
+const onPersonSearch = (q: string) => { personSearch.value = q }
+
 function onTargetTypeChange() {
-  // 切换目标类型时清空之前的选择
   form.value.roles = []
   form.value.selectedMerchants = []
   form.value.selectedAgents = []
