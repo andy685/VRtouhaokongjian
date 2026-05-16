@@ -57,7 +57,6 @@
         <n-descriptions-item label="订单号">{{ currentOrder.orderNo }}</n-descriptions-item>
         <n-descriptions-item label="设备">{{ currentOrder.device }}</n-descriptions-item>
         <n-descriptions-item label="游戏/影片">{{ currentOrder.gameFilm }}</n-descriptions-item>
-        <n-descriptions-item label="类型">{{ currentOrder.type }}</n-descriptions-item>
         <n-descriptions-item label="时长">{{ currentOrder.duration }}</n-descriptions-item>
         <n-descriptions-item label="金额">¥{{ currentOrder.amount.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="会员">{{ currentOrder.member }}</n-descriptions-item>
@@ -138,7 +137,6 @@ const columns: DataTableColumns = [
   { title: '所属店铺', key: 'shop', width: 120, align: 'center' },
   { title: '设备', key: 'device', width: 150, align: 'center' },
   { title: '游戏/影片', key: 'gameFilm', width: 150, align: 'center' },
-  { title: '类型', key: 'type', width: 90, align: 'center' },
   { title: '时长', key: 'duration', width: 90, align: 'center' },
   { title: '金额', key: 'amount', width: 100, align: 'center', render: (row: any) => `¥${row.amount.toFixed(2)}` },
   {
