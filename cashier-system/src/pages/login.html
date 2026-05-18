@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="头号空间商户收银系统" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { font-family: system-ui, sans-serif; }
+    </style>
+  </head>
+  <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-white">
+    <div class="relative w-full h-full">
+      <!-- 背景图 - 左侧4/7 -->
+      <img 
+        src="../assets/images/image_8.png" 
+        class="absolute left-0 top-0 w-4/7 h-full object-cover object-left" 
+        alt="背景" 
+      />
+      
+      <!-- 右侧登录区域 - 右移20%，实际宽度约3.6/7 -->
+      <div class="absolute right-[20%] top-0 w-[36%] h-full flex flex-col justify-center items-center">
+        
+        <!-- 登录表单内容 - 垂直居中 -->
+        <div class="w-full max-w-md px-12">
+          <!-- 标题区 -->
+          <div class="mb-8 text-center">
+            <h1 class="text-2xl font-semibold text-gray-900">头号空间商户收银系统</h1>
+            <p class="text-sm text-gray-500 mt-2">Welcome ALPHA SPACE</p>
+          </div>
+          
+          <!-- 输入框区域 -->
+          <div class="space-y-4">
+            <!-- 账号输入框 -->
+            <div class="relative">
+              <input 
+                type="text" 
+                placeholder="请输入店员账号"
+                class="w-full h-11 pl-10 pr-4 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-colors bg-transparent"
+              />
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            
+            <!-- 密码输入框 -->
+            <div class="relative">
+              <input 
+                type="password" 
+                placeholder="请输入登录密码"
+                class="w-full h-11 pl-10 pr-4 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-colors bg-transparent"
+              />
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10 0V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- 登录按钮 -->
+          <button 
+            class="mt-6 w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors shadow-lg hover:shadow-xl"
+            onclick="handleLogin()"
+          >
+            登录
+          </button>
+        </div>
+      </div>
+      
+      <!-- 右上角菜单 - 在背景图上 -->
+      <div class="absolute right-[24%] top-4 flex flex-col gap-3 z-10">
+        <a href="#" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          <img src="../assets/images/image_13.png" class="w-5 h-5" alt="" />
+          <span>基础配置</span>
+        </a>
+        <a href="#" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          <img src="../assets/images/image_14.png" class="w-5 h-5" alt="" />
+          <span>在线升级</span>
+        </a>
+        <a href="#" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          <img src="../assets/images/image_12.png" class="w-5 h-5" alt="" />
+          <span>店铺后台</span>
+        </a>
+      </div>
+    </div>
+
+    <script>
+      function handleLogin() {
+        const inputs = document.querySelectorAll('input');
+        const account = inputs[0].value;
+        const password = inputs[1].value;
+        if (!account || !password) {
+          alert('请输入账号和密码');
+          return;
+        }
+        alert('登录账号: ' + account);
+      }
+    </script>
+  </body>
+</html>
