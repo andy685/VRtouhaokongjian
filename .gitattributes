@@ -1,0 +1,14 @@
+# 规范化所有文本文件的换行符
+* text=auto
+
+# Markdown 文件
+*.md text eol=lf
+
+# 脚本文件
+*.js text eol=lf
+*.vue text eol=lf
+*.json text eol=lf
+*.ts text eol=lf
+
+# Windows 用户可能需要的配置
+*.bat eol=crlf
