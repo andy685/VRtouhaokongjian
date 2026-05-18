@@ -6,7 +6,7 @@
         <p class="header-desc">管理所有已入驻的店铺</p>
       </div>
       <n-space>
-        <n-input v-model:value="searchText" placeholder="搜索店铺名称/店长..." size="small" style="width: 220px;">
+        <n-input v-model:value="searchText" placeholder="搜索店铺名称/商家..." size="small" style="width: 220px;">
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
         <n-select v-model:value="filterRegion" placeholder="全部区域" :options="regionOptions" size="small" style="width: 140px;" clearable />
@@ -76,14 +76,8 @@
         <n-form-item label="详细地址" path="address">
           <n-input v-model:value="addForm.address" placeholder="请输入详细地址" />
         </n-form-item>
-        <n-form-item label="店长姓名" path="manager">
-          <n-input v-model:value="addForm.manager" placeholder="请输入店长姓名" />
-        </n-form-item>
         <n-form-item label="联系电话" path="phone">
           <n-input v-model:value="addForm.phone" placeholder="请输入联系电话" />
-        </n-form-item>
-        <n-form-item label="设备数量" path="deviceCount">
-          <n-input-number v-model:value="addForm.deviceCount" :min="1" :max="100" style="width: 100%;" />
         </n-form-item>
         <n-form-item label="店铺状态" path="status">
           <n-radio-group v-model:value="addForm.status">
@@ -126,14 +120,8 @@
         <n-form-item label="详细地址">
           <n-input v-model:value="editForm.address" />
         </n-form-item>
-        <n-form-item label="店长姓名">
-          <n-input v-model:value="editForm.manager" />
-        </n-form-item>
         <n-form-item label="联系电话">
           <n-input v-model:value="editForm.phone" />
-        </n-form-item>
-        <n-form-item label="设备数量">
-          <n-input-number v-model:value="editForm.deviceCount" :min="1" :max="100" style="width: 100%;" />
         </n-form-item>
         <n-form-item label="店铺状态">
           <n-radio-group v-model:value="editForm.status">
@@ -168,9 +156,7 @@
         <n-descriptions-item label="所属商家">{{ currentStore.merchant }}</n-descriptions-item>
         <n-descriptions-item label="所属区域">{{ currentStore.region }}</n-descriptions-item>
         <n-descriptions-item label="详细地址" :span="2">{{ currentStore.address }}</n-descriptions-item>
-        <n-descriptions-item label="店长">{{ currentStore.manager }}</n-descriptions-item>
         <n-descriptions-item label="联系电话">{{ currentStore.phone }}</n-descriptions-item>
-        <n-descriptions-item label="设备数量">{{ currentStore.devices }} 台</n-descriptions-item>
         <n-descriptions-item label="店铺状态">
           <n-tag :type="currentStore.status === 'online' ? 'success' : currentStore.status === 'maintain' ? 'warning' : 'default'" size="small">
             {{ currentStore.statusText }}
@@ -341,8 +327,6 @@ const columns = [
       return h(NTag, { type: typeMap[row.status] as any, size: 'small', bordered: true }, () => row.statusText)
     }
   },
-  { title: '设备数', key: 'devices', width: 80 },
-  { title: '店长', key: 'manager', width: 90 },
   { title: '联系电话', key: 'phone', width: 130 },
   {
     title: '支付业务',
@@ -455,7 +439,6 @@ const filteredData = computed(() => {
     data = data.filter(d =>
       d.name.toLowerCase().includes(kw) ||
       d.merchant.toLowerCase().includes(kw) ||
-      d.manager.toLowerCase().includes(kw) ||
       d.phone.includes(kw)
     )
   }
@@ -472,12 +455,11 @@ const filteredData = computed(() => {
 const showAddModal = ref(false)
 watch(showAddModal, (val) => { if (val) onAddModalOpen() })
 const addFormRef = ref<FormInst | null>(null)
-const addForm = ref({ name: '', merchant: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online', enablePay: false, regCode: '' })
+const addForm = ref({ name: '', merchant: '', region: '', address: '', phone: '', status: 'online', enablePay: false, regCode: '' })
 const addRules: FormRules = {
   name: { required: true, message: '请输入店铺名称', trigger: 'blur' },
   merchant: { required: true, message: '请选择所属商家', trigger: 'change' },
   region: { required: true, message: '请选择区域', trigger: 'change' },
-  manager: { required: true, message: '请输入店长姓名', trigger: 'blur' },
   phone: { required: true, message: '请输入联系电话', trigger: 'blur' },
 }
 
@@ -499,8 +481,7 @@ function handleAdd() {
       address: addForm.value.address,
       status: addForm.value.status,
       statusText: statusMap[addForm.value.status],
-      devices: addForm.value.deviceCount,
-      manager: addForm.value.manager,
+      manager: '-',
       phone: addForm.value.phone,
       todayRevenue: '¥0',
       monthRevenue: '¥0',
@@ -512,21 +493,21 @@ function handleAdd() {
     })
     message.success('店铺新增成功')
     showAddModal.value = false
-    addForm.value = { name: '', merchant: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online', enablePay: false, regCode: '' }
+    addForm.value = { name: '', merchant: '', region: '', address: '', phone: '', status: 'online', enablePay: false, regCode: '' }
   })
 }
 
 // 编辑
 const showEditModal = ref(false)
 const currentStore = ref<any>(null)
-const editForm = ref({ name: '', merchant: '', region: '', address: '', manager: '', phone: '', deviceCount: 1, status: 'online', enablePay: false, regCode: '' })
+const editForm = ref({ name: '', merchant: '', region: '', address: '', phone: '', status: 'online', enablePay: false, regCode: '' })
 
 function openEdit(row: any) {
   currentStore.value = row
   editForm.value = {
     name: row.name, merchant: row.merchant || '', region: row.region || '',
-    address: row.address || '', manager: row.manager || '', phone: row.phone || '',
-    deviceCount: row.devices, status: row.status,
+    address: row.address || '', phone: row.phone || '',
+    status: row.status,
     enablePay: row.payStatus === '已开通', regCode: row.regCode || '',
   }
   showEditModal.value = true
@@ -539,8 +520,8 @@ function handleEdit() {
     const s = storeData.value[idx]
     Object.assign(s, {
       name: editForm.value.name, merchant: editForm.value.merchant, region: editForm.value.region,
-      address: editForm.value.address, manager: editForm.value.manager, phone: editForm.value.phone,
-      devices: editForm.value.deviceCount, status: editForm.value.status,
+      address: editForm.value.address, phone: editForm.value.phone,
+      status: editForm.value.status,
       statusText: statusMap[editForm.value.status],
       payStatus: editForm.value.enablePay ? '已开通' : '未开通',
       regCode: editForm.value.regCode,
