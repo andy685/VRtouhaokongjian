@@ -84,6 +84,15 @@
               </n-radio-group>
             </n-form-item>
           </n-tab-pane>
+
+          <n-tab-pane name="account" tab="管理员账号">
+            <n-form-item label="管理员账号" path="username">
+              <n-input v-model:value="addForm.username" placeholder="请输入管理员登录账号" />
+            </n-form-item>
+            <n-form-item label="管理员密码" path="password">
+              <n-input v-model:value="addForm.password" type="password" show-password-on="click" placeholder="请输入管理员登录密码" />
+            </n-form-item>
+          </n-tab-pane>
           
           <n-tab-pane name="bank" tab="提现账户">
             <n-form-item label="开户银行">
@@ -384,6 +393,7 @@ const addFormRef = ref<FormInst | null>(null)
 const addForm = ref({ 
   name: '', contact: '', phone: '', region: '', agentId: null as number | null, 
   status: 'active', feeRate: 0.005,
+  username: '', password: '',
   bankInfo: { bankName: '', cardNo: '', accountName: '', idCard: '' }
 })
 const addRules: FormRules = {
@@ -391,6 +401,8 @@ const addRules: FormRules = {
   contact: { required: true, message: '请输入联系人', trigger: 'blur' },
   phone: { required: true, message: '请输入联系电话', trigger: 'blur' },
   region: { required: true, message: '请选择负责区域', trigger: 'change' },
+  username: { required: true, message: '请输入管理员账号', trigger: 'blur' },
+  password: { required: true, message: '请输入管理员密码', trigger: 'blur' },
 }
 
 function handleAdd() {
@@ -412,6 +424,8 @@ function handleAdd() {
       monthRevenue: '¥0',
       monthCommission: '¥0',
       feeRate: addForm.value.feeRate,
+      username: addForm.value.username,
+      password: addForm.value.password,
       bankInfo,
       createdAt: new Date().toISOString().slice(0, 10),
     })
@@ -420,6 +434,7 @@ function handleAdd() {
     addForm.value = { 
       name: '', contact: '', phone: '', region: '', agentId: null, 
       status: 'active', feeRate: 0.005,
+      username: '', password: '',
       bankInfo: { bankName: '', cardNo: '', accountName: '', idCard: '' }
     }
   })
