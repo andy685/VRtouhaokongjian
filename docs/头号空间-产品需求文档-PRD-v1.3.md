@@ -32,89 +32,28 @@
 
 **头号空间**是一套面向 **VR线下体验店** 的全链路运营管理系统。平台通过 **硬件销售佣金**和**游戏豆销售**盈利，代理商按区域分润。系统由 **四层架构** 组成：
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <!-- 背景 -->
-  <rect width="760" height="520" fill="#f8fafc" rx="12"/>
-
-  <!-- 顶部标题 -->
-  <text x="380" y="36" text-anchor="middle" fill="#1e293b" font-size="17" font-weight="700">头号空间 · 全链路 VR 体验店运营管理平台</text>
-  <text x="380" y="56" text-anchor="middle" fill="#64748b" font-size="12">四层系统架构</text>
-  <line x1="200" y1="68" x2="560" y2="68" stroke="#e2e8f0" stroke-width="1"/>
-
-  <!-- 第1层：C端触达层 -->
-  <rect x="30" y="80" width="700" height="88" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
-  <rect x="42" y="92" width="90" height="64" rx="8" fill="#3b82f6"/>
-  <text x="87" y="118" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="600">C端触达层</text>
-  <text x="87" y="138" text-anchor="middle" fill="#dbeafe" font-size="10">用户入口</text>
-  <rect x="160" y="96" width="180" height="56" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
-  <text x="250" y="126" text-anchor="middle" fill="#1e293b" font-size="14" font-weight="600">📱 C端微信小程序</text>
-  <text x="250" y="143" text-anchor="middle" fill="#64748b" font-size="10">预约 · 会员 · 支付</text>
-
-  <!-- 从C端到门店的连线 -->
-  <line x1="87" y1="156" x2="87" y2="174" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4,3"/>
-  <polygon points="87,180 81,172 93,172" fill="#93c5fd"/>
-
-  <!-- 第2层：门店运营层 -->
-  <rect x="30" y="184" width="700" height="88" rx="10" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
-  <rect x="42" y="196" width="90" height="64" rx="8" fill="#0ea5e9"/>
-  <text x="87" y="222" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="600">门店运营层</text>
-  <text x="87" y="242" text-anchor="middle" fill="#e0f2fe" font-size="10">现场终端</text>
-
-  <rect x="160" y="200" width="155" height="56" rx="10" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
-  <text x="237" y="225" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">💻 PC收银系统</text>
-  <text x="237" y="244" text-anchor="middle" fill="#64748b" font-size="10">收银开单 · 会员识别</text>
-
-  <rect x="330" y="200" width="155" height="56" rx="10" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
-  <text x="407" y="225" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">🖥️ PC游戏终端</text>
-  <text x="407" y="244" text-anchor="middle" fill="#64748b" font-size="10">选游戏 · 扫码支付</text>
-
-  <rect x="500" y="200" width="155" height="56" rx="10" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
-  <text x="577" y="225" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">🥽 VR头显终端</text>
-  <text x="577" y="244" text-anchor="middle" fill="#64748b" font-size="10">沉浸体验 · 计时计费</text>
-
-  <!-- 从门店到管理后台的连线 -->
-  <line x1="87" y1="260" x2="87" y2="278" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="4,3"/>
-  <polygon points="87,284 81,276 93,276" fill="#bae6fd"/>
-
-  <!-- 第3层：管理后台层 -->
-  <rect x="30" y="288" width="700" height="88" rx="10" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-  <rect x="42" y="300" width="90" height="64" rx="8" fill="#f59e0b"/>
-  <text x="87" y="326" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="600">管理后台层</text>
-  <text x="87" y="346" text-anchor="middle" fill="#fef3c7" font-size="10">Web管理</text>
-
-  <rect x="160" y="304" width="155" height="56" rx="10" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
-  <text x="237" y="329" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">🏪 商家管理后台</text>
-  <text x="237" y="348" text-anchor="middle" fill="#64748b" font-size="10">店铺运营 · 会员管理</text>
-
-  <rect x="330" y="304" width="155" height="56" rx="10" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
-  <text x="407" y="329" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">🤝 代理商系统</text>
-  <text x="407" y="348" text-anchor="middle" fill="#64748b" font-size="10">商家管理 · 分润结算</text>
-
-  <rect x="500" y="304" width="155" height="56" rx="10" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
-  <text x="577" y="329" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">🔴 总运营后台</text>
-  <text x="577" y="348" text-anchor="middle" fill="#64748b" font-size="10">平台管控 · 财务结算</text>
-
-  <!-- 从管理后台到基础设施的连线 -->
-  <line x1="87" y1="364" x2="87" y2="382" stroke="#fde68a" stroke-width="1.5" stroke-dasharray="4,3"/>
-  <polygon points="87,388 81,380 93,380" fill="#fde68a"/>
-
-  <!-- 第4层：基础设施层 -->
-  <rect x="30" y="392" width="700" height="88" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
-  <rect x="42" y="404" width="90" height="64" rx="8" fill="#10b981"/>
-  <text x="87" y="430" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="600">基础设施层</text>
-  <text x="87" y="450" text-anchor="middle" fill="#d1fae5" font-size="10">共享服务</text>
-
-  <rect x="160" y="408" width="240" height="56" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
-  <text x="280" y="433" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">🎮 游戏 SDK</text>
-  <text x="280" y="452" text-anchor="middle" fill="#64748b" font-size="10">设备接入 · 会话管理 · 计费引擎</text>
-
-  <rect x="420" y="408" width="240" height="56" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
-  <text x="540" y="433" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="600">☁️ 平台后端API / 消息队列</text>
-  <text x="540" y="452" text-anchor="middle" fill="#64748b" font-size="10">REST · WebSocket · MQTT</text>
-
-  <!-- 页脚 -->
-  <text x="380" y="506" text-anchor="middle" fill="#94a3b8" font-size="10">各层之间通过后端API和数据流进行通信</text>
-</svg>
+```mermaid
+flowchart TB
+    subgraph C["📱 C端触达层"]
+        A["C端微信小程序<br/>预约·会员·支付"]
+    end
+    subgraph S["💻 门店运营层"]
+        B1["PC收银系统<br/>收银开单·会员识别"]
+        B2["PC游戏终端<br/>选游戏·扫码支付"]
+        B3["VR头显终端<br/>沉浸体验·计时计费"]
+    end
+    subgraph M["🏪 管理后台层"]
+        C1["商家管理后台<br/>店铺运营·会员管理"]
+        C2["代理商系统<br/>商家管理·分润结算"]
+        C3["总运营后台<br/>平台管控·财务结算"]
+    end
+    subgraph I["☁️ 基础设施层"]
+        D["后端API + 数据库"]
+    end
+    A --> B1 & B2 & B3
+    B1 & B2 & B3 --> C1 & C2 & C3
+    C1 & C2 & C3 --> I
+```
 
 ### 1.2 核心价值主张
 
@@ -142,66 +81,27 @@
 
 平台的收入来源为 **硬件销售佣金 + 游戏豆销售** 两项核心业务，代理商的收入为上述两项的**分润抽成**。
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <!-- 背景 -->
-  <rect width="720" height="480" fill="#f8fafc" rx="12"/>
-
-  <!-- 第1行：头号空间平台 -->
-  <rect x="210" y="24" width="300" height="56" rx="28" fill="#3b82f6" filter="url(#shadow)"/>
-  <text x="360" y="58" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">🎮 头号空间平台</text>
-  <text x="360" y="96" text-anchor="middle" fill="#64748b" font-size="12">硬件代理 + 游戏豆销售</text>
-
-  <!-- 连线：平台 → 硬件销售 → 商家 → C端 -->
-  <!-- 平台 → 硬件销售 -->
-  <line x1="240" y1="80" x2="240" y2="162" stroke="#94a3b8" stroke-width="1.8"/>
-  <polygon points="240,168 234,158 246,158" fill="#94a3b8"/>
-  <!-- 平台 → 游戏豆销售 -->
-  <line x1="480" y1="80" x2="480" y2="162" stroke="#94a3b8" stroke-width="1.8"/>
-  <polygon points="480,168 474,158 486,158" fill="#94a3b8"/>
-
-  <!-- 第2行：硬件销售 + 游戏豆销售 -->
-  <rect x="90" y="180" width="220" height="64" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.8"/>
-  <rect x="90" y="180" width="220" height="64" rx="12" fill="#eff6ff" opacity="0.5"/>
-  <text x="200" y="203" text-anchor="middle" fill="#1e293b" font-size="15" font-weight="600">① 硬件销售</text>
-  <text x="200" y="223" text-anchor="middle" fill="#64748b" font-size="12">设备套餐（线下合同）</text>
-
-  <rect x="410" y="180" width="220" height="64" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.8"/>
-  <rect x="410" y="180" width="220" height="64" rx="12" fill="#f0fdf4" opacity="0.5"/>
-  <text x="520" y="203" text-anchor="middle" fill="#1e293b" font-size="15" font-weight="600">② 游戏豆销售</text>
-  <text x="520" y="223" text-anchor="middle" fill="#64748b" font-size="12">¥1/豆（B端运营代币）</text>
-
-  <!-- 连线标签 -->
-  <text x="136" y="128" text-anchor="middle" fill="#64748b" font-size="11">硬件代理</text>
-  <text x="550" y="128" text-anchor="middle" fill="#64748b" font-size="11">采购游戏豆</text>
-
-  <!-- 合并线：硬件销售 + 游戏豆销售 → 商家 -->
-  <line x1="200" y1="244" x2="200" y2="264" stroke="#94a3b8" stroke-width="1.8"/>
-  <line x1="520" y1="244" x2="520" y2="264" stroke="#94a3b8" stroke-width="1.8"/>
-  <line x1="200" y1="264" x2="520" y2="264" stroke="#94a3b8" stroke-width="1.8"/>
-  <line x1="360" y1="264" x2="360" y2="279" stroke="#94a3b8" stroke-width="1.8"/>
-  <polygon points="360,285 354,275 366,275" fill="#94a3b8"/>
-
-  <!-- 第3行：商家 -->
-  <rect x="180" y="289" width="360" height="64" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.8"/>
-  <rect x="180" y="289" width="360" height="64" rx="12" fill="#fefce8" opacity="0.5"/>
-  <text x="360" y="317" text-anchor="middle" fill="#1e293b" font-size="15" font-weight="600">🏪 商家（VR体验店）</text>
-  <text x="360" y="339" text-anchor="middle" fill="#64748b" font-size="12">采购设备 · 购买游戏豆 · 自行定价销售</text>
-
-  <!-- 连线：商家 → C端 -->
-  <line x1="360" y1="353" x2="360" y2="383" stroke="#94a3b8" stroke-width="1.8"/>
-  <polygon points="360,389 354,379 366,379" fill="#94a3b8"/>
-  <text x="380" y="385" text-anchor="start" fill="#64748b" font-size="11">C端付款 ¥</text>
-
-  <!-- 第4行：C端消费者 -->
-  <rect x="210" y="393" width="300" height="52" rx="26" fill="#10b981" filter="url(#shadow)"/>
-  <text x="360" y="425" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="600">👤 C端消费者</text>
-
-  <defs>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.15"/>
-    </filter>
-  </defs>
-</svg>
+```mermaid
+flowchart LR
+    P["🎮 头号空间平台<br/>硬件代理 + 游戏豆销售"]
+    
+    subgraph H["硬件销售"]
+        H1["VR设备商"]
+        S["代理商"]
+        M["商家"]
+    end
+    
+    subgraph G["游戏豆销售"]
+        G1["游戏CP"]
+        G2["游戏豆"]
+    end
+    
+    C["👤 C端消费者<br/>预约·沉浸体验·会员权益"]
+    
+    P --> H & G
+    H1 -->|销售| S -->|分润| M -->|使用| C
+    G1 -->|授权| G2 -->|购买| C
+```
 
 > **关键区别**: 游戏豆是**B端运营代币**(商户→平台)，不是C端消费代币。C端用户付人民币给商家购买游戏项目，商家后台扣除游戏豆作为运营成本。
 
@@ -287,218 +187,43 @@
 
 ### 3.2 子系统间交互关系
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 520" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <rect width="860" height="520" fill="#f8fafc" rx="12"/>
-  <text x="430" y="28" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="700">子系统交互拓扑图</text>
-  <text x="430" y="46" text-anchor="middle" fill="#94a3b8" font-size="11">后端API为所有端共享的基础设施</text>
-
-  <!-- ====== 左列：C端触达 + 门店运营层 ====== -->
-  <rect x="40" y="72" width="160" height="36" rx="8" fill="#3b82f6"/>
-  <text x="120" y="96" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📱 C端微信小程序</text>
-
-  <rect x="40" y="130" width="160" height="32" rx="6" fill="#0ea5e9"/>
-  <text x="120" y="153" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">💻 PC收银系统</text>
-
-  <rect x="40" y="178" width="160" height="32" rx="6" fill="#0ea5e9"/>
-  <text x="120" y="201" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🖥️ PC游戏终端</text>
-
-  <rect x="40" y="226" width="160" height="32" rx="6" fill="#0ea5e9"/>
-  <text x="120" y="249" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🥽 VR头显终端</text>
-
-  <!-- ====== 中列：基础设施 ====== -->
-  <rect x="340" y="66" width="180" height="46" rx="10" fill="#8b5cf6"/>
-  <text x="430" y="93" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">☁️ 后端API</text>
-
-  <rect x="350" y="140" width="80" height="28" rx="6" fill="#10b981"/>
-  <text x="390" y="160" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🎮 SDK</text>
-
-  <rect x="450" y="140" width="80" height="28" rx="6" fill="#a78bfa"/>
-  <text x="490" y="160" text-anchor="middle" fill="#fff" font-size="9" font-weight="500">🔄 WebSocket</text>
-
-  <rect x="390" y="240" width="90" height="28" rx="6" fill="#14b8a6"/>
-  <text x="435" y="260" text-anchor="middle" fill="#fff" font-size="10" font-weight="500">📡 MQTT</text>
-
-  <!-- ====== 右列：管理后台 ====== -->
-  <rect x="660" y="72" width="160" height="36" rx="8" fill="#f59e0b"/>
-  <text x="740" y="96" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">🖥️ 管理后台×3</text>
-
-  <rect x="660" y="130" width="160" height="30" rx="6" fill="#fbbf24"/>
-  <text x="740" y="151" text-anchor="middle" fill="#78350f" font-size="10" font-weight="500">🔐 角色权限控制</text>
-
-  <rect x="660" y="178" width="160" height="34" rx="8" fill="#f59e0b"/>
-  <text x="740" y="201" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">📊 业务服务层</text>
-
-  <!-- ====== 连线：简洁，分组 ====== -->
-  <!-- 小程序 → 后端API (REST/WS) -->
-  <line x1="200" y1="90" x2="340" y2="90" stroke="#a78bfa" stroke-width="2" marker-end="url(#ap)"/>
-  <text x="270" y="84" text-anchor="middle" fill="#8b5cf6" font-size="10" font-weight="600">REST / WebSocket</text>
-
-  <!-- 小程序 → WS -->
-  <line x1="200" y1="100" x2="490" y2="154" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ap)" stroke-dasharray="5,3"/>
-  <text x="340" y="136" fill="#8b5cf6" font-size="9">消息推送</text>
-
-  <!-- PC收银 → 后端API -->
-  <path d="M 200,146 L 260,146 L 260,89 L 340,89" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#as)"/>
-  <text x="230" y="120" fill="#0ea5e9" font-size="9" font-weight="600">Token认证</text>
-
-  <!-- PC终端 → SDK -->
-  <line x1="200" y1="194" x2="350" y2="154" stroke="#10b981" stroke-width="2" marker-end="url(#ag)"/>
-  <text x="270" y="178" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">Session / 计费</text>
-
-  <!-- VR → SDK -->
-  <path d="M 200,242 L 240,242 L 240,154 L 350,154" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#ag)" stroke-dasharray="5,3"/>
-  <text x="220" y="238" fill="#16a34a" font-size="9">本地运行</text>
-
-  <!-- SDK → 后端API -->
-  <line x1="390" y1="140" x2="420" y2="112" stroke="#10b981" stroke-width="1.5" marker-end="url(#ag)"/>
-
-  <!-- SDK → MQTT -->
-  <line x1="435" y1="168" x2="435" y2="240" stroke="#14b8a6" stroke-width="1.5" marker-end="url(#at)"/>
-  <text x="445" y="206" fill="#14b8a6" font-size="9">设备通信</text>
-
-  <!-- WS → 后端API -->
-  <line x1="470" y1="140" x2="450" y2="112" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ap)"/>
-
-  <!-- 管理后台 → 后端API -->
-  <line x1="660" y1="90" x2="520" y2="89" stroke="#f59e0b" stroke-width="2" marker-end="url(#aa)"/>
-  <text x="590" y="84" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">HTTP API</text>
-
-  <!-- 管理后台 → RBAC → 业务服务 -->
-  <line x1="740" y1="108" x2="740" y2="130" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#aa)"/>
-  <line x1="740" y1="160" x2="740" y2="178" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#aa)"/>
-
-  <!-- ====== 图例 ====== -->
-  <rect x="40" y="310" width="780" height="28" rx="6" fill="#f1f5f9"/>
-  <text x="430" y="330" text-anchor="middle" fill="#64748b" font-size="10">
-    图例：<tspan fill="#8b5cf6">● REST/WS</tspan> ·
-    <tspan fill="#0ea5e9">● Token认证</tspan> ·
-    <tspan fill="#16a34a">● Session/计费</tspan> ·
-    <tspan fill="#14b8a6">● 设备通信</tspan> ·
-    <tspan fill="#d97706">● HTTP API</tspan> ·
-    <tspan fill="#8b5cf6" stroke-dasharray="5,3">┅ 消息推送</tspan>
-  </text>
-
-  <!-- 数据层 -->
-  <rect x="40" y="360" width="780" height="26" rx="6" fill="#f1f5f9"/>
-  <text x="430" y="378" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">数据层 — PostgreSQL(业务) · Redis(缓存/会话) · MongoDB(日志) · MinIO(游戏包/图片) · MQTT(设备通信)</text>
-
-  <!-- 分区标签 -->
-  <text x="120" y="68" fill="#3b82f6" font-size="11" font-weight="600">C端触达 / 门店运营</text>
-  <text x="430" y="62" fill="#16a34a" font-size="11" font-weight="600">基础设施</text>
-  <text x="740" y="68" fill="#7c3aed" font-size="11" font-weight="600">管理后台</text>
-
-  <defs>
-    <marker id="ap" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#8b5cf6"/></marker>
-    <marker id="as" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#0ea5e9"/></marker>
-    <marker id="ag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#10b981"/></marker>
-    <marker id="aa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f59e0b"/></marker>
-    <marker id="at" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#14b8a6"/></marker>
-  </defs>
-</svg>
+```mermaid
+flowchart TB
+    subgraph Frontend["前端触达"]
+        A["📱 C端微信小程序"]
+        B["💻 PC收银系统"]
+        C["🖥️ PC游戏终端"]
+        D["🥽 VR头显终端"]
+    end
+    
+    subgraph Backend["☁️ 后端API"]
+        API["统一API网关"]
+        WS["WebSocket服务"]
+    end
+    
+    subgraph Admin["🏪 管理后台"]
+        E["商家管理后台"]
+        F["代理商系统"]
+        G["总运营后台"]
+    end
+    
+    subgraph Storage["💾 数据层"]
+        DB["数据库"]
+        Cache["缓存"]
+    end
+    
+    A & B & C & D --> API
+    E & F & G --> API
+    API --> DB & Cache
+    C --> WS
+    D --> WS
+```
 
 ---
 
 ## 4. 子系统功能详解
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 680" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <rect width="960" height="680" fill="#f8fafc" rx="12"/>
-  <text x="480" y="32" text-anchor="middle" fill="#1e293b" font-size="18" font-weight="700">头号空间 · 产品功能全景</text>
-  <text x="480" y="52" text-anchor="middle" fill="#94a3b8" font-size="12">8大子系统 · 全链路VR体验店运营管理</text>
-
-  <!-- 中心节点 -->
-  <rect x="355" y="300" width="250" height="60" rx="30" fill="#3b82f6" filter="url(#shadow)"/>
-  <text x="480" y="330" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">🎮 头号空间</text>
-  <text x="480" y="348" text-anchor="middle" fill="#bfdbfe" font-size="11">全链路VR体验店运营管理平台</text>
-
-  <!-- 上1: C端小程序 -->
-  <rect x="100" y="68" width="176" height="38" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
-  <text x="188" y="93" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="600">📱 C端微信小程序</text>
-  <rect x="50" y="114" width="124" height="22" rx="4" fill="#fff" stroke="#bfdbfe" stroke-width="1"/><text x="112" y="130" text-anchor="middle" fill="#475569" font-size="9">🏠 首页</text>
-  <rect x="180" y="114" width="124" height="22" rx="4" fill="#fff" stroke="#bfdbfe" stroke-width="1"/><text x="242" y="130" text-anchor="middle" fill="#475569" font-size="9">🎮 游戏分类</text>
-  <rect x="50" y="140" width="124" height="22" rx="4" fill="#fff" stroke="#bfdbfe" stroke-width="1"/><text x="112" y="156" text-anchor="middle" fill="#475569" font-size="9">📄 游戏详情</text>
-  <rect x="180" y="140" width="124" height="22" rx="4" fill="#fff" stroke="#bfdbfe" stroke-width="1"/><text x="242" y="156" text-anchor="middle" fill="#475569" font-size="9">💳 会员码</text>
-  <rect x="50" y="166" width="124" height="22" rx="4" fill="#fff" stroke="#bfdbfe" stroke-width="1"/><text x="112" y="182" text-anchor="middle" fill="#475569" font-size="9">📋 订单·扫码</text>
-  <rect x="180" y="166" width="124" height="22" rx="4" fill="#fff" stroke="#bfdbfe" stroke-width="1"/><text x="242" y="182" text-anchor="middle" fill="#475569" font-size="9">🏪 门店详情</text>
-  <path d="M 188,106 L 177,106 L 177,280 L 355,310" fill="none" stroke="#93c5fd" stroke-width="1.5"/>
-
-  <!-- 上2: PC收银 -->
-  <rect x="392" y="68" width="176" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5"/>
-  <text x="480" y="93" text-anchor="middle" fill="#0369a1" font-size="13" font-weight="600">💻 PC收银系统</text>
-  <rect x="360" y="114" width="110" height="22" rx="4" fill="#fff" stroke="#7dd3fc" stroke-width="1"/><text x="415" y="130" text-anchor="middle" fill="#475569" font-size="9">🛒 收银台(4Tab)</text>
-  <rect x="476" y="114" width="110" height="22" rx="4" fill="#fff" stroke="#7dd3fc" stroke-width="1"/><text x="531" y="130" text-anchor="middle" fill="#475569" font-size="9">👥 会员管理</text>
-  <rect x="360" y="140" width="110" height="22" rx="4" fill="#fff" stroke="#7dd3fc" stroke-width="1"/><text x="415" y="156" text-anchor="middle" fill="#475569" font-size="9">💰 充值/办卡</text>
-  <rect x="476" y="140" width="110" height="22" rx="4" fill="#fff" stroke="#7dd3fc" stroke-width="1"/><text x="531" y="156" text-anchor="middle" fill="#475569" font-size="9">🔄 交接班</text>
-  <rect x="360" y="166" width="110" height="22" rx="4" fill="#fff" stroke="#7dd3fc" stroke-width="1"/><text x="415" y="182" text-anchor="middle" fill="#475569" font-size="9">📋 订单管理</text>
-  <rect x="476" y="166" width="110" height="22" rx="4" fill="#fff" stroke="#7dd3fc" stroke-width="1"/><text x="531" y="182" text-anchor="middle" fill="#475569" font-size="9">🖥️ 设备监控</text>
-  <path d="M 480,106 L 473,106 L 473,280 L 480,300" fill="none" stroke="#7dd3fc" stroke-width="1.5"/>
-
-  <!-- 上3: PC游戏终端 -->
-  <rect x="684" y="68" width="176" height="38" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
-  <text x="772" y="93" text-anchor="middle" fill="#166534" font-size="13" font-weight="600">🖥️ PC游戏终端</text>
-  <rect x="680" y="114" width="84" height="22" rx="4" fill="#fff" stroke="#86efac" stroke-width="1"/><text x="722" y="130" text-anchor="middle" fill="#475569" font-size="9">待机→选游戏</text>
-  <rect x="770" y="114" width="84" height="22" rx="4" fill="#fff" stroke="#86efac" stroke-width="1"/><text x="812" y="130" text-anchor="middle" fill="#475569" font-size="9">扫码支付</text>
-  <rect x="680" y="140" width="84" height="22" rx="4" fill="#fff" stroke="#86efac" stroke-width="1"/><text x="722" y="156" text-anchor="middle" fill="#475569" font-size="9">设备繁忙</text>
-  <rect x="770" y="140" width="84" height="22" rx="4" fill="#fff" stroke="#86efac" stroke-width="1"/><text x="812" y="156" text-anchor="middle" fill="#475569" font-size="9">分配设备</text>
-  <rect x="680" y="166" width="84" height="22" rx="4" fill="#fff" stroke="#86efac" stroke-width="1"/><text x="722" y="182" text-anchor="middle" fill="#475569" font-size="9">监控·结算</text>
-  <rect x="770" y="166" width="84" height="22" rx="4" fill="#fff" stroke="#86efac" stroke-width="1"/><text x="812" y="182" text-anchor="middle" fill="#475569" font-size="9">消费记录</text>
-  <path d="M 772,106 L 767,106 L 767,250 L 605,310" fill="none" stroke="#86efac" stroke-width="1.5"/>
-
-  <!-- 左: VR头显 -->
-  <rect x="30" y="290" width="140" height="38" rx="8" fill="#fefce8" stroke="#fcd34d" stroke-width="1.5"/>
-  <text x="100" y="315" text-anchor="middle" fill="#92400e" font-size="13" font-weight="600">🥽 VR头显终端</text>
-  <rect x="18" y="334" width="90" height="22" rx="4" fill="#fff" stroke="#fcd34d" stroke-width="1"/><text x="63" y="350" text-anchor="middle" fill="#475569" font-size="9">待机→加载</text>
-  <rect x="112" y="334" width="90" height="22" rx="4" fill="#fff" stroke="#fcd34d" stroke-width="1"/><text x="157" y="350" text-anchor="middle" fill="#475569" font-size="9">沉浸游戏</text>
-  <rect x="18" y="360" width="90" height="22" rx="4" fill="#fff" stroke="#fcd34d" stroke-width="1"/><text x="63" y="376" text-anchor="middle" fill="#475569" font-size="9">结束提示</text>
-  <rect x="112" y="360" width="90" height="22" rx="4" fill="#fff" stroke="#fcd34d" stroke-width="1"/><text x="157" y="376" text-anchor="middle" fill="#475569" font-size="9">异常提示</text>
-  <path d="M 170,309 L 230,309 L 230,320 L 355,320" fill="none" stroke="#fcd34d" stroke-width="1.5"/>
-
-  <!-- 右: 游戏SDK -->
-  <rect x="790" y="290" width="140" height="38" rx="8" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1.5"/>
-  <text x="860" y="315" text-anchor="middle" fill="#115e59" font-size="13" font-weight="600">🎮 游戏SDK</text>
-  <rect x="800" y="334" width="120" height="22" rx="4" fill="#fff" stroke="#99f6e4" stroke-width="1"/><text x="860" y="350" text-anchor="middle" fill="#475569" font-size="9">Session管理</text>
-  <rect x="800" y="360" width="120" height="22" rx="4" fill="#fff" stroke="#99f6e4" stroke-width="1"/><text x="860" y="376" text-anchor="middle" fill="#475569" font-size="9">计费引擎</text>
-  <rect x="800" y="386" width="120" height="22" rx="4" fill="#fff" stroke="#99f6e4" stroke-width="1"/><text x="860" y="402" text-anchor="middle" fill="#475569" font-size="9">设备·心跳</text>
-  <path d="M 790,309 L 580,309 L 580,320 L 605,320" fill="none" stroke="#99f6e4" stroke-width="1.5"/>
-
-  <!-- 下1: 商家管理后台 -->
-  <rect x="100" y="450" width="176" height="38" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
-  <text x="188" y="475" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="600">🏪 商家管理后台</text>
-  <rect x="50" y="496" width="124" height="22" rx="4" fill="#fff" stroke="#fecaca" stroke-width="1"/><text x="112" y="512" text-anchor="middle" fill="#475569" font-size="9">📊 工作台·商品</text>
-  <rect x="180" y="496" width="124" height="22" rx="4" fill="#fff" stroke="#fecaca" stroke-width="1"/><text x="242" y="512" text-anchor="middle" fill="#475569" font-size="9">👤 会员管理</text>
-  <rect x="50" y="522" width="124" height="22" rx="4" fill="#fff" stroke="#fecaca" stroke-width="1"/><text x="112" y="538" text-anchor="middle" fill="#475569" font-size="9">📋 订单管理</text>
-  <rect x="180" y="522" width="124" height="22" rx="4" fill="#fff" stroke="#fecaca" stroke-width="1"/><text x="242" y="538" text-anchor="middle" fill="#475569" font-size="9">💰 充值·游戏豆</text>
-  <rect x="50" y="548" width="124" height="22" rx="4" fill="#fff" stroke="#fecaca" stroke-width="1"/><text x="112" y="564" text-anchor="middle" fill="#475569" font-size="9">📈 报表·设备</text>
-  <rect x="180" y="548" width="124" height="22" rx="4" fill="#fff" stroke="#fecaca" stroke-width="1"/><text x="242" y="564" text-anchor="middle" fill="#475569" font-size="9">⚙️ 系统设置</text>
-  <path d="M 188,488 L 177,488 L 177,380 L 355,350" fill="none" stroke="#fecaca" stroke-width="1.5"/>
-
-  <!-- 下2: 代理商 -->
-  <rect x="392" y="450" width="176" height="38" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
-  <text x="480" y="475" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="600">🤝 代理商系统</text>
-  <rect x="360" y="496" width="110" height="22" rx="4" fill="#fff" stroke="#c4b5fd" stroke-width="1"/><text x="415" y="512" text-anchor="middle" fill="#475569" font-size="9">📊 工作台</text>
-  <rect x="476" y="496" width="110" height="22" rx="4" fill="#fff" stroke="#c4b5fd" stroke-width="1"/><text x="531" y="512" text-anchor="middle" fill="#475569" font-size="9">🏪 商家管理</text>
-  <rect x="360" y="522" width="110" height="22" rx="4" fill="#fff" stroke="#c4b5fd" stroke-width="1"/><text x="415" y="538" text-anchor="middle" fill="#475569" font-size="9">💰 分润明细</text>
-  <rect x="476" y="522" width="110" height="22" rx="4" fill="#fff" stroke="#c4b5fd" stroke-width="1"/><text x="531" y="538" text-anchor="middle" fill="#475569" font-size="9">📋 结算记录</text>
-  <rect x="360" y="548" width="110" height="22" rx="4" fill="#fff" stroke="#c4b5fd" stroke-width="1"/><text x="415" y="564" text-anchor="middle" fill="#475569" font-size="9">💳 提现账户</text>
-  <rect x="476" y="548" width="110" height="22" rx="4" fill="#fff" stroke="#c4b5fd" stroke-width="1"/><text x="531" y="564" text-anchor="middle" fill="#475569" font-size="9">📈 营收·消息</text>
-  <path d="M 480,488 L 473,488 L 473,370 L 480,360" fill="none" stroke="#c4b5fd" stroke-width="1.5"/>
-
-  <!-- 下3: 总运营后台 -->
-  <rect x="684" y="450" width="176" height="38" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-  <text x="772" y="475" text-anchor="middle" fill="#92400e" font-size="13" font-weight="600">🔴 总运营后台</text>
-  <rect x="640" y="496" width="110" height="22" rx="4" fill="#fff" stroke="#fde68a" stroke-width="1"/><text x="695" y="512" text-anchor="middle" fill="#475569" font-size="9">📊 大屏看板</text>
-  <rect x="756" y="496" width="110" height="22" rx="4" fill="#fff" stroke="#fde68a" stroke-width="1"/><text x="811" y="512" text-anchor="middle" fill="#475569" font-size="9">门店·商家·代理</text>
-  <rect x="640" y="522" width="110" height="22" rx="4" fill="#fff" stroke="#fde68a" stroke-width="1"/><text x="695" y="538" text-anchor="middle" fill="#475569" font-size="9">🎮 游戏库管理</text>
-  <rect x="756" y="522" width="110" height="22" rx="4" fill="#fff" stroke="#fde68a" stroke-width="1"/><text x="811" y="538" text-anchor="middle" fill="#475569" font-size="9">💰 财务·分润</text>
-  <rect x="640" y="548" width="110" height="22" rx="4" fill="#fff" stroke="#fde68a" stroke-width="1"/><text x="695" y="564" text-anchor="middle" fill="#475569" font-size="9">🔍 对账中心</text>
-  <rect x="756" y="548" width="110" height="22" rx="4" fill="#fff" stroke="#fde68a" stroke-width="1"/><text x="811" y="564" text-anchor="middle" fill="#475569" font-size="9">📢 消息·设置</text>
-  <path d="M 772,488 L 753,488 L 753,380 L 605,350" fill="none" stroke="#fde68a" stroke-width="1.5"/>
-
-  <defs>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
-      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.15"/>
-    </filter>
-  </defs>
-</svg>
+> **产品功能全景图**: 详见 [4. 子系统功能详解](#4-子系统功能详解) 章节
 
 ---
 
@@ -510,64 +235,36 @@
 
 #### 4.1.1 页面结构
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <rect width="760" height="340" fill="#f8fafc" rx="12"/>
-  <text x="380" y="34" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="700">C端微信小程序 — 15个功能页面</text>
-  <text x="380" y="54" text-anchor="middle" fill="#64748b" font-size="11">5大功能分组</text>
-
-  <!-- 分组1：核心浏览 -->
-  <rect x="30" y="72" width="330" height="108" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
-  <text x="195" y="94" text-anchor="middle" fill="#2563eb" font-size="13" font-weight="600">🏠 核心浏览</text>
-  <rect x="48" y="106" width="90" height="30" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="93" y="126" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">🏠 首页</text>
-  <rect x="150" y="106" width="90" height="30" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="195" y="126" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">🎮 游戏分类</text>
-  <rect x="252" y="106" width="90" height="30" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="297" y="126" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">📄 游戏详情</text>
-  <text x="195" y="165" text-anchor="middle" fill="#64748b" font-size="10">浏览推荐 · 按类筛选 · 查看详情</text>
-
-  <!-- 分组2：交易相关 -->
-  <rect x="400" y="72" width="330" height="108" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
-  <text x="565" y="94" text-anchor="middle" fill="#16a34a" font-size="13" font-weight="600">💰 交易相关</text>
-  <rect x="418" y="106" width="72" height="30" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
-  <text x="454" y="126" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="500">💳 会员码</text>
-  <rect x="500" y="106" width="72" height="30" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
-  <text x="536" y="126" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="500">🎫 优惠券</text>
-  <rect x="582" y="106" width="72" height="30" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
-  <text x="618" y="126" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="500">📋 订单</text>
-  <rect x="664" y="106" width="48" height="30" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
-  <text x="688" y="126" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="500">扫码</text>
-  <text x="565" y="165" text-anchor="middle" fill="#64748b" font-size="10">出示会员码 · 领券核销 · 查订单</text>
-
-  <!-- 分组3：社交互动 -->
-  <rect x="30" y="196" width="220" height="108" rx="10" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-  <text x="140" y="218" text-anchor="middle" fill="#d97706" font-size="13" font-weight="600">💬 社交互动</text>
-  <rect x="48" y="230" width="90" height="30" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
-  <text x="93" y="250" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">📋 消费记录</text>
-  <rect x="150" y="230" width="90" height="30" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
-  <text x="195" y="250" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">👥 邀请</text>
-  <rect x="80" y="268" width="120" height="22" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
-  <text x="140" y="284" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">💬 消息通知</text>
-
-  <!-- 分组4：LBS与搜索 -->
-  <rect x="270" y="196" width="220" height="108" rx="10" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
-  <text x="380" y="218" text-anchor="middle" fill="#7c3aed" font-size="13" font-weight="600">📍 LBS与搜索</text>
-  <rect x="320" y="240" width="120" height="30" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1"/>
-  <text x="380" y="260" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">🏪 门店列表</text>
-  <rect x="340" y="280" width="90" height="22" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1"/>
-  <text x="385" y="296" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">🔍 搜索</text>
-
-  <!-- 分组5：个人管理 -->
-  <rect x="510" y="196" width="220" height="108" rx="10" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5"/>
-  <text x="620" y="218" text-anchor="middle" fill="#e11d48" font-size="13" font-weight="600">👤 个人管理</text>
-  <rect x="528" y="240" width="90" height="30" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1"/>
-  <text x="573" y="260" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">👤 个人中心</text>
-  <rect x="628" y="240" width="90" height="30" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1"/>
-  <text x="673" y="260" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500">⚙️ 设置</text>
-
-  <!-- 底部 -->
-  <text x="380" y="328" text-anchor="middle" fill="#94a3b8" font-size="10">主包(首页/个人/扫码) + 游戏包(分类/详情/搜索) + 订单包(订单/会员码/优惠券)</text>
-</svg>
+```mermaid
+flowchart LR
+    subgraph Core["🏠 核心浏览"]
+        H["🏠 首页"]
+        GC["🎮 游戏分类"]
+        GD["📄 游戏详情"]
+    end
+    
+    subgraph Transaction["💰 交易相关"]
+        OD["📋 订单详情"]
+        QR["📱 扫码支付"]
+        CO["🛒 购物车"]
+    end
+    
+    subgraph Member["👤 会员中心"]
+        ME["👤 我的"]
+        MW["💳 会员码"]
+        CP["🎟️ 优惠券"]
+    end
+    
+    subgraph Store["🏪 门店"]
+        SL["📍 门店列表"]
+        SD["🏪 门店详情"]
+    end
+    
+    subgraph Scan["🔍 辅助"]
+        SC["📷 扫码"]
+        SE["🔍 搜索"]
+    end
+```
 
 #### 4.1.2 各页面功能速览
 
@@ -940,89 +637,30 @@ PC 终端在以下时机检测并提示余额不足：
 
 #### 4.4.2 VR终端状态清单（仅3个核心状态）
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <rect width="760" height="420" fill="#f8fafc" rx="12"/>
-  <text x="380" y="28" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="700">VR头显终端 — 状态流转图</text>
-  <text x="380" y="46" text-anchor="middle" fill="#94a3b8" font-size="11">VR内不做任何界面，所有交互由PC终端承担</text>
-
-  <!-- VR区域 -->
-  <rect x="18" y="56" width="724" height="316" rx="10" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="28" y="74" fill="#3b82f6" font-size="10" font-weight="600">🥽 VR头显内部（用户视野）</text>
-
-  <!-- === 状态节点（横向布局） === -->
-
-  <!-- ① 待机 -->
-  <rect x="40" y="120" width="140" height="44" rx="22" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.8"/>
-  <text x="110" y="140" text-anchor="middle" fill="#475569" font-size="13" font-weight="600">① 待机 Idle</text>
-  <text x="110" y="156" text-anchor="middle" fill="#94a3b8" font-size="9">品牌Logo · 30秒省电</text>
-
-  <!-- ② 加载 -->
-  <rect x="230" y="120" width="140" height="44" rx="22" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.8"/>
-  <text x="300" y="140" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="600">② 加载 Loading</text>
-  <text x="300" y="156" text-anchor="middle" fill="#3b82f6" font-size="9">Logo + 环形动画</text>
-
-  <!-- ③ 游戏中 -->
-  <rect x="420" y="120" width="140" height="44" rx="22" fill="#dcfce7" stroke="#22c55e" stroke-width="1.8"/>
-  <text x="490" y="140" text-anchor="middle" fill="#166534" font-size="13" font-weight="600">③ 游戏中 ▶</text>
-  <text x="490" y="156" text-anchor="middle" fill="#16a34a" font-size="9">0 HUD · 纯沉浸</text>
-
-  <!-- ④ 结束 -->
-  <rect x="590" y="120" width="140" height="44" rx="22" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.8"/>
-  <text x="660" y="140" text-anchor="middle" fill="#0369a1" font-size="13" font-weight="600">④ 结束</text>
-  <text x="660" y="156" text-anchor="middle" fill="#0ea5e9" font-size="9">"请取下头盔"</text>
-
-  <!-- ⑤ 异常 -->
-  <rect x="230" y="260" width="140" height="44" rx="22" fill="#fef2f2" stroke="#f87171" stroke-width="1.8"/>
-  <text x="300" y="280" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="600">⑤ 异常 Error</text>
-  <text x="300" y="296" text-anchor="middle" fill="#ef4444" font-size="9">"系统异常" · 红色常驻</text>
-
-  <!-- 底部：PC终端操作 -->
-  <rect x="40" y="335" width="690" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3"/>
-  <text x="55" y="353" fill="#64748b" font-size="10">💻 PC终端（外部操作）：选游戏 → 扫码支付 → 分配"请佩戴#03" → 监控面板 → 提前结束/呼叫店员 → 结算评价</text>
-
-  <!-- === 连线（简洁清晰） === -->
-
-  <!-- 开机初始化 → 待机 -->
-  <text x="70" y="106" fill="#64748b" font-size="10">开机初始化</text>
-  <line x1="110" y1="110" x2="110" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ag)"/>
-
-  <!-- 待机 → 加载 -->
-  <line x1="180" y1="142" x2="230" y2="142" stroke="#60a5fa" stroke-width="1.8" marker-end="url(#ab)"/>
-  <text x="205" y="136" text-anchor="middle" fill="#3b82f6" font-size="9">收到加载指令</text>
-
-  <!-- 加载 → 游戏中 -->
-  <line x1="370" y1="142" x2="420" y2="142" stroke="#22c55e" stroke-width="1.8" marker-end="url(#ag)"/>
-  <text x="395" y="136" text-anchor="middle" fill="#16a34a" font-size="9">游戏启动成功</text>
-
-  <!-- 游戏中 → 结束 -->
-  <line x1="560" y1="142" x2="590" y2="142" stroke="#38bdf8" stroke-width="1.8" marker-end="url(#ab)"/>
-  <text x="575" y="136" text-anchor="middle" fill="#0ea5e9" font-size="9">时间到/结束</text>
-
-  <!-- 结束 → 待机（返回） -->
-  <path d="M 590,164 L 590,196 L 110,196 L 110,164" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ag)" stroke-dasharray="4,3"/>
-  <text x="350" y="190" text-anchor="middle" fill="#94a3b8" font-size="9">3秒自动返回待机</text>
-
-  <!-- 游戏中 → 异常 -->
-  <line x1="490" y1="164" x2="370" y2="260" fill="none" stroke="#ef4444" stroke-width="1.8" marker-end="url(#ar)"/>
-  <text x="430" y="210" text-anchor="middle" fill="#ef4444" font-size="9">崩溃/异常</text>
-
-  <!-- 异常 → 待机 -->
-  <line x1="230" y1="282" x2="110" y2="164" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ao)" stroke-dasharray="4,3"/>
-  <text x="170" y="230" text-anchor="middle" fill="#f59e0b" font-size="9">店员处理/重启</text>
-
-  <!-- 摘盔提示（右上角） -->
-  <rect x="590" y="220" width="140" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
-  <text x="660" y="238" text-anchor="middle" fill="#92400e" font-size="9">摘盔 → 3分钟超时</text>
-  <text x="660" y="252" text-anchor="middle" fill="#92400e" font-size="9">自动结束Session</text>
-  <line x1="660" y1="220" x2="560" y2="164" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
-
-  <defs>
-    <marker id="ab" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3b82f6"/></marker>
-    <marker id="ag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#64748b"/></marker>
-    <marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ef4444"/></marker>
-    <marker id="ao" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f59e0b"/></marker>
-  </defs>
-</svg>
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: 开机
+    Idle --> Loading: 开始游戏
+    Loading --> Playing: 游戏就绪
+    Playing --> Loading: 重新加载
+    Playing --> Idle: 游戏结束/超时
+    
+    state Idle {
+        [*] --> LogoDisplay: 显示品牌Logo
+        LogoDisplay --> [*]: 30秒无操作
+    }
+    
+    state Loading {
+        [*] --> ShowingProgress: Logo + 环形动画
+        ShowingProgress --> [*]: 加载完成
+    }
+    
+    state Playing {
+        [*] --> Gaming: 沉浸体验中
+        Gaming --> Error: 系统异常
+        Error --> [*]: 提示"联系店员"
+    }
+```
 
 #### 4.4.3 各状态详细规格
 
@@ -1637,146 +1275,34 @@ CP 集成 SDK 的工作量极小，核心只需关注两个时刻：
 
 ### 5.1 用户到店消费完整闭环（六端联动时序图）
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 760" style="max-width:100%;height:auto;margin:12px auto;display:block;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-  <rect width="960" height="760" fill="#f8fafc" rx="12"/>
-  <text x="480" y="30" text-anchor="middle" fill="#1e293b" font-size="15" font-weight="700">用户到店消费 · 六端联动时序图</text>
-
-  <!-- Lifeline headers -->
-  <rect x="16" y="46" width="114" height="32" rx="6" fill="#3b82f6"/>
-  <text x="73" y="67" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">👤 用户</text>
-  <line x1="73" y1="78" x2="73" y2="730" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
-
-  <rect x="150" y="46" width="134" height="32" rx="6" fill="#0ea5e9"/>
-  <text x="217" y="67" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🖥️ PC游戏终端</text>
-  <line x1="217" y1="78" x2="217" y2="730" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
-
-  <rect x="350" y="46" width="114" height="32" rx="6" fill="#8b5cf6"/>
-  <text x="407" y="67" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">☁️ 后端API</text>
-  <line x1="407" y1="78" x2="407" y2="730" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
-
-  <rect x="530" y="46" width="114" height="32" rx="6" fill="#10b981"/>
-  <text x="587" y="67" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🎮 游戏SDK</text>
-  <line x1="587" y1="78" x2="587" y2="730" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
-
-  <rect x="710" y="46" width="114" height="32" rx="6" fill="#f59e0b"/>
-  <text x="767" y="67" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🥽 VR头显</text>
-  <line x1="767" y1="78" x2="767" y2="730" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
-
-  <!-- Phase separator 1 -->
-  <line x1="24" y1="98" x2="936" y2="98" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="112" fill="#64748b" font-size="10" font-weight="600">① 到店</text>
-
-  <!-- Arrow 1: 用户 → PC终端 -->
-  <path d="M 73,120 L 217,120" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrow-blue)"/>
-  <text x="145" y="114" text-anchor="middle" fill="#3b82f6" font-size="9">触摸"开始体验"</text>
-
-  <!-- Arrow 2: 用户 → PC终端 （会员登录） -->
-  <path d="M 73,144 L 217,144" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrow-blue)"/>
-  <text x="145" y="138" text-anchor="middle" fill="#3b82f6" font-size="9">散客直接选 / 会员登录</text>
-
-  <!-- Arrow 3: PC终端 → 后端API -->
-  <path d="M 217,168 L 407,168" fill="none" stroke="#8b5cf6" stroke-width="1.8" marker-end="url(#arrow-purple)"/>
-  <text x="312" y="162" text-anchor="middle" fill="#8b5cf6" font-size="9">身份验证 → 返回会员信息</text>
-
-  <!-- Phase separator 2 -->
-  <line x1="24" y1="186" x2="936" y2="186" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="200" fill="#64748b" font-size="10" font-weight="600">② 选游戏</text>
-
-  <!-- Arrow 4: 用户 → PC终端 -->
-  <path d="M 73,210 L 217,210" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrow-blue)"/>
-  <text x="145" y="204" text-anchor="middle" fill="#3b82f6" font-size="9">浏览 → 选游戏 → 确定</text>
-
-  <!-- Arrow 5: PC终端 → 用户（显示价格） -->
-  <path d="M 217,234 L 73,234" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-gray)"/>
-
-  <!-- Phase separator 3 -->
-  <line x1="24" y1="252" x2="936" y2="252" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="266" fill="#64748b" font-size="10" font-weight="600">③ 支付</text>
-
-  <!-- Arrow 6: PC终端 → 后端API -->
-  <path d="M 217,276 L 407,276" fill="none" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-orange)"/>
-  <text x="312" y="270" text-anchor="middle" fill="#f59e0b" font-size="9">提交支付 / 余额扣款</text>
-
-  <!-- Arrow 7: 后端API → PC终端 -->
-  <path d="M 407,300 L 217,300" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-green)"/>
-  <text x="312" y="294" text-anchor="middle" fill="#10b981" font-size="9">✅ 支付回调成功</text>
-
-  <!-- Phase separator 4 -->
-  <line x1="24" y1="318" x2="936" y2="318" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="332" fill="#64748b" font-size="10" font-weight="600">④ 分配设备 & 加载游戏</text>
-
-  <!-- Arrow 8: 后端API → SDK -->
-  <path d="M 407,342 L 587,342" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-green)"/>
-  <text x="497" y="336" text-anchor="middle" fill="#10b981" font-size="9">下发 launch_game 指令</text>
-
-  <!-- Arrow 9: SDK → VR -->
-  <path d="M 587,366 L 767,366" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-green)"/>
-  <text x="677" y="360" text-anchor="middle" fill="#10b981" font-size="9">拉起游戏进程</text>
-
-  <!-- Note: 用户佩戴VR -->
-  <rect x="60" y="378" width="160" height="24" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-  <text x="140" y="395" text-anchor="middle" fill="#3b82f6" font-size="10">用户佩戴 VR 头盔</text>
-
-  <!-- Phase separator 5 -->
-  <line x1="24" y1="416" x2="936" y2="416" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="430" fill="#64748b" font-size="10" font-weight="600">⑤ 沉浸体验（游戏进行中）</text>
-
-  <!-- Self-arrow: SDK → SDK (heartbeat) -->
-  <path d="M 587,442 L 620,442 L 620,466 L 587,466" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-  <text x="630" y="458" fill="#10b981" font-size="9">每60s heartbeat</text>
-
-  <!-- Arrow 10: SDK → 后端API -->
-  <path d="M 587,490 L 407,490" fill="none" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
-  <text x="497" y="484" text-anchor="middle" fill="#8b5cf6" font-size="9">Session 实时数据上报</text>
-
-  <!-- Arrow 11: VR → 用户 -->
-  <path d="M 767,514 L 73,514" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrow-blue)"/>
-  <text x="420" y="508" text-anchor="middle" fill="#3b82f6" font-size="9">纯沉浸式游戏（0 UI 干扰）</text>
-
-  <!-- Phase separator 6 -->
-  <line x1="24" y1="534" x2="936" y2="534" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="548" fill="#64748b" font-size="10" font-weight="600">⑥ 结束 & 结算</text>
-
-  <!-- Arrow 12: VR → SDK -->
-  <path d="M 767,558 L 587,558" fill="none" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-orange)"/>
-  <text x="677" y="552" text-anchor="middle" fill="#f59e0b" font-size="9">游戏结束 / 时间到</text>
-
-  <!-- Arrow 13: SDK → 后端API -->
-  <path d="M 587,582 L 407,582" fill="none" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-orange)"/>
-  <text x="497" y="576" text-anchor="middle" fill="#f59e0b" font-size="9">endSession() → 结算</text>
-
-  <!-- Arrow 14: 后端API → PC终端 -->
-  <path d="M 407,606 L 217,606" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arrow-green)"/>
-  <text x="312" y="600" text-anchor="middle" fill="#10b981" font-size="9">返回结算数据</text>
-
-  <!-- Arrow 15: PC终端 → 用户 -->
-  <path d="M 217,630 L 73,630" fill="none" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arrow-blue)"/>
-  <text x="145" y="624" text-anchor="middle" fill="#3b82f6" font-size="9">显示消费明细 · 五星评分</text>
-
-  <!-- Phase separator 7 -->
-  <line x1="24" y1="650" x2="936" y2="650" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="664" fill="#64748b" font-size="10" font-weight="600">⑦ 离店后</text>
-
-  <!-- Arrow 16: 后端API → 小程序 -->
-  <!-- note: 无小程序 lifeline, 用注释说明 -->
-  <rect x="480" y="676" width="200" height="22" rx="4" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
-  <text x="580" y="692" text-anchor="middle" fill="#16a34a" font-size="10">📱 小程序同步消费记录</text>
-
-  <!-- Activation bars -->
-  <rect x="210" y="120" width="14" height="516" rx="2" fill="#93c5fd" opacity="0.3"/>
-  <rect x="400" y="168" width="14" height="444" rx="2" fill="#c4b5fd" opacity="0.3"/>
-  <rect x="580" y="342" width="14" height="246" rx="2" fill="#86efac" opacity="0.3"/>
-  <rect x="760" y="366" width="14" height="198" rx="2" fill="#fcd34d" opacity="0.3"/>
-
-  <!-- Arrow markers def -->
-  <defs>
-    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/></marker>
-    <marker id="arrow-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#8b5cf6"/></marker>
-    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#10b981"/></marker>
-    <marker id="arrow-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f59e0b"/></marker>
-    <marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64748b"/></marker>
-  </defs>
-</svg>
+```mermaid
+sequenceDiagram
+    participant U as 👤 用户
+    participant PC as 🖥️ PC终端
+    participant API as ☁️ 后端
+    participant SDK as 🎮 游戏SDK
+    participant VR as 🥽 VR头显
+    participant Mini as 📱 小程序
+    
+    U->>PC: 选择游戏
+    PC->>API: 请求开始游戏
+    API->>SDK: 启动游戏
+    SDK->>VR: 加载游戏
+    VR-->>U: 显示游戏画面
+    U->>PC: 扫码支付
+    PC->>Mini: 打开支付页
+    Mini->>U: 显示支付二维码
+    U->>Mini: 完成支付
+    Mini->>API: 通知支付成功
+    API->>SDK: 解锁游戏时长
+    SDK->>VR: 开始计时
+    VR-->>U: 开始游戏体验
+    U->>VR: 结束体验
+    VR->>SDK: 上报游戏时长
+    SDK->>API: 结算费用
+    API-->>PC: 显示结算结果
+    PC-->>U: 展示账单
+```
 
 #### 5.1.1 场景一：散客自助体验（最简路径）
 
