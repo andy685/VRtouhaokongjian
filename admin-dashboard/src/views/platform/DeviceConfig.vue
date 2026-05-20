@@ -8,7 +8,7 @@
       <!-- ========== Tab 1: 设备类型 ========== -->
       <n-tab-pane name="types" tab="📦 设备类型">
         <div class="section-toolbar">
-          <n-button type="primary" size="small" @click="showTypeModal = true">
+          <n-button type="primary" size="small" @click="isEditingType = false; editingTypeId = null; typeForm = { name: '', desc: '', params: '' }; showTypeModal = true">
             <template #icon><n-icon :component="AddOutline" /></template>新增设备类型
           </n-button>
         </div>
@@ -65,14 +65,14 @@
       </n-tab-pane>
     </n-tabs>
 
-    <!-- 弹窗：新增设备类型 -->
-    <n-modal v-model:show="showTypeModal" preset="card" title="新增设备类型" style="width:480px;" :bordered="false">
+    <!-- 弹窗：新增/编辑设备类型 -->
+    <n-modal v-model:show="showTypeModal" preset="card" :title="isEditingType ? '编辑设备类型' : '新增设备类型'" style="width:480px;" :bordered="false">
       <n-form ref="typeFormRef" :model="typeForm" :rules="typeRules" label-placement="left" label-width="100">
         <n-form-item label="类型名称" path="name"><n-input v-model:value="typeForm.name" placeholder="如：悬浮骑兵" /></n-form-item>
         <n-form-item label="描述" path="desc"><n-input v-model:value="typeForm.desc" type="textarea" :rows="3" /></n-form-item>
         <n-form-item label="默认参数" path="params"><n-input v-model:value="typeForm.params" type="textarea" :rows="3" /></n-form-item>
       </n-form>
-      <template #footer><n-space justify="center"><n-button @click="showTypeModal=false">取消</n-button><n-button type="primary" @click="handleAddType">确定</n-button></n-space></template>
+      <template #footer><n-space justify="center"><n-button @click="showTypeModal=false">取消</n-button><n-button type="primary" @click="handleSaveType">确定</n-button></n-space></template>
     </n-modal>
 
     <!-- 弹窗：录入主机 -->
@@ -194,13 +194,37 @@ const typeOpts = computed(() => deviceTypes.value.map(t => ({ label: t.name, val
 const typeColumns = [
   { title: '类型名称', key: 'name', minWidth: 120 }, { title: '描述', key: 'desc', minWidth: 180 }, { title: '默认硬件参数', key: 'params', minWidth: 200 },
   { title: '设备数量', key: 'deviceCount', width: 90, align: 'center' as const }, { title: '创建时间', key: 'createdAt', width: 120 },
-  { title: '操作', key: 'actions', width: 120, align: 'center' as const, render: () => h(NButton, { size: 'tiny', text: true, type: 'primary' }, { default: () => '编辑' }) },
+  { title: '操作', key: 'actions', width: 120, align: 'center' as const, render: (row: DeviceType) => h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => openEditType(row) }, { default: () => '编辑' }) },
 ]
 const showTypeModal = ref(false); const typeFormRef = ref<FormInst | null>(null)
+const isEditingType = ref(false)
+const editingTypeId = ref<number | null>(null)
 const typeForm = ref({ name: '', desc: '', params: '' })
 const typeRules: FormRules = { name: { required: true, message: '请输入类型名称', trigger: 'blur' } }
-function handleAddType() {
-  typeFormRef.value?.validate(e => { if (e) return; deviceTypes.value.unshift({ id: Date.now(), name: typeForm.value.name, desc: typeForm.value.desc, params: typeForm.value.params, deviceCount: 0, createdAt: new Date().toISOString().slice(0, 10) }); showTypeModal.value = false; typeForm.value = { name: '', desc: '', params: '' }; (window as any).$message?.success('设备类型已添加') })
+
+function openEditType(row: DeviceType) {
+  isEditingType.value = true
+  editingTypeId.value = row.id
+  typeForm.value = { name: row.name, desc: row.desc, params: row.params }
+  showTypeModal.value = true
+}
+
+function handleSaveType() {
+  typeFormRef.value?.validate(e => { if (e) return })
+  if (isEditingType.value && editingTypeId.value !== null) {
+    const idx = deviceTypes.value.findIndex(t => t.id === editingTypeId.value)
+    if (idx !== -1) {
+      deviceTypes.value[idx] = { ...deviceTypes.value[idx], ...typeForm.value }
+      ;(window as any).$message?.success('设备类型已更新')
+    }
+  } else {
+    deviceTypes.value.unshift({ id: Date.now(), name: typeForm.value.name, desc: typeForm.value.desc, params: typeForm.value.params, deviceCount: 0, createdAt: new Date().toISOString().slice(0, 10) })
+    ;(window as any).$message?.success('设备类型已添加')
+  }
+  showTypeModal.value = false
+  typeForm.value = { name: '', desc: '', params: '' }
+  isEditingType.value = false
+  editingTypeId.value = null
 }
 
 // ─── 公共数据 ──────────────────────────────────────
