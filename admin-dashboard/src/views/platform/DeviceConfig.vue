@@ -60,10 +60,76 @@
 
       <!-- ========== Tab 4: OTA 升级 ========== -->
       <n-tab-pane name="ota" tab="📡 OTA 升级">
-        <div class="section-toolbar"><n-button type="primary" size="small" @click="showOtaModal = true"><template #icon><n-icon :component="CloudUploadOutline" /></template>上传升级包</n-button></div>
-        <n-data-table :columns="otaColumns" :data="otaPackages" :bordered="false" size="small" striped />
+        <div class="section-toolbar">
+          <n-button type="primary" size="small" @click="isEditingType = false; editingTypeId = null; typeForm = { name: '', desc: '', params: '' }; showOtaModal = true">
+            <template #icon><n-icon :component="CloudUploadOutline" /></template>上传升级包
+          </n-button>
+        </div>
+        <n-data-table :columns="otaColumns" :data="otaPackages" :bordered="false" size="small" striped :row-key="(row:any)=>row.id" />
       </n-tab-pane>
     </n-tabs>
+
+    <!-- 弹窗：OTA 升级详情 -->
+    <n-modal v-model:show="showOtaDetailModal" preset="card" :title="`OTA 升级详情 - ${currentOtaPackage?.name}`" style="width:680px;" :bordered="false">
+      <div v-if="currentOtaPackage" class="ota-detail">
+        <n-descriptions :column="2" bordered size="small" style="margin-bottom:16px;">
+          <n-descriptions-item label="升级包名称">{{ currentOtaPackage.name }}</n-descriptions-item>
+          <n-descriptions-item label="版本号">{{ currentOtaPackage.version }}</n-descriptions-item>
+          <n-descriptions-item label="目标设备">{{ currentOtaPackage.targetType }}</n-descriptions-item>
+          <n-descriptions-item label="包大小">{{ currentOtaPackage.size }}</n-descriptions-item>
+          <n-descriptions-item label="上传时间" :span="2">{{ currentOtaPackage.createdAt }}</n-descriptions-item>
+          <n-descriptions-item label="更新说明" :span="2">{{ currentOtaPackage.notes }}</n-descriptions-item>
+        </n-descriptions>
+
+        <div v-if="currentOtaPackage.status === 'publishing'" class="publish-progress">
+          <div class="progress-header">
+            <span>推送进度</span>
+            <span>{{ currentOtaPackage.progress || 0 }}%</span>
+          </div>
+          <n-progress type="line" :percentage="currentOtaPackage.progress || 0" :height="20" :border-radius="4" />
+          <div class="progress-stats">
+            <span>总设备：{{ currentOtaPackage.totalDevices || 0 }}</span>
+            <span>成功：{{ currentOtaPackage.successCount || 0 }}</span>
+            <span>失败：{{ currentOtaPackage.failCount || 0 }}</span>
+            <span>待推送：{{ (currentOtaPackage.totalDevices || 0) - (currentOtaPackage.successCount || 0) - (currentOtaPackage.failCount || 0) }}</span>
+          </div>
+        </div>
+
+        <div v-if="currentOtaPackage.status === 'pending' || currentOtaPackage.status === 'publishing'" class="target-select">
+          <div class="select-title">📌 选择推送范围（至少选择一项）</div>
+          <n-checkbox-group v-model:value="selectedTargetDevices">
+            <n-space vertical>
+              <n-checkbox value="host_all" label="全部主机" />
+              <n-checkbox value="headset_all" label="全部头显" />
+              <n-checkbox value="host_online" label="在线主机" />
+              <n-checkbox value="headset_online" label="在线头显" />
+            </n-space>
+          </n-checkbox-group>
+          <div v-if="currentOtaPackage.status === 'pending'" style="margin-top:12px;padding:10px;background:#fef3c7;border-radius:6px;font-size:12px;color:#92400e;">
+            💡 点击下方 <strong>开始发布</strong> 按钮推送升级包到选中的设备
+          </div>
+        </div>
+
+        <div v-if="currentOtaPackage.upgradeDevices && currentOtaPackage.upgradeDevices.length > 0" class="device-list">
+          <div class="list-title">设备升级状态</div>
+          <n-data-table :columns="otaDeviceColumns" :data="currentOtaPackage.upgradeDevices" :bordered="false" size="small" />
+        </div>
+      </div>
+      <template #footer>
+        <n-space justify="center">
+          <n-button @click="showOtaDetailModal = false">关闭</n-button>
+          <n-button v-if="currentOtaPackage?.status === 'pending'" type="primary" @click="startOtaPublish">开始发布</n-button>
+          <n-button v-if="currentOtaPackage?.status === 'publishing'" type="warning" @click="cancelOtaPublish">取消发布</n-button>
+          <n-button v-if="currentOtaPackage?.status === 'failed'" type="primary" @click="retryOtaPublish">重新发布</n-button>
+          <n-button v-if="currentOtaPackage?.status === 'done'" type="info" @click="showOtaHistory">查看历史</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <!-- 弹窗：升级历史 -->
+    <n-modal v-model:show="showOtaHistoryModal" preset="card" title="升级历史记录" style="width:600px;" :bordered="false">
+      <n-data-table :columns="otaHistoryColumns" :data="otaHistory" :bordered="false" size="small" />
+    </n-modal>
 
     <!-- 弹窗：新增/编辑设备类型 -->
     <n-modal v-model:show="showTypeModal" preset="card" :title="isEditingType ? '编辑设备类型' : '新增设备类型'" style="width:480px;" :bordered="false">
@@ -177,7 +243,7 @@ import { ref, computed, h } from 'vue'
 import {
   NTabs, NTabPane, NDataTable, NButton, NIcon, NSpace, NInput,
   NModal, NForm, NFormItem, NSelect, NTag, NUpload, NDescriptions, NDescriptionsItem,
-  NRadioGroup, NRadio, NText,
+  NRadioGroup, NRadio, NText, NCheckbox, NCheckboxGroup, NProgress,
   type FormInst, type FormRules
 } from 'naive-ui'
 import { AddOutline, CloudUploadOutline, ArrowForwardOutline, CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5'
@@ -402,21 +468,149 @@ function handleAddHeadset() {
 }
 
 // ─── OTA 升级 ──────────────────────────────────────
-interface OtaPackage { id: number; name: string; targetType: string; version: string; size: string; status: 'pending' | 'publishing' | 'done' | 'failed'; notes: string; createdAt: string }
+interface OtaDevice { id: number; name: string; serialNo: string; status: 'pending' | 'upgrading' | 'done' | 'failed'; resultMsg: string }
+interface OtaPackage {
+  id: number; name: string; targetType: string; version: string; size: string;
+  status: 'pending' | 'publishing' | 'done' | 'failed';
+  notes: string; createdAt: string;
+  progress?: number; totalDevices?: number; successCount?: number; failCount?: number;
+  upgradeDevices?: OtaDevice[];
+}
 const otaPackages = ref<OtaPackage[]>([
-  { id: 1, name: '主机 Kiosk v2.1.0', targetType: '主机', version: 'v2.1.0', size: '128MB', status: 'done', notes: '修复电机抖动问题，优化性能', createdAt: '2026-04-20' },
-  { id: 2, name: 'Pico 固件 v5.5.0', targetType: '头显', version: 'v5.5.0', size: '96MB', status: 'publishing', notes: '新增摇杆校准功能，修复蓝牙断连', createdAt: '2026-05-01' },
+  { id: 1, name: '主机 Kiosk v2.1.0', targetType: '主机', version: 'v2.1.0', size: '128MB', status: 'done', notes: '修复电机抖动问题，优化性能', createdAt: '2026-04-20', progress: 100, totalDevices: 15, successCount: 15, failCount: 0 },
+  { id: 2, name: 'Pico 固件 v5.5.0', targetType: '头显', version: 'v5.5.0', size: '96MB', status: 'publishing', notes: '新增摇杆校准功能，修复蓝牙断连', createdAt: '2026-05-01', progress: 60, totalDevices: 20, successCount: 11, failCount: 1 },
   { id: 3, name: '安全补丁 v3.0.1', targetType: '全部', version: 'v3.0.1', size: '52MB', status: 'pending', notes: '安全漏洞修复', createdAt: '2026-05-03' },
 ])
+
 const otaColumns = [
   { title: '升级包名称', key: 'name', minWidth: 180 }, { title: '目标', key: 'targetType', width: 80 }, { title: '版本', key: 'version', width: 80 },
   { title: '大小', key: 'size', width: 80, align:'center' as const },
-  { title: '状态', key: 'status', width: 90, align:'center' as const, render: (row: OtaPackage) => { const m: Record<string,any> = { pending:{type:'info',label:'待发布'}, publishing:{type:'warning',label:'发布中'}, done:{type:'success',label:'已完成'}, failed:{type:'error',label:'失败'} }; return h(NTag, { size:'small', type: m[row.status]?.type }, { default: () => m[row.status]?.label }) } },
+  { title: '状态', key: 'status', width: 120, align:'center' as const, render: (row: OtaPackage) => {
+    const m: Record<string,any> = { pending:{type:'info',label:'待发布'}, publishing:{type:'warning',label:'发布中'}, done:{type:'success',label:'已完成'}, failed:{type:'error',label:'失败'} };
+    const base = m[row.status] || m.pending;
+    if (row.status === 'publishing' && row.progress !== undefined) {
+      return h('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:2px;' }, [
+        h(NTag, { size:'small', type: base.type }, { default: () => base.label }),
+        h('span', { style: 'font-size:10px;color:#999;' }, `${row.progress}%`),
+      ])
+    }
+    return h(NTag, { size:'small', type: base.type }, { default: () => base.label })
+  }},
+  { title: '上传时间', key: 'createdAt', width: 110 },
+  { title: '操作', key: 'actions', width: 90, align:'center' as const, render: (row: OtaPackage) => {
+    if (row.status === 'pending') return h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openOtaDetail(row) }, { default: () => '发布' })
+    if (row.status === 'publishing') return h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => openOtaDetail(row) }, { default: () => '进度' })
+    if (row.status === 'failed') return h(NButton, { size:'tiny', text:true, type:'error', onClick: () => openOtaDetail(row) }, { default: () => '重试' })
+    return h(NButton, { size:'tiny', text:true, type:'info', onClick: () => openOtaDetail(row) }, { default: () => '详情' })
+  }},
 ]
 const showOtaModal = ref(false); const otaFormRef = ref<FormInst | null>(null)
 const otaForm = ref({ name: '', targetType: '', version: '', notes: '', file: null as any })
 const otaRules: FormRules = { name: { required: true, message: '请输入升级包名称', trigger: 'blur' }, targetType: { required: true, message: '请选择目标设备', trigger: 'change' }, version: { required: true, message: '请输入版本号', trigger: 'blur' } }
 function handleUploadOta() { otaFormRef.value?.validate(e => { if (e) return; otaPackages.value.unshift({ id: Date.now(), name: otaForm.value.name, targetType: otaForm.value.targetType, version: otaForm.value.version, size: '--', status: 'pending', notes: otaForm.value.notes, createdAt: new Date().toISOString().slice(0,10) }); showOtaModal.value = false; otaForm.value = { name:'', targetType:'', version:'', notes:'', file:null }; (window as any).$message?.success('升级包已上传') }) }
+
+// OTA 详情相关
+const showOtaDetailModal = ref(false)
+const showOtaHistoryModal = ref(false)
+const currentOtaPackage = ref<OtaPackage | null>(null)
+const selectedTargetDevices = ref<string[]>([])
+let otaPublishTimer: ReturnType<typeof setInterval> | null = null
+
+const otaDeviceColumns = [
+  { title: '设备名称', key: 'name', minWidth: 140 }, { title: '编号', key: 'serialNo', width: 110 },
+  { title: '状态', key: 'status', width: 90, align:'center' as const, render: (row: OtaDevice) => {
+    const m: Record<string,any> = { pending:{type:'default',label:'待升级'}, upgrading:{type:'warning',label:'升级中'}, done:{type:'success',label:'成功'}, failed:{type:'error',label:'失败'} }
+    return h(NTag, { size:'small', type: m[row.status]?.type }, { default: () => m[row.status]?.label })
+  }},
+  { title: '结果', key: 'resultMsg', render: (row: OtaDevice) => row.resultMsg || '--' },
+]
+
+const otaHistory = ref([
+  { id: 1, name: '主机 Kiosk v2.1.0', version: 'v2.1.0', targetType: '主机', totalDevices: 15, successCount: 15, failCount: 0, publishedAt: '2026-04-20 10:30', duration: '5分22秒' },
+  { id: 2, name: 'Pico 固件 v5.4.2', version: 'v5.4.2', targetType: '头显', totalDevices: 18, successCount: 17, failCount: 1, publishedAt: '2026-04-15 14:20', duration: '8分45秒' },
+])
+const otaHistoryColumns = [
+  { title: '升级包', key: 'name', minWidth: 160 }, { title: '版本', key: 'version', width: 80 },
+  { title: '目标', key: 'targetType', width: 70 }, { title: '总设备', key: 'totalDevices', width: 70, align:'center' as const },
+  { title: '成功', key: 'successCount', width: 60, align:'center' as const, render: (r: any) => h('span', { style: 'color:#22c55e;' }, r.successCount) },
+  { title: '失败', key: 'failCount', width: 60, align:'center' as const, render: (r: any) => h('span', { style: r.failCount > 0 ? 'color:#ef4444;' : 'color:#999;' }, r.failCount) },
+  { title: '发布时间', key: 'publishedAt', width: 140 }, { title: '耗时', key: 'duration', width: 80 },
+]
+
+function openOtaDetail(row: OtaPackage) {
+  currentOtaPackage.value = row
+  selectedTargetDevices.value = []
+  showOtaDetailModal.value = true
+}
+
+function startOtaPublish() {
+  if (!currentOtaPackage.value) return
+  if (selectedTargetDevices.value.length === 0) {
+    ;(window as any).$message?.warning('请选择至少一个推送范围')
+    return
+  }
+  const pkg = currentOtaPackage.value
+  pkg.status = 'publishing'
+  pkg.progress = 0
+  const baseCount = selectedTargetDevices.value.includes('host_all') || selectedTargetDevices.value.includes('host_online') ? 15 : 0
+  const headsetCount = selectedTargetDevices.value.includes('headset_all') || selectedTargetDevices.value.includes('headset_online') ? 20 : 0
+  pkg.totalDevices = baseCount + headsetCount
+  pkg.successCount = 0
+  pkg.failCount = 0
+  pkg.upgradeDevices = []
+  for (let i = 0; i < baseCount; i++) pkg.upgradeDevices.push({ id: i+1, name: `主机 #${String(i+1).padStart(2,'0')}`, serialNo: `PCT-${String(i+1).padStart(3,'0')}`, status: 'pending', resultMsg: '' })
+  for (let i = 0; i < headsetCount; i++) pkg.upgradeDevices.push({ id: baseCount+i+1, name: `Pico 头显 #${String(i+1).padStart(2,'0')}`, serialNo: `SN${100000+baseCount+i+1}`, status: 'pending', resultMsg: '' })
+
+  let progress = 0
+  otaPublishTimer = setInterval(() => {
+    progress += Math.floor(Math.random() * 8) + 3
+    if (progress >= 100) {
+      progress = 100
+      pkg.progress = 100
+      pkg.upgradeDevices?.forEach(d => { if (d.status !== 'failed') { d.status = 'done'; d.resultMsg = '升级成功' } })
+      pkg.successCount = pkg.upgradeDevices?.filter(d => d.status === 'done').length || 0
+      pkg.failCount = pkg.upgradeDevices?.filter(d => d.status === 'failed').length || 0
+      pkg.status = 'done'
+      clearInterval(otaPublishTimer!)
+      otaPublishTimer = null
+      ;(window as any).$message?.success('升级发布完成')
+    } else {
+      pkg.progress = progress
+      pkg.upgradeDevices?.forEach(d => {
+        if (d.status === 'pending' && Math.random() < 0.15) {
+          d.status = Math.random() < 0.95 ? 'upgrading' : 'failed'
+          if (d.status === 'failed') d.resultMsg = '下载超时'
+        }
+        if (d.status === 'upgrading' && Math.random() < 0.2) {
+          d.status = Math.random() < 0.9 ? 'done' : 'failed'
+          d.resultMsg = d.status === 'done' ? '升级成功' : '安装失败'
+        }
+      })
+      pkg.successCount = pkg.upgradeDevices?.filter(d => d.status === 'done').length || 0
+      pkg.failCount = pkg.upgradeDevices?.filter(d => d.status === 'failed').length || 0
+    }
+  }, 500)
+}
+
+function cancelOtaPublish() {
+  if (otaPublishTimer) { clearInterval(otaPublishTimer); otaPublishTimer = null }
+  if (currentOtaPackage.value) {
+    currentOtaPackage.value.status = 'pending'
+    currentOtaPackage.value.upgradeDevices?.forEach(d => { if (d.status === 'upgrading') { d.status = 'failed'; d.resultMsg = '已取消' } })
+  }
+  ;(window as any).$message?.info('发布已取消')
+}
+
+function retryOtaPublish() {
+  if (!currentOtaPackage.value) return
+  selectedTargetDevices.value = ['host_online']
+  startOtaPublish()
+}
+
+function showOtaHistory() {
+  showOtaDetailModal.value = false
+  showOtaHistoryModal.value = true
+}
 </script>
 
 <style scoped>
@@ -431,4 +625,15 @@ function handleUploadOta() { otaFormRef.value?.validate(e => { if (e) return; ot
 .stat-card { flex:1; background:white; border-radius:10px; padding:16px 20px; border:1px solid var(--border-color); display:flex; flex-direction:column; align-items:center; }
 .stat-num { font-family:'Orbitron',sans-serif; font-size:28px; font-weight:700; color:var(--text-primary); }
 .stat-lbl { font-size:12px; color:var(--text-muted); margin-top:4px; }
+
+/* OTA 升级详情 */
+.ota-detail { min-height: 200px; }
+.ota-detail .n-descriptions { margin-bottom: 16px; }
+.publish-progress { background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #64748b; }
+.progress-stats { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #64748b; }
+.target-select { margin-bottom: 16px; }
+.select-title { font-size: 13px; color: #64748b; margin-bottom: 8px; }
+.device-list { margin-top: 16px; }
+.list-title { font-size: 13px; color: #64748b; margin-bottom: 8px; }
 </style>
