@@ -235,6 +235,68 @@
       </n-form>
       <template #footer><n-space justify="center"><n-button @click="showOtaModal=false">取消</n-button><n-button type="primary" @click="handleUploadOta">上传</n-button></n-space></template>
     </n-modal>
+
+    <!-- 弹窗：编辑头显 -->
+    <n-modal v-model:show="showEditHeadsetModal" preset="card" title="编辑头显" style="width:480px;" :bordered="false">
+      <n-form label-placement="left" label-width="100">
+        <n-form-item label="头显名称"><n-input v-model:value="editHeadsetForm.name" /></n-form-item>
+        <n-form-item label="设备型号"><n-select v-model:value="editHeadsetForm.model" :options="headsetModelOpts" /></n-form-item>
+        <n-form-item label="SN 码"><n-input v-model:value="editHeadsetForm.sn" /></n-form-item>
+        <n-form-item label="固件版本"><n-input v-model:value="editHeadsetForm.firmware" /></n-form-item>
+        <n-form-item label="状态">
+          <n-select v-model:value="editHeadsetForm.status" :options="hsStatusOpts" />
+        </n-form-item>
+      </n-form>
+      <template #footer><n-space justify="center"><n-button @click="showEditHeadsetModal=false">取消</n-button><n-button type="primary" @click="handleEditHeadset">保存</n-button></n-space></template>
+    </n-modal>
+
+    <!-- 弹窗：分配头显 -->
+    <n-modal v-model:show="showAllocHeadsetModal" preset="card" title="分配头显" style="width:480px;" :bordered="false">
+      <n-form ref="allocHeadsetFormRef" :model="allocHeadsetForm" :rules="allocHeadsetRules" label-placement="left" label-width="100">
+        <n-descriptions :column="1" bordered size="small">
+          <n-descriptions-item label="头显">{{ allocHeadsetForm.deviceName }}</n-descriptions-item>
+          <n-descriptions-item label="SN码">{{ allocHeadsetForm.sn }}</n-descriptions-item>
+        </n-descriptions>
+        <div style="height:16px;" />
+        <n-form-item label="分配商家" path="merchant"><n-select v-model:value="allocHeadsetForm.merchant" :options="merchantOpts" placeholder="选择商家" filterable @update:value="allocHeadsetForm.store=''" /></n-form-item>
+        <n-form-item label="分配店铺" path="store"><n-select v-model:value="allocHeadsetForm.store" :options="getStoreOpts(allocHeadsetForm.merchant)" placeholder="先选商家 → 再选门店" filterable :disabled="!allocHeadsetForm.merchant" /></n-form-item>
+      </n-form>
+      <template #footer><n-space justify="center"><n-button @click="showAllocHeadsetModal=false">取消</n-button><n-button type="primary" @click="handleAllocHeadset">确认分配</n-button></n-space></template>
+    </n-modal>
+
+    <!-- 弹窗：绑定主机 -->
+    <n-modal v-model:show="showBindHostModal" preset="card" title="绑定到主机" style="width:480px;" :bordered="false">
+      <n-form label-placement="left" label-width="100">
+        <n-descriptions :column="1" bordered size="small">
+          <n-descriptions-item label="头显">{{ bindHostForm.headsetName }}</n-descriptions-item>
+        </n-descriptions>
+        <div style="height:16px;" />
+        <n-form-item label="选择主机" path="hostId">
+          <n-select v-model:value="bindHostForm.hostId" :options="hostOpts" placeholder="选择在线主机" filterable />
+        </n-form-item>
+      </n-form>
+      <template #footer><n-space justify="center"><n-button @click="showBindHostModal=false">取消</n-button><n-button type="primary" @click="handleBindHost">确认绑定</n-button></n-space></template>
+    </n-modal>
+
+    <!-- 弹窗：取消分配头显确认 -->
+    <n-modal v-model:show="showUnassignHeadsetModal" preset="card" title="确认取消分配" style="width:420px;" :bordered="false" :closable="false">
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#fbbf24;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;color:#fff;font-weight:bold;">!</div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#333;margin-bottom:6px;">确认取消分配该头显？</div>
+          <div style="font-size:13px;color:#64748b;line-height:1.6;">
+            取消分配后，该头显将从当前商家/门店回收，需重新分配才能投入使用。<br>
+            <strong>已绑定的主机连接将自动解除。</strong>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+          <n-button @click="showUnassignHeadsetModal=false">取消</n-button>
+          <n-button type="warning" @click="confirmUnassignHeadset">确认取消分配</n-button>
+        </div>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -450,6 +512,44 @@ const hsStatusRender = (s: string) => {
   return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label })
 }
 
+// 头显分配相关
+const showAllocHeadsetModal = ref(false); const allocHeadsetFormRef = ref<FormInst | null>(null)
+const allocHeadsetForm = ref({ deviceId: 0, deviceName: '', sn: '', merchant: '', store: '' })
+const allocHeadsetRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
+
+// 头显编辑相关
+const showEditHeadsetModal = ref(false); const editHeadsetForm = ref({ id: 0, name: '', model: '', sn: '', firmware: '', status: 'idle' as HeadsetDevice['status'] })
+
+// 头显绑定主机相关
+const showBindHostModal = ref(false); const bindHostForm = ref({ headsetId: 0, headsetName: '', hostId: null as number | null })
+const hostOpts = computed(() => hosts.value.filter(h => h.merchant !== '--' && h.status === 'online').map(h => ({ label: `${h.name} (${h.serialNo}) - ${h.store}`, value: h.id })))
+
+// 取消分配相关
+const showUnassignHeadsetModal = ref(false); const unassignHeadsetTarget = ref<HeadsetDevice | null>(null)
+
+function handleAllocHeadset() {
+  allocHeadsetFormRef.value?.validate(e => { if (e) return; const d = headsets.value.find(d => d.id === allocHeadsetForm.value.deviceId); if (d) { d.merchant = allocHeadsetForm.value.merchant; d.store = allocHeadsetForm.value.store } }); showAllocHeadsetModal.value = false; (window as any).$message?.success(`头显已分配给 ${allocHeadsetForm.value.store}`) }
+
+function confirmUnassignHeadset() {
+  const row = unassignHeadsetTarget.value; if (!row) return
+  row.merchant = '--'; row.store = '--'; row.boundHostId = null
+  showUnassignHeadsetModal.value = false; unassignHeadsetTarget.value = null
+  ;(window as any).$message?.info(`已取消分配：${row.name}`)
+}
+
+function openEditHeadset(row: HeadsetDevice) { editHeadsetForm.value = { id: row.id, name: row.name, model: row.model, sn: row.sn, firmware: row.firmware, status: row.status }; showEditHeadsetModal.value = true }
+function handleEditHeadset() {
+  const idx = headsets.value.findIndex(d => d.id === editHeadsetForm.value.id)
+  if (idx !== -1) { headsets.value[idx] = { ...headsets.value[idx], ...editHeadsetForm.value }; (window as any).$message?.success('头显信息已更新') }
+  showEditHeadsetModal.value = false
+}
+
+function handleBindHost() {
+  const d = headsets.value.find(d => d.id === bindHostForm.value.headsetId)
+  if (d) { d.boundHostId = bindHostForm.value.hostId; (window as any).$message?.success(`已绑定到主机 M-${String(bindHostForm.value.hostId).padStart(2,'0')}`) }
+  showBindHostModal.value = false
+}
+
 const headsetColumns = [
   { title: '头显名称', key: 'name', minWidth: 150 }, { title: 'SN 码', key: 'sn', width: 130 },
   { title: '型号', key: 'model', width: 130 }, { title: '固件版本', key: 'firmware', width: 90 },
@@ -458,6 +558,25 @@ const headsetColumns = [
   { title: '状态', key: 'status', width: 80, align:'center' as const, render: (row: HeadsetDevice) => hsStatusRender(row.status) },
   { title: '电量', key: 'batteryLevel', width: 70, align:'center' as const, render: (row: HeadsetDevice) => h(NTag, { size:'small', type: row.batteryLevel > 50 ? 'success' : row.batteryLevel > 20 ? 'warning' : 'error' }, { default: () => `${row.batteryLevel}%` }) },
   { title: 'IPD', key: 'ipd', width: 60, align:'center' as const },
+  {
+    title: '操作', key: 'actions', width: 240, align:'center' as const,
+    render: (row: HeadsetDevice) => {
+      const btns: any[] = [
+        h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openEditHeadset(row) }, { default: () => '编辑' })
+      ]
+      if (row.merchant === '--') {
+        btns.push(h(NButton, { size:'tiny', text:true, type:'info', onClick: () => { allocHeadsetForm.value = { deviceId:row.id, deviceName:row.name, sn:row.sn, merchant:'', store:'' }; showAllocHeadsetModal.value = true } }, { default: () => '分配' }))
+      } else {
+        btns.push(h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => { unassignHeadsetTarget.value = row; showUnassignHeadsetModal.value = true } }, { default: () => '取消分配' }))
+        if (!row.boundHostId) {
+          btns.push(h(NButton, { size:'tiny', text:true, type:'success', onClick: () => { bindHostForm.value = { headsetId:row.id, headsetName:row.name, hostId:null }; showBindHostModal.value = true } }, { default: () => '绑定主机' }))
+        } else {
+          btns.push(h(NButton, { size:'tiny', text:true, type:'error', onClick: () => { row.boundHostId = null; (window as any).$message?.info('已解除主机绑定') } }, { default: () => '解绑' }))
+        }
+      }
+      return h('div', { style:'display:flex;align-items:center;gap:4px;justify-content:center;' }, btns)
+    }
+  },
 ]
 
 const showAddHeadsetModal = ref(false); const addHeadsetFormRef = ref<FormInst | null>(null)
