@@ -60,8 +60,8 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NButton, NDataTable, NTag, NSpace, NInput, NSelect, NIcon } from 'naive-ui'
-import { SearchOutline, StorefrontOutline, CheckmarkCircleOutline, TrendingUpOutline, HardwareChipOutline } from '@vicons/ionicons5'
+import { NButton, NDataTable, NTag, NSpace, NInput, NSelect, NIcon, NTooltip } from 'naive-ui'
+import { SearchOutline, StorefrontOutline, CheckmarkCircleOutline, TrendingUpOutline, HardwareChipOutline, HelpCircleOutline } from '@vicons/ionicons5'
 
 const searchText = ref('')
 const filterStatus = ref<string | null>(null)
@@ -86,16 +86,26 @@ const columns = [
   { title: '店长', key: 'manager', width: 100 },
   { title: '今日营收', key: 'todayRevenue', width: 120 },
   { title: '本月营收', key: 'monthRevenue', width: 120 },
-  { title: '会员数', key: 'memberCount', width: 90 },
+  {
+    title: () => h('div', { style: 'display:flex;align-items:center;gap:4px;white-space:nowrap;' }, [
+      h('span', '开卡会员数'),
+      h(NTooltip, null, {
+        trigger: () => h(NIcon, { size: 14, component: HelpCircleOutline, style: 'color:#94a3b8;cursor:help;' }),
+        default: () => '在本店注册的会员总数。同一用户可在不同商家分别开卡，同商家门店余额互通。'
+      })
+    ]),
+    key: 'memberCount', width: 110
+  },
+  { title: '充值会员', key: 'rechargeMemberCount', width: 100 },
 ]
 
 const storeData = ref([
-  { id: 1, name: '深圳福田旗舰店', merchant: '恒然集团', region: '深圳', status: 'online', devices: 12, onlineDevices: 11, manager: '张三', todayRevenue: '¥15,680', monthRevenue: '¥356,800', memberCount: 1280 },
-  { id: 2, name: '南山科技园店', merchant: '恒然集团', region: '深圳', status: 'online', devices: 8, onlineDevices: 8, manager: '李四', todayRevenue: '¥9,240', monthRevenue: '¥198,500', memberCount: 856 },
-  { id: 3, name: '南山科创店', merchant: '南山科创', region: '深圳', status: 'online', devices: 10, onlineDevices: 9, manager: '周八', todayRevenue: '¥11,200', monthRevenue: '¥245,600', memberCount: 920 },
-  { id: 4, name: '宝安体验中心', merchant: '宝安体验', region: '深圳', status: 'online', devices: 4, onlineDevices: 3, manager: '钱总', todayRevenue: '¥4,560', monthRevenue: '¥98,700', memberCount: 560 },
-  { id: 5, name: '龙岗欢乐时光', merchant: '龙岗欢乐', region: '深圳', status: 'maintain', devices: 6, onlineDevices: 0, manager: '孙总', todayRevenue: '¥0', monthRevenue: '¥45,600', memberCount: 320 },
-  { id: 6, name: '东莞松山湖店', merchant: '东莞松山湖', region: '东莞', status: 'online', devices: 5, onlineDevices: 5, manager: '周总', todayRevenue: '¥6,800', monthRevenue: '¥89,200', memberCount: 680 },
+  { id: 1, name: '深圳福田旗舰店', merchant: '恒然集团', region: '深圳', status: 'online', devices: 12, onlineDevices: 11, manager: '张三', todayRevenue: '¥15,680', monthRevenue: '¥356,800', memberCount: 1280, rechargeMemberCount: 856 },
+  { id: 2, name: '南山科技园店', merchant: '恒然集团', region: '深圳', status: 'online', devices: 8, onlineDevices: 8, manager: '李四', todayRevenue: '¥9,240', monthRevenue: '¥198,500', memberCount: 856, rechargeMemberCount: 520 },
+  { id: 3, name: '南山科创店', merchant: '南山科创', region: '深圳', status: 'online', devices: 10, onlineDevices: 9, manager: '周八', todayRevenue: '¥11,200', monthRevenue: '¥245,600', memberCount: 920, rechargeMemberCount: 610 },
+  { id: 4, name: '宝安体验中心', merchant: '宝安体验', region: '深圳', status: 'online', devices: 4, onlineDevices: 3, manager: '钱总', todayRevenue: '¥4,560', monthRevenue: '¥98,700', memberCount: 560, rechargeMemberCount: 320 },
+  { id: 5, name: '龙岗欢乐时光', merchant: '龙岗欢乐', region: '深圳', status: 'maintain', devices: 6, onlineDevices: 0, manager: '孙总', todayRevenue: '¥0', monthRevenue: '¥45,600', memberCount: 320, rechargeMemberCount: 180 },
+  { id: 6, name: '东莞松山湖店', merchant: '东莞松山湖', region: '东莞', status: 'online', devices: 5, onlineDevices: 5, manager: '周总', todayRevenue: '¥6,800', monthRevenue: '¥89,200', memberCount: 680, rechargeMemberCount: 400 },
 ])
 
 const pagination = { pageSize: 10 }

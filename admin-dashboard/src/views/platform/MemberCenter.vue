@@ -18,8 +18,26 @@ const columns = [
   { title: '商家', key: 'merchant', minWidth: 140 },
   { title: '会员总数', key: 'totalMembers', width: 100 },
   { title: '本月新增', key: 'newThisMonth', width: 100 },
-  { title: '储值总额', key: 'totalDeposit', width: 110 },
-  { title: '游戏币总额', key: 'totalCoins', width: 110 },
+  {
+    title: () => h('span', { style: 'display:inline-flex;align-items:center;gap:2px;' }, [
+      '储值总额',
+      h(NTooltip, { placement: 'top' }, {
+        trigger: () => h(NIcon, { component: HelpCircleOutline, size: 14, style: 'cursor:pointer;color:#8B5CF6;' }),
+        default: () => '该商家所有会员的预存金额当前余额总和',
+      }),
+    ]),
+    key: 'totalDeposit', width: 110,
+  },
+  {
+    title: () => h('span', { style: 'display:inline-flex;align-items:center;gap:2px;' }, [
+      '游戏币总额',
+      h(NTooltip, { placement: 'top' }, {
+        trigger: () => h(NIcon, { component: HelpCircleOutline, size: 14, style: 'cursor:pointer;color:#8B5CF6;' }),
+        default: () => '该商家所有会员的游戏币当前余额总和，游戏币可用于兑换游戏次数/时长或商品',
+      }),
+    ]),
+    key: 'totalCoins', width: 110,
+  },
   {
     title: () => h('span', { style: 'display:inline-flex;align-items:center;gap:2px;' }, [
       '活跃会员',

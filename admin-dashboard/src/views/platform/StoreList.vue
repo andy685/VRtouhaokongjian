@@ -165,7 +165,8 @@
         <n-descriptions-item label="创建时间">{{ currentStore.createdAt }}</n-descriptions-item>
         <n-descriptions-item label="今日营收">{{ currentStore.todayRevenue }}</n-descriptions-item>
         <n-descriptions-item label="本月营收">{{ currentStore.monthRevenue }}</n-descriptions-item>
-        <n-descriptions-item label="会员数">{{ currentStore.memberCount }} 人</n-descriptions-item>
+        <n-descriptions-item label="开卡会员数">{{ currentStore.memberCount }} 人</n-descriptions-item>
+        <n-descriptions-item label="充值会员">{{ currentStore.rechargeMemberCount }} 人</n-descriptions-item>
       </n-descriptions>
       <template #footer>
         <n-space justify="end">
@@ -277,12 +278,13 @@ import {
   NForm, NFormItem, NInputNumber, NRadioGroup, NRadio,
   NIcon, NDescriptions, NDescriptionsItem, useMessage,
   type FormInst, type FormRules, NDivider, NSwitch,
-  NCheckbox, NCheckboxGroup, NDropdown
+  NCheckbox, NCheckboxGroup, NDropdown, NTooltip
 } from 'naive-ui'
 import {
   SearchOutline, AddOutline, StorefrontOutline, CheckmarkCircleOutline,
   TimeOutline, LocationOutline, CreateOutline, TrashOutline, EyeOutline,
-  QrCodeOutline, CloseCircleOutline, TicketOutline, SettingsOutline
+  QrCodeOutline, CloseCircleOutline, TicketOutline, SettingsOutline,
+  HelpCircleOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -341,7 +343,17 @@ const columns = [
     }
   },
   { title: '今日营收', key: 'todayRevenue', width: 110 },
-  { title: '会员数', key: 'memberCount', width: 90 },
+  {
+    title: () => h('div', { style: 'display:flex;align-items:center;gap:4px;white-space:nowrap;' }, [
+      h('span', '开卡会员数'),
+      h(NTooltip, null, {
+        trigger: () => h(NIcon, { size: 14, component: HelpCircleOutline, style: 'color:#94a3b8;cursor:help;' }),
+        default: () => '在本店注册的会员总数。同一用户可在不同商家分别开卡，同商家门店余额互通。'
+      })
+    ]),
+    key: 'memberCount', width: 110
+  },
+  { title: '充值会员', key: 'rechargeMemberCount', width: 100 },
   { title: '创建时间', key: 'createdAt', width: 120 },
   {
     title: '操作',
@@ -414,14 +426,14 @@ const columns = [
 ]
 
 const storeData = ref([
-  { id: 1, name: '深圳福田旗舰店', merchant: '恒然集团', region: '深圳', address: '深圳市福田区华强北路101号', status: 'online', statusText: '营业中', devices: 12, manager: '张三', phone: '13800138001', todayRevenue: '¥15,680', monthRevenue: '¥356,800', memberCount: 1280, createdAt: '2024-01-15', payStatus: '已开通', regCode: 'REG-0001-3F7A', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: true, giftPoints: 100, giftBalance: 0 } },
-  { id: 2, name: '南山科技园店', merchant: '恒然集团', region: '深圳', address: '深圳市南山区科技园南路88号', status: 'online', statusText: '营业中', devices: 8, manager: '李四', phone: '13800138002', todayRevenue: '¥9,240', monthRevenue: '¥198,500', memberCount: 856, createdAt: '2024-02-20', payStatus: '已开通', regCode: 'REG-0002-8B2C', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: false, giftPoints: 0, giftBalance: 0 } },
-  { id: 3, name: '广州天河店', merchant: '幻影星空', region: '广州', address: '广州市天河区天河路368号', status: 'online', statusText: '营业中', devices: 16, manager: '王五', phone: '13800138003', todayRevenue: '¥21,350', monthRevenue: '¥462,100', memberCount: 1520, createdAt: '2024-03-05', payStatus: '已开通', regCode: 'REG-0003-1D9E', regRules: { registerMode: 'both', requiredFields: ['name', 'birthday'], enableGift: true, giftPoints: 200, giftBalance: 5 } },
-  { id: 4, name: '北京朝阳店', merchant: '利民街商家', region: '北京', address: '北京市朝阳区建国路88号', status: 'offline', statusText: '已打烊', devices: 14, manager: '赵六', phone: '13800138004', todayRevenue: '¥0', monthRevenue: '¥389,200', memberCount: 1100, createdAt: '2024-03-18', payStatus: '未开通', regCode: 'REG-0004-5A0F', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: false, giftPoints: 0, giftBalance: 0 } },
-  { id: 5, name: '上海浦东店', merchant: '幻影星空', region: '上海', address: '上海市浦东新区陆家嘴环路1000号', status: 'online', statusText: '营业中', devices: 20, manager: '孙七', phone: '13800138005', todayRevenue: '¥26,800', monthRevenue: '¥578,900', memberCount: 1890, createdAt: '2024-04-01', payStatus: '已开通', regCode: 'REG-0005-7C3D', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: true, giftPoints: 100, giftBalance: 0 } },
-  { id: 6, name: '成都太古里店', merchant: '恒然集团', region: '成都', address: '成都市锦江区中纱帽街8号', status: 'online', statusText: '营业中', devices: 10, manager: '周八', phone: '13800138006', todayRevenue: '¥11,200', monthRevenue: '¥245,600', memberCount: 920, createdAt: '2024-04-15', payStatus: '未开通', regCode: 'REG-0006-2E6B', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: false, giftPoints: 0, giftBalance: 0 } },
-  { id: 7, name: '杭州西湖店', merchant: '利民街商家', region: '杭州', address: '杭州市西湖区南山路15号', status: 'maintain', statusText: '维护中', devices: 8, manager: '吴九', phone: '13800138007', todayRevenue: '¥0', monthRevenue: '¥168,300', memberCount: 680, createdAt: '2024-05-01', payStatus: '未开通', regCode: 'REG-0007-9F1A', regRules: { registerMode: 'wechat', requiredFields: [], enableGift: false, giftPoints: 0, giftBalance: 0 } },
-  { id: 8, name: '武汉光谷店', merchant: '幻影星空', region: '武汉', address: '武汉市洪山区光谷步行街1号', status: 'online', statusText: '营业中', devices: 11, manager: '郑十', phone: '13800138008', todayRevenue: '¥13,500', monthRevenue: '¥298,700', memberCount: 1050, createdAt: '2024-05-20', payStatus: '已开通', regCode: 'REG-0008-4D8C', regRules: { registerMode: 'both', requiredFields: ['name'], enableGift: true, giftPoints: 150, giftBalance: 0 } },
+  { id: 1, name: '深圳福田旗舰店', merchant: '恒然集团', region: '深圳', address: '深圳市福田区华强北路101号', status: 'online', statusText: '营业中', devices: 12, manager: '张三', phone: '13800138001', todayRevenue: '¥15,680', monthRevenue: '¥356,800', memberCount: 1280, rechargeMemberCount: 856, createdAt: '2024-01-15', payStatus: '已开通', regCode: 'REG-0001-3F7A', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: true, giftPoints: 100, giftBalance: 0 } },
+  { id: 2, name: '南山科技园店', merchant: '恒然集团', region: '深圳', address: '深圳市南山区科技园南路88号', status: 'online', statusText: '营业中', devices: 8, manager: '李四', phone: '13800138002', todayRevenue: '¥9,240', monthRevenue: '¥198,500', memberCount: 856, rechargeMemberCount: 520, createdAt: '2024-02-20', payStatus: '已开通', regCode: 'REG-0002-8B2C', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: false, giftPoints: 0, giftBalance: 0 } },
+  { id: 3, name: '广州天河店', merchant: '幻影星空', region: '广州', address: '广州市天河区天河路368号', status: 'online', statusText: '营业中', devices: 16, manager: '王五', phone: '13800138003', todayRevenue: '¥21,350', monthRevenue: '¥462,100', memberCount: 1520, rechargeMemberCount: 980, createdAt: '2024-03-05', payStatus: '已开通', regCode: 'REG-0003-1D9E', regRules: { registerMode: 'both', requiredFields: ['name', 'birthday'], enableGift: true, giftPoints: 200, giftBalance: 5 } },
+  { id: 4, name: '北京朝阳店', merchant: '利民街商家', region: '北京', address: '北京市朝阳区建国路88号', status: 'offline', statusText: '已打烊', devices: 14, manager: '赵六', phone: '13800138004', todayRevenue: '¥0', monthRevenue: '¥389,200', memberCount: 1100, rechargeMemberCount: 600, createdAt: '2024-03-18', payStatus: '未开通', regCode: 'REG-0004-5A0F', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: false, giftPoints: 0, giftBalance: 0 } },
+  { id: 5, name: '上海浦东店', merchant: '幻影星空', region: '上海', address: '上海市浦东新区陆家嘴环路1000号', status: 'online', statusText: '营业中', devices: 20, manager: '孙七', phone: '13800138005', todayRevenue: '¥26,800', monthRevenue: '¥578,900', memberCount: 1890, rechargeMemberCount: 1260, createdAt: '2024-04-01', payStatus: '已开通', regCode: 'REG-0005-7C3D', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: true, giftPoints: 100, giftBalance: 0 } },
+  { id: 6, name: '成都太古里店', merchant: '恒然集团', region: '成都', address: '成都市锦江区中纱帽街8号', status: 'online', statusText: '营业中', devices: 10, manager: '周八', phone: '13800138006', todayRevenue: '¥11,200', monthRevenue: '¥245,600', memberCount: 920, rechargeMemberCount: 560, createdAt: '2024-04-15', payStatus: '未开通', regCode: 'REG-0006-2E6B', regRules: { registerMode: 'phone', requiredFields: ['name'], enableGift: false, giftPoints: 0, giftBalance: 0 } },
+  { id: 7, name: '杭州西湖店', merchant: '利民街商家', region: '杭州', address: '杭州市西湖区南山路15号', status: 'maintain', statusText: '维护中', devices: 8, manager: '吴九', phone: '13800138007', todayRevenue: '¥0', monthRevenue: '¥168,300', memberCount: 680, rechargeMemberCount: 320, createdAt: '2024-05-01', payStatus: '未开通', regCode: 'REG-0007-9F1A', regRules: { registerMode: 'wechat', requiredFields: [], enableGift: false, giftPoints: 0, giftBalance: 0 } },
+  { id: 8, name: '武汉光谷店', merchant: '幻影星空', region: '武汉', address: '武汉市洪山区光谷步行街1号', status: 'online', statusText: '营业中', devices: 11, manager: '郑十', phone: '13800138008', todayRevenue: '¥13,500', monthRevenue: '¥298,700', memberCount: 1050, rechargeMemberCount: 710, createdAt: '2024-05-20', payStatus: '已开通', regCode: 'REG-0008-4D8C', regRules: { registerMode: 'both', requiredFields: ['name'], enableGift: true, giftPoints: 150, giftBalance: 0 } },
 ])
 
 /** 生成注册码 REG-XXXX-XXXX */

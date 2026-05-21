@@ -60,17 +60,20 @@
 
       <!-- ========== Tab 4: OTA 升级 ========== -->
       <n-tab-pane name="ota" tab="📡 OTA 升级">
+        <div class="filter-bar">
+          <n-select v-model:value="otaFilterType" :options="otaFilterOpts" placeholder="设备类型" style="width:130px;" clearable size="small" />
+        </div>
         <div class="section-toolbar">
           <n-button type="primary" size="small" @click="isEditingType = false; editingTypeId = null; typeForm = { name: '', desc: '', params: '' }; showOtaModal = true">
             <template #icon><n-icon :component="CloudUploadOutline" /></template>上传升级包
           </n-button>
         </div>
-        <n-data-table :columns="otaColumns" :data="otaPackages" :bordered="false" size="small" striped :row-key="(row:any)=>row.id" />
+        <n-data-table :columns="otaColumns" :data="filteredOtaPackages" :bordered="false" size="small" striped :row-key="(row:any)=>row.id" />
       </n-tab-pane>
     </n-tabs>
 
     <!-- 弹窗：OTA 升级详情 -->
-    <n-modal v-model:show="showOtaDetailModal" preset="card" :title="`OTA 升级详情 - ${currentOtaPackage?.name}`" style="width:680px;" :bordered="false">
+    <n-modal v-model:show="showOtaDetailModal" preset="card" :title="`OTA 升级包详情 - ${currentOtaPackage?.name}`" style="width:580px;" :bordered="false">
       <div v-if="currentOtaPackage" class="ota-detail">
         <n-descriptions :column="2" bordered size="small" style="margin-bottom:16px;">
           <n-descriptions-item label="升级包名称">{{ currentOtaPackage.name }}</n-descriptions-item>
@@ -80,55 +83,19 @@
           <n-descriptions-item label="上传时间" :span="2">{{ currentOtaPackage.createdAt }}</n-descriptions-item>
           <n-descriptions-item label="更新说明" :span="2">{{ currentOtaPackage.notes }}</n-descriptions-item>
         </n-descriptions>
-
-        <div v-if="currentOtaPackage.status === 'publishing'" class="publish-progress">
-          <div class="progress-header">
-            <span>推送进度</span>
-            <span>{{ currentOtaPackage.progress || 0 }}%</span>
-          </div>
-          <n-progress type="line" :percentage="currentOtaPackage.progress || 0" :height="20" :border-radius="4" />
-          <div class="progress-stats">
-            <span>总设备：{{ currentOtaPackage.totalDevices || 0 }}</span>
-            <span>成功：{{ currentOtaPackage.successCount || 0 }}</span>
-            <span>失败：{{ currentOtaPackage.failCount || 0 }}</span>
-            <span>待推送：{{ (currentOtaPackage.totalDevices || 0) - (currentOtaPackage.successCount || 0) - (currentOtaPackage.failCount || 0) }}</span>
-          </div>
-        </div>
-
-        <div v-if="currentOtaPackage.status === 'pending' || currentOtaPackage.status === 'publishing'" class="target-select">
-          <div class="select-title">📌 选择推送范围（至少选择一项）</div>
-          <n-checkbox-group v-model:value="selectedTargetDevices">
-            <n-space vertical>
-              <n-checkbox value="host_all" label="全部主机" />
-              <n-checkbox value="headset_all" label="全部头显" />
-              <n-checkbox value="host_online" label="在线主机" />
-              <n-checkbox value="headset_online" label="在线头显" />
-            </n-space>
-          </n-checkbox-group>
-          <div v-if="currentOtaPackage.status === 'pending'" style="margin-top:12px;padding:10px;background:#fef3c7;border-radius:6px;font-size:12px;color:#92400e;">
-            💡 点击下方 <strong>开始发布</strong> 按钮推送升级包到选中的设备
-          </div>
-        </div>
-
-        <div v-if="currentOtaPackage.upgradeDevices && currentOtaPackage.upgradeDevices.length > 0" class="device-list">
-          <div class="list-title">设备升级状态</div>
-          <n-data-table :columns="otaDeviceColumns" :data="currentOtaPackage.upgradeDevices" :bordered="false" size="small" />
-        </div>
+        <n-alert v-if="currentOtaPackage.status === 'unpublished'" type="info" style="margin-top:8px;">
+          该升级包尚未发布，发布后设备将在联网时自动检测并下载升级。
+        </n-alert>
+        <n-alert v-if="currentOtaPackage.status === 'published'" type="success" style="margin-top:8px;">
+          该升级包已于 {{ currentOtaPackage.publishedAt }} 发布，设备联网后将自动拉取升级。
+        </n-alert>
       </div>
       <template #footer>
         <n-space justify="center">
           <n-button @click="showOtaDetailModal = false">关闭</n-button>
-          <n-button v-if="currentOtaPackage?.status === 'pending'" type="primary" @click="startOtaPublish">开始发布</n-button>
-          <n-button v-if="currentOtaPackage?.status === 'publishing'" type="warning" @click="cancelOtaPublish">取消发布</n-button>
-          <n-button v-if="currentOtaPackage?.status === 'failed'" type="primary" @click="retryOtaPublish">重新发布</n-button>
-          <n-button v-if="currentOtaPackage?.status === 'done'" type="info" @click="showOtaHistory">查看历史</n-button>
+          <n-button v-if="currentOtaPackage?.status === 'unpublished'" type="primary" @click="publishOtaPackage">发布升级包</n-button>
         </n-space>
       </template>
-    </n-modal>
-
-    <!-- 弹窗：升级历史 -->
-    <n-modal v-model:show="showOtaHistoryModal" preset="card" title="升级历史记录" style="width:600px;" :bordered="false">
-      <n-data-table :columns="otaHistoryColumns" :data="otaHistory" :bordered="false" size="small" />
     </n-modal>
 
     <!-- 弹窗：新增/编辑设备类型 -->
@@ -228,7 +195,7 @@
     <n-modal v-model:show="showOtaModal" preset="card" title="上传 OTA 升级包" style="width:520px;" :bordered="false">
       <n-form ref="otaFormRef" :model="otaForm" :rules="otaRules" label-placement="left" label-width="100">
         <n-form-item label="升级包名称" path="name"><n-input v-model:value="otaForm.name" placeholder="如：v2.1.0 固件升级" /></n-form-item>
-        <n-form-item label="目标设备" path="targetType"><n-select v-model:value="otaForm.targetType" :options="[{label:'主机',value:'host'},{label:'头显',value:'headset'},{label:'全部',value:'all'}]" placeholder="选择目标" /></n-form-item>
+        <n-form-item label="目标设备" path="targetType"><n-select v-model:value="otaForm.targetType" :options="[{label:'主机',value:'host'},{label:'头显',value:'headset'}]" placeholder="选择目标设备类型" /></n-form-item>
         <n-form-item label="版本号" path="version"><n-input v-model:value="otaForm.version" placeholder="如：v2.1.0" /></n-form-item>
         <n-form-item label="更新说明" path="notes"><n-input v-model:value="otaForm.notes" type="textarea" :rows="4" /></n-form-item>
         <n-form-item label="升级文件" path="file"><n-upload :default-upload="false" :max="1" accept=".bin,.zip,.img"><n-button>选择文件</n-button></n-upload></n-form-item>
@@ -244,7 +211,7 @@
         <n-form-item label="SN 码"><n-input v-model:value="editHeadsetForm.sn" /></n-form-item>
         <n-form-item label="固件版本"><n-input v-model:value="editHeadsetForm.firmware" /></n-form-item>
         <n-form-item label="状态">
-          <n-select v-model:value="editHeadsetForm.status" :options="hsStatusOpts" />
+          <n-space><n-tag size="small" :type="statusTagType(editHeadsetForm.status)">{{ statusTagLabel(editHeadsetForm.status) }}</n-tag><n-text depth="3" style="font-size:11px;margin-left:8px;">状态由设备实时上报</n-text></n-space>
         </n-form-item>
       </n-form>
       <template #footer><n-space justify="center"><n-button @click="showEditHeadsetModal=false">取消</n-button><n-button type="primary" @click="handleEditHeadset">保存</n-button></n-space></template>
@@ -305,7 +272,7 @@ import { ref, computed, h } from 'vue'
 import {
   NTabs, NTabPane, NDataTable, NButton, NIcon, NSpace, NInput,
   NModal, NForm, NFormItem, NSelect, NTag, NUpload, NDescriptions, NDescriptionsItem,
-  NRadioGroup, NRadio, NText, NCheckbox, NCheckboxGroup, NProgress,
+  NRadioGroup, NRadio, NText, NAlert,
   type FormInst, type FormRules
 } from 'naive-ui'
 import { AddOutline, CloudUploadOutline, ArrowForwardOutline, CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5'
@@ -400,11 +367,18 @@ const filteredHosts = computed(() => {
   return list
 })
 function resetHostFilter() { hostFilterMerchant.value = null; hostFilterStore.value = null; hostFilterType.value = null; hostFilterStatus.value = null; hostFilterKeyword.value = '' }
-const hostStatusRender = (s: string) => { const m: Record<string,any> = { online: {type:'success',label:'在线'}, offline: {type:'default',label:'离线'}, fault: {type:'warning',label:'故障'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
 
-const showAllocHostModal = ref(false); const allocHostFormRef = ref<FormInst | null>(null)
-const allocHostForm = ref({ deviceId: 0, deviceName: '', serialNo: '', merchant: '', store: '' })
-const allocRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
+const statusTagMap: Record<string, { type: any; label: string }> = {
+  online: { type: 'success', label: '在线' },
+  offline: { type: 'default', label: '离线' },
+  fault: { type: 'warning', label: '故障' },
+  idle: { type: 'info', label: '空闲' },
+  in_use: { type: 'success', label: '使用中' },
+  charging: { type: 'warning', label: '充电中' },
+}
+function statusTagType(s: string) { return statusTagMap[s]?.type || 'default' }
+function statusTagLabel(s: string) { return statusTagMap[s]?.label || s }
+const hostStatusRender = (s: string) => { const m = statusTagMap[s]; return h(NTag, { size:'small', type: m?.type || 'default' }, { default: () => m?.label || s }) }
 
 function genToken() { return `tk_host_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}` }
 
@@ -420,10 +394,11 @@ const hostColumns = [
     title: 'Token', key: 'token', minWidth: 140,
     render: (row: HostDevice) => {
       if (row.tokenStatus === 'none' || !row.token) return h(NTag, { size:'small', type:'default' }, { default: () => '未分配' })
-      return h(NSpace, { align:'center', size:4 }, { default: () => [
+      // 用 div 替代 NSpace，避免循环引用
+      return h('div', { style: 'display:flex;align-items:center;gap:4px;' }, [
         h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;max-width:100px;overflow:hidden;text-overflow:ellipsis;' }, `${row.token.slice(0, 12)}...`),
         h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => navigator.clipboard.writeText(row.token).then(() => (window as any).$message?.success('已复制')) }, { default: () => '复制' }),
-      ]})
+      ])
     }
   },
   {
@@ -442,7 +417,7 @@ const hostColumns = [
         btns.push(h(NButton, { size:'tiny', text:true, type:'error', onClick: () => { row.tokenStatus = 'none'; row.token = '--'; (window as any).$message?.warning(`Token 已吊销：${row.name}`) } }, { default: () => '吊销Token' }))
       } else if (row.merchant !== '--') {
         btns.push(h('span', { style:'margin:0 2px;color:#ddd;' }, '|'))
-        btns.push(h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => { row.token = genToken(); row.tokenStatus = 'active'; (window as any).$message?.success(`Token 已重新生成`) } }, { default: () => '生成Token' }))
+        btns.push(h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => { row.token = genToken(); row.tokenStatus = 'active'; (window as any).$message?.success('Token 已重新生成') } }, { default: () => '生成Token' }))
       }
       return h('div', { style:'display:flex;align-items:center;gap:4px;justify-content:center;' }, btns)
     }
@@ -470,6 +445,9 @@ const hostRules: FormRules = { serialNo: { required: true, message: '请输入�
 function handleAddHost() {
   addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', macAddress: addHostForm.value.macAddress, osVersion: addHostForm.value.osVersion || '--', status: 'online', merchant: '--', store: '--', token: '--', tokenStatus: 'none', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', macAddress:'', notes:'' }; (window as any).$message?.success('主机已录入') })
 }
+const showAllocHostModal = ref(false); const allocHostFormRef = ref<FormInst | null>(null)
+const allocHostForm = ref({ deviceId: 0, deviceName: '', serialNo: '', merchant: '', store: '' })
+const allocRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
 function handleAllocHost() {
   allocHostFormRef.value?.validate(e => { if (e) return; const d = hosts.value.find(d => d.id === allocHostForm.value.deviceId); if (d) { d.merchant = allocHostForm.value.merchant; d.store = allocHostForm.value.store; d.token = `tk_host_${Date.now().toString(36)}`; d.tokenStatus = 'active' }; showAllocHostModal.value = false; (window as any).$message?.success(`主机已分配给 ${allocHostForm.value.store}`) })
 }
@@ -507,47 +485,10 @@ const filteredHeadsets = computed(() => {
   return list
 })
 function resetHsFilter() { hsFilterMerchant.value = null; hsFilterStore.value = null; hsFilterStatus.value = null; hsFilterKeyword.value = '' }
+
 const hsStatusRender = (s: string) => {
-  const m: Record<string,any> = { idle: {type:'info',label:'空闲'}, in_use: {type:'success',label:'使用中'}, charging: {type:'warning',label:'充电中'}, offline: {type:'default',label:'离线'}, fault: {type:'error',label:'故障'} }
-  return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label })
-}
-
-// 头显分配相关
-const showAllocHeadsetModal = ref(false); const allocHeadsetFormRef = ref<FormInst | null>(null)
-const allocHeadsetForm = ref({ deviceId: 0, deviceName: '', sn: '', merchant: '', store: '' })
-const allocHeadsetRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
-
-// 头显编辑相关
-const showEditHeadsetModal = ref(false); const editHeadsetForm = ref({ id: 0, name: '', model: '', sn: '', firmware: '', status: 'idle' as HeadsetDevice['status'] })
-
-// 头显绑定主机相关
-const showBindHostModal = ref(false); const bindHostForm = ref({ headsetId: 0, headsetName: '', hostId: null as number | null })
-const hostOpts = computed(() => hosts.value.filter(h => h.merchant !== '--' && h.status === 'online').map(h => ({ label: `${h.name} (${h.serialNo}) - ${h.store}`, value: h.id })))
-
-// 取消分配相关
-const showUnassignHeadsetModal = ref(false); const unassignHeadsetTarget = ref<HeadsetDevice | null>(null)
-
-function handleAllocHeadset() {
-  allocHeadsetFormRef.value?.validate(e => { if (e) return; const d = headsets.value.find(d => d.id === allocHeadsetForm.value.deviceId); if (d) { d.merchant = allocHeadsetForm.value.merchant; d.store = allocHeadsetForm.value.store } }); showAllocHeadsetModal.value = false; (window as any).$message?.success(`头显已分配给 ${allocHeadsetForm.value.store}`) }
-
-function confirmUnassignHeadset() {
-  const row = unassignHeadsetTarget.value; if (!row) return
-  row.merchant = '--'; row.store = '--'; row.boundHostId = null
-  showUnassignHeadsetModal.value = false; unassignHeadsetTarget.value = null
-  ;(window as any).$message?.info(`已取消分配：${row.name}`)
-}
-
-function openEditHeadset(row: HeadsetDevice) { editHeadsetForm.value = { id: row.id, name: row.name, model: row.model, sn: row.sn, firmware: row.firmware, status: row.status }; showEditHeadsetModal.value = true }
-function handleEditHeadset() {
-  const idx = headsets.value.findIndex(d => d.id === editHeadsetForm.value.id)
-  if (idx !== -1) { headsets.value[idx] = { ...headsets.value[idx], ...editHeadsetForm.value }; (window as any).$message?.success('头显信息已更新') }
-  showEditHeadsetModal.value = false
-}
-
-function handleBindHost() {
-  const d = headsets.value.find(d => d.id === bindHostForm.value.headsetId)
-  if (d) { d.boundHostId = bindHostForm.value.hostId; (window as any).$message?.success(`已绑定到主机 M-${String(bindHostForm.value.hostId).padStart(2,'0')}`) }
-  showBindHostModal.value = false
+  const m = statusTagMap[s] || { type:'default', label:'未知' }
+  return h(NTag, { size:'small', type: m.type }, { default: () => m.label })
 }
 
 const headsetColumns = [
@@ -557,27 +498,54 @@ const headsetColumns = [
   { title: '绑定主机', key: 'boundHostId', width: 90, align:'center' as const, render: (row: HeadsetDevice) => row.boundHostId ? h(NTag, { size:'small', type:'success' }, { default: () => `M-${String(row.boundHostId).padStart(2,'0')}` }) : h(NTag, { size:'small', type:'default' }, { default: () => '未绑定' }) },
   { title: '状态', key: 'status', width: 80, align:'center' as const, render: (row: HeadsetDevice) => hsStatusRender(row.status) },
   { title: '电量', key: 'batteryLevel', width: 70, align:'center' as const, render: (row: HeadsetDevice) => h(NTag, { size:'small', type: row.batteryLevel > 50 ? 'success' : row.batteryLevel > 20 ? 'warning' : 'error' }, { default: () => `${row.batteryLevel}%` }) },
-  { title: 'IPD', key: 'ipd', width: 60, align:'center' as const },
   {
-    title: '操作', key: 'actions', width: 240, align:'center' as const,
+    title: '操作', key: 'actions', width: 200, align:'center' as const,
     render: (row: HeadsetDevice) => {
       const btns: any[] = [
         h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openEditHeadset(row) }, { default: () => '编辑' })
       ]
       if (row.merchant === '--') {
-        btns.push(h(NButton, { size:'tiny', text:true, type:'info', onClick: () => { allocHeadsetForm.value = { deviceId:row.id, deviceName:row.name, sn:row.sn, merchant:'', store:'' }; showAllocHeadsetModal.value = true } }, { default: () => '分配' }))
+        btns.push(h(NButton, { size:'tiny', text:true, type:'info', onClick: () => { allocHeadsetForm.value = { deviceId: row.id, deviceName: row.name, sn: row.sn, merchant: '', store: '' }; showAllocHeadsetModal.value = true } }, { default: () => '分配' }))
       } else {
         btns.push(h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => { unassignHeadsetTarget.value = row; showUnassignHeadsetModal.value = true } }, { default: () => '取消分配' }))
         if (!row.boundHostId) {
-          btns.push(h(NButton, { size:'tiny', text:true, type:'success', onClick: () => { bindHostForm.value = { headsetId:row.id, headsetName:row.name, hostId:null }; showBindHostModal.value = true } }, { default: () => '绑定主机' }))
+          btns.push(h(NButton, { size:'tiny', text:true, type:'success', onClick: () => { bindHostForm.value = { headsetId: row.id, headsetName: row.name, hostId: null }; showBindHostModal.value = true } }, { default: () => '绑定' }))
         } else {
-          btns.push(h(NButton, { size:'tiny', text:true, type:'error', onClick: () => { row.boundHostId = null; (window as any).$message?.info('已解除主机绑定') } }, { default: () => '解绑' }))
+          btns.push(h(NButton, { size:'tiny', text:true, type:'error', onClick: () => { row.boundHostId = null; (window as any).$message?.info('已解除绑定') } }, { default: () => '解绑' }))
         }
       }
       return h('div', { style:'display:flex;align-items:center;gap:4px;justify-content:center;' }, btns)
     }
   },
 ]
+
+const showEditHeadsetModal = ref(false); const editHeadsetForm = ref({ id: 0, name: '', model: '', sn: '', firmware: '', status: 'idle' as HeadsetDevice['status'] })
+const showAllocHeadsetModal = ref(false); const allocHeadsetFormRef = ref<FormInst | null>(null)
+const allocHeadsetForm = ref({ deviceId: 0, deviceName: '', sn: '', merchant: '', store: '' })
+const allocHeadsetRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
+const showBindHostModal = ref(false); const bindHostForm = ref({ headsetId: 0, headsetName: '', hostId: null as number | null })
+const hostOpts = computed(() => hosts.value.filter(h => h.merchant !== '--' && h.status === 'online').map(h => ({ label: `${h.name} (${h.serialNo}) - ${h.store}`, value: h.id })))
+const showUnassignHeadsetModal = ref(false); const unassignHeadsetTarget = ref<HeadsetDevice | null>(null)
+
+function openEditHeadset(row: HeadsetDevice) { editHeadsetForm.value = { id: row.id, name: row.name, model: row.model, sn: row.sn, firmware: row.firmware, status: row.status }; showEditHeadsetModal.value = true }
+function handleEditHeadset() {
+  const idx = headsets.value.findIndex(d => d.id === editHeadsetForm.value.id)
+  if (idx !== -1) { headsets.value[idx] = { ...headsets.value[idx], ...editHeadsetForm.value }; (window as any).$message?.success('头显信息已更新') }
+  showEditHeadsetModal.value = false
+}
+function handleAllocHeadset() {
+  allocHeadsetFormRef.value?.validate(e => { if (e) return; const d = headsets.value.find(d => d.id === allocHeadsetForm.value.deviceId); if (d) { d.merchant = allocHeadsetForm.value.merchant; d.store = allocHeadsetForm.value.store } }); showAllocHeadsetModal.value = false; (window as any).$message?.success(`头显已分配给 ${allocHeadsetForm.value.store}`) }
+function confirmUnassignHeadset() {
+  const row = unassignHeadsetTarget.value; if (!row) return
+  row.merchant = '--'; row.store = '--'; row.boundHostId = null
+  showUnassignHeadsetModal.value = false; unassignHeadsetTarget.value = null
+  ;(window as any).$message?.info(`已取消分配：${row.name}`)
+}
+function handleBindHost() {
+  const d = headsets.value.find(d => d.id === bindHostForm.value.headsetId)
+  if (d) { d.boundHostId = bindHostForm.value.hostId; (window as any).$message?.success(`已绑定到主机 M-${String(bindHostForm.value.hostId).padStart(2,'0')}`) }
+  showBindHostModal.value = false
+}
 
 const showAddHeadsetModal = ref(false); const addHeadsetFormRef = ref<FormInst | null>(null)
 const addHeadsetForm = ref({ name: '', model: '', sn: '', firmware: '', notes: '' })
@@ -587,148 +555,59 @@ function handleAddHeadset() {
 }
 
 // ─── OTA 升级 ──────────────────────────────────────
-interface OtaDevice { id: number; name: string; serialNo: string; status: 'pending' | 'upgrading' | 'done' | 'failed'; resultMsg: string }
 interface OtaPackage {
   id: number; name: string; targetType: string; version: string; size: string;
-  status: 'pending' | 'publishing' | 'done' | 'failed';
-  notes: string; createdAt: string;
-  progress?: number; totalDevices?: number; successCount?: number; failCount?: number;
-  upgradeDevices?: OtaDevice[];
+  status: 'unpublished' | 'published';
+  notes: string; createdAt: string; publishedAt?: string;
 }
 const otaPackages = ref<OtaPackage[]>([
-  { id: 1, name: '主机 Kiosk v2.1.0', targetType: '主机', version: 'v2.1.0', size: '128MB', status: 'done', notes: '修复电机抖动问题，优化性能', createdAt: '2026-04-20', progress: 100, totalDevices: 15, successCount: 15, failCount: 0 },
-  { id: 2, name: 'Pico 固件 v5.5.0', targetType: '头显', version: 'v5.5.0', size: '96MB', status: 'publishing', notes: '新增摇杆校准功能，修复蓝牙断连', createdAt: '2026-05-01', progress: 60, totalDevices: 20, successCount: 11, failCount: 1 },
-  { id: 3, name: '安全补丁 v3.0.1', targetType: '全部', version: 'v3.0.1', size: '52MB', status: 'pending', notes: '安全漏洞修复', createdAt: '2026-05-03' },
+  { id: 1, name: '主机 Kiosk v2.1.0', targetType: '主机', version: 'v2.1.0', size: '128MB', status: 'published', notes: '修复电机抖动问题，优化性能', createdAt: '2026-04-20', publishedAt: '2026-04-20 10:30' },
+  { id: 2, name: 'Pico 固件 v5.5.0', targetType: '头显', version: 'v5.5.0', size: '96MB', status: 'unpublished', notes: '新增摇杆校准功能，修复蓝牙断连', createdAt: '2026-05-01' },
 ])
+
+const otaFilterType = ref<string | null>(null)
+const otaFilterOpts = [{ label: '主机', value: '主机' }, { label: '头显', value: '头显' }]
+const filteredOtaPackages = computed(() => {
+  if (!otaFilterType.value) return otaPackages.value
+  return otaPackages.value.filter(p => p.targetType === otaFilterType.value)
+})
+
+const otaStatusMap: Record<string, { type: any; label: string }> = { unpublished: { type: 'info', label: '未发布' }, published: { type: 'success', label: '已发布' } }
 
 const otaColumns = [
   { title: '升级包名称', key: 'name', minWidth: 180 }, { title: '目标', key: 'targetType', width: 80 }, { title: '版本', key: 'version', width: 80 },
   { title: '大小', key: 'size', width: 80, align:'center' as const },
-  { title: '状态', key: 'status', width: 120, align:'center' as const, render: (row: OtaPackage) => {
-    const m: Record<string,any> = { pending:{type:'info',label:'待发布'}, publishing:{type:'warning',label:'发布中'}, done:{type:'success',label:'已完成'}, failed:{type:'error',label:'失败'} };
-    const base = m[row.status] || m.pending;
-    if (row.status === 'publishing' && row.progress !== undefined) {
-      return h('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:2px;' }, [
-        h(NTag, { size:'small', type: base.type }, { default: () => base.label }),
-        h('span', { style: 'font-size:10px;color:#999;' }, `${row.progress}%`),
-      ])
-    }
-    return h(NTag, { size:'small', type: base.type }, { default: () => base.label })
+  { title: '状态', key: 'status', width: 100, align:'center' as const, render: (row: OtaPackage) => {
+    const m = otaStatusMap[row.status] || otaStatusMap.unpublished
+    return h(NTag, { size:'small', type: m.type }, { default: () => m.label })
   }},
-  { title: '上传时间', key: 'createdAt', width: 110 },
+  { title: '发布时间', key: 'publishedAt', width: 140, render: (row: OtaPackage) => row.publishedAt || '--' },
+  { title: '创建时间', key: 'createdAt', width: 110 },
   { title: '操作', key: 'actions', width: 90, align:'center' as const, render: (row: OtaPackage) => {
-    if (row.status === 'pending') return h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openOtaDetail(row) }, { default: () => '发布' })
-    if (row.status === 'publishing') return h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => openOtaDetail(row) }, { default: () => '进度' })
-    if (row.status === 'failed') return h(NButton, { size:'tiny', text:true, type:'error', onClick: () => openOtaDetail(row) }, { default: () => '重试' })
+    if (row.status === 'unpublished') return h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openOtaDetail(row) }, { default: () => '发布' })
     return h(NButton, { size:'tiny', text:true, type:'info', onClick: () => openOtaDetail(row) }, { default: () => '详情' })
   }},
 ]
+
 const showOtaModal = ref(false); const otaFormRef = ref<FormInst | null>(null)
 const otaForm = ref({ name: '', targetType: '', version: '', notes: '', file: null as any })
 const otaRules: FormRules = { name: { required: true, message: '请输入升级包名称', trigger: 'blur' }, targetType: { required: true, message: '请选择目标设备', trigger: 'change' }, version: { required: true, message: '请输入版本号', trigger: 'blur' } }
-function handleUploadOta() { otaFormRef.value?.validate(e => { if (e) return; otaPackages.value.unshift({ id: Date.now(), name: otaForm.value.name, targetType: otaForm.value.targetType, version: otaForm.value.version, size: '--', status: 'pending', notes: otaForm.value.notes, createdAt: new Date().toISOString().slice(0,10) }); showOtaModal.value = false; otaForm.value = { name:'', targetType:'', version:'', notes:'', file:null }; (window as any).$message?.success('升级包已上传') }) }
+function handleUploadOta() { otaFormRef.value?.validate(e => { if (e) return; otaPackages.value.unshift({ id: Date.now(), name: otaForm.value.name, targetType: otaForm.value.targetType, version: otaForm.value.version, size: '--', status: 'unpublished', notes: otaForm.value.notes, createdAt: new Date().toISOString().slice(0,10) }); showOtaModal.value = false; otaForm.value = { name:'', targetType:'', version:'', notes:'', file:null }; (window as any).$message?.success('升级包已上传') }) }
 
 // OTA 详情相关
 const showOtaDetailModal = ref(false)
-const showOtaHistoryModal = ref(false)
 const currentOtaPackage = ref<OtaPackage | null>(null)
-const selectedTargetDevices = ref<string[]>([])
-let otaPublishTimer: ReturnType<typeof setInterval> | null = null
-
-const otaDeviceColumns = [
-  { title: '设备名称', key: 'name', minWidth: 140 }, { title: '编号', key: 'serialNo', width: 110 },
-  { title: '状态', key: 'status', width: 90, align:'center' as const, render: (row: OtaDevice) => {
-    const m: Record<string,any> = { pending:{type:'default',label:'待升级'}, upgrading:{type:'warning',label:'升级中'}, done:{type:'success',label:'成功'}, failed:{type:'error',label:'失败'} }
-    return h(NTag, { size:'small', type: m[row.status]?.type }, { default: () => m[row.status]?.label })
-  }},
-  { title: '结果', key: 'resultMsg', render: (row: OtaDevice) => row.resultMsg || '--' },
-]
-
-const otaHistory = ref([
-  { id: 1, name: '主机 Kiosk v2.1.0', version: 'v2.1.0', targetType: '主机', totalDevices: 15, successCount: 15, failCount: 0, publishedAt: '2026-04-20 10:30', duration: '5分22秒' },
-  { id: 2, name: 'Pico 固件 v5.4.2', version: 'v5.4.2', targetType: '头显', totalDevices: 18, successCount: 17, failCount: 1, publishedAt: '2026-04-15 14:20', duration: '8分45秒' },
-])
-const otaHistoryColumns = [
-  { title: '升级包', key: 'name', minWidth: 160 }, { title: '版本', key: 'version', width: 80 },
-  { title: '目标', key: 'targetType', width: 70 }, { title: '总设备', key: 'totalDevices', width: 70, align:'center' as const },
-  { title: '成功', key: 'successCount', width: 60, align:'center' as const, render: (r: any) => h('span', { style: 'color:#22c55e;' }, r.successCount) },
-  { title: '失败', key: 'failCount', width: 60, align:'center' as const, render: (r: any) => h('span', { style: r.failCount > 0 ? 'color:#ef4444;' : 'color:#999;' }, r.failCount) },
-  { title: '发布时间', key: 'publishedAt', width: 140 }, { title: '耗时', key: 'duration', width: 80 },
-]
 
 function openOtaDetail(row: OtaPackage) {
   currentOtaPackage.value = row
-  selectedTargetDevices.value = []
   showOtaDetailModal.value = true
 }
 
-function startOtaPublish() {
+function publishOtaPackage() {
   if (!currentOtaPackage.value) return
-  if (selectedTargetDevices.value.length === 0) {
-    ;(window as any).$message?.warning('请选择至少一个推送范围')
-    return
-  }
-  const pkg = currentOtaPackage.value
-  pkg.status = 'publishing'
-  pkg.progress = 0
-  const baseCount = selectedTargetDevices.value.includes('host_all') || selectedTargetDevices.value.includes('host_online') ? 15 : 0
-  const headsetCount = selectedTargetDevices.value.includes('headset_all') || selectedTargetDevices.value.includes('headset_online') ? 20 : 0
-  pkg.totalDevices = baseCount + headsetCount
-  pkg.successCount = 0
-  pkg.failCount = 0
-  pkg.upgradeDevices = []
-  for (let i = 0; i < baseCount; i++) pkg.upgradeDevices.push({ id: i+1, name: `主机 #${String(i+1).padStart(2,'0')}`, serialNo: `PCT-${String(i+1).padStart(3,'0')}`, status: 'pending', resultMsg: '' })
-  for (let i = 0; i < headsetCount; i++) pkg.upgradeDevices.push({ id: baseCount+i+1, name: `Pico 头显 #${String(i+1).padStart(2,'0')}`, serialNo: `SN${100000+baseCount+i+1}`, status: 'pending', resultMsg: '' })
-
-  let progress = 0
-  otaPublishTimer = setInterval(() => {
-    progress += Math.floor(Math.random() * 8) + 3
-    if (progress >= 100) {
-      progress = 100
-      pkg.progress = 100
-      pkg.upgradeDevices?.forEach(d => { if (d.status !== 'failed') { d.status = 'done'; d.resultMsg = '升级成功' } })
-      pkg.successCount = pkg.upgradeDevices?.filter(d => d.status === 'done').length || 0
-      pkg.failCount = pkg.upgradeDevices?.filter(d => d.status === 'failed').length || 0
-      pkg.status = 'done'
-      clearInterval(otaPublishTimer!)
-      otaPublishTimer = null
-      ;(window as any).$message?.success('升级发布完成')
-    } else {
-      pkg.progress = progress
-      pkg.upgradeDevices?.forEach(d => {
-        if (d.status === 'pending' && Math.random() < 0.15) {
-          d.status = Math.random() < 0.95 ? 'upgrading' : 'failed'
-          if (d.status === 'failed') d.resultMsg = '下载超时'
-        }
-        if (d.status === 'upgrading' && Math.random() < 0.2) {
-          d.status = Math.random() < 0.9 ? 'done' : 'failed'
-          d.resultMsg = d.status === 'done' ? '升级成功' : '安装失败'
-        }
-      })
-      pkg.successCount = pkg.upgradeDevices?.filter(d => d.status === 'done').length || 0
-      pkg.failCount = pkg.upgradeDevices?.filter(d => d.status === 'failed').length || 0
-    }
-  }, 500)
-}
-
-function cancelOtaPublish() {
-  if (otaPublishTimer) { clearInterval(otaPublishTimer); otaPublishTimer = null }
-  if (currentOtaPackage.value) {
-    currentOtaPackage.value.status = 'pending'
-    currentOtaPackage.value.upgradeDevices?.forEach(d => { if (d.status === 'upgrading') { d.status = 'failed'; d.resultMsg = '已取消' } })
-  }
-  ;(window as any).$message?.info('发布已取消')
-}
-
-function retryOtaPublish() {
-  if (!currentOtaPackage.value) return
-  selectedTargetDevices.value = ['host_online']
-  startOtaPublish()
-}
-
-function showOtaHistory() {
-  showOtaDetailModal.value = false
-  showOtaHistoryModal.value = true
+  currentOtaPackage.value.status = 'published'
+  currentOtaPackage.value.publishedAt = new Date().toLocaleString('zh-CN', { hour12: false })
+  ;(window as any).$message?.success('升级包已发布，设备联网后将自动拉取升级')
 }
 </script>
 
@@ -746,13 +625,6 @@ function showOtaHistory() {
 .stat-lbl { font-size:12px; color:var(--text-muted); margin-top:4px; }
 
 /* OTA 升级详情 */
-.ota-detail { min-height: 200px; }
+.ota-detail { min-height: 120px; }
 .ota-detail .n-descriptions { margin-bottom: 16px; }
-.publish-progress { background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-.progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #64748b; }
-.progress-stats { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #64748b; }
-.target-select { margin-bottom: 16px; }
-.select-title { font-size: 13px; color: #64748b; margin-bottom: 8px; }
-.device-list { margin-top: 16px; }
-.list-title { font-size: 13px; color: #64748b; margin-bottom: 8px; }
 </style>
