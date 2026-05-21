@@ -239,6 +239,7 @@ const menuOptions: MenuOption[] = [
       { label: '游戏题材', key: '/platform/game-categories' },
       { label: '内容分发', key: '/platform/content' },
       { label: '小程序Banner', key: '/platform/banners' },
+      { label: '生日会主题资源', key: '/platform/birthday-theme' },
     ]
   },
   {

@@ -32,6 +32,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'games/:id', name: 'PlatformGameDetail', component: () => import('../views/platform/GameDetail.vue'), meta: { title: '游戏详情' } },
       { path: 'content', name: 'PlatformContent', component: () => import('../views/platform/ContentDistribute.vue'), meta: { title: '内容分发' } },
       { path: 'banners', name: 'PlatformBanners', component: () => import('../views/platform/BannerManage.vue'), meta: { title: 'Banner 管理' } },
+      { path: 'birthday-theme', name: 'PlatformBirthdayTheme', component: () => import('../views/platform/BirthdayThemeResource.vue'), meta: { title: '生日会主题资源' } },
       { path: 'game-categories', name: 'PlatformGameCategories', component: () => import('../views/platform/GameThemes.vue'), meta: { title: '游戏题材' } },
       { path: 'users', name: 'PlatformUsers', component: () => import('../views/platform/UserList.vue'), meta: { title: '账号管理' } },
       { path: 'users/roles', name: 'PlatformUsersRoles', component: () => import('../views/platform/RolePermission.vue'), meta: { title: '角色权限' } },
@@ -170,6 +171,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'account/recharge', name: 'ShopAccountRecharge', component: () => import('../views/shop/AccountRecharge.vue'), meta: { title: '运营账户充值' } },
       { path: 'account/game-bean/recharge', name: 'ShopGameBeanRecharge', component: () => import('../views/shop/GameBeanRecharge.vue'), meta: { title: '游戏豆充值' } },
       // 用户设置
+      { path: 'birthday-theme', name: 'ShopBirthdayTheme', component: () => import('../views/shop/BirthdayTheme.vue'), meta: { title: '生日会主题资源' } },
       { path: 'account/shop-info', name: 'ShopAccountShopInfo', component: () => import('../views/shop/account/ShopInfo.vue'), meta: { title: '商家信息' } },
       { path: 'account/profile', name: 'ShopAccountProfile', component: () => import('../views/shop/account/Profile.vue'), meta: { title: '个人信息' } },
       { path: 'account/bind-wechat', redirect: '/shop/account/profile' },

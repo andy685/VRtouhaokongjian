@@ -147,7 +147,7 @@ import {
   PersonAddOutline, LogOutOutline, PersonOutline,
   HelpCircleOutline, HomeOutline,
   MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
-  ChevronDownOutline, ConstructOutline
+  ChevronDownOutline, ConstructOutline, MusicalNotesOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -265,6 +265,14 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '结算记录', key: '/shop/settlement' },
       { label: '对账中心', key: '/shop/reconciliation' },
+    ]
+  },
+  {
+    label: '内容管理',
+    key: 'content-group',
+    icon: () => h(NIcon, { component: MusicalNotesOutline }),
+    children: [
+      { label: '生日会主题资源', key: '/shop/birthday-theme' },
     ]
   },
   {
