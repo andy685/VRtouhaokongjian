@@ -12,20 +12,26 @@
     <!-- 表单区域 -->
     <div class="form-card">
       <n-form ref="formRef" :model="formData" :rules="formRules" label-placement="left" :label-width="80" size="large">
+        <!-- 基础信息只读提示 -->
+        <div class="readonly-hint">
+          <n-icon :component="InformationCircleOutline" size="16" />
+          <span>以下为基础信息，全局通用，不可修改</span>
+        </div>
+
         <n-form-item label="会员名：">
-          <n-input v-model:value="formData.name" placeholder="" />
+          <n-input v-model:value="formData.name" disabled />
         </n-form-item>
 
         <n-form-item label="手机号：" path="phone">
-          <n-input v-model:value="formData.phone" placeholder="" />
+          <n-input v-model:value="formData.phone" disabled />
         </n-form-item>
 
         <n-form-item label="昵称：">
-          <n-input v-model:value="formData.nickname" placeholder="" />
+          <n-input v-model:value="formData.nickname" disabled />
         </n-form-item>
 
         <n-form-item label="性别：" path="gender">
-          <n-select v-model:value="formData.gender" placeholder="请选择" :options="genderOptions" />
+          <n-select v-model:value="formData.gender" placeholder="请选择" :options="genderOptions" disabled />
         </n-form-item>
 
         <n-form-item label="开卡店铺：">
@@ -55,8 +61,33 @@
           <n-input-number v-model:value="formData.prepaidTimes" :min="0" style="flex:1;" disabled />
         </n-form-item>
 
-        <n-form-item label="游戏币：">
-          <n-input-number v-model:value="formData.points" :min="0" :precision="2" style="flex:1;">
+        <n-form-item label="当前游戏币：">
+          <n-input-number :value="formData.points" :precision="2" style="flex:1;" disabled>
+            <template #suffix>分</template>
+          </n-input-number>
+        </n-form-item>
+
+        <n-form-item label="调整类型：">
+          <n-radio-group v-model:value="formData.pointAdjustType">
+            <n-radio value="add">增加</n-radio>
+            <n-radio value="deduct">减少</n-radio>
+          </n-radio-group>
+        </n-form-item>
+
+        <n-form-item label="调整数量：">
+          <n-input-number
+            v-model:value="formData.pointAdjustAmount"
+            :min="0"
+            :precision="2"
+            :disabled="!formData.pointAdjustType"
+            style="flex:1;"
+          >
+            <template #suffix>分</template>
+          </n-input-number>
+        </n-form-item>
+
+        <n-form-item label="调整后：">
+          <n-input-number :value="adjustedPoints" :precision="2" style="flex:1;" disabled>
             <template #suffix>分</template>
           </n-input-number>
         </n-form-item>
@@ -79,13 +110,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   NButton, NIcon, NForm, NFormItem, NInput,
   NRadioGroup, NRadio, NSelect, NInputNumber,NDivider,
 } from 'naive-ui'
-import { ArrowBackOutline } from '@vicons/ionicons5'
+import { ArrowBackOutline, InformationCircleOutline } from '@vicons/ionicons5'
 
 const router = useRouter()
 const route = useRoute()
@@ -117,13 +148,25 @@ const formData = reactive({
   prepaidAmount: null as number | null,
   prepaidTimes: null as number | null,
   points: null as number | null,
+  pointAdjustType: null as 'add' | 'deduct' | null,
+  pointAdjustAmount: null as number | null,
   remark: '',
+})
+
+// 调整后的游戏币
+const adjustedPoints = computed(() => {
+  const current = formData.points ?? 0
+  const amount = formData.pointAdjustAmount ?? 0
+  if (!formData.pointAdjustType) return current
+  if (formData.pointAdjustType === 'add') {
+    return current + amount
+  } else {
+    return Math.max(0, current - amount)
+  }
 })
 
 // 校验规则
 const formRules = {
-  phone: { required: true, message: '请输入手机号', trigger: 'blur' },
-  gender: { required: true, message: '请选择性别', trigger: 'change' },
   level: { required: true, message: '请选择会员等级', trigger: 'change' },
 }
 
@@ -157,7 +200,17 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
     saving.value = true
-    console.log('保存数据:', formData)
+    // 计算最终游戏币值
+    const finalPoints = adjustedPoints.value
+    const saveData = {
+      level: formData.level,
+      status: formData.status,
+      remark: formData.remark,
+      points: finalPoints,
+      pointAdjustType: formData.pointAdjustType,
+      pointAdjustAmount: formData.pointAdjustAmount,
+    }
+    console.log('保存数据:', saveData)
     setTimeout(() => {
       saving.value = false
       goBack()
@@ -184,6 +237,24 @@ async function handleSave() {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.readonly-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  background: var(--warning-color-suppl, #fff8e1);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--warning-color-suppl, #ffe082);
+}
+
+.readonly-hint .n-icon {
+  color: var(--warning-color, #f0a020);
+  flex-shrink: 0;
 }
 
 .form-card {
