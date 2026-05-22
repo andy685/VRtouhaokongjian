@@ -30,21 +30,6 @@
       </n-space>
     </div>
 
-    <!-- 统计汇总 -->
-    <div class="summary-bar">
-      <span class="summary-item">共 <strong>{{ stats.totalCount }}</strong> 名会员</span>
-      <n-divider vertical />
-      <span class="summary-item">累计储值：<strong class="highlight">{{ stats.totalDeposit.toLocaleString() }}</strong></span>
-      <n-divider vertical />
-      <span class="summary-item">累计游戏币：<strong class="highlight coin">{{ stats.totalCoins.toLocaleString() }}</strong></span>
-      <n-divider vertical />
-      <span class="summary-item">累计消费：<strong class="highlight money">{{ stats.totalSpent.toLocaleString() }}</strong></span>
-      <n-divider vertical />
-      <span class="summary-item">活跃：<strong class="highlight active">{{ stats.activeCount }}</strong></span>
-      <n-divider vertical />
-      <span class="summary-item">流失：<strong class="highlight churned">{{ stats.churnedCount }}</strong></span>
-    </div>
-
     <!-- 数据表格 -->
     <div class="table-card">
       <n-data-table
