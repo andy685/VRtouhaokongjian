@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect x="0" y="0" width="200" height="200" fill="#f5f7fa"/>
+  <text x="100" y="100" font-family="Arial, sans-serif" font-size="14" fill="#999" text-anchor="middle">支付二维码</text>
+  <text x="100" y="120" font-family="Arial, sans-serif" font-size="12" fill="#ccc" text-anchor="middle">扫码支付</text>
+</svg>

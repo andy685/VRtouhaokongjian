@@ -1,0 +1,48 @@
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontFamily': 'Microsoft YaHei, Arial' }}}%%
+flowchart LR
+    subgraph title[" 头号空间 · 资金流通全景图 "]
+        direction LR
+        c["
+          <b>C端用户</b>
+          游客 / 会员
+          ────────────
+          到店消费 VR 体验
+          现金 · 微信 · 支付宝
+        "]:::cend
+
+        b["
+          <b>商家 / 门店</b>
+          收银 · 运营
+          ────────────
+          收款 100% 归商家
+          消耗游戏豆启动 VR
+        "]:::bend
+
+        p["
+          <b>平台运营</b>
+          超管 · 财务
+          ────────────
+          配发游戏豆
+          核心营收来源
+        "]:::platform
+
+        a["
+          <b>代理商</b>
+          城市 · 区域 · 省
+          ────────────
+          按采购额分润
+          拉卡拉打款
+        "]:::agent
+
+        c -->|"① 消费付款
+        微信/支付宝/现金"| b
+        b -->|"② 采购游戏豆
+        ¥1 / 豆"| p
+        p -->|"③ 分润 T+1 月结
+        阶梯系数 3% ~ 12%"| a
+    end
+
+    classDef cend fill:#1e40af,stroke:#3b82f6,color:#fff,stroke-width:2px
+    classDef bend fill:#92400e,stroke:#f59e0b,color:#fff,stroke-width:2px
+    classDef platform fill:#064e3b,stroke:#10b981,color:#fff,stroke-width:2px
+    classDef agent fill:#4c1d95,stroke:#8b5cf6,color:#fff,stroke-width:2px

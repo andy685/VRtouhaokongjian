@@ -1,0 +1,90 @@
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+/* Element Plus 主题覆盖 */
+.el-button--primary {
+  --el-button-bg-color: #409eff;
+  --el-button-border-color: #409eff;
+}
+
+.el-button--primary:hover {
+  --el-button-hover-bg-color: #66b1ff;
+  --el-button-hover-border-color: #66b1ff;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 页面容器 */
+.page-container {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 卡片hover效果 */
+.el-card {
+  transition: box-shadow 0.3s;
+}
+
+.el-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 表格行hover */
+.el-table__row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.el-table__row:hover > td {
+  background-color: #f5f7fa !important;
+}
+
+/* 输入框聚焦样式 */
+.el-input__wrapper:focus-within {
+  box-shadow: 0 0 0 1px #409eff inset;
+}

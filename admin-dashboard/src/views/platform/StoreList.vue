@@ -223,24 +223,6 @@
     <!-- 注册规则弹窗 -->
     <n-modal v-model:show="showRegRulesModal" preset="card" title="注册规则设置" style="width: 560px;" :bordered="false">
       <n-form :model="rulesForm" label-placement="left" label-width="120px">
-        <n-form-item label="注册方式">
-          <n-radio-group v-model:value="rulesForm.registerMode">
-            <n-space>
-              <n-radio value="phone">手机号注册</n-radio>
-              <n-radio value="wechat">微信授权注册</n-radio>
-              <n-radio value="both">两者皆可</n-radio>
-            </n-space>
-          </n-radio-group>
-        </n-form-item>
-        <n-form-item label="必填信息">
-          <n-checkbox-group v-model:value="rulesForm.requiredFields">
-            <n-space>
-              <n-checkbox value="name">真实姓名</n-checkbox>
-              <n-checkbox value="birthday">生日</n-checkbox>
-              <n-checkbox value="gender">性别</n-checkbox>
-            </n-space>
-          </n-checkbox-group>
-        </n-form-item>
         <n-form-item label="注册赠送">
           <n-space align="center">
             <n-switch v-model:value="rulesForm.enableGift" />
@@ -275,10 +257,10 @@ import { ref, computed, h, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
-  NForm, NFormItem, NInputNumber, NRadioGroup, NRadio,
+  NForm, NFormItem, NInputNumber,
   NIcon, NDescriptions, NDescriptionsItem, useMessage,
   type FormInst, type FormRules, NDivider, NSwitch,
-  NCheckbox, NCheckboxGroup, NDropdown, NTooltip
+  NDropdown, NTooltip
 } from 'naive-ui'
 import {
   SearchOutline, AddOutline, StorefrontOutline, CheckmarkCircleOutline,
@@ -364,7 +346,7 @@ const columns = [
       const isPayEnabled = row.payStatus === '已开通'
       const moreOptions = [
         {
-          label: isPayEnabled ? '关闭知付' : '开通知付',
+          label: isPayEnabled ? '关闭支付' : '开通支付',
           key: 'pay',
           icon: () => h(NIcon, null, { default: () => h(isPayEnabled ? CloseCircleOutline : CheckmarkCircleOutline) }),
           props: { onClick: () => togglePayStatus(row) }
