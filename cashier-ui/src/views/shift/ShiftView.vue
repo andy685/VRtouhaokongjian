@@ -2,7 +2,7 @@
   <div class="page-container">
     <el-card>
       <template #header>
-        <span>交班结算</span>
+        <span>交班对账</span>
       </template>
       
       <div class="shift-info">

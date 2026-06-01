@@ -10,6 +10,7 @@
           <template #prefix><n-icon :component="SearchOutline" /></template>
         </n-input>
         <n-select v-model:value="filterStatus" placeholder="全部状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
+        <n-select v-model:value="filterCp" :options="cpOptions" placeholder="全部供应商" size="small" style="width: 140px;" clearable />
         <n-select v-model:value="sortField" :options="sortOptions" size="small" style="width: 140px;" />
         <n-button size="small" :type="sortAsc ? 'default' : 'primary'" secondary @click="sortAsc = !sortAsc">
           <template #icon><n-icon :component="sortAsc ? ArrowUpOutline : ArrowDownOutline" /></template>
@@ -82,6 +83,7 @@
             <span>🕐 {{ game.duration }}分钟</span>
             <span>🎮 {{ game.playCount }}次体验</span>
             <span v-if="game.gameBeanCost">🫘 {{ game.gameBeanCost }}豆/次</span>
+            <span class="cp-tag">{{ game.cpName }}</span>
           </div>
           <div class="game-rating">
             <n-rate :value="game.rating" size="small" readonly />
@@ -125,8 +127,19 @@ import {
 const message = useMessage()
 const searchText = ref('')
 const filterStatus = ref<string | null>(null)
+const filterCp = ref<string | null>(null)
 const sortField = ref('sortOrder')
 const sortAsc = ref(true)
+
+const cpOptions = [
+  { label: '极境互动科技', value: '极境互动科技' },
+  { label: '闪耀游戏工作室', value: '闪耀游戏工作室' },
+  { label: '乐游网络', value: '乐游网络' },
+  { label: '星际科技', value: '星际科技' },
+  { label: '未来幻境', value: '未来幻境' },
+  { label: '幻视科技', value: '幻视科技' },
+  { label: '星辰游戏', value: '星辰游戏' },
+]
 
 const sortOptions = [
   { label: '排序号', value: 'sortOrder' },
@@ -145,14 +158,14 @@ const statusOptions = [
 ]
 
 const games = ref([
-  { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', playCountNum: 15800, rating: 4.9, sortOrder: 1, recommended: true, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线', tags: ['刺激', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 20, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 10 },
-  { id: 2, name: '恐怖医院', icon: '🏥', duration: 15, playCount: '12.3k', playCountNum: 12300, rating: 4.7, sortOrder: 3, recommended: true, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', status: 'online', statusText: '已上线', tags: ['恐怖', '成人', '沉浸'], runPlatform: 'host', gameBeanCost: 25, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 15 },
-  { id: 3, name: '极速赛车', icon: '🏎️', duration: 8, playCount: '10.5k', playCountNum: 10500, rating: 4.8, sortOrder: 2, recommended: false, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', status: 'online', statusText: '已上线', tags: ['竞速', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 15, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 8 },
-  { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', playCountNum: 8900, rating: 4.6, sortOrder: 4, recommended: false, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'], runPlatform: 'allInOne', gameBeanCost: 10, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 20 },
-  { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', playCountNum: 7200, rating: 4.5, sortOrder: 5, recommended: false, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'], runPlatform: 'allInOne', gameBeanCost: 0, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 12 },
-  { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', playCountNum: 6800, rating: 4.8, sortOrder: 6, recommended: false, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'], runPlatform: 'host', gameBeanCost: 35, gameType: 'standalone', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 30 },
-  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'], runPlatform: 'allInOne', gameBeanCost: 0, gameType: 'online', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 25 },
-  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'], runPlatform: 'allInOne', gameBeanCost: 18, gameType: 'online', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 18 },
+  { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', playCountNum: 15800, rating: 4.9, sortOrder: 1, recommended: true, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线', tags: ['刺激', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 20, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 10, cpName: '极境互动科技' },
+  { id: 2, name: '恐怖医院', icon: '🏥', duration: 15, playCount: '12.3k', playCountNum: 12300, rating: 4.7, sortOrder: 3, recommended: true, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', status: 'online', statusText: '已上线', tags: ['恐怖', '成人', '沉浸'], runPlatform: 'host', gameBeanCost: 25, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 15, cpName: '闪耀游戏工作室' },
+  { id: 3, name: '极速赛车', icon: '🏎️', duration: 8, playCount: '10.5k', playCountNum: 10500, rating: 4.8, sortOrder: 2, recommended: false, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', status: 'online', statusText: '已上线', tags: ['竞速', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 15, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 8, cpName: '乐游网络' },
+  { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', playCountNum: 8900, rating: 4.6, sortOrder: 4, recommended: false, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'], runPlatform: 'allInOne', gameBeanCost: 10, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 20, cpName: '星际科技' },
+  { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', playCountNum: 7200, rating: 4.5, sortOrder: 5, recommended: false, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'], runPlatform: 'allInOne', gameBeanCost: 0, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 12, cpName: '未来幻境' },
+  { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', playCountNum: 6800, rating: 4.8, sortOrder: 6, recommended: false, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'], runPlatform: 'host', gameBeanCost: 35, gameType: 'standalone', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 30, cpName: '幻视科技' },
+  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'], runPlatform: 'allInOne', gameBeanCost: 0, gameType: 'online', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 25, cpName: '极境互动科技' },
+  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'], runPlatform: 'allInOne', gameBeanCost: 18, gameType: 'online', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 18, cpName: '闪耀游戏工作室' },
 ])
 
 function toggleRecommend(game: any) {
@@ -167,6 +180,9 @@ const filteredGames = computed(() => {
   }
   if (filterStatus.value) {
     data = data.filter(g => g.status === filterStatus.value)
+  }
+  if (filterCp.value) {
+    data = data.filter(g => g.cpName === filterCp.value)
   }
   // Sort: recommended always first, then by selected field
   data.sort((a, b) => {
@@ -217,7 +233,8 @@ const filteredGames = computed(() => {
 .cover-hover-actions { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; background: rgba(0,0,0,0.5); }
 .game-cover:hover .cover-hover-actions { opacity: 1; }
 .quick-rec-btn { font-size: 11px; }
-.game-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.game-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; flex-wrap: wrap; align-items: center; }
+.cp-tag { font-size: 11px; color: #3B82F6; background: #EFF6FF; padding: 1px 8px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
 .game-meta-sub { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
 .sub-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; background: #f0f0f0; color: #666; }
 .sub-tag.tag-host { background: #e8f4fd; color: #0284c7; }

@@ -47,13 +47,13 @@ const routes = [
         path: '/sale/checkout-cash',
         name: 'CheckoutCash',
         component: () => import('../views/sale/CheckoutCashView.vue'),
-        meta: { title: '结算-现金', parent: '销售' }
+        meta: { title: '现金收款', parent: '销售' }
       },
       {
         path: '/sale/checkout-online',
         name: 'CheckoutOnline',
         component: () => import('../views/sale/CheckoutOnlineView.vue'),
-        meta: { title: '结算-线上支付', parent: '销售' }
+        meta: { title: '扫码支付', parent: '销售' }
       },
       // 会员模块
       {
@@ -161,37 +161,37 @@ const routes = [
         component: () => import('../views/setting/SettingStaffCardView.vue'),
         meta: { title: '员工卡设置', parent: '设置' }
       },
-      // 结算模块
+      // 收银结果
       {
-        path: '/settlement/cash',
-        name: 'SettlementCash',
+        path: '/result/cash',
+        name: 'ResultCash',
         component: () => import('../views/settlement/CashSettlementView.vue'),
-        meta: { title: '结算-现金' }
+        meta: { title: '现金收款确认' }
       },
       {
-        path: '/settlement/recharge-success',
+        path: '/result/recharge-success',
         name: 'RechargeSuccess',
         component: () => import('../views/settlement/RechargeSuccessView.vue'),
-        meta: { title: '充值成功' }
+        meta: { title: '支付成功' }
       },
       {
-        path: '/settlement/deduct-success',
+        path: '/result/deduct-success',
         name: 'DeductSuccess',
         component: () => import('../views/settlement/DeductSuccessView.vue'),
         meta: { title: '扣费成功' }
       },
-      // 交班结算
+      // 交班
       {
         path: '/shift',
         name: 'Shift',
         component: () => import('../views/shift/ShiftView.vue'),
-        meta: { title: '交班结算' }
+        meta: { title: '交班对账' }
       },
       {
         path: '/shift/next',
         name: 'ShiftNext',
         component: () => import('../views/shift/ShiftNextView.vue'),
-        meta: { title: '交班结算-下一步' }
+        meta: { title: '现金清点' }
       },
       // 日志
       {

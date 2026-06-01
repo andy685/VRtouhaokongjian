@@ -1,7 +1,7 @@
 <template>
   <div class="page-container animate-fade-in">
     <div class="page-header">
-      <h1>游戏分成明细</h1>
+      <h1>内容消耗明细</h1>
       <n-space>
         <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width: 140px;" placeholder="所属店铺" clearable />
         <n-select v-model:value="filmType" :options="filmOptions" size="small" style="width: 120px;" />
@@ -43,7 +43,7 @@
         <n-descriptions-item label="设备">{{ detailRecord?.device }}</n-descriptions-item>
         <n-descriptions-item label="会员">{{ detailRecord?.member }}</n-descriptions-item>
         <n-descriptions-item label="播放时间">{{ detailRecord?.playTime }}</n-descriptions-item>
-        <n-descriptions-item label="消耗游戏点">{{ detailRecord?.pointsConsumed }}</n-descriptions-item>
+        <n-descriptions-item label="消耗游戏豆">{{ detailRecord?.pointsConsumed }}</n-descriptions-item>
         <n-descriptions-item label="C端售价">¥{{ detailRecord?.salePrice?.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="利润">
           <span style="color: #10B981; font-weight: 500;">¥{{ detailRecord?.profit?.toFixed(2) }}</span>
@@ -120,9 +120,9 @@ const columns: DataTableColumns<FilmItem> = [
     h(NTag, { type: row.type === 'VR影片' ? 'info' : 'success', size: 'small' },
       { default: () => row.type })
   },
-  { title: '单价（游戏点/次）', key: 'pointPrice', width: 140, align: 'center', render: (row) => `${row.pointPrice}` },
+  { title: '单价（游戏豆/次）', key: 'pointPrice', width: 140, align: 'center', render: (row) => `${row.pointPrice}` },
   { title: '播放次数', key: 'plays', width: 100, align: 'center' },
-  { title: '消耗游戏点', key: 'pointsConsumed', width: 120, align: 'center', render: (row) => `${row.pointsConsumed.toLocaleString()}` },
+  { title: '消耗游戏豆', key: 'pointsConsumed', width: 120, align: 'center', render: (row) => `${row.pointsConsumed.toLocaleString()}` },
   { title: 'C端售价', key: 'salePrice', width: 110, align: 'center', render: (row) => `¥${row.salePrice.toFixed(2)}` },
   { title: '商户收入', key: 'revenue', width: 120, align: 'center', render: (row) => `¥${row.revenue.toLocaleString()}` },
   { title: '利润', key: 'profit', width: 120, align: 'center', render: (row) =>
@@ -145,7 +145,7 @@ const detailColumns: DataTableColumns<PlayRecord> = [
   { title: '设备', key: 'device', width: 150, align: 'center' },
   { title: '会员', key: 'member', width: 140, align: 'center' },
   { title: '播放时间', key: 'playTime', width: 160, align: 'center' },
-  { title: '消耗游戏点', key: 'pointsConsumed', width: 110, align: 'center' },
+  { title: '消耗游戏豆', key: 'pointsConsumed', width: 110, align: 'center' },
   { title: 'C端售价', key: 'salePrice', width: 100, align: 'center', render: (row) => `¥${row.salePrice.toFixed(2)}` },
   { title: '利润', key: 'profit', width: 100, align: 'center', render: (row) =>
     h('span', { style: 'color: #10B981; font-weight: 500;' }, `¥${row.profit.toFixed(2)}`)

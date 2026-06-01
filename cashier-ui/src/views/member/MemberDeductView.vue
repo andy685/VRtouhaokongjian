@@ -89,6 +89,6 @@ const selectMember = (row) => {
 
 const handleDeduct = () => {
   ElMessage.success('扣费成功')
-  router.push('/settlement/deduct-success')
+  router.push('/result/deduct-success')
 }
 </script>

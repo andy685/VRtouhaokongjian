@@ -2,7 +2,7 @@
   <div class="checkout-page">
     <el-card class="checkout-card">
       <div class="checkout-header">
-        <h2>结算 - 线上支付</h2>
+        <h2>扫码支付</h2>
       </div>
       
       <div class="qr-section">
@@ -54,7 +54,7 @@ const formattedTime = computed(() => {
 })
 
 const handleComplete = () => {
-  router.push('/settlement/recharge-success')
+  router.push('/result/recharge-success')
 }
 </script>
 

@@ -2,7 +2,7 @@
   <div class="page-container">
     <el-card>
       <template #header>
-        <span>结算 - 现金支付</span>
+        <span>现金收款确认</span>
       </template>
       <div class="settlement-info">
         <div class="info-row">
@@ -34,7 +34,7 @@ const router = useRouter()
 const received = ref(204)
 
 const complete = () => {
-  router.push('/settlement/recharge-success')
+  router.push('/result/recharge-success')
 }
 </script>
 

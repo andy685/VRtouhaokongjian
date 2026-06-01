@@ -126,6 +126,10 @@
               <label>游戏名称</label>
               <n-input v-model:value="gameData.name" placeholder="请输入游戏名称" size="large" />
             </div>
+            <div class="form-group">
+              <label>归属供应商</label>
+              <n-select v-model:value="gameData.cpName" :options="cpOptions" placeholder="选择供应商（可选）" clearable filterable />
+            </div>
             <div class="form-row-2">
               <div class="form-group">
                 <label>游戏题材 <n-text depth="3">（多选，由总运营后台统一管理）</n-text></label>
@@ -380,6 +384,17 @@ const saving = ref(false)
 const gameId = computed(() => route.params.id as string | undefined)
 const isEdit = computed(() => !!gameId.value && gameId.value !== 'add')
 
+// 供应商选项
+const cpOptions = [
+  { label: '极境互动科技', value: '极境互动科技' },
+  { label: '闪耀游戏工作室', value: '闪耀游戏工作室' },
+  { label: '乐游网络', value: '乐游网络' },
+  { label: '星际科技', value: '星际科技' },
+  { label: '未来幻境', value: '未来幻境' },
+  { label: '幻视科技', value: '幻视科技' },
+  { label: '星辰游戏', value: '星辰游戏' },
+]
+
 // 标签选项
 const tagOptions = [
   { label: '惊悚恐怖', value: '惊悚恐怖' },
@@ -502,6 +517,7 @@ const gameData = ref({
   status: 'draft',
   sortOrder: 10,
   recommended: false,
+  cpName: '' as string,
 
   // ===== 运营配置（v1.5 新增） =====
   // 运行平台：host-主机游戏（串流到头显）, allInOne-VR头显一体机

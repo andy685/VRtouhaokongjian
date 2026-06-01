@@ -2,7 +2,7 @@
   <div class="page-container">
     <el-card>
       <template #header>
-        <span>交班结算 - 现金清点</span>
+        <span>交班对账 - 现金清点</span>
       </template>
       
       <div class="cash-count">

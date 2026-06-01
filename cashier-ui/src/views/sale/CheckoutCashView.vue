@@ -2,7 +2,7 @@
   <div class="checkout-page">
     <el-card class="checkout-card">
       <div class="checkout-header">
-        <h2>结算 - 现金支付</h2>
+        <h2>现金收款</h2>
       </div>
       
       <div class="order-info">
@@ -69,7 +69,7 @@ const router = useRouter()
 const receivedAmount = ref(204)
 
 const handleComplete = () => {
-  router.push('/settlement/recharge-success')
+  router.push('/result/recharge-success')
 }
 </script>
 

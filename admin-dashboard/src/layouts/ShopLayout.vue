@@ -126,6 +126,16 @@
           <n-tag type="success" size="small" bordered>当前</n-tag>
         </div>
       </div>
+      <div class="role-switch-grid" style="margin-top: 12px;">
+        <div class="role-card" @click="switchToCP">
+          <div class="role-card-icon cp">
+            <n-icon :component="GameControllerOutline" size="32" />
+          </div>
+          <div class="role-card-title">供应商后台</div>
+          <div class="role-card-desc">游戏管理 · 收益数据</div>
+          <n-button size="tiny" secondary>进入</n-button>
+        </div>
+      </div>
     </n-modal>
   </div>
 </template>
@@ -143,7 +153,7 @@ import {
   StatsChartOutline, BagHandleOutline, GiftOutline,
   SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, NotificationsOutline,
-  ServerOutline, StorefrontOutline, BusinessOutline, CashOutline,
+  ServerOutline, StorefrontOutline, BusinessOutline, GameControllerOutline, CashOutline,
   PersonAddOutline, LogOutOutline, PersonOutline,
   HelpCircleOutline, HomeOutline,
   MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
@@ -255,7 +265,7 @@ const menuOptions: MenuOption[] = [
           { label: '活动赠送订单', key: '/shop/gift-order' },
         ]
       },
-      { label: '游戏分成明细', key: '/shop/film-revenue' },
+      { label: '内容消耗明细', key: '/shop/film-revenue' },
     ]
   },
   {
@@ -352,6 +362,10 @@ function switchToAgent() {
   router.push('/agent/dashboard')
 }
 function switchToShop() { showRoleModal.value = false }
+function switchToCP() {
+  showRoleModal.value = false
+  router.push('/cp/dashboard')
+}
 function quickAction(action: string) {
   if (action === 'cashier') console.log('打开收银')
   else if (action === 'member') router.push('/shop/members')
@@ -620,6 +634,7 @@ function renderMenuLabel(option: MenuOption) {
 .role-card-icon.platform { background: linear-gradient(135deg, #3B82F6, #2563EB); }
 .role-card-icon.agent { background: linear-gradient(135deg, #F59E0B, #D97706); }
 .role-card-icon.shop { background: linear-gradient(135deg, #10B981, #059669); }
+.role-card-icon.cp { background: linear-gradient(135deg, #8B5CF6, #6D28D9); }
 
 .role-card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
 .role-card-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }

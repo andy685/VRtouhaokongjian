@@ -4,7 +4,7 @@
       <div class="success-icon">
         <el-icon><CircleCheckFilled /></el-icon>
       </div>
-      <h2>充值成功</h2>
+      <h2>支付成功</h2>
       <div class="amount">¥500</div>
       <div class="gift">赠送 ¥50</div>
       <div class="balance">当前余额: ¥550</div>

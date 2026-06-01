@@ -5,6 +5,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import PlatformLayout from '../layouts/PlatformLayout.vue'
 import ShopLayout from '../layouts/ShopLayout.vue'
 import AgentLayout from '../layouts/AgentLayout.vue'
+import CPLayout from '../layouts/CPLayout.vue'
 import Login from '../views/Login.vue'
 
 const routes: RouteRecordRaw[] = [
@@ -27,10 +28,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'stores', name: 'PlatformStores', component: () => import('../views/platform/StoreList.vue'), meta: { title: '店铺列表' } },
       { path: 'merchants', name: 'PlatformMerchants', component: () => import('../views/platform/MerchantList.vue'), meta: { title: '商家管理' } },
       { path: 'agents', name: 'PlatformAgents', component: () => import('../views/platform/AgentList.vue'), meta: { title: '代理商' } },
+      { path: 'cps', name: 'PlatformCPList', component: () => import('../views/platform/CPList.vue'), meta: { title: '游戏供应商管理' } },
       { path: 'games', name: 'PlatformGames', component: () => import('../views/platform/GameLibrary.vue'), meta: { title: '游戏库' } },
       { path: 'games/add', name: 'PlatformGameAdd', component: () => import('../views/platform/GameDetail.vue'), meta: { title: '新增游戏' } },
       { path: 'games/:id', name: 'PlatformGameDetail', component: () => import('../views/platform/GameDetail.vue'), meta: { title: '游戏详情' } },
       { path: 'content', name: 'PlatformContent', component: () => import('../views/platform/ContentDistribute.vue'), meta: { title: '内容分发' } },
+      { path: 'games/review', name: 'PlatformGameReview', component: () => import('../views/platform/GameReview.vue'), meta: { title: '游戏审核' } },
       { path: 'banners', name: 'PlatformBanners', component: () => import('../views/platform/BannerManage.vue'), meta: { title: 'Banner 管理' } },
       { path: 'birthday-theme', name: 'PlatformBirthdayTheme', component: () => import('../views/platform/BirthdayThemeResource.vue'), meta: { title: '生日会主题资源' } },
       { path: 'game-categories', name: 'PlatformGameCategories', component: () => import('../views/platform/GameThemes.vue'), meta: { title: '游戏题材' } },
@@ -67,6 +70,9 @@ const routes: RouteRecordRaw[] = [
       { path: 'finance/payouts', name: 'PlatformPayoutManager', component: () => import('../views/platform/PayoutManager.vue'), meta: { title: '代理商分账管理' } },
       { path: 'finance/agent-settlement-config', name: 'PlatformAgentSettlementConfig', component: () => import('../views/platform/AgentSettlementConfig.vue'), meta: { title: '代理商结算配置' } },
       { path: 'finance/tier-config', name: 'PlatformTierConfig', component: () => import('../views/platform/TierStrategyConfig.vue'), meta: { title: '阶梯策略配置' } },
+      { path: 'finance/cp-settlement', name: 'PlatformCPSettlement', component: () => import('../views/platform/CPSettlement.vue'), meta: { title: '游戏供应商结算' } },
+      { path: 'finance/cp-settlement-config', name: 'PlatformCPSettlementConfig', component: () => import('../views/platform/CPSettlementConfig.vue'), meta: { title: 'CP结算配置' } },
+      { path: 'finance/cp-reconciliation', name: 'PlatformCPReconciliation', component: () => import('../views/platform/CPReconciliation.vue'), meta: { title: 'CP对账中心' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: () => import('../views/platform/System.vue'), meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: () => import('../views/platform/System.vue'), meta: { title: '告警中心' } },
@@ -146,7 +152,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'edit-balance-order', name: 'ShopEditBalanceOrder', component: () => import('../views/shop/EditBalanceOrder.vue'), meta: { title: '修改储值订单' } },
       { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: () => import('../views/shop/PointsExchangeOrder.vue'), meta: { title: '游戏币兑换订单' } },
       { path: 'gift-order', name: 'ShopGiftOrder', component: () => import('../views/shop/GiftOrder.vue'), meta: { title: '活动赠送订单' } },
-      { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '游戏分成明细' } },
+      { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '内容消耗明细' } },
       { path: 'settlement', name: 'ShopSettlement', component: () => import('../views/shop/Settlement.vue'), meta: { title: '结算记录' } },
       { path: 'reconciliation', name: 'ShopReconciliation', component: () => import('../views/shop/Reconciliation.vue'), meta: { title: '对账中心' } },
       // 系统设置
@@ -181,6 +187,28 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
+  // ===== CP供应商后台 =====
+  {
+    path: '/cp',
+    name: 'CP',
+    component: CPLayout,
+    redirect: '/cp/dashboard',
+    children: [
+      { path: 'dashboard', name: 'CPDashboard', component: () => import('../views/cp/Dashboard.vue'), meta: { title: '数据概览' } },
+      { path: 'games', name: 'CPGames', component: () => import('../views/cp/GameList.vue'), meta: { title: '我的游戏' } },
+      { path: 'games/add', name: 'CPGameAdd', component: () => import('../views/cp/GameEdit.vue'), meta: { title: '上传新游戏' } },
+      { path: 'games/:id', name: 'CPGameEdit', component: () => import('../views/cp/GameEdit.vue'), meta: { title: '编辑游戏' } },
+      { path: 'games/:id/data', name: 'CPGameDataDetail', component: () => import('../views/cp/GameData.vue'), meta: { title: '游戏数据详情' } },
+      { path: 'analytics/consumption', name: 'CPConsumptionRecord', component: () => import('../views/cp/ConsumptionRecord.vue'), meta: { title: '点播消费记录' } },
+      { path: 'analytics/game-summary', name: 'CPGameSummary', component: () => import('../views/cp/GameSummary.vue'), meta: { title: '点播游戏汇总' } },
+      { path: 'finance', name: 'CPFinance', component: () => import('../views/cp/FinanceOverview.vue'), meta: { title: '收益总览' } },
+      { path: 'finance/detail', name: 'CPFinanceDetail', component: () => import('../views/cp/FinanceDetail.vue'), meta: { title: '结算记录' } },
+      { path: 'bank-account', name: 'CPBankAccount', component: () => import('../views/cp/BankAccount.vue'), meta: { title: '收款账户' } },
+      { path: 'account/info', name: 'CPAccountInfo', component: () => import('../views/cp/AccountInfo.vue'), meta: { title: '供应商资料' } },
+      { path: 'account/security', name: 'CPAccountSecurity', component: () => import('../views/cp/Security.vue'), meta: { title: '安全设置' } },
+      { path: 'account/message', name: 'CPMessage', component: () => import('../views/cp/Message.vue'), meta: { title: '消息通知' } },
+    ]
+  },
   // ===== 代理商后台 =====
   {
     path: '/agent',

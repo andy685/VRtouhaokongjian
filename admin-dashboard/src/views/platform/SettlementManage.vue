@@ -5,20 +5,14 @@
       <div>
         <h1>商家分账管理</h1>
         <p class="header-desc">
-          商家结算单生成后<strong class="highlight">正常单自动提交拉卡拉分账</strong>，
-          仅异常单（账户缺失/金额为0等）需人工处理。
-          此页面用于<strong>监控状态</strong>和<strong>处置异常</strong>。
+          商家结算额拉卡拉扣手续费后为<strong class="highlight">到账金额</strong>。
+          结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，平台仅<strong>定时同步</strong>状态。
         </p>
       </div>
-      <n-space>
-        <n-button @click="handleSyncLakala">
-          <template #icon><n-icon :component="SyncOutline" /></template>
-          同步拉卡拉状态
-        </n-button>
-        <n-button type="warning" @click="showBatchResolveModal = true" :disabled="selectedExceptionKeys.size === 0">
-          批量放行 ({{ selectedExceptionKeys.size }})
-        </n-button>
-      </n-space>
+      <n-button @click="handleSyncLakala">
+        <template #icon><n-icon :component="SyncOutline" /></template>
+        同步拉卡拉状态
+      </n-button>
     </div>
 
     <!-- 汇总统计卡片区 -->
@@ -30,7 +24,7 @@
         <div class="stat-content">
           <span class="label">本月自动分润</span>
           <span class="value success">{{ autoSubmittedCount }}</span>
-          <span class="sub-text">笔 · 共 ¥{{ autoSubmittedAmount.toLocaleString() }}</span>
+          <span class="sub-text">笔 · 到账 ¥{{ autoSubmittedAmount.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -40,7 +34,7 @@
         <div class="stat-content">
           <span class="label">拉卡拉分账中</span>
           <span class="value processing">{{ processingCount }}</span>
-          <span class="sub-text">笔 · 共 ¥{{ processingAmount.toLocaleString() }}</span>
+          <span class="sub-text">笔 · 到账 ¥{{ processingAmount.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -50,7 +44,7 @@
         <div class="stat-content">
           <span class="label">本月已到账</span>
           <span class="value">{{ settledCount }}</span>
-          <span class="sub-text">笔 · 共 ¥{{ settledAmount.toLocaleString() }}</span>
+          <span class="sub-text">笔 · 到账 ¥{{ settledAmount.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card stat-card-alert">
@@ -60,46 +54,45 @@
         <div class="stat-content">
           <span class="label">异常待处理</span>
           <span class="value alert">{{ exceptionCount }}</span>
-          <span class="sub-text">笔 · 需人工干预</span>
+          <span class="sub-text">笔 · 拉卡拉侧处理</span>
         </div>
       </div>
     </div>
 
     <!-- 自动化规则提示条 -->
-    <n-alert type="success" :bordered="false" style="margin-bottom: 20px; border-radius: 12px;">
-      <template #header>自动化规则（无需人工操作）</template>
-      符合以下条件的商家结算单将<strong>自动提交拉卡拉分账接口</strong>：
-      收款银行账户完整 且 应发结算金额 ≥ ¥100 且 无申诉/冻结标记。
-      不满足任一条件则进入「异常待处理」队列。
+    <n-alert type="info" :bordered="false" style="margin-bottom: 20px; border-radius: 12px;">
+      <template #header>同步规则</template>
+      平台<strong>每小时自动同步</strong>拉卡拉分账状态，点击右上角「同步拉卡拉状态」可手动触发。
+      异常和失败记录由拉卡拉侧处理，平台仅展示最新状态。
     </n-alert>
 
     <!-- Tab 状态切换 + 筛选 -->
     <div class="content-card">
+      <!-- 第一行：筛选条件 -->
       <div class="table-toolbar">
-        <n-tabs v-model:value="activeTab" type="segment" animated size="small">
-          <n-tab-pane name="all" :tab="`全部 (${totalCount})`" />
-          <n-tab-pane name="auto_submitted" :tab="`自动已提交 (${autoSubmittedCount})`" />
-          <n-tab-pane name="processing" :tab="`分账中 (${processingCount})`" />
-          <n-tab-pane name="settled" :tab="`已到账 (${settledCount})`" />
-          <n-tab-pane name="failed" :tab="`分账失败 (${failedCount})`" />
-          <n-tab-pane name="exception" :tab="`⚠ 异常待处 (${exceptionCount})`" />
-        </n-tabs>
-        <n-space align="center">
+        <n-space align="center" :wrap="false">
           <n-input v-model:value="searchKeyword" placeholder="搜索商家名称/结算单号..." clearable style="width: 220px;">
             <template #prefix><n-icon :component="SearchOutline" /></template>
           </n-input>
-          <n-select v-model:value="filterMerchant" placeholder="全部商家" :options="merchantOptions" clearable size="small" style="width: 150px;" />
-          <n-date-picker v-model:value="filterMonth" type="month" clearable size="small" style="width: 140px;" />
+          <n-select v-model:value="filterMerchant" placeholder="全部商家" :options="merchantOptions" clearable style="width: 150px;" />
+          <n-date-picker v-model:value="filterMonth" type="month" clearable style="width: 140px;" />
         </n-space>
       </div>
+      <!-- 第二行：状态 Tab -->
+      <n-tabs v-model:value="activeTab" type="segment" animated size="small" style="margin-bottom: 16px;">
+        <n-tab-pane name="all" :tab="`全部 (${totalCount})`" />
+        <n-tab-pane name="auto_submitted" :tab="`自动已提交 (${autoSubmittedCount})`" />
+        <n-tab-pane name="processing" :tab="`分账中 (${processingCount})`" />
+        <n-tab-pane name="settled" :tab="`已到账 (${settledCount})`" />
+        <n-tab-pane name="failed" :tab="`分账失败 (${failedCount})`" />
+        <n-tab-pane name="exception" :tab="`⚠ 异常待处 (${exceptionCount})`" />
+      </n-tabs>
 
       <n-data-table
         :columns="columns"
         :data="filteredData"
         :pagination="pagination"
         :row-key="(row: any) => row.id"
-        :checked-row-keys="Array.from(selectedExceptionKeys)"
-        @update:checked-row-keys="onCheckedChange"
         striped
         :row-class-name="rowClassName"
       />
@@ -187,49 +180,10 @@
       </template>
 
       <template #footer>
-        <n-space justify="end">
-          <n-button @click="showDetailModal = false">关闭</n-button>
-          <n-button v-if="currentRecord?.status === 'exception'" type="warning" @click="handleResolve(currentRecord)">处理后放行</n-button>
-          <n-button v-if="currentRecord?.status === 'failed'" type="primary" @click="handleRetry(currentRecord)">修复后重试</n-button>
-          <n-button v-if="currentRecord?.status === 'processing'" secondary @click="handleQueryOne(currentRecord)">查询拉卡拉状态</n-button>
-        </n-space>
+        <n-button @click="showDetailModal = false">关闭</n-button>
       </template>
     </n-modal>
 
-    <!-- 异常处理/放行确认弹窗 -->
-    <n-modal v-model:show="showResolveModal" preset="dialog" type="warning" title="异常处理 - 放行分账">
-      <p>即将对以下异常结算单执行<strong>人工放行</strong>，放行后将立即提交拉卡拉分账：</p>
-      <n-descriptions label-placement="left" :column=1 bordered size="small" style="margin-top:12px;">
-        <n-descriptions-item label="结算单号">{{ resolveTarget?.no }}</n-descriptions-item>
-        <n-descriptions-item label="商家">{{ resolveTarget?.merchant }}</n-descriptions-item>
-        <n-descriptions-item label="原异常原因">{{ resolveTarget?.exceptionReason }}</n-descriptions-item>
-        <n-descriptions-item label="结算金额">
-          <strong style="color:#4F46E5;">¥{{ resolveTarget?.amount?.toLocaleString() }}</strong>
-        </n-descriptions-item>
-      </n-descriptions>
-      <n-input v-model:value="resolveNote" type="textarea" placeholder="请输入处理说明（如：已联系商家补全账户信息，现可正常打款）..." :autosize="{ minRows: 2 }" style="margin-top: 12px;" />
-      <template #action>
-        <n-space justify="end">
-          <n-button @click="showResolveModal = false">取消</n-button>
-          <n-button type="warning" @click="confirmResolve">确认放行</n-button>
-        </n-space>
-      </template>
-    </n-modal>
-
-    <!-- 批量放行确认弹窗 -->
-    <n-modal v-model:show="showBatchResolveModal" preset="dialog" type="warning" title="批量放行 - 提交拉卡拉分账">
-      <p>即将人工放行 <strong>{{ selectedExceptionKeys.size }}</strong> 笔异常结算单，合计金额：</p>
-      <p style="font-size:20px;font-weight:700;color:#F59E0B;margin:12px 0;">
-        ¥{{ batchSelectedTotal.toLocaleString() }}
-      </p>
-      <p style="color:#6B7280;font-size:12px;">放行后将立即通过拉卡拉分账接口发起打款。</p>
-      <template #action>
-        <n-space justify="end">
-          <n-button @click="showBatchResolveModal = false">取消</n-button>
-          <n-button type="warning" @click="confirmBatchResolve">确认批量放行</n-button>
-        </n-space>
-      </template>
-    </n-modal>
   </div>
 </template>
 
@@ -237,7 +191,7 @@
 import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NModal, NTabs, NTabPane,
-  NIcon, NDescriptions, NDescriptionsItem, NDivider, NInput,
+  NIcon, NDescriptions, NDescriptionsItem, NInput,
   NTimeline, NTimelineItem, NDatePicker, NAlert, NSelect, NUpload,
   NUploadDragger, NImage, useMessage
 } from 'naive-ui'
@@ -253,7 +207,6 @@ const activeTab = ref('all')
 const searchKeyword = ref('')
 const filterMerchant = ref<string | null>(null)
 const filterMonth = ref<number | null>(null)
-const selectedExceptionKeys = ref<Set<number>>(new Set())
 
 /**
  * 状态定义（与代理商分账一致）：
@@ -383,16 +336,15 @@ const failedCount = computed(() => settlementData.value.filter(d => d.status ===
 const exceptionCount = computed(() => settlementData.value.filter(d => d.status === 'exception').length)
 const totalCount = computed(() => settlementData.value.length)
 
-const sumBy = (status: SettlementStatus, field: 'amount') =>
-  settlementData.value.filter(d => d.status === status).reduce((s, d) => s + d[field], 0)
+const sumByNet = (status: SettlementStatus) =>
+  settlementData.value.filter(d => d.status === status).reduce((s, d) => s + Math.max(0, d.amount - d.fee), 0)
 
-const autoSubmittedAmount = computed(() => sumBy('auto_submitted', 'amount'))
-const processingAmount = computed(() => sumBy('processing', 'amount'))
-const settledAmount = computed(() => sumBy('settled', 'amount'))
+const autoSubmittedAmount = computed(() => sumByNet('auto_submitted'))
+const processingAmount = computed(() => sumByNet('processing'))
+const settledAmount = computed(() => sumByNet('settled'))
 
 // ========== 表格列 ==========
 const columns = [
-  { type: 'selection' },
   {
     title: '结算单号', key: 'no', width: 150, ellipsis: { tooltip: true },
     render: (row: any) => h('span', { style: 'font-family:monospace;font-size:12px;' }, row.no)
@@ -415,6 +367,13 @@ const columns = [
   {
     title: '费率', key: 'feeRate', width: 65, align: 'center',
     render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%`
+  },
+  {
+    title: '到账金额(¥)', key: 'actualAmount', width: 110, align: 'right',
+    render: (row: any) => {
+      const net = row.amount - row.fee
+      return h('span', { style: `font-weight:700;${net > 0 ? 'color:#10B981;' : 'color:#9CA3AF;'}` }, net > 0 ? `¥${net.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '-')
+    }
   },
   {
     title: '状态', key: 'status', width: 110, align: 'center',
@@ -455,16 +414,6 @@ const filteredData = computed(() => {
 
 const pagination = { pageSize: 10 }
 
-function onCheckedChange(keys: (number | string)[]) {
-  selectedExceptionKeys.value = new Set(keys as number[])
-}
-const batchSelectedTotal = computed(() =>
-  Array.from(selectedExceptionKeys.value).reduce((sum, id) => {
-    const r = settlementData.value.find(d => d.id === id)
-    return sum + (r?.amount || 0)
-  }, 0)
-)
-
 function rowClassName(row: any): string {
   if (row.status === 'exception') return 'row-exception'
   if (row.status === 'failed') return 'row-failed'
@@ -501,64 +450,6 @@ const currentRecord = ref<MerchantSettlement | null>(null)
 function openDetail(row: MerchantSettlement) {
   currentRecord.value = row
   showDetailModal.value = true
-}
-
-// ========== 异常处理：单个放行 ==========
-const showResolveModal = ref(false)
-const resolveTarget = ref<MerchantSettlement | null>(null)
-const resolveNote = ref('')
-function handleResolve(record: MerchantSettlement) {
-  resolveTarget.value = record
-  showResolveModal.value = true
-}
-function confirmResolve() {
-  if (!resolveTarget.value) return
-  const r = resolveTarget.value
-  r.status = 'auto_submitted'
-  r.statusText = '已自动提交'
-  r.logs.push({
-    action: '人工放行', time: new Date().toLocaleString('zh-CN'),
-    detail: resolveNote.value || '管理员人工审核后放行，将重新提交拉卡拉', type: 'success' as const
-  })
-  message.success(`${r.no} 已放行，将自动提交拉卡拉分账`)
-  showResolveModal.value = false
-  resolveNote.value = ''
-}
-
-// ========== 失败重试 ==========
-function handleRetry(record: MerchantSettlement) {
-  record.status = 'auto_submitted'
-  record.statusText = '已自动提交'
-  record.exceptionReason = undefined
-  record.logs.push({
-    action: '重新提交', time: new Date().toLocaleString('zh-CN'),
-    detail: '管理员修复问题后手动重试，将重新提交拉卡拉', type: 'warning' as const
-  })
-  message.success(`${record.no} 已重新提交`)
-  showDetailModal.value = false
-}
-
-// ========== 单笔查询拉卡拉状态 ==========
-function handleQueryOne(record: MerchantSettlement) {
-  message.info(`正在查询 ${record.lakalaNo} 的拉卡拉分账状态...`)
-}
-
-// ========== 批量放行 ==========
-const showBatchResolveModal = ref(false)
-function confirmBatchResolve() {
-  let count = 0
-  settlementData.value.forEach(d => {
-    if (selectedExceptionKeys.value.has(d.id) && (d.status === 'exception' || d.status === 'failed')) {
-      d.status = 'auto_submitted'
-      d.statusText = '已自动提交'
-      d.exceptionReason = undefined
-      d.logs.push({ action: '批量放行', time: new Date().toLocaleString('zh-CN'), detail: '管理员批量人工放行', type: 'success' as const })
-      count++
-    }
-  })
-  selectedExceptionKeys.value.clear()
-  showBatchResolveModal.value = false
-  message.success(`已批量放行 ${count} 笔异常结算单，将自动提交拉卡拉`)
 }
 
 // ========== 同步拉卡拉状态 ==========
@@ -603,7 +494,7 @@ function handleVoucherUpload({ file, onFinish }: any) {
 .stat-content .sub-text { font-size: 11px; color: var(--text-muted); }
 
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
-.table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.table-toolbar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px; }
 
 .exception-banner {
   display: flex; align-items: center; gap: 8px;

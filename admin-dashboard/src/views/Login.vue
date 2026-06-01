@@ -13,6 +13,7 @@
               <n-radio value="shop">商家</n-radio>
               <n-radio value="agent">代理商</n-radio>
               <n-radio value="platform">平台超管</n-radio>
+              <n-radio value="cp">供应商</n-radio>
             </n-radio-group>
           </n-form-item>
           <n-form-item label="用户名" path="username">
@@ -105,7 +106,7 @@ import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal } from 'naive-ui'
 const router = useRouter()
 
 // 登录身份
-const loginRole = ref<'shop' | 'agent' | 'platform'>('shop')
+const loginRole = ref<'shop' | 'agent' | 'platform' | 'cp'>('shop')
 
 // 登录表单
 const loginForm = reactive({
@@ -255,6 +256,7 @@ function handleLogin() {
       platform: '/platform/dashboard',
       agent: '/agent/dashboard',
       shop: '/shop/workbench',
+      cp: '/cp/dashboard',
     }
     router.push(redirectMap[loginRole.value])
   }, 500)

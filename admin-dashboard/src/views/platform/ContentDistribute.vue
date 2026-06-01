@@ -74,7 +74,6 @@
       <n-tab-pane name="records" tab="分发记录">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <n-space>
-            <n-select v-model:value="filterRegion" placeholder="选择区域" :options="regionOptions" size="small" style="width: 140px;" clearable />
             <n-select v-model:value="filterStatus" placeholder="分发状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
           </n-space>
           <n-button type="primary" @click="showBatchModal = true">批量分发</n-button>
@@ -164,7 +163,6 @@ function statusType(status: string) {
   return map[status] || 'default'
 }
 const filterGame = ref<string | null>(null)
-const filterRegion = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
 
 // 游戏分发状态类型
@@ -341,13 +339,6 @@ const gameOptions = [
   { label: '恐怖医院', value: '恐怖医院' },
   { label: '极速赛车', value: '极速赛车' },
   { label: '海洋世界', value: '海洋世界' },
-]
-
-const regionOptions = [
-  { label: '深圳', value: '深圳' },
-  { label: '广州', value: '广州' },
-  { label: '北京', value: '北京' },
-  { label: '上海', value: '上海' },
 ]
 
 const statusOptions = [

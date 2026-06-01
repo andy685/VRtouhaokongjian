@@ -176,6 +176,19 @@
           <n-button size="tiny" secondary>进入</n-button>
         </div>
       </div>
+      <div class="role-switch-grid" style="margin-top: 12px;">
+        <div
+          class="role-card"
+          @click="switchToCP"
+        >
+          <div class="role-card-icon cp">
+            <n-icon :component="GameControllerOutline" size="32" />
+          </div>
+          <div class="role-card-title">供应商后台</div>
+          <div class="role-card-desc">游戏管理 · 收益数据</div>
+          <n-button size="tiny" secondary>进入</n-button>
+        </div>
+      </div>
     </n-modal>
   </div>
 </template>
@@ -228,6 +241,7 @@ const menuOptions: MenuOption[] = [
       { label: '商家管理', key: '/platform/merchants' },
       { label: '店铺列表', key: '/platform/stores' },
       { label: '代理商', key: '/platform/agents' },
+      { label: '游戏供应商管理', key: '/platform/cps' },
     ]
   },
   {
@@ -237,6 +251,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '游戏库', key: '/platform/games' },
       { label: '游戏题材', key: '/platform/game-categories' },
+      { label: '游戏审核', key: '/platform/games/review' },
       { label: '内容分发', key: '/platform/content' },
       { label: '小程序Banner', key: '/platform/banners' },
       { label: '生日会主题资源', key: '/platform/birthday-theme' },
@@ -301,6 +316,15 @@ const menuOptions: MenuOption[] = [
           { label: '代理商分账管理', key: '/platform/finance/payouts' },
           { label: '结算配置', key: '/platform/finance/agent-settlement-config' },
           { label: '阶梯策略配置', key: '/platform/finance/tier-config' },
+        ]
+      },
+      {
+        label: '游戏供应商结算',
+        key: 'cp-settlement-group',
+        children: [
+          { label: 'CP结算管理', key: '/platform/finance/cp-settlement' },
+          { label: 'CP结算配置', key: '/platform/finance/cp-settlement-config' },
+          { label: 'CP对账中心', key: '/platform/finance/cp-reconciliation' },
         ]
       },
     ],
@@ -385,6 +409,11 @@ function switchToAgent() {
 
 function switchToPlatform() {
   showRoleModal.value = false
+}
+
+function switchToCP() {
+  showRoleModal.value = false
+  router.push('/cp/dashboard')
 }
 
 function handleUserAction(key: string) {
@@ -694,6 +723,10 @@ function handleNoticeClick(item: NoticeItem) {
 
 .role-card-icon.shop {
   background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.role-card-icon.cp {
+  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
 }
 
 .role-card-title {
