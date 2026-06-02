@@ -240,8 +240,22 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '商家管理', key: '/platform/merchants' },
       { label: '店铺列表', key: '/platform/stores' },
-      { label: '代理商', key: '/platform/agents' },
-      { label: '游戏供应商管理', key: '/platform/cps' },
+    ]
+  },
+  {
+    label: '代理商管理',
+    key: 'agents-group',
+    icon: icon(BusinessOutline),
+    children: [
+      { label: '代理商列表', key: '/platform/agents' },
+    ]
+  },
+  {
+    label: '游戏供应商管理',
+    key: 'cps-group',
+    icon: icon(GameControllerOutline),
+    children: [
+      { label: '供应商列表', key: '/platform/cps' },
     ]
   },
   {
