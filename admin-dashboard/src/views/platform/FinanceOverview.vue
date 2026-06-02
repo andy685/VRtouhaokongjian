@@ -247,7 +247,12 @@ onUnmounted(() => {
 .header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block; }
 
 /* ===== 分区块样式 ===== */
-.section-block { margin-bottom: 28px; }
+.section-block {
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px dashed #E5E7EB;
+}
+.section-block:last-child { border-bottom: none; padding-bottom: 0; }
 
 .section-title-bar {
   display: flex;
@@ -414,6 +419,11 @@ onUnmounted(() => {
 }
 
 .section-header h3 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
+
+/* 区块内部间距 */
+.section-block .sub-metrics-row {
+  margin-bottom: 16px;
+}
 
 @media (max-width: 1400px) {
   .funnel-row { flex-wrap: wrap; }
