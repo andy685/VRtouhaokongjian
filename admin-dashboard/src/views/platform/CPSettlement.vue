@@ -6,7 +6,7 @@
         <h1>游戏供应商结算</h1>
         <p class="header-desc">
           结算公式：<strong class="highlight">单次成本 × 游戏次数 = 结算额</strong>，
-          拉卡拉扣2%手续费后为到账金额。CP结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，
+          拉卡拉扣2%提现手续费后为到账金额。CP结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，
           平台仅<strong>定时同步</strong>拉卡拉结算状态。
         </p>
       </div>
@@ -119,7 +119,7 @@
           <n-descriptions-item label="结算额（成本×次数）">
             <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.settledAmount.toLocaleString() }}</span>
           </n-descriptions-item>
-          <n-descriptions-item label="手续费（2%）">
+          <n-descriptions-item label="提现手续费（2%）">
             <span style="color:#9CA3AF;">-¥{{ currentRecord.feeAmount.toLocaleString() }}</span>
           </n-descriptions-item>
           <n-descriptions-item label="到账金额">
@@ -191,7 +191,7 @@ interface CPSettlement {
   totalPlays: number
   perPlayCost: number       // 单次成本
   settledAmount: number     // 结算额 = perPlayCost × totalPlays
-  feeAmount: number         // 手续费
+  feeAmount: number         // 提现手续费
   actualAmount: number      // 到账金额 = settledAmount - feeAmount
   period: string
   bankName: string
@@ -215,7 +215,7 @@ const cpOptions = [
 ]
 
 // Mock 数据 —— 覆盖各类场景
-// 结算公式：单次成本 × 游戏次数 = 结算额，扣 2% 手续费 = 到账金额
+// 结算公式：单次成本 × 游戏次数 = 结算额，扣 2% 提现手续费 = 到账金额
 const settlementData = ref<CPSettlement[]>([
   {
     id: 1, no: 'CPS202605001', cpName: '极境互动科技',
@@ -226,7 +226,7 @@ const settlementData = ref<CPSettlement[]>([
     status: 'auto_submitted',
     lakalaNo: 'LK20260530001', settledTime: '-', createTime: '2026-05-31 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-05-31 08:00', detail: '结算引擎根据5月体验数据自动计算：¥2.40×45,800次=¥109,920，扣手续费¥2,198，到账¥107,722', type: 'info' as const },
+      { action: '结算单生成', time: '2026-05-31 08:00', detail: '结算引擎根据5月体验数据自动计算：¥2.40×45,800次=¥109,920，扣提现手续费¥2,198，到账¥107,722', type: 'info' as const },
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530001', type: 'info' as const },
     ],
@@ -240,7 +240,7 @@ const settlementData = ref<CPSettlement[]>([
     status: 'processing',
     lakalaNo: 'LK20260530002', settledTime: '-', createTime: '2026-05-31 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.00×22,100次=¥44,200，扣手续费¥884，到账¥43,316', type: 'info' as const },
+      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.00×22,100次=¥44,200，扣提现手续费¥884，到账¥43,316', type: 'info' as const },
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '自动放行', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530002', type: 'info' as const },
       { action: '拉卡拉受理', time: '2026-05-31 09:30', detail: '开票请求已受理，等待回调', type: 'warning' as const },
@@ -255,7 +255,7 @@ const settlementData = ref<CPSettlement[]>([
     status: 'settled',
     lakalaNo: 'LK20260425003', settledTime: '2026-04-28 10:30', createTime: '2026-04-25 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-04-25 08:00', detail: '¥2.10×32,400次=¥68,040，扣手续费¥1,361，到账¥66,679', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-25 08:00', detail: '¥2.10×32,400次=¥68,040，扣提现手续费¥1,361，到账¥66,679', type: 'info' as const },
       { action: '自动校验通过', time: '2026-04-25 08:00:01', detail: '自动放行', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-04-25 08:00:02', detail: 'LK20260425003', type: 'info' as const },
       { action: '拉卡拉受理', time: '2026-04-26 09:00', detail: '开票请求已受理', type: 'warning' as const },
@@ -272,7 +272,7 @@ const settlementData = ref<CPSettlement[]>([
     exceptionReason: '收款银行账户未绑定',
     settledTime: '-', createTime: '2026-05-31 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥1.80×8,500次=¥15,300，扣手续费¥306，到账¥14,994', type: 'info' as const },
+      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥1.80×8,500次=¥15,300，扣提现手续费¥306，到账¥14,994', type: 'info' as const },
       { action: '异常拦截', time: '2026-05-31 08:00:01', detail: '收款银行账户未绑定，不符合自动分账条件', type: 'error' as const },
     ],
   },
@@ -286,7 +286,7 @@ const settlementData = ref<CPSettlement[]>([
     exceptionReason: '拉卡拉返回：收款账户名与开户名不一致(ERROR_CODE: BANK_NAME_MISMATCH)',
     lakalaNo: 'LK20260530005', settledTime: '-', createTime: '2026-05-31 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×3,200次=¥6,720，扣手续费¥134，到账¥6,586', type: 'info' as const },
+      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×3,200次=¥6,720，扣提现手续费¥134，到账¥6,586', type: 'info' as const },
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '自动放行', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530005', type: 'info' as const },
       { action: '开票失败', time: '2026-05-31 08:05', detail: '拉卡拉返回：账户名与开户名不一致(BANK_NAME_MISMATCH)', type: 'error' as const },
@@ -301,7 +301,7 @@ const settlementData = ref<CPSettlement[]>([
     status: 'auto_submitted',
     lakalaNo: 'LK20260530006', settledTime: '-', createTime: '2026-05-31 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×15,600次=¥32,760，扣手续费¥655，到账¥32,105', type: 'info' as const },
+      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×15,600次=¥32,760，扣提现手续费¥655，到账¥32,105', type: 'info' as const },
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530006', type: 'info' as const },
     ],
@@ -316,7 +316,7 @@ const settlementData = ref<CPSettlement[]>([
     exceptionReason: '结算金额未达最低门槛（¥100）',
     settledTime: '-', createTime: '2026-05-31 08:00',
     logs: [
-      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×1,200次=¥2,520，扣手续费¥50，到账¥2,470', type: 'info' as const },
+      { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×1,200次=¥2,520，扣提现手续费¥50，到账¥2,470', type: 'info' as const },
       { action: '异常拦截', time: '2026-05-31 08:00:01', detail: '结算金额¥2,520，未达最低门槛¥100，暂不自动分账', type: 'error' as const },
     ],
   },
@@ -363,7 +363,7 @@ const columns = [
     render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.settledAmount.toLocaleString()}`)
   },
   {
-    title: '手续费(¥)', key: 'feeAmount', width: 90, align: 'right',
+    title: '提现手续费(¥)', key: 'feeAmount', width: 90, align: 'right',
     render: (row: any) => h('span', { style: 'color:#9CA3AF;font-size:12px;' }, `-¥${row.feeAmount.toLocaleString()}`)
   },
   {

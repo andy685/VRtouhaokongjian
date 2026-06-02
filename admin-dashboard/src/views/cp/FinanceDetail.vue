@@ -57,7 +57,7 @@
     <div class="content-card">
       <div class="table-hint">
         <n-icon :component="InformationCircleOutline" size="16" style="color: #10B981; flex-shrink: 0;" />
-        <span>手续费按结算额的 <strong>2%</strong> 收取，实际到账 = 结算额 - 手续费。</span>
+        <span>提现手续费按结算额的 <strong>2%</strong> 收取，实际到账 = 结算额 - 提现手续费。</span>
       </div>
       <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
     </div>
@@ -68,7 +68,7 @@
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
         <n-descriptions-item label="总结算额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="总手续费">{{ `¥${currentRecord.fee.toLocaleString()}` }}</n-descriptions-item>
+        <n-descriptions-item label="提现手续费">{{ `¥${currentRecord.fee.toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="实际到账">{{ `¥${currentRecord.actualAmount.toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
@@ -151,7 +151,7 @@ const columns = [
   { title: '结算周期', key: 'period', width: 180 },
   { title: '结算额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
   {
-    title: '手续费',
+    title: '提现手续费',
     key: 'fee',
     width: 100,
     render: (row: any) => h('span', { style: 'color: #F59E0B' }, `¥${row.fee.toLocaleString()}`),
@@ -299,7 +299,7 @@ function exportToExcel() {
         '结算单号': item.no,
         '结算周期': item.period,
         '结算额': item.amount,
-        '手续费': item.fee,
+        '提现手续费': item.fee,
         '实际到账': item.actualAmount,
         '状态': item.statusText,
         '打款时间': item.time,
@@ -311,7 +311,7 @@ function exportToExcel() {
           '结算单号': '',
           '结算周期': '',
           '结算额': '',
-          '手续费': '',
+          '提现手续费': '',
           '实际到账': '',
           '状态': '',
           '打款时间': '',

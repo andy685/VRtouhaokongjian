@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>CP 结算配置</h1>
-        <p class="header-desc">设置 CP 供应商自动结算周期、手续费率和最低结算门槛</p>
+        <p class="header-desc">设置 CP 供应商自动结算周期、提现手续费率和最低结算门槛</p>
       </div>
     </div>
 
@@ -28,28 +28,28 @@
       </n-card>
     </div>
 
-    <!-- 手续费配置 -->
+    <!-- 提现手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title">拉卡拉手续费配置</h3>
+      <h3 class="section-title">提现手续费配置</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="150">
-          <n-form-item label="手续费承担方">
+          <n-form-item label="提现手续费承担方">
             <n-radio-group v-model:value="feeConfig.bearer">
               <n-radio-button value="cp" label="CP承担">CP 供应商承担</n-radio-button>
               <n-radio-button value="platform" label="平台承担">平台承担</n-radio-button>
             </n-radio-group>
           </n-form-item>
-          <n-form-item label="手续费率">
+          <n-form-item label="提现手续费率">
             <n-input-number v-model:value="feeConfig.rate" :min="0" :max="10" :step="0.1" :precision="1" style="width: 200px;">
               <template #suffix>%</template>
             </n-input-number>
-            <span class="form-hint">拉卡拉分账手续费率，由支付渠道方定价</span>
+            <span class="form-hint">提现时支付渠道（拉卡拉）扣取的手续费率</span>
           </n-form-item>
-          <n-form-item label="手续费上限">
+          <n-form-item label="提现手续费上限">
             <n-input-number v-model:value="feeConfig.maxFee" :min="0" :step="10" style="width: 200px;">
               <template #suffix>元/笔</template>
             </n-input-number>
-            <span class="form-hint">单笔分账手续费封顶，0 为不限制</span>
+            <span class="form-hint">单笔提现手续费封顶，0 为不限制</span>
           </n-form-item>
         </n-form>
       </n-card>

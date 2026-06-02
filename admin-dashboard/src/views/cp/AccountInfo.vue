@@ -15,7 +15,7 @@
         <n-descriptions-item label="状态">
           <n-tag type="success" size="small">正常</n-tag>
         </n-descriptions-item>
-        <n-descriptions-item label="手续费率">{{ info.feeRate }}%</n-descriptions-item>
+        <n-descriptions-item label="提现手续费率">{{ info.feeRate }}%</n-descriptions-item>
         <n-descriptions-item label="在架游戏">{{ info.gameCount }} 款</n-descriptions-item>
         <n-descriptions-item label="累计结算额">¥{{ info.totalSettlement.toLocaleString() }}</n-descriptions-item>
         <n-descriptions-item label="创建时间" :span="2">{{ info.createTime }}</n-descriptions-item>

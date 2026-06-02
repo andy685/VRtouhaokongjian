@@ -64,12 +64,7 @@
             <n-form-item label="联系电话" path="phone">
               <n-input v-model:value="form.phone" placeholder="请输入联系电话" />
             </n-form-item>
-            <n-form-item label="手续费率" path="feeRate">
-              <n-input-number v-model:value="form.feeRate" :min="0" :max="100" :step="0.1" :precision="1" style="width: 200px;">
-                <template #suffix>%</template>
-              </n-input-number>
-              <span class="form-hint">平台从供应商结算金额中抽取的分成比例</span>
-            </n-form-item>
+
           </n-tab-pane>
 
           <n-tab-pane name="account" tab="管理员账号">
@@ -124,7 +119,6 @@
             <n-descriptions-item label="联系电话">{{ detailCp.phone }}</n-descriptions-item>
             <n-descriptions-item label="管理员账号">{{ detailCp.username || '-' }}</n-descriptions-item>
             <n-descriptions-item label="在架游戏">{{ detailCp.gameCount }} 款</n-descriptions-item>
-            <n-descriptions-item label="手续费率">{{ detailCp.feeRate }}%</n-descriptions-item>
             <n-descriptions-item label="累计结算额" :span="2">¥{{ detailCp.totalSettlement.toLocaleString() }}</n-descriptions-item>
             <n-descriptions-item label="创建时间" :span="2">{{ detailCp.joinTime }}</n-descriptions-item>
           </n-descriptions>
@@ -188,7 +182,6 @@ const form = ref({
   bankAccount: '',
   accountName: '',
   idCard: '',
-  feeRate: 5,
   status: 'active',
   username: '',
   password: '',
@@ -216,13 +209,13 @@ const bankOptions = [
 ]
 
 const cpList = ref([
-  { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', bankCode: 'CMB', bankAccount: '6222****1234', accountName: '张伟', idCard: '110101199001011234', bankName: '招商银行北京望京支行', gameCount: 12, feeRate: 8, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
-  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', bankCode: 'ICBC', bankAccount: '6217****5678', accountName: '李明', idCard: '310101199102022345', bankName: '工商银行上海张江支行', gameCount: 8, feeRate: 5, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
-  { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', bankCode: 'CCB', bankAccount: '6214****9012', accountName: '王芳', idCard: '440301199203033456', bankName: '建设银行深圳南山支行', gameCount: 10, feeRate: 6, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
-  { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', bankCode: 'ABC', bankAccount: '6228****3456', accountName: '赵磊', idCard: '330101199304044567', bankName: '农业银行杭州滨江支行', gameCount: 5, feeRate: 10, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
-  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', bankCode: 'BOC', bankAccount: '6230****7890', accountName: '陈静', idCard: '510101199405055678', bankName: '中国银行成都高新支行', gameCount: 7, feeRate: 6, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
-  { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', bankCode: 'BOCOM', bankAccount: '6225****2345', accountName: '刘洋', idCard: '320101199506066789', bankName: '交通银行南京江宁支行', gameCount: 6, feeRate: 7, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
-  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', bankCode: 'SPDB', bankAccount: '6216****6789', accountName: '周婷', idCard: '420101199607077890', bankName: '浦发银行武汉光谷支行', gameCount: 3, feeRate: 10, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
+  { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', bankCode: 'CMB', bankAccount: '6222****1234', accountName: '张伟', idCard: '110101199001011234', bankName: '招商银行北京望京支行', gameCount: 12, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
+  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', bankCode: 'ICBC', bankAccount: '6217****5678', accountName: '李明', idCard: '310101199102022345', bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
+  { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', bankCode: 'CCB', bankAccount: '6214****9012', accountName: '王芳', idCard: '440301199203033456', bankName: '建设银行深圳南山支行', gameCount: 10, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
+  { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', bankCode: 'ABC', bankAccount: '6228****3456', accountName: '赵磊', idCard: '330101199304044567', bankName: '农业银行杭州滨江支行', gameCount: 5, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
+  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', bankCode: 'BOC', bankAccount: '6230****7890', accountName: '陈静', idCard: '510101199405055678', bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
+  { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', bankCode: 'BOCOM', bankAccount: '6225****2345', accountName: '刘洋', idCard: '320101199506066789', bankName: '交通银行南京江宁支行', gameCount: 6, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
+  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', bankCode: 'SPDB', bankAccount: '6216****6789', accountName: '周婷', idCard: '420101199607077890', bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
 ])
 
 const pagination = { pageSize: 10 }
@@ -236,7 +229,6 @@ const columns: DataTableColumns<any> = [
   { title: '联系人', key: 'contact', width: 80 },
   { title: '联系电话', key: 'phone', width: 120 },
   { title: '在架游戏', key: 'gameCount', width: 80, align: 'center' },
-  { title: '手续费率', key: 'feeRate', width: 90, align: 'center', render: (row) => `${row.feeRate}%` },
   { title: '累计结算额(¥)', key: 'totalSettlement', width: 130, align: 'right', sorter: true, render: (row) => `¥${row.totalSettlement.toLocaleString()}` },
   { title: '创建时间', key: 'joinTime', width: 110, sorter: true },
   { title: '结算账户', key: 'bankCode', width: 90, render: (row: any) => {
@@ -282,7 +274,7 @@ function getBankName(code: string) {
 
 function openAdd() {
   editingCp.value = null
-  form.value = { name: '', contact: '', phone: '', bankCode: '', bankAccount: '', accountName: '', idCard: '', feeRate: 5, status: 'active', username: '', password: '' }
+  form.value = { name: '', contact: '', phone: '', bankCode: '', bankAccount: '', accountName: '', idCard: '', status: 'active', username: '', password: '' }
   showModal.value = true
 }
 function openEdit(row: any) {
@@ -291,7 +283,7 @@ function openEdit(row: any) {
     name: row.name, contact: row.contact, phone: row.phone,
     bankCode: row.bankCode || '', bankAccount: row.bankAccount || '',
     accountName: row.accountName || '', idCard: row.idCard || '',
-    feeRate: row.feeRate, status: row.status,
+    status: row.status,
     username: row.username || '', password: '',
   }
   showModal.value = true

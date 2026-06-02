@@ -5,7 +5,7 @@
       <div>
         <h1>分账管理</h1>
         <p class="header-desc">
-          代理商分账根据阶梯系数计算应发分润，拉卡拉扣手续费后为<strong class="highlight">到账金额</strong>。
+          代理商分账根据阶梯系数计算应发分润，拉卡拉扣提现手续费后为<strong class="highlight">到账金额</strong>。
           分账及放款均在<strong class="highlight">拉卡拉侧</strong>完成，平台仅<strong>定时同步</strong>状态。
         </p>
       </div>
@@ -126,8 +126,8 @@
               <n-descriptions-item label="应发分润">
                 <span style="font-weight:700;font-size:16px;color:#4F46E5;">¥{{ currentRecord.commissionAmount.toLocaleString() }}</span>
               </n-descriptions-item>
-              <n-descriptions-item label="拉卡拉开票手续费">¥{{ currentRecord.fee.toFixed(2) }}</n-descriptions-item>
-              <n-descriptions-item label="手续费率">{{ (currentRecord.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
+              <n-descriptions-item label="拉卡拉提现手续费">¥{{ currentRecord.fee.toFixed(2) }}</n-descriptions-item>
+              <n-descriptions-item label="提现手续费率">{{ (currentRecord.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
               <n-descriptions-item label="预计实付">
                 <span style="font-weight:700;color:#10B981;">¥{{ (currentRecord.commissionAmount - currentRecord.fee).toFixed(2) }}</span>
               </n-descriptions-item>
@@ -241,7 +241,7 @@ interface SettlementRecord {
   monthlyFlow: number
   commissionAmount: number
   fee: number
-  feeRate: number          // 手续费率（如 0.005 = 0.5%）
+  feeRate: number          // 提现手续费率（如 0.005 = 0.5%）
   bankName: string
   cardNo: string
   segments: Array<{ label: string; factor: number }>
@@ -442,7 +442,7 @@ const columns = [
     }, row.commissionAmount > 0 ? `¥${row.commissionAmount.toLocaleString()}` : '-')
   },
   {
-    title: '手续费(¥)', key: 'fee', width: 90,
+    title: '提现手续费(¥)', key: 'fee', width: 90,
     render: (row: any) => row.fee > 0
       ? `¥${row.fee.toFixed(2)}`
       : h('span', { style: 'color:#9CA3AF;' }, '-')
@@ -493,7 +493,7 @@ const merchantDetailColumns = [
   { title: '下属商家', key: 'merchant', width: 180 },
   { title: '采购额(¥)', key: 'purchaseAmount', width: 120, render: (r: any) => `¥${r.purchaseAmount.toLocaleString()}` },
   { title: '分润(¥)', key: 'commission', width: 110, render: (r: any) => h('span', { style: 'font-weight:600;color:#3B82F6;' }, `¥${r.commission.toLocaleString()}`) },
-  { title: '手续费(¥)', key: 'fee', width: 100, render: (r: any) => `¥${r.fee.toFixed(2)}` },
+  { title: '提现手续费(¥)', key: 'fee', width: 100, render: (r: any) => `¥${r.fee.toFixed(2)}` },
 ]
 
 // ========== 过滤 ==========

@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>代理商结算配置</h1>
-        <p class="header-desc">设置代理商分润的结算周期、手续费率和打款规则</p>
+        <p class="header-desc">设置代理商分润的结算周期、提现手续费率和打款规则</p>
       </div>
     </div>
 
@@ -39,19 +39,19 @@
       </n-card>
     </div>
 
-    <!-- 手续费配置 -->
+    <!-- 提现手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title">手续费配置</h3>
+      <h3 class="section-title">提现手续费配置</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="150">
-          <n-form-item label="手续费模式">
+          <n-form-item label="提现手续费模式">
             <n-radio-group v-model:value="feeConfig.mode">
               <n-radio value="global">全局统一费率</n-radio>
               <n-radio value="individual">按代理商单独设置</n-radio>
             </n-radio-group>
           </n-form-item>
 
-          <n-form-item label="默认手续费率" v-if="feeConfig.mode === 'global'">
+          <n-form-item label="默认提现手续费率" v-if="feeConfig.mode === 'global'">
             <n-input-number
               v-model:value="feeConfig.globalRate"
               :min="0"
@@ -65,7 +65,7 @@
 
           <div v-if="feeConfig.mode === 'individual'">
             <n-alert type="info" style="margin-bottom: 16px;">
-              按代理商单独设置的手续费率将覆盖默认费率。可在代理商管理页面中单独调整。
+              按代理商单独设置的提现手续费率将覆盖默认费率。可在代理商管理页面中单独调整。
             </n-alert>
             <n-data-table
               :columns="agentFeeColumns"
@@ -76,21 +76,21 @@
             />
           </div>
 
-          <n-form-item label="手续费说明">
+          <n-form-item label="提现手续费说明">
             <n-input
               v-model:value="feeConfig.description"
               type="textarea"
-              placeholder="将在代理商结算单中显示的手续费说明"
+              placeholder="将在代理商结算单中显示的提现手续费说明"
               :autosize="{ minRows: 2, maxRows: 4 }"
             />
           </n-form-item>
 
-          <n-form-item label="最低手续费">
+          <n-form-item label="最低提现手续费">
             <n-input-number v-model:value="feeConfig.minFee" :min="0" :step="1" style="width: 200px;" />
             <span style="margin-left: 8px;">元（低于此值按此标准收取）</span>
           </n-form-item>
 
-          <n-form-item label="最高手续费">
+          <n-form-item label="最高提现手续费">
             <n-input-number v-model:value="feeConfig.maxFee" :min="0" :step="1" style="width: 200px;" />
             <span style="margin-left: 8px;">元（0表示不封顶）</span>
           </n-form-item>
@@ -171,11 +171,11 @@ const dayOptions = [
   { label: '每月月末', value: 0 },
 ]
 
-// ==================== 手续费配置 ====================
+// ==================== 提现手续费配置 ====================
 const feeConfig = ref({
   mode: 'global' as 'global' | 'individual',
   globalRate: 0.005,
-  description: '分润结算金额将扣除手续费后打款到银行卡',
+  description: '分润结算金额将扣除提现手续费后打款到银行卡',
   minFee: 1,
   maxFee: 0,
 })
@@ -183,7 +183,7 @@ const feeConfig = ref({
 const agentFeeColumns = [
   { title: '代理商', key: 'agentName', width: 150 },
   { title: '分润比例', key: 'commissionRate', width: 100, render: (row: any) => `${row.commissionRate}%` },
-  { title: '手续费率', key: 'feeRate', width: 110, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
+  { title: '提现手续费率', key: 'feeRate', width: 110, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
   { title: '状态', key: 'customized', width: 80, render: (row: any) => h('span', { style: row.customized ? 'color:#EF4444' : '#999' }, row.customized ? '自定义' : '默认') },
 ]
 

@@ -107,10 +107,10 @@ interface CpMessage {
 }
 
 const messages = ref<CpMessage[]>([
-  { id: 1, title: '结算到账通知', content: '2026-05 结算周期已到账 ¥107,722（扣除手续费 ¥2,198），请查看结算记录。', time: '2026-05-28 10:30', type: 'settlement', read: false },
+  { id: 1, title: '结算到账通知', content: '2026-05 结算周期已到账 ¥107,722（扣除提现手续费 ¥2,198），请查看结算记录。', time: '2026-05-28 10:30', type: 'settlement', read: false },
   { id: 2, title: '游戏审核通过', content: '您提交的游戏「过山车VR 2.0」已通过平台审核，游戏豆定价 ¥8/次，单次成本 ¥2.40，即日起上线运营。', time: '2026-05-20 14:15', type: 'review', read: false },
   { id: 3, title: '游戏审核不通过', content: '您提交的游戏「末日求生」未通过审核，原因：游戏内容与描述不符，请修改后重新提交。', time: '2026-05-18 09:20', type: 'review', read: true },
-  { id: 4, title: '结算到账通知', content: '2026-04 结算周期已到账 ¥66,679（扣除手续费 ¥1,361），请查看结算记录。', time: '2026-04-28 09:15', type: 'settlement', read: true },
+  { id: 4, title: '结算到账通知', content: '2026-04 结算周期已到账 ¥66,679（扣除提现手续费 ¥1,361），请查看结算记录。', time: '2026-04-28 09:15', type: 'settlement', read: true },
   { id: 5, title: '系统维护通知', content: '头号空间平台将于2026-06-15 02:00-04:00进行系统维护升级，届时CP后台可能短暂不可用，请提前做好安排。', time: '2026-05-30 18:00', type: 'system', read: true },
   { id: 6, title: '合作协议更新', content: '《头号空间CP合作协议》已更新至 v2.3 版本，主要修订了结算费率条款，请在账户设置中查看并确认。', time: '2026-05-25 11:00', type: 'system', read: false },
   { id: 7, title: '供应商资质审核通过', content: '您的供应商资质（营业执照、法人身份）已通过平台审核，可正常上传游戏内容。', time: '2026-05-10 16:00', type: 'review', read: true },

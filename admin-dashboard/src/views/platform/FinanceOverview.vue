@@ -91,7 +91,7 @@
         <div class="sub-metric-card">
           <span class="sub-label">待结算总额</span>
           <span class="sub-value warning">¥456,180</span>
-          <span class="sub-detail">商家待结算金额（含手续费）</span>
+          <span class="sub-detail">商家待结算金额（含提现手续费）</span>
         </div>
       </div>
 
@@ -164,7 +164,7 @@ const settlementColumns = [
   { title: '单号', key: 'settlementNo', width: 130, ellipsis: { tooltip: true } },
   { title: '商家', key: 'merchant' },
   { title: '金额', key: 'amount', width: 100, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '手续费', key: 'fee', width: 80, render: (row: any) => `¥${row.fee.toLocaleString()}` },
+  { title: '提现手续费', key: 'fee', width: 80, render: (row: any) => `¥${row.fee.toLocaleString()}` },
   {
     title: '状态', key: 'status', width: 75, align: 'center',
     render: (row: any) => h(NTag, {

@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>结算配置</h1>
-        <p class="header-desc">设置自动结算周期、手续费率和打款规则</p>
+        <p class="header-desc">设置自动结算周期、提现手续费率和打款规则</p>
       </div>
     </div>
 
@@ -39,19 +39,19 @@
       </n-card>
     </div>
 
-    <!-- 手续费配置 -->
+    <!-- 提现手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title">手续费配置</h3>
+      <h3 class="section-title">提现手续费配置</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="140">
-          <n-form-item label="手续费模式">
+          <n-form-item label="提现手续费模式">
             <n-radio-group v-model:value="feeConfig.mode">
               <n-radio value="global">全局统一费率</n-radio>
               <n-radio value="custom">按商家自定义</n-radio>
             </n-radio-group>
           </n-form-item>
 
-          <n-form-item label="全局手续费率" v-if="feeConfig.mode === 'global'">
+          <n-form-item label="全局提现手续费率" v-if="feeConfig.mode === 'global'">
             <n-input-number
               v-model:value="feeConfig.globalRate"
               :min="0"
@@ -63,26 +63,26 @@
             <span style="margin-left: 8px;">（例：0.005 = 0.5%）</span>
           </n-form-item>
 
-          <n-form-item label="手续费说明">
+          <n-form-item label="提现手续费说明">
             <n-input
               v-model:value="feeConfig.description"
               type="textarea"
-              placeholder="手续费说明，将在结算单中显示"
+              placeholder="提现手续费说明，将在结算单中显示"
               :autosize="{ minRows: 2, maxRows: 4 }"
             />
           </n-form-item>
 
-          <n-form-item label="最低手续费">
+          <n-form-item label="最低提现手续费">
             <n-input-number
               v-model:value="feeConfig.minFee"
               :min="0"
               :step="1"
               style="width: 200px;"
             />
-            <span style="margin-left: 8px;">元（结算金额手续费低于此值时，按此值收取）</span>
+            <span style="margin-left: 8px;">元（结算金额提现手续费低于此值时，按此值收取）</span>
           </n-form-item>
 
-          <n-form-item label="最高手续费">
+          <n-form-item label="最高提现手续费">
             <n-input-number
               v-model:value="feeConfig.maxFee"
               :min="0"
@@ -171,11 +171,11 @@ const dayOptions = computed(() => {
   ]
 })
 
-// 手续费配置
+// 提现手续费配置
 const feeConfig = ref({
   mode: 'global',
   globalRate: 0.005,
-  description: '结算金额将扣除手续费后打款',
+  description: '结算金额将扣除提现手续费后打款',
   minFee: 1,
   maxFee: 0
 })

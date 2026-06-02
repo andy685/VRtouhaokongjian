@@ -72,7 +72,7 @@
             <n-form-item label="对应代理商" path="agentId">
               <n-select v-model:value="addForm.agentId" :options="agentOptions" placeholder="请选择代理商（选填）" clearable />
             </n-form-item>
-            <n-form-item label="手续费率">
+            <n-form-item label="提现手续费率">
               <n-input-number v-model:value="addForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
               <span style="margin-left: 8px; color: var(--text-muted);">（例：0.005 = 0.5%）</span>
             </n-form-item>
@@ -138,7 +138,7 @@
             <n-form-item label="对应代理商">
               <n-select v-model:value="editForm.agentId" :options="agentOptions" clearable />
             </n-form-item>
-            <n-form-item label="手续费率">
+            <n-form-item label="提现手续费率">
               <n-input-number v-model:value="editForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
               <span style="margin-left: 8px; color: var(--text-muted);">（例：0.005 = 0.5%）</span>
             </n-form-item>
@@ -191,7 +191,7 @@
             <n-descriptions-item label="旗下店铺">{{ currentMerchant.storeCount }} 家</n-descriptions-item>
             <n-descriptions-item label="会员总数">{{ currentMerchant.memberCount }} 人</n-descriptions-item>
             <n-descriptions-item label="上月营收">{{ currentMerchant.lastMonthRevenue }}</n-descriptions-item>
-            <n-descriptions-item label="手续费率">{{ (currentMerchant.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
+            <n-descriptions-item label="提现手续费率">{{ (currentMerchant.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
             <n-descriptions-item label="商家状态">
               <n-tag :type="statusType(currentMerchant.status)" size="small">{{ statusLabel(currentMerchant.status) }}</n-tag>
             </n-descriptions-item>
