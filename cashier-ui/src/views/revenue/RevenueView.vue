@@ -17,7 +17,7 @@
           <div class="stat-card">
             <div class="stat-icon blue"><el-icon><Money /></el-icon></div>
             <div class="stat-info">
-              <div class="stat-value">¥12,580</div>
+              <div class="stat-value"><span class="currency-symbol">¥</span>12,580</div>
               <div class="stat-label">今日营收</div>
             </div>
           </div>
@@ -26,7 +26,7 @@
           <div class="stat-card">
             <div class="stat-icon green"><el-icon><TrendCharts /></el-icon></div>
             <div class="stat-info">
-              <div class="stat-value">¥8,320</div>
+              <div class="stat-value"><span class="currency-symbol">¥</span>8,320</div>
               <div class="stat-label">储值收入</div>
             </div>
           </div>
@@ -35,7 +35,7 @@
           <div class="stat-card">
             <div class="stat-icon orange"><el-icon><ShoppingCart /></el-icon></div>
             <div class="stat-info">
-              <div class="stat-value">¥4,260</div>
+              <div class="stat-value"><span class="currency-symbol">¥</span>4,260</div>
               <div class="stat-label">消费收入</div>
             </div>
           </div>

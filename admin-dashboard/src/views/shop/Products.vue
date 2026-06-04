@@ -184,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, computed, watch } from 'vue'
+import { ref, h, computed, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   NButton, NTabs, NTabPane, NDataTable, NTag, NSpace, NInput,
@@ -497,8 +497,44 @@ const searchText = ref('')
 const filterCategory = ref<string | null>(null)
 const filterStock = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
+const PRODUCT_STORAGE_KEY = 'shopPhysicalProducts'
+
+const defaultCover = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" rx="12" fill="#e2e8f0"/><rect x="22" y="20" width="76" height="56" rx="10" fill="#cbd5e1"/><rect x="32" y="34" width="56" height="8" rx="4" fill="#94a3b8"/><rect x="32" y="48" width="38" height="8" rx="4" fill="#94a3b8"/><text x="60" y="98" text-anchor="middle" font-size="11" fill="#64748b">商品封面</text></svg>')}`
+
+function createCover(text: string, from: string, to: string) {
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${from}"/><stop offset="100%" stop-color="${to}"/></linearGradient></defs><rect width="120" height="120" rx="12" fill="url(#g)"/><rect x="16" y="18" width="88" height="62" rx="10" fill="rgba(255,255,255,0.14)"/><text x="60" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">${text}</text></svg>`)}`
+}
+
+function createDefaultPhysicalData() {
+  return [
+    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), icon: '😷', category: '消耗品', cost: '0.8', price: '3.0', stock: '200', sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), icon: '🧤', category: '配件', cost: '12', price: '29.0', stock: '15', sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), icon: '🧸', category: '周边', cost: '35', price: '68.0', stock: '52', sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), icon: '🔑', category: '周边', cost: '8', price: '18.0', stock: '3', sales: 289, status: 'off' },
+    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), icon: '🥤', category: '饮品', cost: '2', price: '5.0', stock: '30', sales: 856, status: 'on' },
+  ]
+}
+
+function loadPhysicalData() {
+  try {
+    const saved = localStorage.getItem(PRODUCT_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch {
+    // ignore
+  }
+  return createDefaultPhysicalData()
+}
 
 const physicalColumns = [
+  { title: '封面', key: 'cover', width: 82, render(row: any) {
+    return h('img', {
+      src: row.coverUrl || defaultCover,
+      style: 'width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0;background:#f8fafc;'
+    })
+  }},
   { title: '商品', key: 'info', render(row: any) {
     return h('div', { style: 'display:flex;align-items:center;gap:10px;' }, [
       h('div', { style: 'width:40px;height:40px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;' }, row.icon),
@@ -526,13 +562,15 @@ const physicalColumns = [
   ] }) },
 ]
 
-const physicalData = [
-  { id: '1', name: '一次性眼罩', icon: '😷', category: '消耗品', cost: '0.8', price: '3.0', stock: '200', sales: 1256, status: 'on' },
-  { id: '2', name: 'VR手柄保护套', icon: '🧤', category: '配件', cost: '12', price: '29.0', stock: '15', sales: 328, status: 'on' },
-  { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', category: '周边', cost: '35', price: '68.0', stock: '52', sales: 156, status: 'on' },
-  { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', category: '周边', cost: '8', price: '18.0', stock: '3', sales: 289, status: 'off' },
-  { id: '5', name: '可乐330ml', icon: '🥤', category: '饮品', cost: '2', price: '5.0', stock: '30', sales: 856, status: 'on' },
-]
+const physicalData = reactive(loadPhysicalData())
+
+watch(physicalData, (value) => {
+  try {
+    localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(value))
+  } catch {
+    // ignore
+  }
+}, { deep: true })
 
 
 const filteredData = computed(() => {

@@ -12,7 +12,7 @@
           </div>
           <div class="activity-bonus">
             <span class="bonus-tag">送</span>
-            <span class="bonus-value">¥{{ activity.bonus }}</span>
+            <span class="bonus-value"><span class="currency-symbol">¥</span>{{ activity.bonus }}</span>
           </div>
           <el-button type="primary" @click="handleRecharge(activity)">立即充值</el-button>
         </div>

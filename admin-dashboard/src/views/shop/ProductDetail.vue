@@ -146,11 +146,48 @@ const categoryMap: Record<string, string> = {
   drink: '饮品',
 }
 
+const PRODUCT_STORAGE_KEY = 'shopPhysicalProducts'
+
 const productData = ref<any>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // 默认占位图
 const defaultCover = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="#f1f5f9"/><rect x="160" y="120" width="80" height="60" rx="6" fill="#cbd5e1"/><circle cx="185" cy="145" r="10" fill="#94a3b8"/><polygon points="165,175 200,150 235,175" fill="#94a3b8"/><rect x="140" y="200" width="120" height="8" rx="4" fill="#cbd5e1"/><rect x="155" y="220" width="90" height="8" rx="4" fill="#e2e8f0"/><circle cx="200" cy="290" r="24" fill="#e2e8f0"/><path d="M190 290 L210 290 M200 280 L200 300" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/></svg>')}`
+
+function createCover(text: string, from: string, to: string) {
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${from}"/><stop offset="100%" stop-color="${to}"/></linearGradient></defs><rect width="120" height="120" rx="12" fill="url(#g)"/><rect x="16" y="18" width="88" height="62" rx="10" fill="rgba(255,255,255,0.14)"/><text x="60" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">${text}</text></svg>`)}`
+}
+
+function getProductIcon(category: string | null) {
+  if (category === 'consumable') return '😷'
+  if (category === 'accessory') return '🧤'
+  if (category === 'merchandise') return '🧸'
+  if (category === 'drink') return '🥤'
+  return '📦'
+}
+
+function getDefaultProducts() {
+  return [
+    { id: '1', name: '一次性眼罩', icon: '😷', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), category: 'consumable', cost: 0.8, price: 3.0, stock: 200, sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', icon: '🧤', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), category: 'accessory', cost: 12, price: 29.0, stock: 15, sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), category: 'merchandise', cost: 35, price: 68.0, stock: 52, sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), category: 'merchandise', cost: 8, price: 18.0, stock: 3, sales: 289, status: 'on' },
+    { id: '5', name: '可乐330ml', icon: '🥤', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), category: 'drink', cost: 2, price: 5.0, stock: 30, sales: 856, status: 'on' },
+  ]
+}
+
+function loadProducts() {
+  try {
+    const saved = localStorage.getItem(PRODUCT_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch {
+    // ignore
+  }
+  return getDefaultProducts()
+}
 
 const formData = ref({
   name: '',
@@ -164,18 +201,9 @@ const formData = ref({
   statusOn: true,
 })
 
-// 模拟商品数据
-const mockProducts: Record<string, any> = {
-  '1': { name: '一次性眼罩', icon: '😷', coverUrl: '', category: 'consumable', cost: 0.8, price: 3.0, stock: 200, sales: 1256, status: 'on' },
-  '2': { name: 'VR手柄保护套', icon: '🧤', coverUrl: '', category: 'accessory', cost: 12, price: 29.0, stock: 15, sales: 328, status: 'on' },
-  '3': { name: '恐怖医院限定玩偶', icon: '🧸', coverUrl: '', category: 'merchandise', cost: 35, price: 68.0, stock: 52, sales: 156, status: 'on' },
-  '4': { name: '恐龙王国钥匙扣', icon: '🔑', coverUrl: '', category: 'merchandise', cost: 8, price: 18.0, stock: 3, sales: 289, status: 'on' },
-  '5': { name: '可乐330ml', icon: '🥤', coverUrl: '', category: 'drink', cost: 2, price: 5.0, stock: 30, sales: 856, status: 'on' },
-}
-
 onMounted(() => {
   if (isEdit.value && productId.value) {
-    const data = mockProducts[productId.value]
+    const data = loadProducts().find(item => item.id === productId.value)
     if (data) {
       productData.value = data
       formData.value = {
@@ -227,6 +255,42 @@ function handleSave() {
     message.warning('请输入商品名称')
     return
   }
+
+  const products = loadProducts()
+  const payload = {
+    name: formData.value.name,
+    icon: getProductIcon(formData.value.category),
+    coverUrl: formData.value.coverUrl,
+    category: formData.value.category,
+    cost: formData.value.cost,
+    price: formData.value.price,
+    stock: formData.value.stock,
+    sales: productData.value?.sales ?? 0,
+    status: formData.value.statusOn ? 'on' : 'off',
+  }
+
+  if (isEdit.value && productId.value) {
+    const index = products.findIndex(item => item.id === productId.value)
+    if (index > -1) {
+      products[index] = {
+        ...products[index],
+        ...payload,
+      }
+    }
+  } else {
+    const nextId = Math.max(...products.map(item => Number(item.id) || 0), 0) + 1
+    products.unshift({
+      id: String(nextId),
+      ...payload,
+    })
+  }
+
+  try {
+    localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(products))
+  } catch {
+    // ignore
+  }
+
   message.success(isEdit.value ? '商品已更新' : '商品已添加')
   router.push('/shop/products')
 }

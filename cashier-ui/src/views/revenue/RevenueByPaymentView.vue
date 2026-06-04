@@ -10,7 +10,7 @@
         <el-table-column prop="count" label="笔数" />
         <el-table-column prop="amount" label="金额">
           <template #default="{ row }">
-            <span style="color: #ff6b6b; font-weight: 600">¥{{ row.amount }}</span>
+            <span style="color: #ff6b6b; font-weight: 600"><span class="currency-symbol">¥</span>{{ row.amount }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="ratio" label="占比">

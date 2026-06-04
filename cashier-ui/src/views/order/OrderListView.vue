@@ -23,7 +23,7 @@
         <el-table-column prop="items" label="消费项目" />
         <el-table-column prop="amount" label="金额" width="100">
           <template #default="{ row }">
-            <span style="color: #ff6b6b">¥{{ row.amount }}</span>
+            <span style="color: #ff6b6b"><span class="currency-symbol">¥</span>{{ row.amount }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="payment" label="支付方式" width="100">

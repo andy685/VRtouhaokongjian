@@ -8,14 +8,6 @@
 
       <div class="login-form">
         <n-form :model="loginForm" :rules="rules">
-          <n-form-item label="登录身份" required>
-            <n-radio-group v-model:value="loginRole" size="small">
-              <n-radio value="shop">商家</n-radio>
-              <n-radio value="agent">代理商</n-radio>
-              <n-radio value="platform">平台超管</n-radio>
-              <n-radio value="cp">供应商</n-radio>
-            </n-radio-group>
-          </n-form-item>
           <n-form-item label="用户名" path="username">
             <n-input v-model:value="loginForm.username" placeholder="请输入用户名" />
           </n-form-item>
@@ -46,6 +38,25 @@
             登录
           </n-button>
         </n-form>
+
+        <section class="system-switcher" aria-label="系统切换入口">
+          <div class="system-switcher-header">
+            <span>系统入口</span>
+            <small>临时切换</small>
+          </div>
+          <div class="system-switcher-links">
+            <button
+              v-for="entry in systemEntries"
+              :key="entry.key"
+              type="button"
+              class="system-link-chip"
+              :class="{ active: isSystemEntryActive(entry) }"
+              @click="handleSystemEntry(entry)"
+            >
+              {{ entry.label }}
+            </button>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -100,13 +111,19 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal } from 'naive-ui'
 
 const router = useRouter()
+const route = useRoute()
 
 // 登录身份
 const loginRole = ref<'shop' | 'agent' | 'platform' | 'cp'>('shop')
+
+type LoginRole = 'shop' | 'agent' | 'platform' | 'cp'
+type SystemEntry =
+  | { key: 'cashier'; label: string; type: 'external'; path: string }
+  | { key: LoginRole; label: string; type: 'role'; role: LoginRole }
 
 // 登录表单
 const loginForm = reactive({
@@ -123,6 +140,55 @@ const forgotForm = reactive({
   newPassword: '',
   confirmPassword: ''
 })
+
+const createOrigin = (port: number) => {
+  const { protocol, hostname } = window.location
+  return `${protocol}//${hostname}:${port}`
+}
+
+const systemEntries: SystemEntry[] = [
+  { key: 'cashier', label: '收银工作台', type: 'external', path: '/login' },
+  { key: 'shop', label: '商家后台', type: 'role', role: 'shop' },
+  { key: 'agent', label: '代理商后台', type: 'role', role: 'agent' },
+  { key: 'platform', label: '平台超管', type: 'role', role: 'platform' },
+  { key: 'cp', label: '供应商后台', type: 'role', role: 'cp' }
+]
+
+async function probeOrigin(origin: string, path: string) {
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), 1200)
+
+  try {
+    await fetch(`${origin}${path}`, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+    return true
+  } catch {
+    return false
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
+
+async function resolveCashierOrigin() {
+  const currentPort = Number(window.location.port || 5174)
+  // cashier-ui 默认运行在 admin-dashboard 端口 +1 (9527→9528)
+  const candidatePorts = Array.from(
+    new Set([currentPort + 1, currentPort - 1, 9528, 5173, 5174].filter((port) => Number.isFinite(port) && port > 0))
+  )
+
+  for (const port of candidatePorts) {
+    const origin = createOrigin(port)
+    if (await probeOrigin(origin, '/login')) {
+      return origin
+    }
+  }
+
+  return createOrigin(candidatePorts[0] || 9528)
+}
 
 // 表单规则
 const rules = {
@@ -161,9 +227,8 @@ const forgotRules = {
   },
   confirmPassword: {
     required: true,
-    message: '请确认新密码',
     trigger: 'blur',
-    validator: (rule: any, value: string) => {
+    validator: (_rule: unknown, value: string) => {
       return value === forgotForm.newPassword
     },
     message: '两次输入的密码不一致'
@@ -245,6 +310,28 @@ function sendForgotVerificationCode() {
   }, 2000)
 }
 
+function syncLoginRole(role: LoginRole) {
+  loginRole.value = role
+  router.replace({
+    path: '/login',
+    query: { role }
+  })
+}
+
+async function handleSystemEntry(entry: SystemEntry) {
+  if (entry.type === 'external') {
+    const cashierOrigin = await resolveCashierOrigin()
+    window.location.href = `${cashierOrigin}${entry.path}`
+    return
+  }
+  syncLoginRole(entry.role)
+}
+
+function isSystemEntryActive(entry: SystemEntry) {
+  if (entry.type === 'external') return false
+  return loginRole.value === entry.role
+}
+
 // 处理登录
 function handleLogin() {
   isLoading.value = true
@@ -276,8 +363,16 @@ function checkNeedVerificationCode() {
   showVerificationCode.value = true
 }
 
+function applyRoleFromQuery() {
+  const role = route.query.role
+  if (role === 'shop' || role === 'agent' || role === 'platform' || role === 'cp') {
+    loginRole.value = role
+  }
+}
+
 // 页面加载时检查
 onMounted(() => {
+  applyRoleFromQuery()
   checkNeedVerificationCode()
   // 绘制初始验证码
   if (showVerificationCode.value) {
@@ -325,6 +420,62 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.system-switcher {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(103, 116, 158, 0.18);
+}
+
+.system-switcher-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.system-switcher-header span {
+  color: #4f5e96;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.system-switcher-header small {
+  color: #8c95ad;
+  font-size: 12px;
+}
+
+.system-switcher-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.system-link-chip {
+  min-width: 92px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #d8def0;
+  border-radius: 999px;
+  background: rgba(102, 126, 234, 0.06);
+  color: #56647d;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.system-link-chip:hover {
+  border-color: #b8c3ea;
+  background: rgba(102, 126, 234, 0.1);
+  color: #3f4d75;
+}
+
+.system-link-chip.active {
+  border-color: #7d8fea;
+  background: rgba(102, 126, 234, 0.16);
+  color: #32406d;
 }
 
 .form-actions {

@@ -8,9 +8,9 @@
       <el-descriptions :column="2" border>
         <el-descriptions-item label="订单号">REC20240115001</el-descriptions-item>
         <el-descriptions-item label="会员">李明</el-descriptions-item>
-        <el-descriptions-item label="原充值金额">¥500</el-descriptions-item>
-        <el-descriptions-item label="赠送金额">¥50</el-descriptions-item>
-        <el-descriptions-item label="实际到账">¥550</el-descriptions-item>
+        <el-descriptions-item label="原充值金额"><span class="currency-symbol">¥</span>500</el-descriptions-item>
+        <el-descriptions-item label="赠送金额"><span class="currency-symbol">¥</span>50</el-descriptions-item>
+        <el-descriptions-item label="实际到账"><span class="currency-symbol">¥</span>550</el-descriptions-item>
         <el-descriptions-item label="支付方式">微信支付</el-descriptions-item>
         <el-descriptions-item label="收银员">张三</el-descriptions-item>
         <el-descriptions-item label="下单时间">2024-01-15 14:30:25</el-descriptions-item>

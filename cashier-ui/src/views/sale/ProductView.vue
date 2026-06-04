@@ -12,7 +12,7 @@
         <el-table-column prop="category" label="分类" width="120" />
         <el-table-column prop="price" label="售价" width="100">
           <template #default="{ row }">
-            ¥{{ row.price }}
+            <span class="currency-symbol">¥</span>{{ row.price }}
           </template>
         </el-table-column>
         <el-table-column prop="stock" label="库存" width="100" />

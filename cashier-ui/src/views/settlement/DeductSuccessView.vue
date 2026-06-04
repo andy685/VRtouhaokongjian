@@ -5,8 +5,8 @@
         <el-icon><CircleCheckFilled /></el-icon>
       </div>
       <h2>扣费成功</h2>
-      <div class="amount">-¥68</div>
-      <div class="balance">剩余余额: ¥432</div>
+      <div class="amount">-<span class="currency-symbol">¥</span>68</div>
+      <div class="balance">剩余余额: <span class="currency-symbol">¥</span>432</div>
       <div class="actions">
         <el-button type="primary" size="large" @click="$router.push('/member')">返回会员</el-button>
         <el-button size="large" @click="$router.push('/sale')">继续收款</el-button>

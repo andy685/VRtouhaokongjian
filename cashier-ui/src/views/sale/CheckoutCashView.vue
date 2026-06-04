@@ -12,15 +12,15 @@
         </div>
         <div class="info-row">
           <span class="label">商品合计</span>
-          <span class="value">¥{{ 68 * 3 }}</span>
+          <span class="value"><span class="currency-symbol">¥</span>{{ 68 * 3 }}</span>
         </div>
         <div class="info-row discount">
           <span class="label">优惠</span>
-          <span class="value">-¥0</span>
+          <span class="value">-<span class="currency-symbol">¥</span>0</span>
         </div>
         <div class="info-row total">
           <span class="label">应付金额</span>
-          <span class="value price">¥204</span>
+          <span class="value price"><span class="currency-symbol">¥</span>204</span>
         </div>
       </div>
 
@@ -48,7 +48,7 @@
         </div>
         <div class="amount-row change">
           <span>找零</span>
-          <span class="change-value">¥{{ Math.max(0, receivedAmount - 204) }}</span>
+          <span class="change-value"><span class="currency-symbol">¥</span>{{ Math.max(0, receivedAmount - 204) }}</span>
         </div>
       </div>
 

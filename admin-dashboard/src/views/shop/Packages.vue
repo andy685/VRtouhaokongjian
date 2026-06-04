@@ -55,6 +55,26 @@
     <!-- 新增/编辑套票弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
+        <n-form-item label="套票封面" path="coverUrl">
+          <div class="cover-upload">
+            <div class="cover-wrap" @click="triggerCoverUpload">
+              <img v-if="formData.coverUrl" :src="formData.coverUrl" class="cover-img" />
+              <div v-else class="cover-placeholder">
+                <span>上传封面</span>
+                <small>用于套票列表展示</small>
+              </div>
+              <div class="cover-overlay">
+                <n-icon :component="AddOutline" size="20" color="#fff" />
+                <span>{{ formData.coverUrl ? '更换封面' : '点击上传' }}</span>
+              </div>
+            </div>
+            <div class="cover-actions">
+              <n-button size="tiny" secondary @click.stop="triggerCoverUpload">选择图片</n-button>
+              <n-button v-if="formData.coverUrl" size="tiny" quaternary type="error" @click.stop="removeCover">删除</n-button>
+            </div>
+            <input ref="coverInputRef" type="file" accept="image/jpeg,image/png,image/webp" class="hidden-input" @change="handleCoverChange" />
+          </div>
+        </n-form-item>
         <n-form-item label="售卖店铺" path="shop" required>
           <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
         </n-form-item>
@@ -163,7 +183,7 @@ import {
 import type { DataTableColumns } from 'naive-ui'
 import {
   SearchOutline, TicketOutline, BagOutline, CashOutline,
-  EllipsisHorizontalOutline
+  EllipsisHorizontalOutline, AddOutline
 } from '@vicons/ionicons5'
 
 const activeTab = ref('all')
@@ -177,6 +197,7 @@ const formData = ref({
   id: null as number | null,
   shop: null,
   name: '',
+  coverUrl: '',
   type: 'time',
   price: null as number | null,
   hours: 0,
@@ -214,7 +235,19 @@ const terminalOptions = [
 
 const pagination = { pageSize: 10 }
 
+const coverInputRef = ref<HTMLInputElement | null>(null)
+
+const defaultCover = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180"><rect width="180" height="180" rx="12" fill="#ede9fe"/><rect x="24" y="24" width="132" height="132" rx="16" fill="#ddd6fe"/><rect x="48" y="54" width="34" height="34" rx="8" fill="#8b5cf6"/><rect x="92" y="60" width="48" height="10" rx="5" fill="#6d28d9"/><rect x="92" y="78" width="32" height="8" rx="4" fill="#7c3aed"/><text x="90" y="144" text-anchor="middle" font-size="13" fill="#5b21b6">套票</text></svg>')}`
+
+function createCover(text: string, from: string, to: string) {
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${from}"/><stop offset="100%" stop-color="${to}"/></linearGradient></defs><rect width="180" height="180" rx="12" fill="url(#g)"/><rect x="24" y="24" width="132" height="132" rx="16" fill="rgba(255,255,255,0.14)"/><text x="90" y="96" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">${text}</text></svg>`)}`
+}
+
 const columns: DataTableColumns = [
+  { title: '封面', key: 'coverUrl', width: 92, render: (row) => h('img', {
+    src: row.coverUrl || defaultCover,
+    style: 'width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;background:#f8fafc;'
+  }) },
   { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '套票名称', key: 'name', width: 140 },
   { title: '类型', key: 'type', width: 90, render: (row) => row.type === 'time' ? '计时票' : '计次票' },
@@ -241,12 +274,49 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '1小时体验票', type: 'time', price: 68, hours: 1, times: 0, valueText: '1小时', validText: '30天', memberTypesText: '全部会员', sold: 520, status: true },
-  { id: 2, shopName: '卓远天河路店', name: '2小时畅玩票', type: 'time', price: 118, hours: 2, times: 0, valueText: '2小时', validText: '永久有效', memberTypesText: '黄金及以上', sold: 380, status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '10次卡', type: 'count', price: 580, hours: 0, times: 10, valueText: '10次', validText: '180天', memberTypesText: '全部会员', sold: 156, status: true },
-  { id: 4, shopName: '卓远北京路店', name: '30次卡', type: 'count', price: 1580, hours: 0, times: 30, valueText: '30次', validText: '365天', memberTypesText: '铂金及以上', sold: 48, status: true },
-  { id: 5, shopName: '卓远天河路店', name: '亲子套票', type: 'time', price: 198, hours: 2, times: 0, valueText: '2小时', validText: '永久有效', memberTypesText: '全部会员', sold: 86, status: false },
+  { id: 1, shopName: '卓远亚运城店', name: '1小时体验票', coverUrl: createCover('1H', '#3b82f6', '#2563eb'), type: 'time', price: 68, hours: 1, times: 0, valueText: '1小时', validText: '30天', memberTypesText: '全部会员', sold: 520, status: true },
+  { id: 2, shopName: '卓远天河路店', name: '2小时畅玩票', coverUrl: createCover('2H', '#10b981', '#059669'), type: 'time', price: 118, hours: 2, times: 0, valueText: '2小时', validText: '永久有效', memberTypesText: '黄金及以上', sold: 380, status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '10次卡', coverUrl: createCover('10次', '#7c3aed', '#5b21b6'), type: 'count', price: 580, hours: 0, times: 10, valueText: '10次', validText: '180天', memberTypesText: '全部会员', sold: 156, status: true },
+  { id: 4, shopName: '卓远北京路店', name: '30次卡', coverUrl: createCover('30次', '#f59e0b', '#d97706'), type: 'count', price: 1580, hours: 0, times: 30, valueText: '30次', validText: '365天', memberTypesText: '铂金及以上', sold: 48, status: true },
+  { id: 5, shopName: '卓远天河路店', name: '亲子套票', coverUrl: createCover('亲子', '#ec4899', '#db2777'), type: 'time', price: 198, hours: 2, times: 0, valueText: '2小时', validText: '永久有效', memberTypesText: '全部会员', sold: 86, status: false },
 ])
+
+function getShopName(shop: string | null) {
+  return (shopOptions.find(item => item.value === shop)?.label || '-').replace('（测试）', '')
+}
+
+function resolveShopValue(shopName: string) {
+  const option = shopOptions.find(item => item.label.replace('（测试）', '') === shopName)
+  return option?.value || null
+}
+
+function formatDateValue(value: number | null) {
+  if (!value) return '-'
+  const d = new Date(value)
+  const month = `${d.getMonth() + 1}`.padStart(2, '0')
+  const day = `${d.getDate()}`.padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
+}
+
+function resolveValueText(type: string, hours: number, times: number) {
+  return type === 'time' ? `${hours}小时` : `${times}次`
+}
+
+function resolveValidText(type: string, days: number, date: number | null) {
+  if (type === 'duration') return `${days}天`
+  if (type === 'date') return formatDateValue(date)
+  return '永久有效'
+}
+
+function resolveMemberTypesText(memberTypes: string[]) {
+  if (memberTypes.length === 4) return '全部会员'
+  return memberTypes.map(type => {
+    if (type === 'bronze') return '青铜'
+    if (type === 'silver') return '白银'
+    if (type === 'gold') return '黄金'
+    return '普通会员'
+  }).join('、')
+}
 
 function handleAdd() {
   isEdit.value = false
@@ -255,6 +325,7 @@ function handleAdd() {
     id: null,
     shop: null,
     name: '',
+    coverUrl: '',
     type: 'time',
     price: null,
     hours: 0,
@@ -276,8 +347,9 @@ function handleEdit(row: any) {
   modalTitle.value = '编辑套票'
   formData.value = {
     id: row.id,
-    shop: 'shop1',
+    shop: resolveShopValue(row.shopName),
     name: row.name,
+    coverUrl: row.coverUrl || '',
     type: row.type,
     price: row.price,
     hours: row.hours,
@@ -308,8 +380,59 @@ function handleAction(key: string, row: any) {
 }
 
 function handleSubmit() {
-  console.log(formData.value)
+  const payload = {
+    shopName: getShopName(formData.value.shop),
+    name: formData.value.name,
+    coverUrl: formData.value.coverUrl,
+    type: formData.value.type,
+    price: formData.value.price || 0,
+    hours: formData.value.type === 'time' ? (formData.value.hours || 0) : 0,
+    times: formData.value.type === 'count' ? (formData.value.times || 0) : 0,
+    valueText: resolveValueText(formData.value.type, formData.value.hours || 0, formData.value.times || 0),
+    validText: resolveValidText(formData.value.validType, formData.value.validDays, formData.value.validDate),
+    memberTypesText: resolveMemberTypesText(formData.value.memberTypes),
+    sold: 0,
+    status: formData.value.status
+  }
+
+  if (isEdit.value && formData.value.id) {
+    const index = tableData.value.findIndex(item => item.id === formData.value.id)
+    if (index > -1) {
+      tableData.value[index] = {
+        ...tableData.value[index],
+        ...payload,
+        sold: tableData.value[index].sold
+      }
+    }
+  } else {
+    const nextId = Math.max(...tableData.value.map(item => item.id), 0) + 1
+    tableData.value.unshift({
+      id: nextId,
+      ...payload,
+    })
+  }
   showModal.value = false
+}
+
+function triggerCoverUpload() {
+  coverInputRef.value?.click()
+}
+
+function handleCoverChange(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    formData.value.coverUrl = ev.target?.result as string
+  }
+  reader.readAsDataURL(file)
+  target.value = ''
+}
+
+function removeCover() {
+  formData.value.coverUrl = ''
 }
 </script>
 
@@ -327,4 +450,13 @@ function handleSubmit() {
 .stat-content .value.success { color: #10B981; }
 .table-card { border-radius: 12px; }
 .form-hint { font-size: 12px; color: #999; }
+.cover-upload { display: flex; flex-direction: column; gap: 10px; }
+.cover-wrap { width: 180px; height: 180px; position: relative; border-radius: 12px; overflow: hidden; border: 1px dashed #cbd5e1; background: #f8fafc; cursor: pointer; }
+.cover-wrap:hover .cover-overlay { opacity: 1; }
+.cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cover-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #64748b; font-size: 13px; }
+.cover-placeholder small { font-size: 11px; color: #94a3b8; }
+.cover-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: rgba(15, 23, 42, 0.45); color: #fff; opacity: 0; transition: opacity 0.2s; font-size: 12px; }
+.cover-actions { display: flex; gap: 8px; }
+.hidden-input { display: none; }
 </style>

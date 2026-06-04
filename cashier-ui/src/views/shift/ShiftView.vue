@@ -25,19 +25,19 @@
             <el-col :span="6">
               <div class="summary-item">
                 <div class="label">收款总额</div>
-                <div class="value">¥5,060</div>
+                <div class="value"><span class="currency-symbol">¥</span>5,060</div>
               </div>
             </el-col>
             <el-col :span="6">
               <div class="summary-item">
                 <div class="label">现金收款</div>
-                <div class="value">¥1,680</div>
+                <div class="value"><span class="currency-symbol">¥</span>1,680</div>
               </div>
             </el-col>
             <el-col :span="6">
               <div class="summary-item">
                 <div class="label">线上收款</div>
-                <div class="value">¥3,380</div>
+                <div class="value"><span class="currency-symbol">¥</span>3,380</div>
               </div>
             </el-col>
           </el-row>

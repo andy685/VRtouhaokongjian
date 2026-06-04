@@ -7,7 +7,7 @@
       <div class="settlement-info">
         <div class="info-row">
           <span>应付金额</span>
-          <span class="amount">¥204.00</span>
+          <span class="amount"><span class="currency-symbol">¥</span>204.00</span>
         </div>
         <div class="info-row">
           <span>实收金额</span>
@@ -15,7 +15,7 @@
         </div>
         <div class="info-row change">
           <span>找零</span>
-          <span class="change-value">¥{{ Math.max(0, received - 204) }}</span>
+          <span class="change-value"><span class="currency-symbol">¥</span>{{ Math.max(0, received - 204) }}</span>
         </div>
       </div>
       <div class="actions">

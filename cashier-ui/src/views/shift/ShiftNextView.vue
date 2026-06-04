@@ -9,32 +9,32 @@
         <h4>请清点现金并录入</h4>
         <el-form :model="form" label-width="100px" class="cash-form">
           <el-form-item label="100元">
-            <el-input-number v-model="form.m100" :min="0" @change="calculate" /> 张 = ¥{{ form.m100 * 100 }}
+            <el-input-number v-model="form.m100" :min="0" @change="calculate" /> 张 = <span class="currency-symbol">¥</span>{{ form.m100 * 100 }}
           </el-form-item>
           <el-form-item label="50元">
-            <el-input-number v-model="form.m50" :min="0" @change="calculate" /> 张 = ¥{{ form.m50 * 50 }}
+            <el-input-number v-model="form.m50" :min="0" @change="calculate" /> 张 = <span class="currency-symbol">¥</span>{{ form.m50 * 50 }}
           </el-form-item>
           <el-form-item label="20元">
-            <el-input-number v-model="form.m20" :min="0" @change="calculate" /> 张 = ¥{{ form.m20 * 20 }}
+            <el-input-number v-model="form.m20" :min="0" @change="calculate" /> 张 = <span class="currency-symbol">¥</span>{{ form.m20 * 20 }}
           </el-form-item>
           <el-form-item label="10元">
-            <el-input-number v-model="form.m10" :min="0" @change="calculate" /> 张 = ¥{{ form.m10 * 10 }}
+            <el-input-number v-model="form.m10" :min="0" @change="calculate" /> 张 = <span class="currency-symbol">¥</span>{{ form.m10 * 10 }}
           </el-form-item>
           <el-form-item label="5元">
-            <el-input-number v-model="form.m5" :min="0" @change="calculate" /> 张 = ¥{{ form.m5 * 5 }}
+            <el-input-number v-model="form.m5" :min="0" @change="calculate" /> 张 = <span class="currency-symbol">¥</span>{{ form.m5 * 5 }}
           </el-form-item>
           <el-form-item label="1元">
-            <el-input-number v-model="form.m1" :min="0" @change="calculate" /> 张 = ¥{{ form.m1 * 1 }}
+            <el-input-number v-model="form.m1" :min="0" @change="calculate" /> 张 = <span class="currency-symbol">¥</span>{{ form.m1 * 1 }}
           </el-form-item>
           <el-form-item label="硬币">
             <el-input-number v-model="form.coin" :min="0" :step="0.1" /> 元
           </el-form-item>
           <el-divider />
           <el-form-item label="实收现金">
-            <span class="total-cash">¥{{ totalCash }}</span>
+            <span class="total-cash"><span class="currency-symbol">¥</span>{{ totalCash }}</span>
           </el-form-item>
           <el-form-item label="应收现金">
-            <span class="expected-cash">¥1,680</span>
+            <span class="expected-cash"><span class="currency-symbol">¥</span>1,680</span>
           </el-form-item>
           <el-form-item label="差额">
             <span :class="diff >= 0 ? 'positive' : 'negative'">{{ diff >= 0 ? '+' : '' }}{{ diff }}</span>

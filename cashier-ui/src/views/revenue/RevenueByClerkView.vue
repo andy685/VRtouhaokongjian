@@ -10,17 +10,17 @@
         <el-table-column prop="orderCount" label="订单数" />
         <el-table-column prop="recharge" label="储值收入">
           <template #default="{ row }">
-            ¥{{ row.recharge }}
+            <span class="currency-symbol">¥</span>{{ row.recharge }}
           </template>
         </el-table-column>
         <el-table-column prop="consume" label="消费收入">
           <template #default="{ row }">
-            ¥{{ row.consume }}
+            <span class="currency-symbol">¥</span>{{ row.consume }}
           </template>
         </el-table-column>
         <el-table-column prop="total" label="合计">
           <template #default="{ row }">
-            <span style="color: #ff6b6b; font-weight: 600">¥{{ row.total }}</span>
+            <span style="color: #ff6b6b; font-weight: 600"><span class="currency-symbol">¥</span>{{ row.total }}</span>
           </template>
         </el-table-column>
       </el-table>

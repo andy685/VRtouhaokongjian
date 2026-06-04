@@ -11,8 +11,8 @@
             <el-tag :type="pkg.type === 'hot' ? 'danger' : 'info'">{{ pkg.tag }}</el-tag>
           </div>
           <div class="package-price">
-            <span class="price">¥{{ pkg.price }}</span>
-            <span class="original">¥{{ pkg.original }}</span>
+            <span class="price"><span class="currency-symbol">¥</span>{{ pkg.price }}</span>
+            <span class="original"><span class="currency-symbol">¥</span>{{ pkg.original }}</span>
           </div>
           <div class="package-desc">{{ pkg.desc }}</div>
           <div class="package-features">

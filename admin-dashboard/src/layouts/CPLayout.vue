@@ -133,6 +133,14 @@
           <div class="role-card-desc">游戏管理 · 收益数据</div>
           <n-tag type="success" size="small" bordered>当前</n-tag>
         </div>
+        <div class="role-card" @click="switchToPayment">
+          <div class="role-card-icon payment">
+            <n-icon :component="WalletOutline" size="32" />
+          </div>
+          <div class="role-card-title">支付系统</div>
+          <div class="role-card-desc">支付配置 · 渠道管理</div>
+          <n-button size="tiny" secondary>进入</n-button>
+        </div>
       </div>
     </n-modal>
   </div>
@@ -218,6 +226,46 @@ const userMenuOptions = [
   { label: '退出登录', key: 'logout' },
 ]
 
+const createOrigin = (port: number) => {
+  const { protocol, hostname } = window.location
+  return `${protocol}//${hostname}:${port}`
+}
+
+async function probeOrigin(origin: string, path: string) {
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), 1200)
+
+  try {
+    await fetch(`${origin}${path}`, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+    return true
+  } catch {
+    return false
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
+
+async function resolveCashierOrigin() {
+  const currentPort = Number(window.location.port || 5175)
+  const candidatePorts = Array.from(
+    new Set([currentPort - 1, 5174, 5173].filter((port) => Number.isFinite(port) && port > 0))
+  )
+
+  for (const port of candidatePorts) {
+    const origin = createOrigin(port)
+    if (await probeOrigin(origin, '/sale')) {
+      return origin
+    }
+  }
+
+  return createOrigin(candidatePorts[0] || 5174)
+}
+
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
 function handleMenuUpdate(key: string) { router.push(key) }
 function renderMenuLabel(option: MenuOption) {
@@ -229,6 +277,11 @@ function switchToPlatform() { showRoleModal.value = false; router.push('/platfor
 function switchToAgent() { showRoleModal.value = false; router.push('/agent/dashboard') }
 function switchToShop() { showRoleModal.value = false; router.push('/shop/workbench') }
 function switchToCP() { showRoleModal.value = false }
+async function switchToPayment() {
+  showRoleModal.value = false
+  const cashierOrigin = await resolveCashierOrigin()
+  window.location.href = `${cashierOrigin}/sale`
+}
 
 function handleUserAction(key: string) {
   if (key === 'logout') router.push('/login')
@@ -366,6 +419,7 @@ function goToMessageCenter() { router.push('/cp/account/message') }
 .role-card-icon.agent { background: linear-gradient(135deg, #F59E0B, #D97706); }
 .role-card-icon.shop { background: linear-gradient(135deg, #10B981, #059669); }
 .role-card-icon.cp { background: linear-gradient(135deg, #8B5CF6, #6D28D9); }
+.role-card-icon.payment { background: linear-gradient(135deg, #0EA5E9, #0369A1); }
 
 .role-card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
 .role-card-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }

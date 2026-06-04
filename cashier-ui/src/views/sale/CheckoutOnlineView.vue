@@ -11,7 +11,7 @@
         </div>
         <div class="qr-info">
           <p>请使用支付宝或微信扫码支付</p>
-          <p class="amount">¥204.00</p>
+          <p class="amount"><span class="currency-symbol">¥</span>204.00</p>
         </div>
       </div>
 

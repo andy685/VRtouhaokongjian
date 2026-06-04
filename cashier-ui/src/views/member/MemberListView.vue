@@ -21,7 +21,7 @@
         </el-table-column>
         <el-table-column prop="balance" label="余额">
           <template #default="{ row }">
-            <span style="color: #ff6b6b">¥{{ row.balance }}</span>
+            <span style="color: #ff6b6b"><span class="currency-symbol">¥</span>{{ row.balance }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="times" label="剩余次数" />

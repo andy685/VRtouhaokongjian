@@ -23,7 +23,7 @@
               </div>
               <div class="member-stats">
                 <div class="stat-item">
-                  <div class="stat-value">¥{{ member.balance }}</div>
+                  <div class="stat-value"><span class="currency-symbol">¥</span>{{ member.balance }}</div>
                   <div class="stat-label">余额</div>
                 </div>
                 <div class="stat-item">
