@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>头号空间 - 游戏SDK开发文档</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 280px;
+      background: #0a0f1a;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .logo {
+      padding: 0 20px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .logo h2 {
+      margin: 0;
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo .ver {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .logo .sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .sidebar a {
+      display: block;
+      text-decoration: none;
+      color: var(--muted);
+      padding: 7px 20px;
+      border-left: 3px solid transparent;
+      line-height: 1.35;
+      transition: .15s;
+      word-break: break-word;
+    }
+    .sidebar a:hover { color: var(--text); background: rgba(99,102,241,.08); }
+    .sidebar a.s1 { font-weight: 700; color: var(--text); font-size: 13px; margin-top: 4px; }
+    .sidebar a.s2 { padding-left: 32px; font-size: 12px; }
+    .sidebar a.s3 { padding-left: 44px; font-size: 11px; }
+    .main {
+      margin-left: 280px;
+      padding: 40px 56px 96px;
+      max-width: 1080px;
+    }
+    .hero {
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .meta {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+    .hero .pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(99,102,241,.12);
+      color: #c4b5fd;
+      font-size: 12px;
+      border: 1px solid rgba(99,102,241,.28);
+    }
+    h1, h2, h3, h4 {
+      scroll-margin-top: 24px;
+    }
+    h2 {
+      margin: 40px 0 18px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 28px 0 12px;
+      color: #c4b5fd;
+      font-size: 17px;
+    }
+    h4 {
+      margin: 20px 0 10px;
+      color: #93c5fd;
+      font-size: 15px;
+    }
+    p, li {
+      line-height: 1.85;
+      font-size: 14px;
+      color: var(--text);
+    }
+    ul, ol { padding-left: 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 24px;
+      font-size: 13px;
+    }
+    th {
+      background: #1a1a3e;
+      color: #a78bfa;
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 8px 10px;
+    }
+    td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      color: var(--text);
+      vertical-align: top;
+    }
+    tr:hover td { background: rgba(99,102,241,.04); }
+    code {
+      font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+    pre {
+      background: #0a0f1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    pre code {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    pre.mermaid {
+      text-align: center;
+      background: #0a0f1a;
+    }
+    blockquote {
+      margin: 14px 0;
+      padding: 10px 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(99,102,241,.06);
+      border-radius: 0 10px 10px 0;
+    }
+    blockquote p { color: #cbd5e1; font-size: 13px; }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+    .footer {
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 960px) {
+      .sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        margin-left: 0;
+        padding: 24px 20px 72px;
+      }
+    }
+    </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+  </script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>游戏SDK</h2>
+      <div class="ver">头号空间 - 游戏SDK开发文档</div>
+      <div class="sub">SDK 接入、统计、异常与会话边界</div>
+    </div>
+    <a href="#top" class="s1">文档目录</a>
+    <a href="#头号空间-游戏sdk开发文档" class="s1">头号空间 - 游戏SDK开发文档</a><a href="#目录" class="s2">目录</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-sdk定位与边界" class="s2">2. SDK定位与边界</a><a href="#21-定位" class="s3">2.1 定位</a><a href="#22-不负责的内容" class="s3">2.2 不负责的内容</a><a href="#23-设计原则" class="s3">2.3 设计原则</a><a href="#3-整体架构" class="s2">3. 整体架构</a><a href="#31-模块图" class="s3">3.1 模块图</a><a href="#32-数据流" class="s3">3.2 数据流</a><a href="#4-核心能力清单" class="s2">4. 核心能力清单</a><a href="#41-会话管理" class="s3">4.1 会话管理</a><a href="#42-启动与加载" class="s3">4.2 启动与加载</a><a href="#43-心跳与设备健康" class="s3">4.3 心跳与设备健康</a><a href="#44-异常上报" class="s3">4.4 异常上报</a><a href="#45-统计埋点" class="s3">4.5 统计埋点</a><a href="#46-离线缓存" class="s3">4.6 离线缓存</a><a href="#47-游戏豆自动退还" class="s3">4.7 游戏豆自动退还</a><a href="#5-事件与统计体系" class="s2">5. 事件与统计体系</a><a href="#51-事件总表" class="s3">5.1 事件总表</a><a href="#52-事件标准字段" class="s3">5.2 事件标准字段</a><a href="#53-启动统计口径" class="s3">5.3 启动统计口径</a><a href="#54-退还统计口径" class="s3">5.4 退还统计口径</a><a href="#55-session统计口径" class="s3">5.5 Session统计口径</a><a href="#56-设备健康统计口径" class="s3">5.6 设备健康统计口径</a><a href="#6-异常体系与告警规则" class="s2">6. 异常体系与告警规则</a><a href="#61-异常分级" class="s3">6.1 异常分级</a><a href="#62-异常分类" class="s3">6.2 异常分类</a><a href="#621-启动类异常" class="s3">6.2.1 启动类异常</a><a href="#622-运行类异常" class="s3">6.2.2 运行类异常</a><a href="#623-设备类异常" class="s3">6.2.3 设备类异常</a><a href="#624-网络类异常" class="s3">6.2.4 网络类异常</a><a href="#625-业务类异常" class="s3">6.2.5 业务类异常</a><a href="#63-异常上报字段" class="s3">6.3 异常上报字段</a><a href="#64-告警规则建议" class="s3">6.4 告警规则建议</a><a href="#7-接口设计" class="s2">7. 接口设计</a><a href="#71-sdk-对外接口" class="s3">7.1 SDK 对外接口</a><a href="#72-初始化参数" class="s3">7.2 初始化参数</a><a href="#73-会话创建参数" class="s3">7.3 会话创建参数</a><a href="#74-会话结束结果" class="s3">7.4 会话结束结果</a><a href="#75-事件上报接口建议" class="s3">7.5 事件上报接口建议</a><a href="#8-数据模型与落库建议" class="s2">8. 数据模型与落库建议</a><a href="#81-原始事件表" class="s3">8.1 原始事件表</a><a href="#82-会话表" class="s3">8.2 会话表</a><a href="#83-计费流水表" class="s3">8.3 计费流水表</a><a href="#84-日汇总表" class="s3">8.4 日汇总表</a><a href="#9-运行时流程" class="s2">9. 运行时流程</a><a href="#91-正常流程" class="s3">9.1 正常流程</a><a href="#92-摘盔暂停流程" class="s3">9.2 摘盔暂停流程</a><a href="#93-异常终止流程" class="s3">9.3 异常终止流程</a><a href="#94-自动退还流程" class="s3">9.4 自动退还流程</a><a href="#10-离线与重试机制" class="s2">10. 离线与重试机制</a><a href="#101-设计目标" class="s3">10.1 设计目标</a><a href="#102-队列策略" class="s3">10.2 队列策略</a><a href="#103-重试策略" class="s3">10.3 重试策略</a><a href="#104-幂等策略" class="s3">10.4 幂等策略</a><a href="#11-版本兼容与配置" class="s2">11. 版本、兼容与配置</a><a href="#111-sdk-版本策略" class="s3">11.1 SDK 版本策略</a><a href="#112-配置下发" class="s3">11.2 配置下发</a><a href="#113-兼容范围" class="s3">11.3 兼容范围</a><a href="#12-接入流程" class="s2">12. 接入流程</a><a href="#121-cp-接入步骤" class="s3">12.1 CP 接入步骤</a><a href="#122-推荐接入节点" class="s3">12.2 推荐接入节点</a><a href="#123-集成验收标准" class="s3">12.3 集成验收标准</a><a href="#13-测试与验收" class="s2">13. 测试与验收</a><a href="#131-功能测试" class="s3">13.1 功能测试</a><a href="#132-压力测试" class="s3">13.2 压力测试</a><a href="#133-验收指标建议" class="s3">13.3 验收指标建议</a><a href="#14-实施建议" class="s2">14. 实施建议</a><a href="#141-第一阶段" class="s3">14.1 第一阶段</a><a href="#142-第二阶段" class="s3">14.2 第二阶段</a><a href="#143-第三阶段" class="s3">14.3 第三阶段</a><a href="#15-附录术语与异常码" class="s2">15. 附录：术语与异常码</a><a href="#151-术语" class="s3">15.1 术语</a><a href="#152-建议异常码表" class="s3">15.2 建议异常码表</a><a href="#结语" class="s2">结语</a>
+  </aside>
+  <main class="main" id="top">
+    <section class="hero">
+      <h1>头号空间 - 游戏SDK开发文档</h1>
+      <div class="meta">静态 HTML 版本，可直接放到站点或对象存储里访问。</div>
+      <div class="pill">SDK 接入、统计、异常与会话边界</div>
+    </section>
+    <h1 id="头号空间-游戏sdk开发文档">头号空间 - 游戏SDK开发文档</h1>
+<blockquote>
+<p><strong>版本</strong>: v1.0<br />
+<strong>日期</strong>: 2026-06-04<br />
+<strong>状态</strong>: 设计稿 / 可进入研发拆解<br />
+<strong>适用范围</strong>: VR头显终端、游戏CP接入包、门店PC终端、商家后台、平台运营后台<br />
+<strong>参考来源</strong>: <a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/头号空间-产品需求文档-PRD-v1.3.md">头号空间-产品需求文档 PRD v1.3</a>, <a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/cp-terminal-prd.md">CP 端需求文档</a>, <a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/VR终端UI设计预览.html">VR终端UI设计预览</a></p>
+</blockquote>
+<hr />
+<h2 id="目录">目录</h2>
+<ol type="1">
+<li><a href="#1-文档目标">文档目标</a></li>
+<li><a href="#2-sdk定位与边界">SDK定位与边界</a></li>
+<li><a href="#3-整体架构">整体架构</a></li>
+<li><a href="#4-核心能力清单">核心能力清单</a></li>
+<li><a href="#5-事件与统计体系">事件与统计体系</a></li>
+<li><a href="#6-异常体系与告警规则">异常体系与告警规则</a></li>
+<li><a href="#7-接口设计">接口设计</a></li>
+<li><a href="#8-数据模型与落库建议">数据模型与落库建议</a></li>
+<li><a href="#9-运行时流程">运行时流程</a></li>
+<li><a href="#10-离线与重试机制">离线与重试机制</a></li>
+<li><a href="#11-版本兼容与配置">版本、兼容与配置</a></li>
+<li><a href="#12-接入流程">接入流程</a></li>
+<li><a href="#13-测试与验收">测试与验收</a></li>
+<li><a href="#14-实施建议">实施建议</a></li>
+<li><a href="#15-附录术语与异常码">附录：术语与异常码</a></li>
+</ol>
+<hr />
+<h2 id="1-文档目标">1. 文档目标</h2>
+<p>本文件定义“游戏SDK”的产品边界、技术职责、接口形态、统计口径、异常分类和落地方式，目标是让技术团队可以直接按照本说明拆分开发任务。</p>
+<p>SDK 面向的是 VR 游戏 CP，属于跨平台中间件，不承载游戏业务本体，但需要稳定完成以下事情：</p>
+<ul>
+<li>游戏启动与关闭的会话管理</li>
+<li>设备注册、心跳保活、状态同步</li>
+<li>启动次数、启动成功/失败、游玩时长等统计</li>
+<li>崩溃、卡死、断网、过热、传感器异常等异常上报</li>
+<li>离线缓存和恢复补传</li>
+<li>与平台/门店侧统一的数据上报协议</li>
+</ul>
+<hr />
+<h2 id="2-sdk定位与边界">2. SDK定位与边界</h2>
+<h3 id="21-定位">2.1 定位</h3>
+<p>SDK 是连接“VR游戏进程”与“平台后端”的标准化中间层。</p>
+<p>它的角色不是游戏引擎，也不是运营后台，而是：</p>
+<ul>
+<li>向上为 CP 提供最小接入成本</li>
+<li>向下为平台提供统一、可统计、可追踪的数据入口</li>
+<li>向外为 VR 终端提供稳定的运行时控制能力</li>
+</ul>
+<h3 id="22-不负责的内容">2.2 不负责的内容</h3>
+<p>SDK 不应该做以下事情：</p>
+<ul>
+<li>不做游戏玩法逻辑</li>
+<li>不做游戏内 UI 设计</li>
+<li>不做门店收银和支付</li>
+<li>不做平台分润和结算计算</li>
+<li>不做游戏资源审核</li>
+<li>不替代引擎加载器、渲染器、资源管理器</li>
+</ul>
+<h3 id="23-设计原则">2.3 设计原则</h3>
+<ol type="1">
+<li><strong>无侵入</strong>: CP 只在游戏入口和出口接少量调用</li>
+<li><strong>强一致</strong>: 关键事件可追踪、可重放、可幂等</li>
+<li><strong>离线优先</strong>: 网络异常时不丢关键数据</li>
+<li><strong>统计可用</strong>: 所有核心统计都能由事件汇总得出</li>
+<li><strong>沉浸优先</strong>: VR端不展示多余统计信息，避免打断体验</li>
+</ol>
+<hr />
+<h2 id="3-整体架构">3. 整体架构</h2>
+<h3 id="31-模块图">3.1 模块图</h3>
+<pre class="mermaid">flowchart TB
+    subgraph Game[&quot;VR游戏进程&quot;]
+        G1[&quot;游戏主循环&quot;]
+        G2[&quot;资源加载&quot;]
+        G3[&quot;玩家输入&quot;]
+    end
+
+    subgraph SDK[&quot;游戏SDK&quot;]
+        S1[&quot;Session 管理&quot;]
+        S2[&quot;Telemetry 埋点&quot;]
+        S3[&quot;Heartbeat 心跳&quot;]
+        S4[&quot;Exception 异常上报&quot;]
+        S5[&quot;Offline Queue 离线队列&quot;]
+        S6[&quot;Transport 传输层&quot;]
+    end
+
+    subgraph Backend[&quot;平台后端&quot;]
+        B1[&quot;Session API&quot;]
+        B2[&quot;事件接收&quot;]
+        B3[&quot;统计聚合&quot;]
+        B4[&quot;告警中心&quot;]
+        B5[&quot;看板查询&quot;]
+    end
+
+    G1 --&gt; S1
+    G2 --&gt; S2
+    G3 --&gt; S1
+    S1 --&gt; S2
+    S3 --&gt; S6
+    S4 --&gt; S6
+    S2 --&gt; S5
+    S5 --&gt; S6
+    S6 --&gt; B1
+    S6 --&gt; B2
+    B2 --&gt; B3
+    B3 --&gt; B4
+    B3 --&gt; B5</pre>
+<h3 id="32-数据流">3.2 数据流</h3>
+<pre class="mermaid">sequenceDiagram
+    participant Game as VR游戏
+    participant SDK as 游戏SDK
+    participant API as 平台后端
+
+    Game-&gt;&gt;SDK: init(token, deviceInfo)
+    SDK-&gt;&gt;API: registerDevice / createSession
+    API--&gt;&gt;SDK: sessionId / config
+    Game-&gt;&gt;SDK: startSession()
+    loop 每60秒
+        SDK-&gt;&gt;API: heartbeat(event)
+    end
+    Game-&gt;&gt;SDK: reportEvent(launch_success / exception)
+    Game-&gt;&gt;SDK: endSession()
+    SDK-&gt;&gt;API: endSession + flush queue</pre>
+<hr />
+<h2 id="4-核心能力清单">4. 核心能力清单</h2>
+<h3 id="41-会话管理">4.1 会话管理</h3>
+<p>会话是统计和计费的最小业务单元。一次 Session 代表一次完整游玩过程。</p>
+<p>建议支持：</p>
+<ul>
+<li>创建 Session</li>
+<li>开始 Session</li>
+<li>暂停 Session</li>
+<li>恢复 Session</li>
+<li>结束 Session</li>
+<li>强制结束 Session</li>
+<li>查询 Session 状态</li>
+</ul>
+<h3 id="42-启动与加载">4.2 启动与加载</h3>
+<p>SDK 必须覆盖游戏启动链路中的关键节点：</p>
+<ul>
+<li>启动请求</li>
+<li>资源准备</li>
+<li>首帧渲染</li>
+<li>启动成功</li>
+<li>启动失败</li>
+<li>启动超时</li>
+</ul>
+<h3 id="43-心跳与设备健康">4.3 心跳与设备健康</h3>
+<p>建议心跳周期为 60 秒，和项目文档一致。</p>
+<p>心跳中建议包含：</p>
+<ul>
+<li>当前设备状态</li>
+<li>当前 Session 状态</li>
+<li>当前网络状态</li>
+<li>当前资源占用</li>
+<li>温度、帧率、异常计数</li>
+</ul>
+<h3 id="44-异常上报">4.4 异常上报</h3>
+<p>异常上报必须结构化，而不是简单字符串。</p>
+<p>SDK 至少要能识别：</p>
+<ul>
+<li>游戏崩溃</li>
+<li>启动失败</li>
+<li>加载超时</li>
+<li>资源损坏</li>
+<li>卡死</li>
+<li>断网</li>
+<li>过热</li>
+<li>传感器异常</li>
+<li>设备掉线</li>
+<li>SDK 内部错误</li>
+</ul>
+<h3 id="45-统计埋点">4.5 统计埋点</h3>
+<p>SDK 应当支持基础统计埋点和业务统计埋点两类：</p>
+<ul>
+<li>基础统计: 启动次数、成功率、崩溃率、平均时长</li>
+<li>业务统计: Session 数、有效游玩数、暂停次数、重试次数、补传次数</li>
+</ul>
+<h3 id="46-离线缓存">4.6 离线缓存</h3>
+<p>网络不可用时，SDK 仍然要：</p>
+<ul>
+<li>缓存关键事件</li>
+<li>保留事件顺序</li>
+<li>支持恢复后批量补发</li>
+<li>支持幂等去重</li>
+</ul>
+<h3 id="47-游戏豆自动退还">4.7 游戏豆自动退还</h3>
+<p>SDK 只负责输出“是否应触发退还”的事实信号，不直接执行钱包或账务操作。详细的游戏豆扣费、冲正、退还金额计算和审批口径，单独定义在：</p>
+<ul>
+<li><a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/游戏豆计费与自动退还规则.md">游戏豆计费与自动退还规则.md</a></li>
+</ul>
+<p>SDK 侧需要提供的最小能力是：</p>
+<ul>
+<li>上报启动失败、首帧超时、资源加载失败等事件</li>
+<li>标记当前 Session 是否进入首帧</li>
+<li>发送 <code>bean_refund</code> 事件作为退还触发信号</li>
+<li>携带 <code>origin_event_id</code>、<code>session_id</code>、<code>order_id</code> 等幂等字段</li>
+<li>让平台后端完成真正的冲正、退还和账务落库</li>
+</ul>
+<hr />
+<h2 id="5-事件与统计体系">5. 事件与统计体系</h2>
+<h3 id="51-事件总表">5.1 事件总表</h3>
+<p>建议所有事件统一使用一个标准结构。</p>
+<table>
+<thead>
+<tr>
+<th>事件类型</th>
+<th>说明</th>
+<th>统计用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sdk_init</code></td>
+<td>SDK 初始化完成</td>
+<td>初始化成功率</td>
+</tr>
+<tr>
+<td><code>device_register</code></td>
+<td>设备注册成功</td>
+<td>设备接入统计</td>
+</tr>
+<tr>
+<td><code>session_create</code></td>
+<td>创建会话</td>
+<td>会话基数</td>
+</tr>
+<tr>
+<td><code>session_start</code></td>
+<td>会话开始</td>
+<td>体验次数</td>
+</tr>
+<tr>
+<td><code>launch_request</code></td>
+<td>请求启动游戏</td>
+<td>启动次数</td>
+</tr>
+<tr>
+<td><code>launch_success</code></td>
+<td>启动成功</td>
+<td>启动成功率</td>
+</tr>
+<tr>
+<td><code>launch_failed</code></td>
+<td>启动失败</td>
+<td>启动失败率</td>
+</tr>
+<tr>
+<td><code>first_frame</code></td>
+<td>首帧渲染完成</td>
+<td>启动耗时</td>
+</tr>
+<tr>
+<td><code>bean_refund</code></td>
+<td>游戏豆自动退还/冲正</td>
+<td>启动失败冲正统计</td>
+</tr>
+<tr>
+<td><code>heartbeat</code></td>
+<td>心跳包</td>
+<td>在线率、健康度</td>
+</tr>
+<tr>
+<td><code>session_pause</code></td>
+<td>暂停</td>
+<td>摘盔分析</td>
+</tr>
+<tr>
+<td><code>session_resume</code></td>
+<td>恢复</td>
+<td>恢复率</td>
+</tr>
+<tr>
+<td><code>session_end</code></td>
+<td>正常结束</td>
+<td>游玩时长</td>
+</tr>
+<tr>
+<td><code>session_force_end</code></td>
+<td>强制结束</td>
+<td>异常结束率</td>
+</tr>
+<tr>
+<td><code>game_exception</code></td>
+<td>游戏异常</td>
+<td>异常统计</td>
+</tr>
+<tr>
+<td><code>sdk_exception</code></td>
+<td>SDK异常</td>
+<td>SDK稳定性</td>
+</tr>
+<tr>
+<td><code>offline_queue_flush</code></td>
+<td>离线队列补传</td>
+<td>离线补传率</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-事件标准字段">5.2 事件标准字段</h3>
+<p>建议统一事件协议为：</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;event_id&quot;</span><span class="fu">:</span> <span class="st">&quot;evt_01HZ...&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;event_type&quot;</span><span class="fu">:</span> <span class="st">&quot;game_exception&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;event_version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="dv">1717480000</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sdk_version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;game_id&quot;</span><span class="fu">:</span> <span class="st">&quot;G10086&quot;</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cp_id&quot;</span><span class="fu">:</span> <span class="st">&quot;CP001&quot;</span><span class="fu">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;store_id&quot;</span><span class="fu">:</span> <span class="st">&quot;ST001&quot;</span><span class="fu">,</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;device_id&quot;</span><span class="fu">:</span> <span class="st">&quot;DEV009&quot;</span><span class="fu">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;session_id&quot;</span><span class="fu">:</span> <span class="st">&quot;S202606040001&quot;</span><span class="fu">,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;scene&quot;</span><span class="fu">:</span> <span class="st">&quot;launching&quot;</span><span class="fu">,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;severity&quot;</span><span class="fu">:</span> <span class="st">&quot;error&quot;</span><span class="fu">,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="st">&quot;游戏启动超时&quot;</span><span class="fu">,</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;launch_elapsed_ms&quot;</span><span class="fu">:</span> <span class="dv">3278</span><span class="fu">,</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;memory_usage_mb&quot;</span><span class="fu">:</span> <span class="dv">1820</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="53-启动统计口径">5.3 启动统计口径</h3>
+<p>建议至少支持以下统计指标：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>启动次数</td>
+<td><code>launch_request</code> 事件数</td>
+</tr>
+<tr>
+<td>启动成功次数</td>
+<td><code>launch_success</code> 事件数</td>
+</tr>
+<tr>
+<td>启动失败次数</td>
+<td><code>launch_failed</code> 事件数</td>
+</tr>
+<tr>
+<td>启动成功率</td>
+<td>成功次数 / 启动次数</td>
+</tr>
+<tr>
+<td>平均启动耗时</td>
+<td><code>launch_request</code> 到 <code>first_frame</code> 的平均差值</td>
+</tr>
+<tr>
+<td>超时率</td>
+<td>启动超时次数 / 启动次数</td>
+</tr>
+<tr>
+<td>黑屏率</td>
+<td>启动后未进入首帧的失败占比</td>
+</tr>
+<tr>
+<td>自动退还率</td>
+<td><code>bean_refund</code> / 触发退还的启动失败数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-退还统计口径">5.4 退还统计口径</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>退还次数</td>
+<td><code>bean_refund</code> 事件数</td>
+</tr>
+<tr>
+<td>退还游戏豆</td>
+<td>所有 <code>refund_bean_amount</code> 之和</td>
+</tr>
+<tr>
+<td>退还成功率</td>
+<td>退还成功次数 / 触发退还次数</td>
+</tr>
+<tr>
+<td>退还时延</td>
+<td>启动失败到退还完成的耗时</td>
+</tr>
+<tr>
+<td>净消耗游戏豆</td>
+<td>扣除游戏豆总量 - 退还游戏豆总量</td>
+</tr>
+</tbody>
+</table>
+<h3 id="55-session统计口径">5.5 Session统计口径</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session 总数</td>
+<td>所有创建的会话</td>
+</tr>
+<tr>
+<td>有效 Session 数</td>
+<td>实际开始且结束的会话</td>
+</tr>
+<tr>
+<td>平均游玩时长</td>
+<td>所有有效 Session 时长均值</td>
+</tr>
+<tr>
+<td>暂停次数</td>
+<td><code>session_pause</code> 数</td>
+</tr>
+<tr>
+<td>恢复次数</td>
+<td><code>session_resume</code> 数</td>
+</tr>
+<tr>
+<td>自动结束次数</td>
+<td>因超时自动结束</td>
+</tr>
+<tr>
+<td>强制结束次数</td>
+<td>因崩溃、掉线、过热等异常终止</td>
+</tr>
+</tbody>
+</table>
+<h3 id="56-设备健康统计口径">5.6 设备健康统计口径</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>心跳成功率</td>
+<td>心跳成功数 / 应发送心跳数</td>
+</tr>
+<tr>
+<td>心跳缺失次数</td>
+<td>超过 2 个周期未收到心跳</td>
+</tr>
+<tr>
+<td>平均 CPU</td>
+<td>心跳采样 CPU 平均值</td>
+</tr>
+<tr>
+<td>平均内存</td>
+<td>心跳采样内存平均值</td>
+</tr>
+<tr>
+<td>最大温度</td>
+<td>统计周期内温度峰值</td>
+</tr>
+<tr>
+<td>平均 FPS</td>
+<td>统计周期内帧率均值</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-异常体系与告警规则">6. 异常体系与告警规则</h2>
+<h3 id="61-异常分级">6.1 异常分级</h3>
+<p>建议采用四级：</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>含义</th>
+<th>是否影响会话</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>info</code></td>
+<td>记录性事件</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>warning</code></td>
+<td>轻度异常，可恢复</td>
+<td>可能</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>需要关注，建议告警</td>
+<td>是</td>
+</tr>
+<tr>
+<td><code>critical</code></td>
+<td>立即中断或人工介入</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-异常分类">6.2 异常分类</h3>
+<h4 id="621-启动类异常">6.2.1 启动类异常</h4>
+<ul>
+<li><code>INIT_FAILED</code></li>
+<li><code>LAUNCH_TIMEOUT</code></li>
+<li><code>LAUNCH_FAILED</code></li>
+<li><code>FIRST_FRAME_TIMEOUT</code></li>
+<li><code>ASSET_LOAD_FAILED</code></li>
+</ul>
+<h4 id="622-运行类异常">6.2.2 运行类异常</h4>
+<ul>
+<li><code>CRASH</code></li>
+<li><code>HANG</code></li>
+<li><code>FPS_TOO_LOW</code></li>
+<li><code>MAIN_LOOP_BLOCKED</code></li>
+<li><code>MEMORY_LEAK_SUSPECTED</code></li>
+</ul>
+<h4 id="623-设备类异常">6.2.3 设备类异常</h4>
+<ul>
+<li><code>HEADSET_DISCONNECTED</code></li>
+<li><code>CONTROLLER_LOST</code></li>
+<li><code>SENSOR_ABNORMAL</code></li>
+<li><code>GPU_OVERHEAT</code></li>
+<li><code>SYSTEM_RESOURCE_LOW</code></li>
+</ul>
+<h4 id="624-网络类异常">6.2.4 网络类异常</h4>
+<ul>
+<li><code>NETWORK_DOWN</code></li>
+<li><code>HEARTBEAT_MISSED</code></li>
+<li><code>UPLOAD_FAILED</code></li>
+<li><code>QUEUE_RETRY_EXHAUSTED</code></li>
+</ul>
+<h4 id="625-业务类异常">6.2.5 业务类异常</h4>
+<ul>
+<li><code>USER_LEFT_SESSION</code></li>
+<li><code>AUTO_PAUSE_TIMEOUT</code></li>
+<li><code>FORCE_END_BY_ADMIN</code></li>
+<li><code>SESSION_RECOVERY_FAILED</code></li>
+</ul>
+<h3 id="63-异常上报字段">6.3 异常上报字段</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;event_type&quot;</span><span class="fu">:</span> <span class="st">&quot;game_exception&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;exception_code&quot;</span><span class="fu">:</span> <span class="st">&quot;LAUNCH_TIMEOUT&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;severity&quot;</span><span class="fu">:</span> <span class="st">&quot;error&quot;</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;scene&quot;</span><span class="fu">:</span> <span class="st">&quot;launching&quot;</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;affect_billing&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;affect_session&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;should_refund_beans&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;refund_scope&quot;</span><span class="fu">:</span> <span class="st">&quot;full&quot;</span><span class="fu">,</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;show_vr_error_screen&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;notify_pc_terminal&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;notify_backend_alarm&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="st">&quot;游戏启动超时&quot;</span><span class="fu">,</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;detail&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;timeout_ms&quot;</span><span class="fu">:</span> <span class="dv">3000</span><span class="fu">,</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;elapsed_ms&quot;</span><span class="fu">:</span> <span class="dv">3278</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="64-告警规则建议">6.4 告警规则建议</h3>
+<table>
+<thead>
+<tr>
+<th>触发条件</th>
+<th>处理动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单次启动失败</td>
+<td>记日志，不强告警</td>
+</tr>
+<tr>
+<td>同一设备 10 分钟内启动失败 &gt;= 3 次</td>
+<td>告警</td>
+</tr>
+<tr>
+<td>同一游戏 1 小时崩溃率 &gt; 5%</td>
+<td>告警</td>
+</tr>
+<tr>
+<td>心跳缺失 &gt;= 3 个周期</td>
+<td>告警</td>
+</tr>
+<tr>
+<td>设备温度持续超阈值 2 分钟</td>
+<td>告警并建议下线</td>
+</tr>
+<tr>
+<td>离线队列堆积超过阈值</td>
+<td>告警</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-接口设计">7. 接口设计</h2>
+<h3 id="71-sdk-对外接口">7.1 SDK 对外接口</h3>
+<p>建议以 Unity C# 包为主，底层可由 C++ Core 实现。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">init</span>(options)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bindDevice</span>(deviceToken)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">createSession</span>(input)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">startSession</span>(sessionId)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pauseSession</span>(sessionId<span class="op">,</span> reason)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">resumeSession</span>(sessionId)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">reportEvent</span>(<span class="bu">event</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">reportException</span>(exception)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">reportHeartbeat</span>(payload)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">endSession</span>(sessionId<span class="op">,</span> result)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">flush</span>()</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">shutdown</span>()</span></code></pre></div>
+<h3 id="72-初始化参数">7.2 初始化参数</h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deviceToken</code></td>
+<td>string</td>
+<td>是</td>
+<td>平台下发的设备令牌</td>
+</tr>
+<tr>
+<td><code>gameId</code></td>
+<td>string</td>
+<td>是</td>
+<td>游戏唯一标识</td>
+</tr>
+<tr>
+<td><code>cpId</code></td>
+<td>string</td>
+<td>是</td>
+<td>CP标识</td>
+</tr>
+<tr>
+<td><code>storeId</code></td>
+<td>string</td>
+<td>是</td>
+<td>门店标识</td>
+</tr>
+<tr>
+<td><code>deviceId</code></td>
+<td>string</td>
+<td>是</td>
+<td>终端设备标识</td>
+</tr>
+<tr>
+<td><code>sdkVersion</code></td>
+<td>string</td>
+<td>否</td>
+<td>SDK版本</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>string</td>
+<td>否</td>
+<td>Pico / Meta / Windows 等</td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td>boolean</td>
+<td>否</td>
+<td>是否开启调试日志</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-会话创建参数">7.3 会话创建参数</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;game_id&quot;</span><span class="fu">:</span> <span class="st">&quot;G10086&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;session_type&quot;</span><span class="fu">:</span> <span class="st">&quot;normal&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;member_id&quot;</span><span class="fu">:</span> <span class="st">&quot;M001&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;order_id&quot;</span><span class="fu">:</span> <span class="st">&quot;O202606040001&quot;</span><span class="fu">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;price_plan&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;mode&quot;</span><span class="fu">:</span> <span class="st">&quot;time&quot;</span><span class="fu">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;minute&quot;</span><span class="fu">,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;base_price&quot;</span><span class="fu">:</span> <span class="dv">2</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="74-会话结束结果">7.4 会话结束结果</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;session_id&quot;</span><span class="fu">:</span> <span class="st">&quot;S202606040001&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;end_reason&quot;</span><span class="fu">:</span> <span class="st">&quot;normal_end&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;duration_sec&quot;</span><span class="fu">:</span> <span class="dv">1280</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;billable_sec&quot;</span><span class="fu">:</span> <span class="dv">1220</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paused_sec&quot;</span><span class="fu">:</span> <span class="dv">60</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;exception_code&quot;</span><span class="fu">:</span> <span class="kw">null</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="75-事件上报接口建议">7.5 事件上报接口建议</h3>
+<p>建议统一为一个基础接口，再由 SDK 内部做分流：</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">reportEvent</span>({</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  eventType<span class="op">:</span> <span class="st">&#39;launch_success&#39;</span><span class="op">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  level<span class="op">:</span> <span class="st">&#39;info&#39;</span><span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  sessionId<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  payload<span class="op">:</span> { firstFrameMs<span class="op">:</span> <span class="dv">2650</span> }</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p>优点：</p>
+<ul>
+<li>API 少</li>
+<li>兼容性高</li>
+<li>新事件可平滑扩展</li>
+<li>统计和异常共用同一协议</li>
+</ul>
+<hr />
+<h2 id="8-数据模型与落库建议">8. 数据模型与落库建议</h2>
+<h3 id="81-原始事件表">8.1 原始事件表</h3>
+<p>表名建议：<code>sdk_event_log</code></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>bigint</td>
+<td>主键</td>
+</tr>
+<tr>
+<td><code>event_id</code></td>
+<td>varchar</td>
+<td>幂等ID</td>
+</tr>
+<tr>
+<td><code>event_type</code></td>
+<td>varchar</td>
+<td>事件类型</td>
+</tr>
+<tr>
+<td><code>event_version</code></td>
+<td>varchar</td>
+<td>协议版本</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>bigint</td>
+<td>事件时间</td>
+</tr>
+<tr>
+<td><code>game_id</code></td>
+<td>varchar</td>
+<td>游戏ID</td>
+</tr>
+<tr>
+<td><code>cp_id</code></td>
+<td>varchar</td>
+<td>CP ID</td>
+</tr>
+<tr>
+<td><code>store_id</code></td>
+<td>varchar</td>
+<td>门店ID</td>
+</tr>
+<tr>
+<td><code>device_id</code></td>
+<td>varchar</td>
+<td>设备ID</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>varchar</td>
+<td>会话ID</td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>varchar</td>
+<td>级别</td>
+</tr>
+<tr>
+<td><code>scene</code></td>
+<td>varchar</td>
+<td>场景</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>text</td>
+<td>人类可读描述</td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td>json</td>
+<td>扩展字段</td>
+</tr>
+<tr>
+<td><code>received_at</code></td>
+<td>datetime</td>
+<td>后端接收时间</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-会话表">8.2 会话表</h3>
+<p>表名建议：<code>sdk_session</code></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>会话ID</td>
+</tr>
+<tr>
+<td><code>game_id</code></td>
+<td>游戏ID</td>
+</tr>
+<tr>
+<td><code>cp_id</code></td>
+<td>CP ID</td>
+</tr>
+<tr>
+<td><code>store_id</code></td>
+<td>门店ID</td>
+</tr>
+<tr>
+<td><code>device_id</code></td>
+<td>设备ID</td>
+</tr>
+<tr>
+<td><code>member_id</code></td>
+<td>会员ID（如有）</td>
+</tr>
+<tr>
+<td><code>order_id</code></td>
+<td>订单ID（如有）</td>
+</tr>
+<tr>
+<td><code>start_time</code></td>
+<td>开始时间</td>
+</tr>
+<tr>
+<td><code>end_time</code></td>
+<td>结束时间</td>
+</tr>
+<tr>
+<td><code>duration_sec</code></td>
+<td>总时长</td>
+</tr>
+<tr>
+<td><code>billable_sec</code></td>
+<td>计费时长</td>
+</tr>
+<tr>
+<td><code>paused_sec</code></td>
+<td>暂停时长</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>状态</td>
+</tr>
+<tr>
+<td><code>end_reason</code></td>
+<td>结束原因</td>
+</tr>
+<tr>
+<td><code>exception_code</code></td>
+<td>异常码</td>
+</tr>
+<tr>
+<td><code>bean_amount</code></td>
+<td>扣除游戏豆数量</td>
+</tr>
+<tr>
+<td><code>refund_bean_amount</code></td>
+<td>退还游戏豆数量</td>
+</tr>
+<tr>
+<td><code>refund_status</code></td>
+<td>退还状态</td>
+</tr>
+<tr>
+<td><code>refund_txn_id</code></td>
+<td>退还事务号</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-计费流水表">8.3 计费流水表</h3>
+<p>表名建议：<code>sdk_billing_ledger</code></p>
+<p>建议按每次扣豆、退还、冲正记录一条流水：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ledger_id</code></td>
+<td>流水ID</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>会话ID</td>
+</tr>
+<tr>
+<td><code>order_id</code></td>
+<td>订单ID</td>
+</tr>
+<tr>
+<td><code>game_id</code></td>
+<td>游戏ID</td>
+</tr>
+<tr>
+<td><code>device_id</code></td>
+<td>设备ID</td>
+</tr>
+<tr>
+<td><code>bean_amount</code></td>
+<td>本次扣除游戏豆数量</td>
+</tr>
+<tr>
+<td><code>ledger_type</code></td>
+<td><code>deduct</code> / <code>refund</code> / <code>reversal</code></td>
+</tr>
+<tr>
+<td><code>origin_event_id</code></td>
+<td>关联事件ID</td>
+</tr>
+<tr>
+<td><code>refund_txn_id</code></td>
+<td>退还事务号</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>流水状态</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td>原因说明</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>创建时间</td>
+</tr>
+</tbody>
+</table>
+<h3 id="84-日汇总表">8.4 日汇总表</h3>
+<p>表名建议：<code>sdk_game_daily_stats</code></p>
+<p>建议按天、游戏、门店、设备聚合：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>day</code></td>
+<td>日期</td>
+</tr>
+<tr>
+<td><code>game_id</code></td>
+<td>游戏ID</td>
+</tr>
+<tr>
+<td><code>cp_id</code></td>
+<td>CP ID</td>
+</tr>
+<tr>
+<td><code>store_id</code></td>
+<td>门店ID</td>
+</tr>
+<tr>
+<td><code>device_id</code></td>
+<td>设备ID</td>
+</tr>
+<tr>
+<td><code>launch_count</code></td>
+<td>启动次数</td>
+</tr>
+<tr>
+<td><code>launch_success_count</code></td>
+<td>启动成功次数</td>
+</tr>
+<tr>
+<td><code>launch_fail_count</code></td>
+<td>启动失败次数</td>
+</tr>
+<tr>
+<td><code>bean_refund_count</code></td>
+<td>退还次数</td>
+</tr>
+<tr>
+<td><code>bean_refund_amount</code></td>
+<td>退还游戏豆总量</td>
+</tr>
+<tr>
+<td><code>session_count</code></td>
+<td>Session次数</td>
+</tr>
+<tr>
+<td><code>total_duration_sec</code></td>
+<td>总时长</td>
+</tr>
+<tr>
+<td><code>avg_duration_sec</code></td>
+<td>平均时长</td>
+</tr>
+<tr>
+<td><code>exception_count</code></td>
+<td>异常次数</td>
+</tr>
+<tr>
+<td><code>crash_count</code></td>
+<td>崩溃次数</td>
+</tr>
+<tr>
+<td><code>offline_count</code></td>
+<td>离线次数</td>
+</tr>
+<tr>
+<td><code>heartbeat_miss_count</code></td>
+<td>心跳缺失次数</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-运行时流程">9. 运行时流程</h2>
+<h3 id="91-正常流程">9.1 正常流程</h3>
+<pre class="mermaid">flowchart LR
+    A[&quot;初始化 SDK&quot;] --&gt; B[&quot;设备注册&quot;]
+    B --&gt; C[&quot;创建 Session&quot;]
+    C --&gt; D[&quot;启动游戏&quot;]
+    D --&gt; E[&quot;首帧完成&quot;]
+    E --&gt; F[&quot;心跳循环&quot;]
+    F --&gt; G[&quot;暂停/恢复&quot;]
+    G --&gt; H[&quot;正常结束&quot;]
+    H --&gt; I[&quot;上报并刷新队列&quot;]</pre>
+<h3 id="92-摘盔暂停流程">9.2 摘盔暂停流程</h3>
+<ol type="1">
+<li>传感器检测到摘盔</li>
+<li>SDK 将 Session 标记为 <code>paused</code></li>
+<li>暂停期间停止计费</li>
+<li>若 3 分钟内重新佩戴，则恢复</li>
+<li>若超时未恢复，则自动结束 Session</li>
+<li>结束原因标记为 <code>auto_pause_timeout</code></li>
+</ol>
+<h3 id="93-异常终止流程">9.3 异常终止流程</h3>
+<ol type="1">
+<li>SDK 监测到崩溃、卡死、温度过高或掉线</li>
+<li>生成异常事件</li>
+<li>标记当前 Session 的结束原因</li>
+<li>若需要，触发 VR 异常页面</li>
+<li>若需要，通知 PC 端告警</li>
+<li>断网时写入离线队列，联网后补传</li>
+</ol>
+<h3 id="94-自动退还流程">9.4 自动退还流程</h3>
+<ol type="1">
+<li>SDK 收到 <code>launch_failed</code>、<code>FIRST_FRAME_TIMEOUT</code>、<code>ASSET_LOAD_FAILED</code> 等启动失败信号</li>
+<li>判断当前会话是否已经调用 <code>startSession()</code></li>
+<li>若未进入首帧，则标记该次启动为“未生效消费”</li>
+<li>SDK 发送 <code>bean_refund</code> 事件，携带原始扣豆订单/会话信息</li>
+<li>后端执行退还或冲正，并返回 <code>refund_txn_id</code></li>
+<li>SDK 更新本地退还状态，并在离线时补传结果</li>
+<li>若已进入首帧，则不执行自动退还，按正常会话统计</li>
+</ol>
+<hr />
+<h2 id="10-离线与重试机制">10. 离线与重试机制</h2>
+<h3 id="101-设计目标">10.1 设计目标</h3>
+<p>离线机制不是“可选增强”，而是 SDK 的基础能力。</p>
+<p>必须保证：</p>
+<ul>
+<li>断网不丢 Session</li>
+<li>断网不丢异常</li>
+<li>断网不丢心跳记录</li>
+<li>恢复后按顺序补传</li>
+</ul>
+<h3 id="102-队列策略">10.2 队列策略</h3>
+<p>建议使用本地持久化队列：</p>
+<ul>
+<li>内存队列：当前运行时缓存</li>
+<li>磁盘队列：异常退出后仍可恢复</li>
+</ul>
+<p>队列元素建议包含：</p>
+<ul>
+<li><code>event_id</code></li>
+<li><code>event_type</code></li>
+<li><code>created_at</code></li>
+<li><code>retry_count</code></li>
+<li><code>next_retry_at</code></li>
+<li><code>payload</code></li>
+</ul>
+<h3 id="103-重试策略">10.3 重试策略</h3>
+<p>建议：</p>
+<ul>
+<li>首次失败后立即重试 1 次</li>
+<li>随后指数退避</li>
+<li>单事件最大重试 5 次</li>
+<li>关键会话结束事件优先重发</li>
+</ul>
+<h3 id="104-幂等策略">10.4 幂等策略</h3>
+<p>每条事件都应有唯一 <code>event_id</code>。</p>
+<p>后端按 <code>event_id</code> 去重，避免：</p>
+<ul>
+<li>断网重发导致重复统计</li>
+<li>客户端重复提交导致重复计费</li>
+</ul>
+<hr />
+<h2 id="11-版本兼容与配置">11. 版本、兼容与配置</h2>
+<h3 id="111-sdk-版本策略">11.1 SDK 版本策略</h3>
+<p>建议采用语义化版本：</p>
+<ul>
+<li><code>MAJOR</code>: 协议不兼容变更</li>
+<li><code>MINOR</code>: 新增能力，向后兼容</li>
+<li><code>PATCH</code>: Bug 修复</li>
+</ul>
+<h3 id="112-配置下发">11.2 配置下发</h3>
+<p>平台建议支持动态配置：</p>
+<ul>
+<li>心跳间隔</li>
+<li>超时阈值</li>
+<li>异常告警阈值</li>
+<li>离线补传间隔</li>
+<li>日志级别</li>
+<li>是否启用调试模式</li>
+</ul>
+<h3 id="113-兼容范围">11.3 兼容范围</h3>
+<p>建议先覆盖：</p>
+<ul>
+<li>Pico Neo 3</li>
+<li>Pico 4</li>
+</ul>
+<p>后续扩展：</p>
+<ul>
+<li>Meta Quest 3</li>
+<li>Meta Quest Pro</li>
+</ul>
+<hr />
+<h2 id="12-接入流程">12. 接入流程</h2>
+<h3 id="121-cp-接入步骤">12.1 CP 接入步骤</h3>
+<ol type="1">
+<li>从平台下载 SDK 包</li>
+<li>在 Unity / 引擎工程中导入 SDK</li>
+<li>配置 <code>deviceToken</code>、<code>gameId</code>、<code>cpId</code></li>
+<li>在游戏入口调用 <code>init()</code></li>
+<li>在启动场景调用 <code>createSession()</code> 和 <code>startSession()</code></li>
+<li>在游戏结束、返回大厅、异常退出时调用对应接口</li>
+<li>联调平台事件上报和统计看板</li>
+</ol>
+<h3 id="122-推荐接入节点">12.2 推荐接入节点</h3>
+<table>
+<thead>
+<tr>
+<th>节点</th>
+<th>建议调用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>游戏启动前</td>
+<td><code>init()</code></td>
+</tr>
+<tr>
+<td>资源准备完成</td>
+<td><code>createSession()</code></td>
+</tr>
+<tr>
+<td>首帧进入游戏</td>
+<td><code>startSession()</code></td>
+</tr>
+<tr>
+<td>用户摘盔</td>
+<td><code>pauseSession()</code></td>
+</tr>
+<tr>
+<td>重新戴盔</td>
+<td><code>resumeSession()</code></td>
+</tr>
+<tr>
+<td>正常退出</td>
+<td><code>endSession()</code></td>
+</tr>
+<tr>
+<td>崩溃/卡死/异常</td>
+<td><code>reportException()</code> + <code>forceEndSession()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="123-集成验收标准">12.3 集成验收标准</h3>
+<p>接入完成后，至少应满足：</p>
+<ul>
+<li>启动事件可在后台看到</li>
+<li>心跳连续可见</li>
+<li>Session 有开始/结束闭环</li>
+<li>异常可分类型看到</li>
+<li>断网后可补传</li>
+</ul>
+<hr />
+<h2 id="13-测试与验收">13. 测试与验收</h2>
+<h3 id="131-功能测试">13.1 功能测试</h3>
+<ul>
+<li>正常启动和结束</li>
+<li>摘盔暂停与恢复</li>
+<li>超时自动结束</li>
+<li>启动失败</li>
+<li>游戏崩溃</li>
+<li>网络断开与恢复</li>
+<li>队列补传</li>
+<li>重复事件去重</li>
+</ul>
+<h3 id="132-压力测试">13.2 压力测试</h3>
+<ul>
+<li>高频心跳</li>
+<li>连续短会话</li>
+<li>长时间运行</li>
+<li>弱网环境</li>
+<li>离线缓存堆积</li>
+</ul>
+<h3 id="133-验收指标建议">13.3 验收指标建议</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>建议值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>启动成功率</td>
+<td>&gt;= 99%</td>
+</tr>
+<tr>
+<td>心跳成功率</td>
+<td>&gt;= 99.5%</td>
+</tr>
+<tr>
+<td>事件补传成功率</td>
+<td>&gt;= 99.9%</td>
+</tr>
+<tr>
+<td>首帧平均时间</td>
+<td>视游戏而定，建议可配置</td>
+</tr>
+<tr>
+<td>关键事件丢失率</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="14-实施建议">14. 实施建议</h2>
+<h3 id="141-第一阶段">14.1 第一阶段</h3>
+<p>优先实现：</p>
+<ul>
+<li>SDK 初始化</li>
+<li>Session 生命周期</li>
+<li>心跳</li>
+<li>启动成功/失败</li>
+<li>基础异常上报</li>
+<li>本地离线队列</li>
+</ul>
+<h3 id="142-第二阶段">14.2 第二阶段</h3>
+<p>补充：</p>
+<ul>
+<li>设备健康指标</li>
+<li>统计聚合表</li>
+<li>告警规则</li>
+<li>后台看板字段</li>
+</ul>
+<h3 id="143-第三阶段">14.3 第三阶段</h3>
+<p>扩展：</p>
+<ul>
+<li>多平台适配</li>
+<li>更多异常细分</li>
+<li>高级分析指标</li>
+<li>自动化运维联动</li>
+</ul>
+<hr />
+<h2 id="15-附录术语与异常码">15. 附录：术语与异常码</h2>
+<h3 id="151-术语">15.1 术语</h3>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session</td>
+<td>一次完整游戏会话</td>
+</tr>
+<tr>
+<td>Heartbeat</td>
+<td>周期性心跳</td>
+</tr>
+<tr>
+<td>First Frame</td>
+<td>游戏首帧渲染完成</td>
+</tr>
+<tr>
+<td>Offline Queue</td>
+<td>本地离线缓存队列</td>
+</tr>
+<tr>
+<td>Device Shadow</td>
+<td>设备实时状态快照</td>
+</tr>
+</tbody>
+</table>
+<h3 id="152-建议异常码表">15.2 建议异常码表</h3>
+<table>
+<thead>
+<tr>
+<th>异常码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>INIT_FAILED</code></td>
+<td>初始化失败</td>
+</tr>
+<tr>
+<td><code>LAUNCH_TIMEOUT</code></td>
+<td>启动超时</td>
+</tr>
+<tr>
+<td><code>LAUNCH_FAILED</code></td>
+<td>启动失败</td>
+</tr>
+<tr>
+<td><code>FIRST_FRAME_TIMEOUT</code></td>
+<td>首帧超时</td>
+</tr>
+<tr>
+<td><code>CRASH</code></td>
+<td>游戏崩溃</td>
+</tr>
+<tr>
+<td><code>HANG</code></td>
+<td>游戏卡死</td>
+</tr>
+<tr>
+<td><code>NETWORK_DOWN</code></td>
+<td>网络断开</td>
+</tr>
+<tr>
+<td><code>HEARTBEAT_MISSED</code></td>
+<td>心跳缺失</td>
+</tr>
+<tr>
+<td><code>GPU_OVERHEAT</code></td>
+<td>设备过热</td>
+</tr>
+<tr>
+<td><code>SENSOR_ABNORMAL</code></td>
+<td>传感器异常</td>
+</tr>
+<tr>
+<td><code>CONTROLLER_LOST</code></td>
+<td>手柄丢失</td>
+</tr>
+<tr>
+<td><code>QUEUE_RETRY_EXHAUSTED</code></td>
+<td>队列重试耗尽</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="结语">结语</h2>
+<p>这份文档的目标是把游戏 SDK 从“功能点”变成“可研发、可测试、可统计、可运维”的完整中间件。</p>
+<p>如果后续要继续细化，建议下一步补三份配套文件：</p>
+<ol type="1">
+<li>SDK 接口定义文档（按语言/方法签名展开）</li>
+<li>事件字典与埋点口径表</li>
+<li>后端接收 API 和数据库表结构设计</li>
+</ol>
+
+    <div class="footer">Generated from Markdown in /Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs</div>
+  </main>
+</body>
+</html>

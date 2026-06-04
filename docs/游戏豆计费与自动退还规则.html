@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>头号空间 - 游戏豆计费与自动退还规则</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 280px;
+      background: #0a0f1a;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .logo {
+      padding: 0 20px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .logo h2 {
+      margin: 0;
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo .ver {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .logo .sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .sidebar a {
+      display: block;
+      text-decoration: none;
+      color: var(--muted);
+      padding: 7px 20px;
+      border-left: 3px solid transparent;
+      line-height: 1.35;
+      transition: .15s;
+      word-break: break-word;
+    }
+    .sidebar a:hover { color: var(--text); background: rgba(99,102,241,.08); }
+    .sidebar a.s1 { font-weight: 700; color: var(--text); font-size: 13px; margin-top: 4px; }
+    .sidebar a.s2 { padding-left: 32px; font-size: 12px; }
+    .sidebar a.s3 { padding-left: 44px; font-size: 11px; }
+    .main {
+      margin-left: 280px;
+      padding: 40px 56px 96px;
+      max-width: 1080px;
+    }
+    .hero {
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .meta {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+    .hero .pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(99,102,241,.12);
+      color: #c4b5fd;
+      font-size: 12px;
+      border: 1px solid rgba(99,102,241,.28);
+    }
+    h1, h2, h3, h4 {
+      scroll-margin-top: 24px;
+    }
+    h2 {
+      margin: 40px 0 18px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 28px 0 12px;
+      color: #c4b5fd;
+      font-size: 17px;
+    }
+    h4 {
+      margin: 20px 0 10px;
+      color: #93c5fd;
+      font-size: 15px;
+    }
+    p, li {
+      line-height: 1.85;
+      font-size: 14px;
+      color: var(--text);
+    }
+    ul, ol { padding-left: 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 24px;
+      font-size: 13px;
+    }
+    th {
+      background: #1a1a3e;
+      color: #a78bfa;
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 8px 10px;
+    }
+    td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      color: var(--text);
+      vertical-align: top;
+    }
+    tr:hover td { background: rgba(99,102,241,.04); }
+    code {
+      font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+    pre {
+      background: #0a0f1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    pre code {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    pre.mermaid {
+      text-align: center;
+      background: #0a0f1a;
+    }
+    blockquote {
+      margin: 14px 0;
+      padding: 10px 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(99,102,241,.06);
+      border-radius: 0 10px 10px 0;
+    }
+    blockquote p { color: #cbd5e1; font-size: 13px; }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+    .footer {
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 960px) {
+      .sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        margin-left: 0;
+        padding: 24px 20px 72px;
+      }
+    }
+    </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+  </script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>游戏豆规则</h2>
+      <div class="ver">头号空间 - 游戏豆计费与自动退还规则</div>
+      <div class="sub">扣豆、自动退还、冲正与账务口径</div>
+    </div>
+    <a href="#top" class="s1">文档目录</a>
+    <a href="#头号空间-游戏豆计费与自动退还规则" class="s1">头号空间 - 游戏豆计费与自动退还规则</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-核心原则" class="s2">2. 核心原则</a><a href="#3-关键定义" class="s2">3. 关键定义</a><a href="#4-计费边界" class="s2">4. 计费边界</a><a href="#41-可以自动退还的边界" class="s3">4.1 可以自动退还的边界</a><a href="#42-不自动退还的边界" class="s3">4.2 不自动退还的边界</a><a href="#43-可配置边界" class="s3">4.3 可配置边界</a><a href="#5-推荐状态机" class="s2">5. 推荐状态机</a><a href="#51-会话状态" class="s3">5.1 会话状态</a><a href="#52-推荐判定规则" class="s3">5.2 推荐判定规则</a><a href="#6-自动退还触发条件" class="s2">6. 自动退还触发条件</a><a href="#7-自动退还流程" class="s2">7. 自动退还流程</a><a href="#71-标准流程" class="s3">7.1 标准流程</a><a href="#72-推荐时序" class="s3">7.2 推荐时序</a><a href="#8-账务处理建议" class="s2">8. 账务处理建议</a><a href="#81-流水原则" class="s3">8.1 流水原则</a><a href="#82-推荐流水类型" class="s3">8.2 推荐流水类型</a><a href="#83-幂等要求" class="s3">8.3 幂等要求</a><a href="#9-建议数据字段" class="s2">9. 建议数据字段</a><a href="#91-扣豆记录" class="s3">9.1 扣豆记录</a><a href="#92-退还记录" class="s3">9.2 退还记录</a><a href="#10-对接-sdk-的最小要求" class="s2">10. 对接 SDK 的最小要求</a><a href="#11-结算与统计建议" class="s2">11. 结算与统计建议</a><a href="#12-异常处理建议" class="s2">12. 异常处理建议</a><a href="#13-实施建议" class="s2">13. 实施建议</a><a href="#14-附录建议异常码" class="s2">14. 附录：建议异常码</a>
+  </aside>
+  <main class="main" id="top">
+    <section class="hero">
+      <h1>头号空间 - 游戏豆计费与自动退还规则</h1>
+      <div class="meta">静态 HTML 版本，可直接放到站点或对象存储里访问。</div>
+      <div class="pill">扣豆、自动退还、冲正与账务口径</div>
+    </section>
+    <h1 id="头号空间-游戏豆计费与自动退还规则">头号空间 - 游戏豆计费与自动退还规则</h1>
+<blockquote>
+<p><strong>版本</strong>: v1.0<br />
+<strong>日期</strong>: 2026-06-04<br />
+<strong>适用范围</strong>: 门店PC终端、平台后端、商家后台、游戏SDK、结算服务</p>
+</blockquote>
+<hr />
+<h2 id="1-文档目标">1. 文档目标</h2>
+<p>本文档定义“游戏豆如何扣除、何时自动退还、由谁执行退还、如何落账与去重”的统一口径。</p>
+<p>它的目标不是描述SDK实现细节，而是把业务规则、账务规则和异常补偿规则一次性对齐，避免出现“技术按A做、财务按B算”的情况。</p>
+<hr />
+<h2 id="2-核心原则">2. 核心原则</h2>
+<ol type="1">
+<li><strong>游戏豆是B端运营消耗资源</strong>
+<ul>
+<li>商家采购游戏豆，用于门店启动游戏。</li>
+<li>C端用户不直接接触游戏豆。</li>
+</ul></li>
+<li><strong>退还只针对“未形成有效体验”的失败</strong>
+<ul>
+<li>只有当游戏未真正进入首帧可玩态时，才考虑自动退还。</li>
+</ul></li>
+<li><strong>SDK 只上报事实，不执行账务</strong>
+<ul>
+<li>SDK 负责提供启动失败、首帧完成、会话状态等事实。</li>
+<li>平台后端负责真正的冲正、退还和流水入账。</li>
+</ul></li>
+<li><strong>退还必须幂等</strong>
+<ul>
+<li>同一笔失败事件最多触发一次退还。</li>
+<li>重发、补传、重试不能造成重复退款。</li>
+</ul></li>
+<li><strong>原始扣豆记录不能删除</strong>
+<ul>
+<li>必须保留扣豆流水。</li>
+<li>退还通过新增一笔冲正流水实现。</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="3-关键定义">3. 关键定义</h2>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>扣豆</td>
+<td>游戏启动或进入体验时，门店游戏豆账户被扣除</td>
+</tr>
+<tr>
+<td>预扣</td>
+<td>在游戏真正进入可玩态之前，平台对游戏豆做冻结或暂扣</td>
+</tr>
+<tr>
+<td>退还</td>
+<td>因启动失败等原因，将已扣或预扣的游戏豆返还</td>
+</tr>
+<tr>
+<td>冲正</td>
+<td>通过新增一笔反向流水抵消原扣款，不直接改写原流水</td>
+</tr>
+<tr>
+<td>首帧</td>
+<td>游戏画面成功进入可玩状态的关键节点</td>
+</tr>
+<tr>
+<td>有效体验</td>
+<td>已进入首帧，并进入正常 Session 生命周期</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-计费边界">4. 计费边界</h2>
+<h3 id="41-可以自动退还的边界">4.1 可以自动退还的边界</h3>
+<p>以下情况建议进入自动退还流程：</p>
+<ul>
+<li>游戏启动失败，且未进入首帧</li>
+<li>启动超时，且未进入 <code>startSession()</code></li>
+<li>资源加载失败，导致未进入可玩态</li>
+<li>初始化失败，且平台侧已做预扣</li>
+<li>首帧超时，且业务口径认定为未生效消费</li>
+</ul>
+<h3 id="42-不自动退还的边界">4.2 不自动退还的边界</h3>
+<p>以下情况默认不做全额自动退还：</p>
+<ul>
+<li>已进入首帧后的崩溃</li>
+<li>用户主动退出</li>
+<li>摘盔后超时自动结束</li>
+<li>会话中途掉线，但已形成有效体验</li>
+<li>平台规则认定为“已消费”的其他情况</li>
+</ul>
+<h3 id="43-可配置边界">4.3 可配置边界</h3>
+<p>平台可以配置“启动保护期”或“首帧保护窗口”：</p>
+<ul>
+<li>在保护窗口内失败，可全额退还</li>
+<li>超出保护窗口后，按正常消费或部分补偿规则处理</li>
+<li>是否启用、窗口时长、是否支持部分退还，均由平台后端配置决定</li>
+</ul>
+<hr />
+<h2 id="5-推荐状态机">5. 推荐状态机</h2>
+<h3 id="51-会话状态">5.1 会话状态</h3>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>created</code></td>
+<td>会话已创建</td>
+</tr>
+<tr>
+<td><code>launching</code></td>
+<td>游戏正在启动</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>已准备完成，等待首帧</td>
+</tr>
+<tr>
+<td><code>running</code></td>
+<td>已进入首帧并可体验</td>
+</tr>
+<tr>
+<td><code>paused</code></td>
+<td>暂停中</td>
+</tr>
+<tr>
+<td><code>ended</code></td>
+<td>正常结束</td>
+</tr>
+<tr>
+<td><code>failed</code></td>
+<td>启动失败或异常失败</td>
+</tr>
+<tr>
+<td><code>refunding</code></td>
+<td>正在退还/冲正</td>
+</tr>
+<tr>
+<td><code>refunded</code></td>
+<td>已完成退还</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-推荐判定规则">5.2 推荐判定规则</h3>
+<ol type="1">
+<li><code>created</code> 到 <code>ready</code> 之间，不应视为有效消费</li>
+<li><code>running</code> 之后，默认视为已形成有效体验</li>
+<li><code>failed</code> 状态若未进入 <code>running</code>，可进入自动退还</li>
+<li><code>refunding</code> 和 <code>refunded</code> 必须由后端控制，不由 SDK 直接写入</li>
+</ol>
+<hr />
+<h2 id="6-自动退还触发条件">6. 自动退还触发条件</h2>
+<p>建议由平台根据以下事件组合触发退还：</p>
+<ul>
+<li><code>launch_failed</code></li>
+<li><code>FIRST_FRAME_TIMEOUT</code></li>
+<li><code>ASSET_LOAD_FAILED</code></li>
+<li><code>INIT_FAILED</code></li>
+<li><code>LAUNCH_TIMEOUT</code></li>
+<li><code>session_create</code> 成功但 <code>startSession()</code> 未发生</li>
+</ul>
+<p>推荐触发条件需要同时满足：</p>
+<ol type="1">
+<li>存在有效订单或预扣记录</li>
+<li>未进入首帧，或未形成有效体验</li>
+<li>事件链路可定位到唯一 <code>session_id</code></li>
+<li>幂等键未被处理过</li>
+</ol>
+<hr />
+<h2 id="7-自动退还流程">7. 自动退还流程</h2>
+<h3 id="71-标准流程">7.1 标准流程</h3>
+<ol type="1">
+<li>SDK 或游戏进程上报启动失败事件</li>
+<li>平台判断是否已进入首帧</li>
+<li>若未进入首帧，平台创建退还任务</li>
+<li>退还任务关联原始扣豆流水</li>
+<li>平台执行冲正或返还</li>
+<li>写入退还结果流水</li>
+<li>更新订单、会话、统计报表</li>
+</ol>
+<h3 id="72-推荐时序">7.2 推荐时序</h3>
+<pre class="mermaid">sequenceDiagram
+    participant Game as VR游戏
+    participant SDK as 游戏SDK
+    participant API as 平台后端
+    participant Ledger as 计费流水
+
+    Game-&gt;&gt;SDK: launch_failed / first_frame_timeout
+    SDK-&gt;&gt;API: bean_refund(trigger)
+    API-&gt;&gt;API: 判断是否进入首帧
+    API-&gt;&gt;Ledger: 写入 refund/reversal 流水
+    Ledger--&gt;&gt;API: refund_txn_id
+    API--&gt;&gt;SDK: 退还结果</pre>
+<hr />
+<h2 id="8-账务处理建议">8. 账务处理建议</h2>
+<h3 id="81-流水原则">8.1 流水原则</h3>
+<p>建议账务系统采用“双流水”或“原始流水 + 冲正流水”模型：</p>
+<ul>
+<li>原扣豆流水保留</li>
+<li>退还时新增反向流水</li>
+<li>所有统计按净额计算</li>
+<li>任何人工修正都必须留痕</li>
+</ul>
+<h3 id="82-推荐流水类型">8.2 推荐流水类型</h3>
+<table>
+<thead>
+<tr>
+<th>流水类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deduct</code></td>
+<td>正常扣除游戏豆</td>
+</tr>
+<tr>
+<td><code>refund</code></td>
+<td>退还游戏豆</td>
+</tr>
+<tr>
+<td><code>reversal</code></td>
+<td>冲正原扣款</td>
+</tr>
+<tr>
+<td><code>adjustment</code></td>
+<td>人工调整</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-幂等要求">8.3 幂等要求</h3>
+<p>建议幂等键至少包含：</p>
+<ul>
+<li><code>session_id</code></li>
+<li><code>order_id</code></li>
+<li><code>origin_event_id</code></li>
+<li><code>refund_type</code></li>
+</ul>
+<p>同一幂等键只能成功一次。</p>
+<hr />
+<h2 id="9-建议数据字段">9. 建议数据字段</h2>
+<h3 id="91-扣豆记录">9.1 扣豆记录</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>order_id</code></td>
+<td>订单ID</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>会话ID</td>
+</tr>
+<tr>
+<td><code>game_id</code></td>
+<td>游戏ID</td>
+</tr>
+<tr>
+<td><code>store_id</code></td>
+<td>门店ID</td>
+</tr>
+<tr>
+<td><code>bean_amount</code></td>
+<td>扣除游戏豆数量</td>
+</tr>
+<tr>
+<td><code>deduct_time</code></td>
+<td>扣豆时间</td>
+</tr>
+<tr>
+<td><code>deduct_status</code></td>
+<td>扣豆状态</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-退还记录">9.2 退还记录</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>refund_txn_id</code></td>
+<td>退还事务号</td>
+</tr>
+<tr>
+<td><code>origin_event_id</code></td>
+<td>触发退还的原始事件</td>
+</tr>
+<tr>
+<td><code>origin_order_id</code></td>
+<td>原订单ID</td>
+</tr>
+<tr>
+<td><code>origin_session_id</code></td>
+<td>原会话ID</td>
+</tr>
+<tr>
+<td><code>refund_bean_amount</code></td>
+<td>退还游戏豆数量</td>
+</tr>
+<tr>
+<td><code>refund_reason</code></td>
+<td>退还原因</td>
+</tr>
+<tr>
+<td><code>refund_status</code></td>
+<td>退还状态</td>
+</tr>
+<tr>
+<td><code>refunded_at</code></td>
+<td>退还完成时间</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-对接-sdk-的最小要求">10. 对接 SDK 的最小要求</h2>
+<p>SDK 只需要提供以下事实信号：</p>
+<ul>
+<li><code>launch_request</code></li>
+<li><code>launch_failed</code></li>
+<li><code>launch_success</code></li>
+<li><code>first_frame</code></li>
+<li><code>session_start</code></li>
+<li><code>session_end</code></li>
+<li><code>force_end</code></li>
+</ul>
+<p>当发生失败时，SDK 额外发送 <code>bean_refund</code> 触发事件，并携带：</p>
+<ul>
+<li><code>session_id</code></li>
+<li><code>order_id</code></li>
+<li><code>origin_event_id</code></li>
+<li><code>scene</code></li>
+<li><code>message</code></li>
+<li><code>payload</code></li>
+</ul>
+<p>SDK 不负责：</p>
+<ul>
+<li>计算退多少豆</li>
+<li>判断退款金额</li>
+<li>直接改余额</li>
+<li>直接写账务流水</li>
+</ul>
+<hr />
+<h2 id="11-结算与统计建议">11. 结算与统计建议</h2>
+<p>建议将以下指标纳入后台看板：</p>
+<ul>
+<li>扣豆总量</li>
+<li>退还总量</li>
+<li>启动失败率</li>
+<li>自动退还率</li>
+<li>退还成功率</li>
+<li>平均退还时延</li>
+<li>净消耗游戏豆</li>
+</ul>
+<p>推荐统计公式：</p>
+<ul>
+<li><strong>净消耗游戏豆</strong> = 扣豆总量 - 退还总量</li>
+<li><strong>自动退还率</strong> = 自动退还成功次数 / 触发退还次数</li>
+</ul>
+<hr />
+<h2 id="12-异常处理建议">12. 异常处理建议</h2>
+<table>
+<thead>
+<tr>
+<th>异常场景</th>
+<th>建议处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>退还接口超时</td>
+<td>记录失败状态，进入重试队列</td>
+</tr>
+<tr>
+<td>退还重复提交</td>
+<td>按幂等键直接返回已处理结果</td>
+</tr>
+<tr>
+<td>退还后回调失败</td>
+<td>不重复退，修复回调后补账</td>
+</tr>
+<tr>
+<td>原扣豆流水不存在</td>
+<td>进入人工审核队列</td>
+</tr>
+<tr>
+<td>订单已人工退款</td>
+<td>退还任务进入冲突审核</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-实施建议">13. 实施建议</h2>
+<ol type="1">
+<li>先定义扣豆和退还的统一流水模型</li>
+<li>再统一 SDK 上报的启动事件</li>
+<li>再实现后端冲正服务和幂等控制</li>
+<li>最后把统计看板和异常审核补齐</li>
+</ol>
+<hr />
+<h2 id="14-附录建议异常码">14. 附录：建议异常码</h2>
+<table>
+<thead>
+<tr>
+<th>异常码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>INIT_FAILED</code></td>
+<td>初始化失败</td>
+</tr>
+<tr>
+<td><code>LAUNCH_TIMEOUT</code></td>
+<td>启动超时</td>
+</tr>
+<tr>
+<td><code>LAUNCH_FAILED</code></td>
+<td>启动失败</td>
+</tr>
+<tr>
+<td><code>FIRST_FRAME_TIMEOUT</code></td>
+<td>首帧超时</td>
+</tr>
+<tr>
+<td><code>ASSET_LOAD_FAILED</code></td>
+<td>资源加载失败</td>
+</tr>
+<tr>
+<td><code>REFUND_CONFLICT</code></td>
+<td>退还冲突</td>
+</tr>
+<tr>
+<td><code>REFUND_DUPLICATE</code></td>
+<td>重复退还请求</td>
+</tr>
+</tbody>
+</table>
+
+    <div class="footer">Generated from Markdown in /Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs</div>
+  </main>
+</body>
+</html>
