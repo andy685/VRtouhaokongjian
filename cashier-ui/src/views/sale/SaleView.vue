@@ -30,7 +30,7 @@
             </div>
           </div>
           <div class="mc-btns">
-            <button type="button" class="mc-btn">去扣费</button>
+            <button type="button" class="mc-btn" @click="showDeductionModal = true">去扣费</button>
             <button type="button" class="mc-btn" @click="showMemberSelect = true">切换会员</button>
             <button type="button" class="mc-btn" @click="handleLogout">退出登录</button>
           </div>
@@ -206,6 +206,14 @@
       @close="showPaymentModal = false"
       @confirm="handlePaymentConfirm"
     />
+
+    <MemberDeductionModal
+      :visible="showDeductionModal"
+      :devices="deductionDevices"
+      :member="selectedMember"
+      @close="showDeductionModal = false"
+      @confirm="handleDeductionConfirm"
+    />
   </div>
 </template>
 
@@ -216,6 +224,7 @@ import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
 import CouponSelectModal from '../../components/CouponSelectModal.vue'
 import PaymentModal from '../../components/PaymentModal.vue'
+import MemberDeductionModal from '../../components/MemberDeductionModal.vue'
 
 const createCover = (accentA, accentB, glyph) => {
   const svg = `
@@ -248,7 +257,15 @@ const showMemberSelect = ref(false)
 const showNewMember = ref(false)
 const showCouponModal = ref(false)
 const showPaymentModal = ref(false)
+const showDeductionModal = ref(false)
 const selectedCoupon = ref(null)
+
+// 扣费设备列表（mock）
+const deductionDevices = ref([
+  { id: 'dev-01', name: 'VR体验设备A', price: 9.90 },
+  { id: 'dev-02', name: 'VR体验设备B', price: 15.00 },
+  { id: 'dev-03', name: 'VR游戏机', price: 20.00 }
+])
 
 // ===== 优惠券系统 =====
 // 主券池
@@ -505,6 +522,12 @@ const handlePaymentConfirm = (payload) => {
   console.log('支付确认:', payload)
   showPaymentModal.value = false
   // TODO: 调用实际支付接口
+}
+
+const handleDeductionConfirm = (payload) => {
+  console.log('扣费确认:', payload)
+  showDeductionModal.value = false
+  // TODO: 调用实际扣费接口
 }
 </script>
 
