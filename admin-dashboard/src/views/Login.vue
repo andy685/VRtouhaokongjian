@@ -146,8 +146,10 @@ const createOrigin = (port: number) => {
   return `${protocol}//${hostname}:${port}`
 }
 
+const cashierLoginPath = import.meta.env.PROD ? '/cashier/login' : '/login'
+
 const systemEntries: SystemEntry[] = [
-  { key: 'cashier', label: '收银工作台', type: 'cashier', path: '/cashier/login' },
+  { key: 'cashier', label: '收银工作台', type: 'cashier', path: cashierLoginPath },
   { key: 'shop', label: '商家后台', type: 'role', role: 'shop' },
   { key: 'agent', label: '代理商后台', type: 'role', role: 'agent' },
   { key: 'platform', label: '平台超管', type: 'role', role: 'platform' },
