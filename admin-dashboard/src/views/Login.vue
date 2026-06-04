@@ -122,7 +122,7 @@ const loginRole = ref<'shop' | 'agent' | 'platform' | 'cp'>('shop')
 
 type LoginRole = 'shop' | 'agent' | 'platform' | 'cp'
 type SystemEntry =
-  | { key: 'cashier'; label: string; type: 'external'; path: string }
+  | { key: 'cashier'; label: string; type: 'cashier'; path: string }
   | { key: LoginRole; label: string; type: 'role'; role: LoginRole }
 
 // 登录表单
@@ -147,7 +147,7 @@ const createOrigin = (port: number) => {
 }
 
 const systemEntries: SystemEntry[] = [
-  { key: 'cashier', label: '收银工作台', type: 'external', path: '/login' },
+  { key: 'cashier', label: '收银工作台', type: 'cashier', path: '/cashier/login' },
   { key: 'shop', label: '商家后台', type: 'role', role: 'shop' },
   { key: 'agent', label: '代理商后台', type: 'role', role: 'agent' },
   { key: 'platform', label: '平台超管', type: 'role', role: 'platform' },
@@ -173,16 +173,23 @@ async function probeOrigin(origin: string, path: string) {
   }
 }
 
-async function resolveCashierOrigin() {
+async function resolveCashierOrigin(path: string) {
+  if (import.meta.env.PROD) {
+    return window.location.origin
+  }
+
+  if (!window.location.port) {
+    return window.location.origin
+  }
+
   const currentPort = Number(window.location.port || 5174)
-  // cashier-ui 默认运行在 admin-dashboard 端口 +1 (9527→9528)
   const candidatePorts = Array.from(
     new Set([currentPort + 1, currentPort - 1, 9528, 5173, 5174].filter((port) => Number.isFinite(port) && port > 0))
   )
 
   for (const port of candidatePorts) {
     const origin = createOrigin(port)
-    if (await probeOrigin(origin, '/login')) {
+    if (await probeOrigin(origin, path)) {
       return origin
     }
   }
@@ -319,8 +326,8 @@ function syncLoginRole(role: LoginRole) {
 }
 
 async function handleSystemEntry(entry: SystemEntry) {
-  if (entry.type === 'external') {
-    const cashierOrigin = await resolveCashierOrigin()
+  if (entry.type === 'cashier') {
+    const cashierOrigin = await resolveCashierOrigin(entry.path)
     window.location.href = `${cashierOrigin}${entry.path}`
     return
   }

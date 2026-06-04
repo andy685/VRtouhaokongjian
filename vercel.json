@@ -1,7 +1,7 @@
 {
-  "buildCommand": "node ../scripts/build-one-domain.mjs",
-  "installCommand": "npm install && npm install --prefix ../cashier-ui",
-  "outputDirectory": "dist",
+  "installCommand": "npm install --prefix admin-dashboard && npm install --prefix cashier-ui",
+  "buildCommand": "npm run build",
+  "outputDirectory": "admin-dashboard/dist",
   "rewrites": [
     {
       "source": "/cashier/(.*)",

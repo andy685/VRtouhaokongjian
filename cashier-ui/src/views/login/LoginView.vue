@@ -265,6 +265,14 @@ const probeOrigin = async (origin, path) => {
 }
 
 const resolveAdminOrigin = async () => {
+  if (import.meta.env.PROD) {
+    return window.location.origin
+  }
+
+  if (!window.location.port) {
+    return window.location.origin
+  }
+
   const currentPort = Number(window.location.port || 5173)
   const candidatePorts = Array.from(
     new Set([5173, currentPort - 1, currentPort + 1, 5175].filter((port) => Number.isFinite(port) && port > 0))
