@@ -42,6 +42,14 @@ for i, svg in enumerate(svgs):
     # Small fix: convert &quot; back to " in SVG attributes if needed
     body = body.replace(f'<!-- SVG_PLACEHOLDER_{i} -->', svg)
 
+# Normalize mermaid fences so the client-side renderer can pick them up.
+body = re.sub(
+    r'<pre class="mermaid"><code>(.*?)</code></pre>',
+    lambda m: f'<pre class="mermaid">{m.group(1)}</pre>',
+    body,
+    flags=re.DOTALL,
+)
+
 # 4. Build sidebar from markdown headers
 sections = []
 for line in content.split('\n'):
@@ -103,7 +111,8 @@ html_parts = []
 html_parts.append('<!DOCTYPE html><html lang="zh-CN"><head>')
 html_parts.append('<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">')
 html_parts.append(f'<title>头号空间 PRD {ver} — 产品需求文档</title>')
-html_parts.append(f'<style>{css}</style></head><body>')
+html_parts.append(f'<style>{css}</style>')
+html_parts.append('<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"; mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose" });</script></head><body>')
 
 # Sidebar
 html_parts.append('<div class="sidebar">')
