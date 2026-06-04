@@ -137,7 +137,7 @@
           <div class="role-card-icon payment">
             <n-icon :component="WalletOutline" size="32" />
           </div>
-          <div class="role-card-title">支付系统</div>
+          <div class="role-card-title">收银系统</div>
           <div class="role-card-desc">支付配置 · 渠道管理</div>
           <n-button size="tiny" secondary>进入</n-button>
         </div>
@@ -250,7 +250,13 @@ async function probeOrigin(origin: string, path: string) {
   }
 }
 
-async function resolveCashierOrigin() {
+const cashierLoginPath = import.meta.env.PROD ? '/cashier/login' : '/login'
+
+async function resolveCashierOrigin(path = cashierLoginPath) {
+  if (import.meta.env.PROD || !window.location.port) {
+    return window.location.origin
+  }
+
   const currentPort = Number(window.location.port || 5175)
   const candidatePorts = Array.from(
     new Set([currentPort - 1, 5174, 5173].filter((port) => Number.isFinite(port) && port > 0))
@@ -258,7 +264,7 @@ async function resolveCashierOrigin() {
 
   for (const port of candidatePorts) {
     const origin = createOrigin(port)
-    if (await probeOrigin(origin, '/sale')) {
+    if (await probeOrigin(origin, path)) {
       return origin
     }
   }
@@ -279,8 +285,8 @@ function switchToShop() { showRoleModal.value = false; router.push('/shop/workbe
 function switchToCP() { showRoleModal.value = false }
 async function switchToPayment() {
   showRoleModal.value = false
-  const cashierOrigin = await resolveCashierOrigin()
-  window.location.href = `${cashierOrigin}/sale`
+  const cashierOrigin = await resolveCashierOrigin(cashierLoginPath)
+  window.location.href = `${cashierOrigin}${cashierLoginPath}`
 }
 
 function handleUserAction(key: string) {
