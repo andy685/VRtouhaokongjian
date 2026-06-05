@@ -85,9 +85,11 @@
                 <n-button size="tiny" quaternary type="error" class="banner-del" @click="removeBanner(i)">×</n-button>
               </div>
               <div class="banner-add-placeholder">
-                <n-upload class="banner-upload-inner" accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload">
-                  <n-icon size="22" color="#aaa"><ImageOutline /></n-icon>
-                  <span>上传展位图</span>
+                <n-upload accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                  <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                    <n-icon size="20" color="#aaa"><ImageOutline /></n-icon>
+                    <span style="font-size:10px;color:#999;">上传展位图</span>
+                  </div>
                 </n-upload>
               </div>
             </div>
@@ -161,7 +163,36 @@
         <!-- 游戏简介 -->
         <section class="card form-card">
           <div class="card-head"><h4>游戏简介</h4></div>
-          <n-input v-model:value="form.description" type="textarea" :rows="5" placeholder="介绍游戏玩法、特色内容..." />
+          <div class="form-body">
+            <n-input v-model:value="form.description" type="textarea" :rows="5" placeholder="介绍游戏玩法、特色内容..." />
+
+            <!-- 游戏介绍长图上传 -->
+            <div class="long-image-section">
+            <label class="long-image-label">游戏介绍长图</label>
+            <n-upload accept="image/*" :show-file-list="false" @before-upload="handleLongImageUpload">
+              <div v-if="form.longImageUrl" class="long-image-preview-wrapper">
+                <img :src="form.longImageUrl" class="long-image-preview" />
+                <div class="long-image-overlay">
+                  <n-icon size="20" color="#fff"><ImageOutline /></n-icon>
+                  <span>点击更换长图</span>
+                </div>
+              </div>
+              <div v-else class="long-image-upload-area">
+                <div class="long-image-upload-icon">
+                  <n-icon size="32" color="#bbb"><ImageOutline /></n-icon>
+                </div>
+                <div class="long-image-upload-text">
+                  <span class="long-image-upload-title">上传游戏介绍长图</span>
+                  <span class="long-image-upload-hint">支持 JPG/PNG 格式，≤10MB</span>
+                </div>
+              </div>
+            </n-upload>
+            <div v-if="form.longImageUrl" class="long-image-file-row">
+              <span class="file-name">{{ form.longImageName }}</span>
+              <n-button size="small" quaternary type="error" @click="removeLongImage">删除</n-button>
+            </div>
+          </div>
+          </div>
         </section>
 
         <!-- 支持特性 -->
@@ -266,8 +297,8 @@
             <div class="form-group">
               <label>付费模式</label>
               <n-radio-group v-model:value="form.payMode">
-                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一人花钱运行游戏</n-radio-button>
                 <n-radio-button value="multi" label="多人付费">👥 多人付费 — 多人共同花钱运行游戏</n-radio-button>
+                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一人花钱运行游戏</n-radio-button>
               </n-radio-group>
               <n-text depth="3" style="font-size:11px;margin-top:4px;">
                 单人付费：一名玩家付费后运行游戏；多人付费：多名玩家分摊费用后共同进入游戏
@@ -372,7 +403,7 @@ const form = ref({
   tags: [] as string[],
   runPlatform: 'host' as string,
   gameMode: 'standalone' as string,
-  payMode: 'single' as string,
+  payMode: 'multi' as string,
   timeLimitEnabled: false,
   timeLimitMinutes: 10,
   gameBeanCost: 0,
@@ -387,6 +418,9 @@ const form = ref({
   bannerList: [] as { url: string; name: string }[],
   packageName: '',
   packageSize: '',
+  // 游戏介绍长图
+  longImageUrl: '',
+  longImageName: '',
   // 支持特性
   supportShooting: false,
   supportWalking: false,
@@ -403,7 +437,7 @@ function loadGameData(id: string) {
       name: '过山车VR', category: 'scifi', version: 'v2.3.2', size: '256M', duration: 10,
       tags: ['热门', '全年龄', '刺激'],
       description: '体验身临其境的VR过山车之旅！穿越壮观的虚拟世界，感受失重与速度的极致刺激。',
-      runPlatform: 'host', gameMode: 'standalone', payMode: 'single',
+      runPlatform: 'host', gameMode: 'standalone', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 10,
       gameBeanCost: 20, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
@@ -427,7 +461,7 @@ function loadGameData(id: string) {
       name: '极速赛车', category: 'sports', version: 'v3.1.0', size: '800M', duration: 8,
       tags: ['热门', '竞技射击'],
       description: '真实赛车模拟，多条赛道，支持联机对战。',
-      runPlatform: 'allInOne', gameMode: 'online', payMode: 'single',
+      runPlatform: 'allInOne', gameMode: 'online', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 8,
       gameBeanCost: 15, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
@@ -489,6 +523,22 @@ function handlePackageUpload(options: { file: File }) {
 }
 
 function removePackage() { form.value.packageName = ''; form.value.packageSize = ''; message.info('资源包已删除') }
+
+// 游戏介绍长图上传
+function handleLongImageUpload(options: { file: File }) {
+  const { file } = options
+  if (file.size > 10 * 1024 * 1024) { message.warning('长图文件不能超过10MB'); return false }
+  form.value.longImageUrl = URL.createObjectURL(file)
+  form.value.longImageName = file.name
+  message.success(`游戏介绍长图「${file.name}」上传成功（模拟）`)
+  return false
+}
+
+function removeLongImage() {
+  form.value.longImageUrl = ''
+  form.value.longImageName = ''
+  message.info('介绍长图已删除')
+}
 
 function renderTag({ tag, handleClose }: { tag: string; handleClose: () => void }) {
   return h(NTag, { closable: true, round: true, type: 'info', size: 'small', onClose: handleClose }, () => tag)
@@ -722,11 +772,11 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 10px;
+  gap: 6px;
+  font-size: 12px;
   color: #aaa;
 }
 .banner-add-placeholder:hover { border-color: #bbb; background: #f0f0f0; }
@@ -862,6 +912,103 @@ onMounted(() => {
 .fade-slide-leave-active { transition: all 0.25s ease; }
 .fade-slide-enter-from,
 .fade-slide-leave-to { opacity: 0; transform: translateY(-8px); }
+
+/* 游戏介绍长图 */
+.long-image-section {
+  padding-top: 0;
+}
+.long-image-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted, #999);
+  margin-bottom: 10px;
+}
+.long-image-preview-wrapper {
+  position: relative;
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e8e8e8);
+  cursor: pointer;
+}
+.long-image-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  background: var(--bg-secondary, #f5f5f5);
+  max-height: 300px;
+}
+.long-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.25s;
+  color: #fff;
+  font-size: 13px;
+}
+.long-image-preview-wrapper:hover .long-image-overlay {
+  opacity: 1;
+}
+.long-image-upload-area {
+  width: 100%;
+  padding: 28px 20px;
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-secondary, #fafafa);
+}
+.long-image-upload-area:hover {
+  border-color: var(--primary-color, #3B82F6);
+  background: rgba(59,130,246,0.03);
+}
+.long-image-upload-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.long-image-upload-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.long-image-upload-title {
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  font-weight: 500;
+}
+.long-image-upload-hint {
+  font-size: 11px;
+  color: var(--text-muted, #999);
+}
+.long-image-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 6px;
+}
 
 /* 响应式 */
 @media (max-width: 1100px) {

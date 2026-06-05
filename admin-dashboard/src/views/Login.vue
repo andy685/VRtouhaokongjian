@@ -34,7 +34,7 @@
             <n-checkbox v-model:checked="loginForm.remember">记住我</n-checkbox>
             <n-button text @click="showForgotPassword = true">忘记密码？</n-button>
           </div>
-          <n-button type="primary" block @click="handleLogin" :loading="isLoading">
+          <n-button type="primary" block attr-type="button" @click="handleLogin" :loading="isLoading">
             登录
           </n-button>
         </n-form>

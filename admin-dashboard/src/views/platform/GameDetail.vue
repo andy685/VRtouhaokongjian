@@ -86,9 +86,11 @@
                 <n-button size="tiny" quaternary type="error" class="banner-del" @click="removeBanner(i)">×</n-button>
               </div>
               <div class="banner-add-placeholder">
-                <n-upload class="banner-upload-inner" accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload">
-                  <n-icon size="22" color="#aaa"><ImageOutline /></n-icon>
-                  <span>上传展位图</span>
+                <n-upload accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                  <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                    <n-icon size="20" color="#aaa"><ImageOutline /></n-icon>
+                    <span style="font-size:10px;color:#999;">上传展位图</span>
+                  </div>
                 </n-upload>
               </div>
             </div>
@@ -212,7 +214,36 @@
         <!-- 游戏简介 -->
         <section class="card form-card">
           <div class="card-head"><h4>游戏简介</h4></div>
-          <n-input v-model:value="gameData.description" type="textarea" :rows="5" placeholder="介绍游戏玩法、特色内容..." />
+          <div class="form-body">
+            <n-input v-model:value="gameData.description" type="textarea" :rows="5" placeholder="介绍游戏玩法、特色内容..." />
+
+            <!-- 游戏介绍长图上传 -->
+            <div class="long-image-section">
+            <label class="long-image-label">游戏介绍长图</label>
+            <n-upload accept="image/*" :show-file-list="false" @before-upload="handleLongImageUpload">
+              <div v-if="gameData.longImageUrl" class="long-image-preview-wrapper">
+                <img :src="gameData.longImageUrl" class="long-image-preview" />
+                <div class="long-image-overlay">
+                  <n-icon size="20" color="#fff"><ImageOutline /></n-icon>
+                  <span>点击更换长图</span>
+                </div>
+              </div>
+              <div v-else class="long-image-upload-area">
+                <div class="long-image-upload-icon">
+                  <n-icon size="32" color="#bbb"><ImageOutline /></n-icon>
+                </div>
+                <div class="long-image-upload-text">
+                  <span class="long-image-upload-title">上传游戏介绍长图</span>
+                  <span class="long-image-upload-hint">支持 JPG/PNG 格式，≤10MB</span>
+                </div>
+              </div>
+            </n-upload>
+            <div v-if="gameData.longImageUrl" class="long-image-file-row">
+              <span class="file-name">{{ gameData.longImageName }}</span>
+              <n-button size="small" quaternary type="error" @click="removeLongImage">删除</n-button>
+            </div>
+          </div>
+          </div>
         </section>
 
         <!-- 支持特性 -->
@@ -316,8 +347,8 @@
             <div class="form-group">
               <label>付费模式</label>
               <n-radio-group v-model:value="gameData.payMode">
-                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一人花钱运行游戏</n-radio-button>
                 <n-radio-button value="multi" label="多人付费">👥 多人付费 — 多人共同花钱运行游戏</n-radio-button>
+                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一人花钱运行游戏</n-radio-button>
               </n-radio-group>
               <n-text depth="3" style="font-size:11px;margin-top:4px;">
                 单人付费：一名玩家付费后运行游戏；多人付费：多名玩家分摊费用后共同进入游戏
@@ -498,6 +529,10 @@ const gameData = ref({
   packageSize: '' as string,
   packageUrl: '' as string,
 
+  // 游戏介绍长图
+  longImageUrl: '' as string,
+  longImageName: '' as string,
+
   // 支持特性
   supportShooting: false,
   supportWalking: false,
@@ -532,7 +567,7 @@ const gameData = ref({
   // 时长限制（分钟）
   timeLimitMinutes: 10,
   // 付费模式：single-单人付费, multi-多人付费
-  payMode: 'single',
+  payMode: 'multi',
 })
 
 
@@ -686,6 +721,25 @@ function removePackage() {
   gameData.value.packageSize = ''
   gameData.value.packageUrl = ''
   message.info('资源包已删除')
+}
+
+// 游戏介绍长图上传
+function handleLongImageUpload(options: { file: File }) {
+  const { file } = options
+  if (file.size > 10 * 1024 * 1024) {
+    message.warning('长图文件不能超过10MB')
+    return false
+  }
+  gameData.value.longImageUrl = URL.createObjectURL(file)
+  gameData.value.longImageName = file.name
+  message.success(`游戏介绍长图「${file.name}」上传成功（模拟）`)
+  return false
+}
+
+function removeLongImage() {
+  gameData.value.longImageUrl = ''
+  gameData.value.longImageName = ''
+  message.info('介绍长图已删除')
 }
 
 function formatTime(seconds: number): string {
@@ -955,11 +1009,11 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 10px;
+  gap: 6px;
+  font-size: 12px;
   color: #aaa;
 }
 .banner-add-placeholder:hover {
@@ -1194,6 +1248,103 @@ onMounted(() => {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+/* 游戏介绍长图 */
+.long-image-section {
+  padding-top: 0;
+}
+.long-image-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted, #999);
+  margin-bottom: 10px;
+}
+.long-image-preview-wrapper {
+  position: relative;
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e8e8e8);
+  cursor: pointer;
+}
+.long-image-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  background: var(--bg-secondary, #f5f5f5);
+  max-height: 300px;
+}
+.long-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.25s;
+  color: #fff;
+  font-size: 13px;
+}
+.long-image-preview-wrapper:hover .long-image-overlay {
+  opacity: 1;
+}
+.long-image-upload-area {
+  width: 100%;
+  padding: 28px 20px;
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-secondary, #fafafa);
+}
+.long-image-upload-area:hover {
+  border-color: var(--primary-color, #3B82F6);
+  background: rgba(59,130,246,0.03);
+}
+.long-image-upload-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.long-image-upload-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.long-image-upload-title {
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  font-weight: 500;
+}
+.long-image-upload-hint {
+  font-size: 11px;
+  color: var(--text-muted, #999);
+}
+.long-image-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 6px;
 }
 
 /* 响应式 */
