@@ -412,7 +412,7 @@ const prepaidRecords = ref([
     type: '单次消费',
     reason: '单次消费',
     store: '北京头号空间',
-    gameName: '+¥300.00',
+    gameName: '暗黑战场',
     changeAmount: '-¥50.00',
     afterAmount: '¥150.00',
     note: '',
