@@ -494,6 +494,11 @@ watch(
 
 .prm-row-game td {
   vertical-align: middle;
+  font-size: 12px;
+}
+
+.prm-row-game td:nth-child(4) {
+  white-space: nowrap;
 }
 
 .prm-table th:nth-child(1),
