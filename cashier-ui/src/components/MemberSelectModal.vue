@@ -191,7 +191,7 @@ const handleSearch = () => {
   align-items: center;
   justify-content: center;
   padding: 28px;
-  background: rgba(0, 0, 0, 0.62);
+  background: var(--pos-overlay-backdrop);
 }
 
 /* ---- 弹窗主体 ---- */

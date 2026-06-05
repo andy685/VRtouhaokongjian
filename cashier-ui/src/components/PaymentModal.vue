@@ -165,7 +165,7 @@ const handleConfirm = () => {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--pos-overlay-backdrop);
 }
 
 /* ===== 弹窗 ===== */

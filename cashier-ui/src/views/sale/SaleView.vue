@@ -6,11 +6,11 @@
         <strong>未登入会员</strong>
         <div class="member-actions">
           <button class="mini-action" type="button" @click="showMemberSelect = true">
-            <el-icon><Search /></el-icon>
+            <img class="mini-action-icon" src="/sale-icons/select-member.svg" alt="" />
             选择会员
           </button>
           <button class="mini-action" type="button" @click="showNewMember = true">
-            <el-icon><UserFilled /></el-icon>
+            <img class="mini-action-icon" src="/sale-icons/add-member.svg" alt="" />
             新增会员
           </button>
         </div>
@@ -20,7 +20,7 @@
       <div v-else class="member-card">
         <div class="mc-top-row">
           <div class="mc-profile">
-            <img :src="selectedMember.avatar" class="mc-avatar" :alt="selectedMember.name" />
+            <img :src="selectedMemberAvatar" class="mc-avatar" :alt="selectedMember.name" @error="handleMemberAvatarError" />
             <div class="mc-name-block">
               <span class="mc-name-line">
                 <strong>{{ selectedMember.name }}</strong>
@@ -81,15 +81,39 @@
           </label>
         </header>
 
+        <div v-if="isRechargeTab" class="custom-recharge-card" :class="{ active: isCustomRechargeActive }">
+          <div class="custom-recharge-copy">
+            <strong>自定义充值</strong>
+            <em>预存款</em>
+          </div>
+          <label class="custom-recharge-field">
+            <div class="custom-recharge-input">
+              <b>¥</b>
+              <input
+                v-model="customRechargeAmount"
+                type="number"
+                min="0"
+                step="1"
+                inputmode="decimal"
+                placeholder="请输入金额"
+                @focus="selectCustomRecharge"
+                @input="selectCustomRecharge"
+              />
+            </div>
+          </label>
+        </div>
+
         <div class="product-grid" role="list">
           <button
-            v-for="product in filteredProducts"
+            v-for="(product, idx) in filteredProducts"
             :key="product.id"
             type="button"
             class="product-card"
-            :class="{ active: cartItems.some((item) => item.id === product.id) }"
+            :class="{ active: isProductActive(product), 'has-detail': !!product.detail }"
             role="listitem"
-            @click="addToCart(product)"
+            @mouseenter="handleProductHover(product, $event)"
+            @mouseleave="handleProductLeave()"
+            @click="handleProductSelect(product)"
           >
             <span class="product-thumb">
               <img :src="product.cover" :alt="product.name" />
@@ -99,78 +123,196 @@
               <em><span class="currency-symbol">¥</span>{{ product.price.toFixed(2) }}</em>
             </span>
           </button>
+
+          <!-- 悬浮详情面板 -->
+          <transition name="detail-fade">
+            <div
+              v-if="hoveredDetail && hoveredDetail.detail"
+              class="product-detail-panel"
+              :style="{ top: hoveredPos.y + 'px', left: hoveredPos.x + 'px' }"
+            >
+              <header class="detail-panel-head">
+                <span class="detail-panel-title">{{ hoveredDetail.panelTitle || '套餐详情' }}</span>
+              </header>
+              <dl class="detail-panel-list">
+                <div v-for="row in hoveredDetail.detail" :key="row.label" class="detail-row">
+                  <dt>{{ row.label }}</dt>
+                  <dd :class="{ highlight: row.highlight }">{{ row.value }}</dd>
+                </div>
+              </dl>
+            </div>
+          </transition>
         </div>
       </div>
     </section>
 
-    <aside class="checkout-panel" aria-label="结账单">
-      <header class="checkout-header">
-        <strong>结账单（{{ cartItems.length }}）</strong>
-        <button type="button" @click="clearCart">清空</button>
-      </header>
-
-      <div class="cart-list">
-        <article v-for="(item, index) in cartItems" :key="item.id" class="cart-item">
-          <div class="cart-title-row">
-            <strong>{{ item.name }}</strong>
-            <em><span class="currency-symbol">¥</span>{{ (item.price * item.quantity).toFixed(2) }}</em>
+    <aside
+      class="checkout-panel"
+      :class="{ 'checkout-panel--recharge': isRechargeTab }"
+      :aria-label="isRechargeTab ? '充值信息' : '结账单'"
+    >
+      <template v-if="isRechargeTab">
+        <header class="checkout-header recharge-header">
+          <div class="recharge-header-copy">
+            <strong>充值信息</strong>
+            <span>充值与消费分开结算</span>
           </div>
-          <div class="cart-control-row">
-            <button class="pill-btn" type="button" @click="removeFromCart(index)">删除</button>
-            <div class="quantity-stepper" aria-label="调整数量">
-              <button type="button" aria-label="减少数量" @click="decreaseQty(index)">
-                <el-icon><Minus /></el-icon>
-              </button>
-              <input :value="item.quantity" readonly aria-label="当前数量" />
-              <button class="add" type="button" aria-label="增加数量" @click="increaseQty(index)">
-                <el-icon><Plus /></el-icon>
-              </button>
-            </div>
-          </div>
-        </article>
+          <button type="button" @click="clearRechargeSelection">清空</button>
+        </header>
 
-        <div v-if="cartItems.length === 0" class="cart-empty">
-          <img src="/cart-empty-icon.png" alt="" class="cart-empty-icon" />
-          <span>购物车空空 咱也没有</span>
-        </div>
-      </div>
-
-      <footer class="checkout-footer">
-        <div class="summary-card">
-          <!-- 合计 -->
-          <div class="summary-line">
-            <span>合计：</span>
-            <strong><span class="currency-symbol">¥</span>{{ totalAmount.toFixed(2) }}</strong>
-          </div>
-          <!-- 优惠券区域 — 使用后展示折扣信息 -->
-          <div class="summary-line coupon-line">
-            <div v-if="!selectedCoupon" class="coupon-trigger-wrap" @click="showCouponModal = true">
-              <span>优惠券：</span>
-              <button type="button">{{ availableCouponCount }} 张可用 &gt;</button>
-            </div>
-            <div v-else class="coupon-used-info">
-              <div class="coupon-used-left">
-                <span>促销优惠：</span>
-                <em class="coupon-discount-amount">-¥{{ couponDiscount.toFixed(2) }}</em>
+        <div class="recharge-body">
+          <section class="recharge-card recharge-impact-card">
+            <span class="recharge-card-label">账户变化</span>
+            <template v-if="selectedMember">
+              <div class="recharge-impact-main">
+                <span>当前预存款</span>
+                <strong>¥{{ memberBalance.toFixed(2) }}</strong>
               </div>
-              <div class="coupon-used-right">
-                <span class="coupon-name-text">{{ selectedCoupon.name }}</span>
-                <button type="button" class="coupon-remove-btn" @click.stop="removeCoupon" title="移除优惠券">
-                  <el-icon><CircleCloseFilled /></el-icon>
+              <div class="recharge-impact-flow">
+                <div>
+                  <span>本次储值</span>
+                  <strong>¥{{ rechargeAmount.toFixed(2) }}</strong>
+                </div>
+                <div>
+                  <span>赠送金币</span>
+                  <strong>{{ rechargeBonusCoins }}</strong>
+                </div>
+              </div>
+              <div class="recharge-impact-result">
+                <div>
+                  <span>充值后预存款</span>
+                  <strong>¥{{ projectedBalance.toFixed(2) }}</strong>
+                </div>
+              </div>
+            </template>
+            <div v-else class="recharge-empty">
+              <strong>先选会员，再充值</strong>
+              <span>充值会直接记入当前会员账户</span>
+              <button type="button" class="recharge-inline-btn" @click="showMemberSelect = true">选择会员</button>
+            </div>
+          </section>
+
+          <section class="recharge-card recharge-plan-card">
+            <span class="recharge-card-label">充值方案</span>
+            <template v-if="selectedRechargePlan">
+              <div class="recharge-plan-main">
+                <div>
+                  <strong>{{ selectedRechargePlan.name }}</strong>
+                  <span>{{ selectedRechargePlan.desc }}</span>
+                </div>
+                <em><span class="currency-symbol">¥</span>{{ selectedRechargePlan.price.toFixed(2) }}</em>
+              </div>
+              <dl class="recharge-plan-lines">
+                <div>
+                  <dt>充值金额</dt>
+                  <dd>¥{{ selectedRechargePlan.price.toFixed(2) }}</dd>
+                </div>
+                <div>
+                  <dt>到账说明</dt>
+                  <dd>{{ selectedRechargePlan.arrivalText }}</dd>
+                </div>
+              </dl>
+            </template>
+            <div v-else class="recharge-empty recharge-empty--soft">
+              <strong>请选择一个充值活动</strong>
+              <span>右侧只展示充值确认，不放入购物车</span>
+            </div>
+          </section>
+
+          <section v-if="cartItems.length > 0" class="recharge-card recharge-notice">
+            <span class="recharge-card-label">消费单提醒</span>
+            <p>当前购物车还有 {{ cartItems.length }} 项消费内容，充值完成后仍需单独结算。</p>
+          </section>
+        </div>
+
+        <footer class="checkout-footer recharge-footer">
+          <div class="summary-card recharge-summary-card">
+            <div class="summary-line">
+              <span>充值金额</span>
+              <strong><span class="currency-symbol">¥</span>{{ rechargeAmount.toFixed(2) }}</strong>
+            </div>
+            <div class="summary-total">
+              <span>应收</span>
+              <strong><span class="currency-symbol">¥</span>{{ rechargeAmount.toFixed(2) }}</strong>
+            </div>
+          </div>
+          <button
+            class="checkout-btn"
+            type="button"
+            :disabled="!selectedMember || !selectedRechargePlan"
+            @click="checkoutRecharge"
+          >
+            立即充值&nbsp; <span class="currency-symbol">¥</span>{{ rechargeAmount.toFixed(2) }}
+          </button>
+        </footer>
+      </template>
+
+      <template v-else>
+        <header class="checkout-header">
+          <strong>结账单（{{ cartItems.length }}）</strong>
+          <button type="button" @click="clearCart">清空</button>
+        </header>
+
+        <div class="cart-list">
+          <article v-for="(item, index) in cartItems" :key="item.id" class="cart-item">
+            <div class="cart-title-row">
+              <strong>{{ item.name }}</strong>
+              <em><span class="currency-symbol">¥</span>{{ (item.price * item.quantity).toFixed(2) }}</em>
+            </div>
+            <div class="cart-control-row">
+              <button class="pill-btn" type="button" @click="removeFromCart(index)">删除</button>
+              <div class="quantity-stepper" aria-label="调整数量">
+                <button type="button" aria-label="减少数量" @click="decreaseQty(index)">
+                  <el-icon><Minus /></el-icon>
+                </button>
+                <input :value="item.quantity" readonly aria-label="当前数量" />
+                <button class="add" type="button" aria-label="增加数量" @click="increaseQty(index)">
+                  <el-icon><Plus /></el-icon>
                 </button>
               </div>
             </div>
-          </div>
-          <!-- 实付 -->
-          <div class="summary-total">
-            <span>实付</span>
-            <strong><span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}</strong>
+          </article>
+
+          <div v-if="cartItems.length === 0" class="cart-empty">
+            <img src="/cart-empty-icon.png" alt="" class="cart-empty-icon" />
+            <span>购物车空空 咱也没有</span>
           </div>
         </div>
-        <button class="checkout-btn" type="button" :disabled="cartItems.length === 0" @click="checkout">
-          去结算&nbsp; <span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}
-        </button>
-      </footer>
+
+        <footer class="checkout-footer">
+          <div class="summary-card">
+            <div class="summary-line">
+              <span>合计：</span>
+              <strong><span class="currency-symbol">¥</span>{{ totalAmount.toFixed(2) }}</strong>
+            </div>
+            <div class="summary-line coupon-line">
+              <div v-if="!selectedCoupon" class="coupon-trigger-wrap" @click="showCouponModal = true">
+                <span>优惠券：</span>
+                <button type="button">{{ availableCouponCount }} 张可用 &gt;</button>
+              </div>
+              <div v-else class="coupon-used-info">
+                <div class="coupon-used-left">
+                  <span>促销优惠：</span>
+                  <em class="coupon-discount-amount">-¥{{ couponDiscount.toFixed(2) }}</em>
+                </div>
+                <div class="coupon-used-right">
+                  <span class="coupon-name-text">{{ selectedCoupon.name }}</span>
+                  <button type="button" class="coupon-remove-btn" @click.stop="removeCoupon" title="移除优惠券">
+                    <el-icon><CircleCloseFilled /></el-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="summary-total">
+              <span>实付</span>
+              <strong><span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}</strong>
+            </div>
+          </div>
+          <button class="checkout-btn" type="button" :disabled="cartItems.length === 0" @click="checkout">
+            去结算&nbsp; <span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}
+          </button>
+        </footer>
+      </template>
     </aside>
 
     <MemberSelectModal
@@ -197,13 +339,13 @@
 
     <PaymentModal
       :visible="showPaymentModal"
-      :items="cartItems"
+      :items="paymentItems"
       :member="selectedMember"
-      :total-amount="totalAmount"
-      :coupon="selectedCoupon"
-      :discount-amount="couponDiscount"
-      :payable-amount="payableAmount"
-      @close="showPaymentModal = false"
+      :total-amount="paymentTotalAmount"
+      :coupon="paymentCoupon"
+      :discount-amount="paymentDiscountAmount"
+      :payable-amount="paymentPayableAmount"
+      @close="handlePaymentClose"
       @confirm="handlePaymentConfirm"
     />
 
@@ -214,17 +356,52 @@
       @close="showDeductionModal = false"
       @confirm="handleDeductionConfirm"
     />
+
+    <DeductionSuccessModal
+      :visible="showDeductionSuccess"
+      :count="lastDeductionCount"
+      @close="showDeductionSuccess = false"
+    />
+
+    <DeductionSuccessModal
+      :visible="showRechargeSuccess"
+      title="充值成功"
+      subtitle="本次充值如下"
+      :details="lastRechargeDetails"
+      @close="showRechargeSuccess = false"
+    />
+
+    <DeductionSuccessModal
+      :visible="showSaleSuccess"
+      :title="lastSaleTitle"
+      :subtitle="lastSaleSubtitle"
+      :details="lastSaleDetails"
+      @close="showSaleSuccess = false"
+    />
+
+    <DeductionSuccessModal
+      :visible="showRegisterSuccess"
+      type="register"
+      title="注册成功"
+      subtitle="会员注册信息"
+      :details="lastRegisterDetails"
+      @close="handleRegisterSuccessClose"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { CircleCloseFilled, Minus, Plus, Search, UserFilled, WarningFilled } from '@element-plus/icons-vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { CircleCloseFilled, Close, Minus, Plus, Search, WarningFilled } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
 import CouponSelectModal from '../../components/CouponSelectModal.vue'
 import PaymentModal from '../../components/PaymentModal.vue'
 import MemberDeductionModal from '../../components/MemberDeductionModal.vue'
+import DeductionSuccessModal from '../../components/DeductionSuccessModal.vue'
+
+const route = useRoute()
 
 const createCover = (accentA, accentB, glyph) => {
   const svg = `
@@ -258,7 +435,22 @@ const showNewMember = ref(false)
 const showCouponModal = ref(false)
 const showPaymentModal = ref(false)
 const showDeductionModal = ref(false)
+const showDeductionSuccess = ref(false)
+const showRechargeSuccess = ref(false)
+const showSaleSuccess = ref(false)
+const showRegisterSuccess = ref(false)
+const lastDeductionCount = ref(1)
+const lastRechargeDetails = ref([])
+const lastSaleTitle = ref('支付成功')
+const lastSaleSubtitle = ref('本次消费如下')
+const lastSaleDetails = ref([])
+const lastRegisterDetails = ref([])
 const selectedCoupon = ref(null)
+const pendingNewMember = ref(null)
+
+// 悬浮详情面板
+const hoveredDetail = ref(null)
+const hoveredPos = ref({ x: 0, y: 0 })
 
 // 扣费设备列表（mock）
 const deductionDevices = ref([
@@ -414,21 +606,90 @@ const memberHistory = ref([
 ])
 const activeTab = ref('single')
 const searchQuery = ref('')
+const selectedRechargeProduct = ref(null)
+const customRechargeAmount = ref('')
+const paymentItems = ref([])
+const paymentTotalAmount = ref(0)
+const paymentCoupon = ref(null)
+const paymentDiscountAmount = ref(0)
+const paymentPayableAmount = ref(0)
+const paymentMode = ref('sale')
+
+const persistSaleMemberSession = (member) => {
+  if (!member) return
+  sessionStorage.setItem('sale:selected-member', JSON.stringify(member))
+}
+
+const clearSaleMemberSession = () => {
+  sessionStorage.removeItem('sale:selected-member')
+}
+
+const syncSaleEntryContext = () => {
+  const targetTab = typeof route.query.tab === 'string' ? route.query.tab : ''
+  if (tabs.some((tab) => tab.id === targetTab)) {
+    activeTab.value = targetTab
+  }
+
+  const shouldRestoreMember = route.query.member === '1' || !selectedMember.value
+  if (!shouldRestoreMember) return
+
+  const raw = sessionStorage.getItem('sale:selected-member')
+  if (!raw) return
+
+  try {
+    selectedMember.value = JSON.parse(raw)
+  } catch {
+    clearSaleMemberSession()
+  }
+}
+
+watch(() => route.query, syncSaleEntryContext, { immediate: true })
 
 const products = ref([
   { id: 1, name: 'VR 体验 30分钟', price: 20, category: 'single', desc: '单人设备体验', cover: createCover('#42b3ff', '#235dff', 'VR') },
   { id: 2, name: '赛车模拟 30分钟', price: 35, category: 'single', desc: '热门设备', cover: createCover('#47c4ff', '#1677c8', 'R') },
   { id: 3, name: '亲子互动区', price: 25, category: 'single', desc: '亲子娱乐', cover: createCover('#ffb648', '#ff7a18', 'K') },
   { id: 4, name: '多人派对包厢', price: 80, category: 'single', desc: '四人起订', cover: createCover('#9b7bff', '#5f55f7', 'P') },
-  { id: 5, name: '储值 300 送 30', price: 300, category: 'recharge', desc: '会员储值活动', cover: createCover('#2bc6c8', '#149d9f', 'C') },
-  { id: 6, name: '储值 500 送 80', price: 500, category: 'recharge', desc: '门店热销', cover: createCover('#36c486', '#0d9860', 'V') },
+  { id: 5, name: '储值 300 送 30', price: 300, category: 'recharge', desc: '会员储值活动', cover: createCover('#2bc6c8', '#149d9f', 'C'), panelTitle: '充值详情', detail: [
+    { label: '套餐名称', value: '储值300送30元（一年有效）' },
+    { label: '单价', value: '¥300.00', highlight: true },
+    { label: '到账预存款', value: '¥300.00' },
+    { label: '到账游戏币', value: '30' },
+    { label: '游戏币有效期', value: '365天（2024-06-01 至 2025-06-01）' },
+    { label: '到账次数', value: '0' },
+    { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
+  ]},
+  { id: 6, name: '储值 500 送 80', price: 500, category: 'recharge', desc: '门店热销', cover: createCover('#36c486', '#0d9860', 'V'), panelTitle: '充值详情', detail: [
+    { label: '套餐名称', value: '储值500送80元（一年有效）' },
+    { label: '单价', value: '¥500.00', highlight: true },
+    { label: '到账预存款', value: '¥500.00' },
+    { label: '到账游戏币', value: '80' },
+    { label: '游戏币有效期', value: '365天（2024-06-01 至 2025-06-01）' },
+    { label: '到账次数', value: '0' },
+    { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
+  ]},
   { id: 7, name: '畅玩 5 次套票', price: 88, category: 'package', desc: '有效期 30 天', cover: createCover('#7a87ff', '#4f5ef2', '5') },
   { id: 8, name: '畅玩 10 次套票', price: 168, category: 'package', desc: '有效期 90 天', cover: createCover('#6eb9ff', '#3f7dff', '10') },
-  { id: 9, name: '游戏币 20 枚', price: 20, category: 'product', desc: '即买即用', cover: createCover('#ff8e56', '#f25f43', '20') },
-  { id: 10, name: '饮品套餐', price: 18, category: 'product', desc: '吧台商品', cover: createCover('#ff9dc2', '#ff5f9d', 'D') }
+  { id: 9, name: '游戏币 20 枚', price: 20, category: 'product', desc: '即买即用', cover: createCover('#ff8e56', '#f25f43', '20'), panelTitle: '商品详情', detail: [
+    { label: '商品名称', value: '游戏币 20 枚' },
+    { label: '单价', value: '¥20.00', highlight: true },
+    { label: '数量', value: '20 枚/份' },
+    { label: '适用范围', value: '全场设备通用' },
+    { label: '有效期说明', value: '购买后永久有效，不可退换' },
+    { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
+  ]},
+  { id: 10, name: '饮品套餐', price: 18, category: 'product', desc: '吧台商品', cover: createCover('#ff9dc2', '#ff5f9d', 'D'), panelTitle: '商品详情', detail: [
+    { label: '商品名称', value: '饮品套餐（可乐+爆米花）' },
+    { label: '单价', value: '¥18.00', highlight: true },
+    { label: '规格', value: '1 份（含中杯可乐 + 小份爆米花）' },
+    { label: '取餐地点', value: '吧台自取' },
+    { label: '保质期', value: '现制饮品，当日饮用最佳' },
+    { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
+  ]}
 ])
 
 const cartItems = ref([])
+const isRechargeTab = computed(() => activeTab.value === 'recharge')
 
 const filteredProducts = computed(() => {
   const keyword = searchQuery.value.trim()
@@ -453,6 +714,56 @@ const couponDiscount = computed(() => {
 
 // 实付金额（合计 - 折扣）
 const payableAmount = computed(() => Math.max(0, (totalAmount.value - couponDiscount.value)))
+const customRechargeValue = computed(() => {
+  const value = Number(customRechargeAmount.value)
+  return Number.isFinite(value) && value > 0 ? value : 0
+})
+const isCustomRechargeActive = computed(() => !selectedRechargeProduct.value && customRechargeValue.value > 0)
+const selectedRechargePlan = computed(() => {
+  if (selectedRechargeProduct.value) {
+    return {
+      ...selectedRechargeProduct.value,
+      arrivalText: selectedRechargeProduct.value.name
+    }
+  }
+  if (!isCustomRechargeActive.value) return null
+  return {
+    id: 'custom-prepaid-recharge',
+    name: '自定义预存款充值',
+    desc: '按输入金额直接储值',
+    price: customRechargeValue.value,
+    category: 'recharge',
+    quantity: 1,
+    arrivalText: `预存款到账 ¥${customRechargeValue.value.toFixed(2)}`
+  }
+})
+const rechargeAmount = computed(() => selectedRechargePlan.value?.price ?? 0)
+const rechargeBonusCoins = computed(() => {
+  const match = selectedRechargePlan.value?.name.match(/送\s*(\d+(?:\.\d+)?)/)
+  return match ? Number(match[1]) : 0
+})
+const memberBalance = computed(() => Number(selectedMember.value?.balance ?? 0))
+const projectedBalance = computed(() => memberBalance.value + rechargeAmount.value)
+const memberAvatarLoadError = ref(false)
+const createFallbackMemberAvatar = (name = '会') => histAvatar('#74b9ff', '#0984e3', (name || '会').charAt(0))
+const selectedMemberAvatar = computed(() => {
+  if (memberAvatarLoadError.value) {
+    return createFallbackMemberAvatar(selectedMember.value?.name)
+  }
+  const avatar = selectedMember.value?.avatar
+  if (typeof avatar === 'string' && avatar.trim()) {
+    return avatar
+  }
+  return createFallbackMemberAvatar(selectedMember.value?.name)
+})
+
+watch(selectedMember, () => {
+  memberAvatarLoadError.value = false
+})
+
+const handleMemberAvatarError = () => {
+  memberAvatarLoadError.value = true
+}
 
 const addToCart = (product) => {
   const existing = cartItems.value.find((item) => item.id === product.id)
@@ -460,6 +771,30 @@ const addToCart = (product) => {
     return
   }
   cartItems.value.push({ ...product, quantity: 1 })
+}
+
+const handleProductSelect = (product) => {
+  if (product.category === 'recharge') {
+    selectedRechargeProduct.value = selectedRechargeProduct.value?.id === product.id ? null : product
+    if (selectedRechargeProduct.value) {
+      customRechargeAmount.value = ''
+    }
+    return
+  }
+  addToCart(product)
+}
+
+const selectCustomRecharge = () => {
+  if (customRechargeValue.value > 0) {
+    selectedRechargeProduct.value = null
+  }
+}
+
+const isProductActive = (product) => {
+  if (product.category === 'recharge') {
+    return selectedRechargeProduct.value?.id === product.id
+  }
+  return cartItems.value.some((item) => item.id === product.id)
 }
 
 const removeFromCart = (index) => {
@@ -482,13 +817,36 @@ const clearCart = () => {
   cartItems.value = []
 }
 
+const clearRechargeSelection = () => {
+  selectedRechargeProduct.value = null
+  customRechargeAmount.value = ''
+}
+
 const checkout = () => {
   if (cartItems.value.length === 0) return
+  paymentMode.value = 'sale'
+  paymentItems.value = cartItems.value.map((item) => ({ ...item }))
+  paymentTotalAmount.value = totalAmount.value
+  paymentCoupon.value = selectedCoupon.value
+  paymentDiscountAmount.value = couponDiscount.value
+  paymentPayableAmount.value = payableAmount.value
+  showPaymentModal.value = true
+}
+
+const checkoutRecharge = () => {
+  if (!selectedMember.value || !selectedRechargePlan.value) return
+  paymentMode.value = 'recharge'
+  paymentItems.value = [{ ...selectedRechargePlan.value, quantity: 1 }]
+  paymentTotalAmount.value = rechargeAmount.value
+  paymentCoupon.value = null
+  paymentDiscountAmount.value = 0
+  paymentPayableAmount.value = rechargeAmount.value
   showPaymentModal.value = true
 }
 
 const handleMemberSelected = (member) => {
   selectedMember.value = member
+  persistSaleMemberSession(member)
   showMemberSelect.value = false
   // 更新历史记录（去重后置顶）
   const idx = memberHistory.value.findIndex((m) => m.id === member.id)
@@ -502,12 +860,40 @@ const handleMemberSelected = (member) => {
 
 const handleLogout = () => {
   selectedMember.value = null
+  clearSaleMemberSession()
   userCoupons.value = []
   selectedCoupon.value = null
 }
 
 const handleNewMember = (data) => {
   console.log('新增会员：', data)
+  // 支付和注册成功提示已由 NewMemberModal 内部处理
+  // 这里直接登入新会员
+  selectedMember.value = {
+    id: Date.now(),
+    name: data.name,
+    phone: data.phone,
+    avatar: createFallbackMemberAvatar(data.name),
+    level: '普通会员',
+    gender: data.gender,
+    birthday: data.birthday,
+    balance: data.package && !data.package.name.includes('套票') && !data.package.name.includes('次套票') ? data.package.price : 0,
+    coins: 0,
+    cardNo: data.cardNo || ''
+  }
+  persistSaleMemberSession(selectedMember.value)
+  userCoupons.value = []
+  selectedCoupon.value = null
+}
+
+const handleRegisterSuccessClose = () => {
+  showRegisterSuccess.value = false
+}
+
+const handlePaymentClose = () => {
+  showPaymentModal.value = false
+  // 取消支付时清理注册暂存数据
+  pendingNewMember.value = null
 }
 
 const handleCouponSelect = (coupon) => {
@@ -520,13 +906,133 @@ const removeCoupon = () => {
 
 const handlePaymentConfirm = (payload) => {
   console.log('支付确认:', payload)
+  let shouldShowRechargeSuccess = false
+  let shouldShowSaleSuccess = false
+  const completedRechargePlan = selectedRechargePlan.value
+  if (paymentMode.value === 'recharge' && selectedMember.value && completedRechargePlan) {
+    lastRechargeDetails.value = [
+      { label: '到账预存款', value: `¥${rechargeAmount.value.toFixed(2)}` }
+    ]
+    if (rechargeBonusCoins.value > 0) {
+      lastRechargeDetails.value.push({ label: '赠送金币', value: rechargeBonusCoins.value })
+    }
+    selectedMember.value = {
+      ...selectedMember.value,
+      balance: Number(selectedMember.value.balance ?? 0) + rechargeAmount.value,
+      coins: Number(selectedMember.value.coins ?? 0) + rechargeBonusCoins.value
+    }
+    selectedRechargeProduct.value = null
+    customRechargeAmount.value = ''
+    shouldShowRechargeSuccess = true
+  }
+
+  // 消费结算成功（单次消费 / 套票 / 商品购买）
+  if (paymentMode.value === 'sale') {
+    const saleItems = paymentItems.value
+    const categories = [...new Set(saleItems.map(item => item.category))]
+    const isAllSingle = categories.length === 1 && categories[0] === 'single'
+    const isAllPackage = categories.length === 1 && categories[0] === 'package'
+    const isAllProduct = categories.length === 1 && categories[0] === 'product'
+
+    lastSaleTitle.value = '支付成功'
+    if (isAllSingle) {
+      lastSaleSubtitle.value = '本次消费如下'
+    } else if (isAllPackage) {
+      lastSaleSubtitle.value = '套票购买详情'
+    } else if (isAllProduct) {
+      lastSaleSubtitle.value = '商品购买详情'
+    } else {
+      lastSaleSubtitle.value = '本次消费如下'
+    }
+
+    lastSaleDetails.value = saleItems.map((item) => ({
+      label: item.name,
+      value: `¥${(item.price * item.quantity).toFixed(2)}`
+    }))
+
+    // 清空购物车和优惠券
+    cartItems.value = []
+    selectedCoupon.value = null
+    shouldShowSaleSuccess = true
+  }
+
+  // 新会员注册支付成功
+  let shouldShowRegisterSuccess = false
+  if (paymentMode.value === 'register' && pendingNewMember.value) {
+    const m = pendingNewMember.value
+    const pkg = m.package
+    // 生成新会员对象并自动登入
+    selectedMember.value = {
+      id: Date.now(),
+      name: m.name,
+      phone: m.phone,
+      avatar: `https://placehold.co/80x80/3791ff/fff?text=${m.name.charAt(0)}`,
+      level: '普通会员',
+      gender: m.gender,
+      birthday: m.birthday,
+      balance: pkg.name.includes('套票') || pkg.name.includes('次套票') ? 0 : pkg.price,
+      coins: 0,
+      cardNo: m.cardNo || ''
+    }
+
+    lastRegisterDetails.value = [
+      { label: '会员姓名', value: m.name },
+      { label: '手机号', value: m.phone },
+      { label: '性别', value: m.gender },
+      { label: '购买套餐', value: pkg.name },
+      { label: '支付金额', value: `¥${pkg.price.toFixed(2)}` }
+    ]
+    if (m.birthday) {
+      lastRegisterDetails.value.splice(3, 0, { label: '生日', value: m.birthday })
+    }
+
+    pendingNewMember.value = null
+    shouldShowRegisterSuccess = true
+  }
+
   showPaymentModal.value = false
+  if (shouldShowRechargeSuccess) {
+    setTimeout(() => {
+      showRechargeSuccess.value = true
+    }, 0)
+  }
+  if (shouldShowSaleSuccess) {
+    setTimeout(() => {
+      showSaleSuccess.value = true
+    }, 0)
+  }
+  if (shouldShowRegisterSuccess) {
+    setTimeout(() => {
+      showRegisterSuccess.value = true
+    }, 0)
+  }
   // TODO: 调用实际支付接口
+}
+
+const handleProductHover = (product, event) => {
+  if (!product.detail) return
+  const cardRect = event.currentTarget.getBoundingClientRect()
+  const gridEl = event.currentTarget.closest('.product-grid')
+  if (!gridEl) return
+  const gridRect = gridEl.getBoundingClientRect()
+  hoveredDetail.value = product
+  // 面板顶部对齐卡片垂直中轴线偏下，确保视觉居中
+  const offsetY = cardRect.top - gridRect.top + cardRect.height * 0.55
+  hoveredPos.value = {
+    x: cardRect.right - gridRect.left + 14,
+    y: Math.max(0, offsetY)
+  }
+}
+
+const handleProductLeave = () => {
+  hoveredDetail.value = null
 }
 
 const handleDeductionConfirm = (payload) => {
   console.log('扣费确认:', payload)
+  lastDeductionCount.value = payload.count || 1
   showDeductionModal.value = false
+  showDeductionSuccess.value = true
   // TODO: 调用实际扣费接口
 }
 </script>
@@ -737,8 +1243,11 @@ const handleDeductionConfirm = (payload) => {
   cursor: pointer;
 }
 
-.mini-action .el-icon {
-  color: #1191ff;
+.mini-action-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  object-fit: contain;
 }
 
 .catalog-panel {
@@ -806,6 +1315,117 @@ const handleDeductionConfirm = (payload) => {
   border: 0;
   outline: 0;
   color: #171b24;
+}
+
+.custom-recharge-card {
+  flex-shrink: 0;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 10px 12px 2px;
+  padding: 12px;
+  border: 1px solid #bfe2fb;
+  border-radius: var(--product-card-radius);
+  background: linear-gradient(135deg, #ffffff 0%, #f5fbff 58%, #e4f5ff 100%);
+  box-shadow: 0 8px 20px rgba(21, 88, 150, 0.08);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.custom-recharge-card.active {
+  border-color: #1191ff;
+  box-shadow: inset 0 0 0 1px #1191ff, 0 12px 24px rgba(17, 145, 255, 0.12);
+}
+
+.custom-recharge-copy {
+  flex: 0 0 116px;
+  min-width: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.custom-recharge-copy strong {
+  color: #171b24;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.custom-recharge-copy em {
+  color: #1191ff;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.custom-recharge-field {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+}
+
+.custom-recharge-input {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1.5px solid #d2e8f8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.custom-recharge-input:focus-within {
+  border-color: #1191ff;
+  box-shadow: 0 0 0 3px rgba(17, 145, 255, 0.12);
+}
+
+.custom-recharge-input b {
+  color: #fc630a;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.custom-recharge-input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #171b24;
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.custom-recharge-input input::placeholder {
+  color: #b7c5d2;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+@media (max-width: 1280px) {
+  .custom-recharge-card {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .custom-recharge-copy {
+    flex: 1 0 100%;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .custom-recharge-field {
+    flex-basis: 100%;
+  }
 }
 
 .product-grid {
@@ -898,6 +1518,10 @@ const handleDeductionConfirm = (payload) => {
   overflow: hidden;
 }
 
+.checkout-panel--recharge {
+  background: linear-gradient(180deg, #d9efff 0%, #c9e8ff 100%);
+}
+
 .checkout-header {
   min-height: 72px;
   display: flex;
@@ -926,6 +1550,232 @@ const handleDeductionConfirm = (payload) => {
   min-width: 70px;
   min-height: 34px;
   font-size: 12px;
+}
+
+.recharge-header {
+  align-items: flex-start;
+  padding-top: 18px;
+}
+
+.recharge-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recharge-header-copy span {
+  color: #5f7f9f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.recharge-body {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 14px;
+  overflow-y: auto;
+}
+
+.recharge-card {
+  padding: 16px;
+  border: 1px solid rgba(174, 215, 245, 0.92);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8px 20px rgba(21, 88, 150, 0.08);
+}
+
+.recharge-card-label {
+  display: inline-flex;
+  margin-bottom: 14px;
+  color: #6b8aa8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.recharge-impact-main,
+.recharge-impact-result {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f3f9ff;
+}
+
+.recharge-impact-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recharge-impact-flow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.recharge-impact-flow div,
+.recharge-plan-lines div {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f3f9ff;
+}
+
+.recharge-impact-main span,
+.recharge-impact-flow span,
+.recharge-impact-result span,
+.recharge-plan-lines dt {
+  display: block;
+  color: #7891aa;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.recharge-impact-main strong,
+.recharge-impact-flow strong,
+.recharge-impact-result strong,
+.recharge-plan-lines dd {
+  margin: 6px 0 0;
+  color: #171b24;
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.recharge-impact-main strong,
+.recharge-impact-result strong {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.recharge-impact-result {
+  border: 1px solid rgba(17, 145, 255, 0.18);
+  background: linear-gradient(180deg, #eef8ff 0%, #ffffff 100%);
+}
+
+.recharge-impact-result strong {
+  display: block;
+  margin-top: 8px;
+  color: #1191ff;
+  font-size: 22px;
+}
+
+.recharge-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.recharge-empty strong {
+  color: #171b24;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.recharge-empty span {
+  color: #7b8da0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.recharge-empty--soft {
+  min-height: 132px;
+  justify-content: center;
+}
+
+.recharge-inline-btn {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #1191ff;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 10px 18px rgba(17, 145, 255, 0.2);
+}
+
+.recharge-plan-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recharge-plan-main > div {
+  min-width: 0;
+}
+
+.recharge-plan-main strong {
+  display: block;
+  color: #171b24;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.recharge-plan-main span {
+  display: block;
+  margin-top: 6px;
+  color: #70849a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.recharge-plan-main em {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: #fc630a;
+  font-style: normal;
+  font-size: 18px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.recharge-plan-main em .currency-symbol {
+  color: inherit;
+}
+
+.recharge-plan-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.recharge-plan-lines div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recharge-plan-lines dd {
+  margin-top: 0;
+}
+
+.recharge-notice p {
+  margin: 0;
+  color: #4f6780;
+  font-size: 12px;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
+.recharge-footer {
+  padding-top: 12px;
+}
+
+.recharge-summary-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
 }
 
 .cart-list {
@@ -1204,5 +2054,92 @@ const handleDeductionConfirm = (payload) => {
 
 .summary-line .coupon-remove-btn:active {
   transform: scale(0.95);
+}
+
+/* ===== 商品悬浮详情面板 ===== */
+.product-card.has-detail {
+  position: relative;
+}
+
+.product-detail-panel {
+  position: absolute;
+  z-index: 60;
+  width: 320px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow:
+    0 16px 40px rgba(16, 47, 84, 0.18),
+    0 6px 14px rgba(16, 47, 84, 0.1),
+    inset 0 0 0 1px rgba(17, 145, 255, 0.12);
+  overflow: hidden;
+}
+
+.detail-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 46px;
+  padding: 0 18px;
+  border-bottom: 1px solid #eef3f8;
+}
+
+.detail-panel-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #171b24;
+}
+
+.detail-panel-list {
+  margin: 0;
+  padding: 14px 22px 20px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  line-height: 1.55;
+}
+
+.detail-row + .detail-row {
+  margin-top: 10px;
+}
+
+.detail-row dt {
+  flex-shrink: 0;
+  min-width: 88px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7c93;
+}
+
+.detail-row dd {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a2332;
+  word-break: break-all;
+}
+
+.detail-row dd.highlight {
+  color: #F97316;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 面板过渡动画 */
+.detail-fade-enter-active {
+  transition: opacity 180ms ease, transform 200ms ease;
+}
+
+.detail-fade-leave-active {
+  transition: opacity 120ms ease, transform 140ms ease;
+}
+
+.detail-fade-enter-from,
+.detail-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-8px) scale(0.98);
 }
 </style>

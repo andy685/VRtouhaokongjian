@@ -8,7 +8,7 @@
       aria-label="新增会员"
       @click.self="$emit('close')"
     >
-      <section class="nmm-dialog">
+      <section v-if="!showSuccess" class="nmm-dialog">
         <!-- 头部 -->
         <header class="nmm-header">
           <h2>新增会员</h2>
@@ -108,11 +108,11 @@
             </label>
           </div>
 
-          <!-- 底部套餐区 -->
-          <section class="nmm-pkg-section">
-            <nav class="nmm-pkg-tabs">
+          <!-- 底部套餐区：有数据才渲染 -->
+          <section v-if="hasAnyPkgData" class="nmm-pkg-section">
+            <nav v-if="visibleTabs.length > 1" class="nmm-pkg-tabs">
               <button
-                v-for="t in pkgTabs"
+                v-for="t in visibleTabs"
                 :key="t"
                 type="button"
                 class="nmm-pkg-tab"
@@ -120,24 +120,38 @@
                 @click="switchPkgTab(t)"
               >{{ t }}</button>
             </nav>
+            <!-- 单tab时占位，保持高度一致 -->
+            <div v-else class="nmm-pkg-tabs-placeholder"></div>
 
-            <div class="nmm-pkg-list">
+            <div class="nmm-pkg-scroll-wrap">
               <button
-                v-for="(p, i) in packages"
-                :key="i"
+                v-if="canScrollLeft"
                 type="button"
-                class="nmm-pkg-card"
-                :class="{ selected: selectedPkg === i }"
-                @click="selectedPkg = i"
+                class="nmm-scroll-arrow nmm-scroll-left"
+                aria-label="向左滑动"
+                @click="scrollPkg(-1)"
               >
-                <strong>{{ p.name }}</strong>
-                <em><span class="currency-symbol">&yen;</span>{{ p.price.toFixed(2) }}</em>
+                <el-icon><ArrowLeft /></el-icon>
               </button>
+              <div ref="pkgListRef" class="nmm-pkg-list">
+                <button
+                  v-for="(p, i) in packages"
+                  :key="i"
+                  type="button"
+                  class="nmm-pkg-card"
+                  :class="{ selected: selectedPkg === i }"
+                  @click="selectedPkg = i"
+                >
+                  <strong>{{ p.name }}</strong>
+                  <em><span class="currency-symbol">&yen;</span>{{ p.price.toFixed(2) }}</em>
+                </button>
+              </div>
               <button
-                v-if="packages.length > 4"
+                v-if="canScrollRight"
                 type="button"
-                class="nmm-pkg-arrow"
-                aria-label="更多套餐"
+                class="nmm-scroll-arrow nmm-scroll-right"
+                aria-label="向右滑动"
+                @click="scrollPkg(1)"
               >
                 <el-icon><ArrowRight /></el-icon>
               </button>
@@ -148,17 +162,39 @@
         <!-- 底部按钮 -->
         <footer class="nmm-footer">
           <button type="button" class="nmm-submit-btn" :disabled="!canSubmit" @click="handleSubmit">
-            确认新增
+            {{ hasSelectedPkg ? `确认并支付 ¥${selectedPackage.price.toFixed(2)}` : '确认新增' }}
           </button>
         </footer>
       </section>
+
+      <!-- 支付弹窗 — 选套餐后触发 -->
+      <PaymentModal
+        :visible="showPayment"
+        :items="paymentItems"
+        :total-amount="packagePrice"
+        :payable-amount="packagePrice"
+        @close="showPayment = false"
+        @confirm="handlePaymentConfirm"
+      />
+
+      <!-- 注册成功弹窗 -->
+      <DeductionSuccessModal
+        :visible="showSuccess"
+        title="注册成功"
+        subtitle="新会员注册完成"
+        type="register"
+        :details="successDetails"
+        @close="handleSuccessClose"
+      />
     </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
-import { Close, ArrowRight } from '@element-plus/icons-vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import PaymentModal from './PaymentModal.vue'
+import DeductionSuccessModal from './DeductionSuccessModal.vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false }
@@ -166,7 +202,6 @@ const props = defineProps({
 const emit = defineEmits(['close', 'submit'])
 
 const genders = ['男', '女']
-const pkgTabs = ['充值活动', '套票']
 
 const form = reactive({
   name: '',
@@ -180,13 +215,18 @@ const form = reactive({
 
 const activePkg = ref('充值活动')
 const selectedPkg = ref(-1)
+const showPayment = ref(false)
+const showSuccess = ref(false)
 
-// 根据当前 tab 动态切换套餐数据
+// ===== 套餐数据（可根据实际情况替换为空数组） =====
 const rechargePackages = [
   { name: '充200送100', price: 300 },
   { name: '充500送300', price: 800 },
   { name: '充1000送800', price: 1800 },
-  { name: '充2000送2000', price: 4000 }
+  { name: '充2000送2000', price: 4000 },
+  { name: '充3000送3500', price: 6500 },
+  { name: '充5000送6500', price: 11500 },
+  { name: '充8000送12000', price: 20000 }
 ]
 
 const ticketPackages = [
@@ -196,14 +236,80 @@ const ticketPackages = [
   { name: '月卡畅玩', price: 880 }
 ]
 
+// ===== 可见性判断 =====
+const hasRechargeData = computed(() => rechargePackages.length > 0)
+const hasTicketData = computed(() => ticketPackages.length > 0)
+const hasAnyPkgData = computed(() => hasRechargeData.value || hasTicketData.value)
+
+const visibleTabs = computed(() => {
+  const tabs = []
+  if (hasRechargeData.value) tabs.push('充值活动')
+  if (hasTicketData.value) tabs.push('套票')
+  return tabs
+})
+
 const packages = computed(() => {
   return activePkg.value === '套票' ? ticketPackages : rechargePackages
+})
+
+// ===== 横向滚动箭头 =====
+const pkgListRef = ref(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+const updateScrollState = () => {
+  const el = pkgListRef.value
+  if (!el) return
+  canScrollLeft.value = el.scrollLeft > 2
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 2
+}
+
+const scrollPkg = (dir) => {
+  const el = pkgListRef.value
+  if (!el) return
+  const cardWidth = 120 + 10 // card width + gap
+  el.scrollBy({ left: dir * cardWidth * 2, behavior: 'smooth' })
+  setTimeout(updateScrollState, 320)
+}
+
+// ===== 选中套餐 =====
+const hasSelectedPkg = computed(() => selectedPkg.value >= 0)
+
+const selectedPackage = computed(() => {
+  if (!hasSelectedPkg.value) return null
+  return packages.value[selectedPkg.value]
+})
+
+const packagePrice = computed(() => {
+  return selectedPackage.value ? selectedPackage.value.price : 0
+})
+
+const paymentItems = computed(() => {
+  if (!selectedPackage.value) return []
+  return [{ name: selectedPackage.value.name, price: selectedPackage.value.price, quantity: 1 }]
+})
+
+// ===== 成功弹窗详情 =====
+const successDetails = computed(() => {
+  const pkg = selectedPackage.value
+  const items = [
+    { label: '会员姓名', value: form.name },
+    { label: '手机号', value: form.phone },
+    { label: '性别', value: form.gender }
+  ]
+  if (form.birthday) items.push({ label: '生日', value: form.birthday })
+  if (pkg) {
+    items.push({ label: '购买套餐', value: pkg.name })
+    items.push({ label: '支付金额', value: `¥${pkg.price.toFixed(2)}` })
+  }
+  return items
 })
 
 // 切换套餐 tab，重置选中项
 const switchPkgTab = (t) => {
   activePkg.value = t
   selectedPkg.value = -1
+  nextTick(updateScrollState)
 }
 
 // 表单校验
@@ -211,7 +317,7 @@ const canSubmit = computed(() => {
   return form.name.trim().length > 0 && form.phone.trim().length > 0
 })
 
-// 打开时重置
+// 打开时重置，自动选中第一个有数据的 tab
 watch(() => props.visible, (val) => {
   if (val) {
     Object.assign(form, {
@@ -219,14 +325,50 @@ watch(() => props.visible, (val) => {
       bindIC: false, cardNo: '', remark: ''
     })
     selectedPkg.value = -1
-    activePkg.value = '充值活动'
+    showPayment.value = false
+    showSuccess.value = false
+    const tabs = visibleTabs.value
+    activePkg.value = tabs.length > 0 ? tabs[0] : '充值活动'
   }
 })
 
+// 注册滚动监听
+onMounted(() => {
+  watch(pkgListRef, (el) => {
+    if (el) {
+      el.addEventListener('scroll', updateScrollState, { passive: true })
+      nextTick(updateScrollState)
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  pkgListRef.value?.removeEventListener('scroll', updateScrollState)
+})
+
+// 点击提交
 const handleSubmit = () => {
   if (!canSubmit.value) return
-  const pkg = selectedPkg.value >= 0 ? packages.value[selectedPkg.value] : null
-  emit('submit', { ...form, package: pkg })
+  if (hasSelectedPkg.value) {
+    // 选了套餐 → 打开支付弹窗
+    showPayment.value = true
+  } else {
+    // 没选套餐 → 直接提交
+    emit('submit', { ...form, package: null })
+    emit('close')
+  }
+}
+
+// 支付确认
+const handlePaymentConfirm = () => {
+  showPayment.value = false
+  showSuccess.value = true
+}
+
+// 成功弹窗关闭 → 正式提交并关闭
+const handleSuccessClose = () => {
+  showSuccess.value = false
+  emit('submit', { ...form, package: selectedPackage.value })
   emit('close')
 }
 </script>
@@ -241,10 +383,10 @@ const handleSubmit = () => {
   align-items: center;
   justify-content: center;
   padding: 28px;
-  background: rgba(0, 0, 0, 0.62);
+  background: var(--pos-overlay-backdrop);
 }
 
-/* ===== 弹窗主体 ===== */
+/* ===== 弹窗主体 — 高度自适应 ===== */
 .nmm-dialog {
   width: min(100%, 780px);
   max-height: calc(100vh - 56px);
@@ -254,6 +396,8 @@ const handleSubmit = () => {
   overflow: hidden;
   background: linear-gradient(180deg, #dff0ff 0%, #f7f9ff 100%);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
+  /* 自动高度，不超过 max-height 时撑开内容 */
+  height: auto;
 }
 
 /* ---- 头部 — 与 MSM 一致 ---- */
@@ -299,7 +443,6 @@ const handleSubmit = () => {
 
 /* ---- 表单主体 ---- */
 .nmm-body {
-  flex: 1;
   overflow-y: auto;
   padding: 20px 28px 16px;
 }
@@ -535,7 +678,7 @@ const handleSubmit = () => {
 /* ===== 底部套餐区 ===== */
 .nmm-pkg-section {
   margin-top: 6px;
-  padding: 16px 18px;
+  padding: 16px 12px;
   border-radius: 12px;
   background: rgba(210, 230, 252, 0.35);
   border: 1px solid rgba(185, 221, 246, 0.5);
@@ -547,6 +690,11 @@ const handleSubmit = () => {
   margin-bottom: 14px;
   border-bottom: 1px solid rgba(147, 197, 253, 0.35);
   padding-bottom: 10px;
+}
+
+.nmm-pkg-tabs-placeholder {
+  height: 38px; /* ≈ tab nav 实际高度（padding + border + tab） */
+  margin-bottom: 14px;
 }
 
 .nmm-pkg-tab {
@@ -580,16 +728,67 @@ const handleSubmit = () => {
   border-radius: 1px;
 }
 
-/* 套餐卡片列表 */
-.nmm-pkg-list {
+/* 滚动容器 + 箭头 */
+.nmm-pkg-scroll-wrap {
   display: flex;
-  gap: 10px;
+  flex-wrap: nowrap;
   align-items: center;
 }
 
-.nmm-pkg-card {
+.nmm-scroll-arrow {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(147, 197, 253, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.65);
+  color: #6899d8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.nmm-scroll-arrow:hover {
+  background: rgba(55, 145, 255, 0.1);
+  border-color: rgba(55, 145, 255, 0.4);
+  color: #3791ff;
+}
+
+.nmm-scroll-arrow .el-icon {
+  font-size: 16px;
+}
+
+.nmm-scroll-left {
+  margin-right: 6px;
+}
+
+.nmm-scroll-right {
+  margin-left: 6px;
+}
+
+/* 套餐卡片列表 — 横向滚动，固定高度防抖动，隐藏滚动条 */
+.nmm-pkg-list {
   flex: 1;
   min-width: 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 76px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* 隐藏滚动条但可滑动 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.nmm-pkg-list::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.nmm-pkg-card {
+  flex: 0 0 auto;
+  width: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -632,30 +831,6 @@ const handleSubmit = () => {
   font-size: 13px;
   font-weight: 700;
   margin-right: 1px;
-}
-
-/* 箭头翻页按钮 */
-.nmm-pkg-arrow {
-  flex: 0 0 36px;
-  height: 72px;
-  border: 1.5px solid rgba(216, 239, 255, 0.85);
-  border-radius: 10px;
-  background: #fff;
-  color: #94a3b8;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: all 0.15s ease;
-}
-
-.nmm-pkg-arrow:hover {
-  border-color: #91cdfa;
-  color: #3791ff;
-  background: #f8fbff;
-}
-
-.nmm-pkg-arrow .el-icon {
-  font-size: 18px;
 }
 
 /* ===== 底部提交栏 ===== */

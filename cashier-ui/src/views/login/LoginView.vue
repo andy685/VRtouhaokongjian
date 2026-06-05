@@ -247,11 +247,11 @@ const systemEntries = [
 
 const probeOrigin = async (origin, path) => {
   const controller = new AbortController()
-  const timer = window.setTimeout(() => controller.abort(), 1200)
+  const timer = window.setTimeout(() => controller.abort(), 500)
 
   try {
     await fetch(`${origin}${path}`, {
-      method: 'GET',
+      method: 'HEAD',
       mode: 'no-cors',
       cache: 'no-store',
       signal: controller.signal,
@@ -274,9 +274,8 @@ const resolveAdminOrigin = async () => {
   }
 
   const currentPort = Number(window.location.port || 5173)
-  const candidatePorts = Array.from(
-    new Set([5173, currentPort - 1, currentPort + 1, 5175].filter((port) => Number.isFinite(port) && port > 0))
-  ).filter((port) => port !== currentPort)
+  const knownPorts = [9527, 5174, 5175].filter((p) => p > 0 && p !== currentPort)
+  const candidatePorts = Array.from(new Set([...knownPorts, currentPort - 1, currentPort + 1].filter((port) => Number.isFinite(port) && port > 0 && port !== currentPort)))
 
   for (const port of candidatePorts) {
     const origin = createOrigin(port)
@@ -697,7 +696,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   padding: 28px;
-  background: rgba(0, 0, 0, 0.62);
+  background: var(--pos-overlay-backdrop);
 }
 
 .settings-modal {
