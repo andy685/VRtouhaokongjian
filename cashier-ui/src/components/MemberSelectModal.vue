@@ -12,9 +12,12 @@
         <!-- 头部 -->
         <header class="msm-header">
           <h2>选择会员</h2>
-          <button type="button" class="msm-close" aria-label="关闭" @click="$emit('close')">
-            <el-icon><Close /></el-icon>
-          </button>
+          <div class="msm-header-actions">
+            <button type="button" class="msm-refresh" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="msm-close" aria-label="关闭" @click="$emit('close')">
+              <el-icon><Close /></el-icon>
+            </button>
+          </div>
         </header>
 
         <!-- 主体三栏布局 -->
@@ -134,7 +137,7 @@ defineProps({
   historyList: { type: Array, default: () => [] }
 })
 
-defineEmits(['close', 'select'])
+defineEmits(['close', 'select', 'refresh'])
 
 const tabs = [
   { id: 'search', label: '模糊搜索' },
@@ -239,6 +242,28 @@ const handleSearch = () => {
 
 .msm-close .el-icon {
   font-size: 20px;
+}
+
+.msm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.msm-refresh {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #4f5d73;
+  cursor: pointer;
+}
+
+.msm-refresh:hover {
+  color: #2f7eff;
 }
 
 /* ---- 主体三栏布局 ---- */
@@ -500,7 +525,7 @@ const handleSearch = () => {
 .msm-device-hint {
   margin: 0;
   color: #4f5d73;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1px;
 }

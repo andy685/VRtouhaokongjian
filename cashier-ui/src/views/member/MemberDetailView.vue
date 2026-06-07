@@ -27,13 +27,13 @@
             <div class="mdv-section-head">
               <h2>基础资料</h2>
               <div class="mdv-section-actions">
-                <button type="button" class="mdv-action-btn">
+                <button type="button" class="mdv-action-btn" @click="openPrepaidRecords('games')">
                   <svg class="mdv-action-icon mdv-action-icon-log" viewBox="0 0 20 22" fill="none" aria-hidden="true">
                     <path d="M19.7734 20.3415L17.3755 17.9763C18.9423 15.6307 18.2694 12.4869 15.8714 10.9543C13.4735 9.42164 10.2596 10.0799 8.69276 12.4255C7.12595 14.7711 7.79888 17.9149 10.1968 19.4475C11.043 19.9878 12.0323 20.2752 13.0442 20.2727C14.0636 20.2703 15.0604 19.9731 15.9066 19.418L18.307 21.7808C18.6058 22.0731 19.0929 22.0731 19.3917 21.7808L19.7759 21.4026C20.0747 21.1054 20.0747 20.6313 19.7759 20.3341L19.7734 20.3415ZM15.8463 16.4756C15.4848 17.2222 14.8319 17.7945 14.0335 18.0647C13.7146 18.1875 13.3756 18.2464 13.0341 18.2342C11.2865 18.2587 9.8528 16.8931 9.82769 15.1837C9.80258 13.4742 11.2012 12.0718 12.9487 12.0472C14.6963 12.0227 16.1301 13.3907 16.1527 15.0977C16.1602 15.5767 16.0522 16.0482 15.8413 16.478L15.8463 16.4756ZM6.25969 16.117L3.71865 16.117C3.27924 16.0998 2.93525 15.7363 2.95283 15.3065C2.9704 14.8988 3.30184 14.5746 3.71865 14.5574L6.21952 14.5574C6.28229 13.8402 6.46558 13.1377 6.75685 12.4795L3.72116 12.4795C3.28176 12.4623 2.93776 12.0988 2.95534 11.669C2.97291 11.2613 3.30435 10.9371 3.72116 10.9199L7.72104 10.9199C8.50193 9.97427 9.5314 9.25463 10.699 8.842L3.72116 8.842C3.28176 8.842 2.9227 8.49323 2.92521 8.06096C2.92521 7.63114 3.28176 7.28237 3.72116 7.28237L15.9116 7.28237C16.351 7.28237 16.7101 7.63114 16.7076 8.06341C16.7076 8.49323 16.351 8.842 15.9116 8.842L15.314 8.842C17.4709 9.61076 19.0929 11.3865 19.6303 13.5725L19.6303 2.36523C19.6328 1.06595 18.5581 0.00736831 17.2298 0L2.39792 0C1.06965 0.0098244 0 1.0635 0 2.36278L0 19.2363C0 20.5355 1.07216 21.5917 2.40043 21.599L11.0982 21.599C8.52955 20.8548 6.63884 18.7131 6.25969 16.117ZM3.71865 3.64487L15.9116 3.64487C16.351 3.66206 16.695 4.02557 16.6774 4.45539C16.6599 4.8631 16.3284 5.18731 15.9116 5.2045L3.71865 5.2045C3.27924 5.18731 2.93525 4.8238 2.95283 4.39398C2.9704 3.98627 3.30435 3.66206 3.71865 3.64487Z" fill="currentColor"/>
                   </svg>
                   日志
                 </button>
-                <button type="button" class="mdv-action-btn">
+                <button type="button" class="mdv-action-btn" @click="showEditMember = true">
                   <svg class="mdv-action-icon mdv-action-icon-edit" viewBox="0 0 17.697265625 21" fill="none" aria-hidden="true">
                     <path d="M17.6217 5.86048L13.8402 5.86048C13.1217 5.86048 12.5545 5.29697 12.5545 4.58321L12.5545 0L1.28569 0C0.567222 0 0 0.713777 0 1.54026L0 19.4598C0 20.3239 0.567222 21.0001 1.32351 21.0001L16.3738 21.0001C17.0923 21.0001 17.6973 20.2863 17.6973 19.4598L17.6217 5.86048ZM8.81083 6.23616C10.1722 6.23616 11.2688 7.3256 11.2688 8.64047C11.2688 9.99289 10.1722 11.0823 8.81083 11.0823C7.4495 11.0823 6.39068 9.99289 6.39068 8.64047C6.39068 7.3256 7.4495 6.23616 8.81083 6.23616ZM13.4999 15.9661C13.4999 16.2666 13.2352 16.5296 12.9327 16.5296L4.68902 16.5296C4.38651 16.5296 4.1218 16.2666 4.1218 15.9661L4.1218 15.6655C4.1218 14.3882 4.1218 13.7496 4.38651 13.1861C4.6134 12.6601 4.95373 12.2469 5.40751 11.9839C5.9369 11.6834 6.54195 11.6834 7.63857 11.6834L10.0209 11.6834C11.1175 11.6834 11.7226 11.6834 12.252 11.9839C12.7058 12.2469 13.0461 12.6601 13.273 13.1861C13.5377 13.7496 13.5377 14.3882 13.5377 15.6655L13.5377 15.9661L13.4999 15.9661Z" fill="currentColor"/>
                   </svg>
@@ -46,7 +46,7 @@
                 <label>注册门店：</label><span>{{ member.storeName }}</span>
               </div>
               <div class="mdv-info-row three-col">
-                <div><label>注册门店：</label><span>{{ member.registerStore }}</span></div>
+                <div><label>注册时间：</label><span>{{ member.registerStore }}</span></div>
                 <div><label>会员生日：</label><span>{{ member.birthday || '-' }}</span></div>
                 <div><label>会员卡号：</label><span>{{ member.cardNo || '-' }}</span></div>
               </div>
@@ -69,7 +69,7 @@
               <h3>预存款（元）</h3>
               <p class="card-value">{{ assets.balance.toFixed(2) }}</p>
             </div>
-            <button class="card-copy-btn" aria-label="查看预存款记录" @click="showPrepaidRecords = true">
+            <button class="card-copy-btn" aria-label="查看预存款记录" @click="openPrepaidRecords('prepaid')">
               <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
             </button>
           </article>
@@ -83,7 +83,7 @@
               <p class="card-sub">(可用：{{ assets.coinsAvail }}；未生效：{{ assets.coinsPending }})</p>
               <p v-if="assets.coinsExpireHint" class="card-warn">{{ assets.coinsExpireHint }}</p>
             </div>
-            <button class="card-copy-btn" aria-label="复制" @click="copyValue('游戏币 ' + assets.coins)">
+            <button class="card-copy-btn" aria-label="查看游戏币日志" @click="openPrepaidRecords('coins')">
               <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
             </button>
           </article>
@@ -96,7 +96,7 @@
               <p class="card-value">{{ assets.times }}</p>
               <p class="card-sub">(可用：{{ assets.timesAvail }}；未生效：{{ assets.timesPending }})</p>
             </div>
-            <button class="card-copy-btn" aria-label="复制" @click="copyValue('预存次数 ' + assets.times)">
+            <button class="card-copy-btn" aria-label="查看预存次数日志" @click="openPrepaidRecords('times')">
               <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
             </button>
           </article>
@@ -109,7 +109,7 @@
               <p class="card-value">{{ assets.tickets }}</p>
               <p class="card-sub">(可用：{{ assets.ticketsAvail }}；未生效：{{ assets.ticketsPending }})</p>
             </div>
-            <button class="card-copy-btn" aria-label="复制" @click="copyValue('套票 ' + assets.tickets)">
+            <button class="card-copy-btn" aria-label="查看套票日志" @click="openPrepaidRecords('tickets')">
               <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
             </button>
           </article>
@@ -119,9 +119,9 @@
             <div class="card-icon card-icon-image"><img src="/member-icons/coupon.svg" alt="" /></div>
             <div class="card-body">
               <h3>优惠券（张）</h3>
-              <p class="card-value">{{ assets.coupons }}</p>
+              <p class="card-value">{{ memberCoupons.length }}</p>
             </div>
-            <button class="card-copy-btn" aria-label="复制" @click="copyValue('优惠券 ' + assets.coupons)">
+            <button class="card-copy-btn" aria-label="查看优惠券" @click="showMemberCoupons = true">
               <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
             </button>
           </article>
@@ -217,15 +217,41 @@
     <PrepaidRecordsModal
       :visible="showPrepaidRecords"
       :member-name="member.name"
+      :initial-tab="prepaidInitialTab"
       :coin-summary="{ total: 2704, available: 2704, pending: 0 }"
+      :ticket-summary="{ total: 3 }"
+      :times-summary="{ total: 3 }"
       :records="prepaidRecords"
       @close="showPrepaidRecords = false"
+    />
+
+    <EditMemberModal
+      :visible="showEditMember"
+      :member="editMemberData"
+      @close="showEditMember = false"
+      @save="handleEditSave"
+    />
+
+    <MemberCouponsModal
+      :visible="showMemberCoupons"
+      :coupons="memberCoupons"
+      @close="showMemberCoupons = false"
+    />
+
+    <MemberGiftsModal
+      :visible="showMemberGifts"
+      :gifts="memberGifts"
+      :member-level-key="member.levelKey"
+      :member-name="member.name"
+      :member-birthday="member.birthday"
+      @close="showMemberGifts = false"
+      @issue="handleGiftIssue"
     />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
@@ -234,6 +260,9 @@ import MemberDeductionModal from '../../components/MemberDeductionModal.vue'
 import DeductionSuccessModal from '../../components/DeductionSuccessModal.vue'
 import ConsumeRecordsModal from '../../components/ConsumeRecordsModal.vue'
 import PrepaidRecordsModal from '../../components/PrepaidRecordsModal.vue'
+import EditMemberModal from '../../components/EditMemberModal.vue'
+import MemberCouponsModal from '../../components/MemberCouponsModal.vue'
+import MemberGiftsModal from '../../components/MemberGiftsModal.vue'
 
 const router = useRouter()
 
@@ -241,9 +270,11 @@ const router = useRouter()
 const member = ref({
   id: 1,
   name: '会员名',
+  phone: '17600110765',
   avatar: '',
   level: '钻石',
   levelKey: 'diamond',
+  gender: '男',
   totalSpent: '¥2434.1',
   lastVisitDate: '2024/12/12',
   storeName: '北京头号空间店',
@@ -252,6 +283,7 @@ const member = ref({
   cardNo: '122232342',
   registerPercent: 95,
   birthdayPercent: 99,
+  status: 'active',
   remark: ''
 })
 
@@ -268,9 +300,156 @@ const assets = ref({
   tickets: 0,
   ticketsAvail: 0,
   ticketsPending: 0,
-  points: 1234.1,
-  coupons: 2
+  points: 1234.1
 })
+
+const memberCoupons = ref([
+  {
+    id: 'mc-1',
+    name: '9.9元体验1次',
+    tag: '特价券',
+    type: 'discount',
+    value: '1.50',
+    originalPrice: '58.00',
+    condition: '满20可用',
+    validity: '2025/05/13 ~ 2025/07/15',
+    code: 'CP-9901',
+    status: 'valid',
+    stores: '卓远亚运城店、卓远天河路店、卓远白云万达',
+    projects: '可兑换1次 · 21个项目可选',
+    projectList: [
+      'VR过山车', '星际穿越', '深海探险', '极速飞车', '密室逃脱VR',
+      '射击对抗', '飞行模拟', '恐怖医院', '太空漫步', '赛车竞速',
+      '蹦极模拟', '僵尸围城', '龙卷风体验', '幻影星空', '城市漫游',
+      '海底世界', '恐龙时代', '火山探险', '雪域飞驰', '奇幻森林',
+      '未来战士'
+    ],
+    dateRule: '无限制',
+    otherRule: '暂无'
+  },
+  {
+    id: 'mc-2',
+    name: '新人立减5元券',
+    tag: '新人',
+    type: 'discount',
+    value: '5.00',
+    originalPrice: null,
+    condition: '满50可用',
+    validity: '2025/01/01 ~ 2025/07/31',
+    code: 'CP-NR04',
+    status: 'valid',
+    stores: '全门店通用',
+    projects: '单次消费类目可用',
+    projectList: [
+      'VR过山车', '星际穿越', '深海探险', '极速飞车', '密室逃脱VR',
+      '射击对抗', '飞行模拟', '恐怖医院', '太空漫步', '赛车竞速',
+      '蹦极模拟', '僵尸围城', '龙卷风体验', '幻影星空'
+    ],
+    dateRule: '无限制',
+    otherRule: '仅限首次到店会员'
+  },
+  {
+    id: 'mc-3',
+    name: '8.8折畅玩券',
+    tag: '折扣券',
+    type: 'rate',
+    value: '8.8',
+    originalPrice: null,
+    condition: '全场可用',
+    validity: '2025/06/15 ~ 2025/08/31',
+    code: 'CP-DZ03',
+    status: 'valid',
+    stores: '全门店通用',
+    projects: '全场消费项目可用',
+    projectList: [
+      '全部VR体验项目', '全部竞技类项目', '全部模拟器项目',
+      '全部恐怖主题', '全部休闲探索', '全部儿童专区'
+    ],
+    dateRule: '仅限工作日使用',
+    otherRule: '不可与其他优惠叠加'
+  },
+  {
+    id: 'mc-4',
+    name: '储值满300减30',
+    tag: '特价券',
+    type: 'discount',
+    value: '30.00',
+    originalPrice: null,
+    condition: '满300可用',
+    validity: '2025/06/01 ~ 2025/09/01',
+    code: 'CP-CZ06',
+    status: 'expired',
+    stores: '卓远亚运城店、卓远天河路店',
+    projects: '储值活动专用',
+    projectList: ['账户储值充值（满300元可用）'],
+    dateRule: '周末及节假日不可用',
+    otherRule: '每用户限用1张'
+  }
+])
+
+const memberGifts = ref([
+  {
+    id: 1,
+    shopName: '卓远亚运城店',
+    name: '消费满100赠10元+100币',
+    condition: 'consume',
+    threshold: 100,
+    giftDeposit: 10,
+    giftPoints: 100,
+    pointsValidText: '永久有效',
+    giftTimes: 0,
+    timesValidText: '-',
+    count: 256,
+    status: true,
+    memberTypes: ['normal', 'bronze', 'silver', 'gold', 'diamond']
+  },
+  {
+    id: 2,
+    shopName: '卓远天河路店',
+    name: '充值满500赠50元+500币',
+    condition: 'recharge',
+    threshold: 500,
+    giftDeposit: 50,
+    giftPoints: 500,
+    pointsValidText: '365天',
+    giftTimes: 0,
+    timesValidText: '-',
+    count: 128,
+    status: true,
+    memberTypes: ['normal', 'bronze', 'silver', 'gold', 'diamond']
+  },
+  {
+    id: 3,
+    shopName: '卓远亚运城店',
+    name: '办理套餐赠200币+1次体验',
+    condition: 'package',
+    threshold: 0,
+    giftDeposit: 0,
+    giftPoints: 200,
+    pointsValidText: '30天',
+    giftTimes: 1,
+    timesValidText: '30天',
+    count: 86,
+    status: false,
+    memberTypes: ['normal', 'bronze', 'silver', 'gold', 'diamond']
+  },
+  {
+    id: 4,
+    shopName: '卓远北京路店',
+    name: '生日当月赠20元+500币+2次',
+    condition: 'birthday',
+    threshold: 0,
+    birthdayRange: 'month',
+    giftDeposit: 20,
+    giftPoints: 500,
+    pointsValidText: '永久有效',
+    giftTimes: 2,
+    timesValidText: '30天',
+    count: 45,
+    status: true,
+    memberTypes: ['diamond']
+  }
+])
 
 const showMemberSelect = ref(false)
 const showNewMember = ref(false)
@@ -278,6 +457,10 @@ const showDeductionModal = ref(false)
 const showDeductionSuccess = ref(false)
 const showConsumeRecords = ref(false)
 const showPrepaidRecords = ref(false)
+const showEditMember = ref(false)
+const showMemberCoupons = ref(false)
+const showMemberGifts = ref(false)
+const prepaidInitialTab = ref('prepaid')
 const lastDeductionCount = ref(1)
 
 const histAvatar = (bg1, bg2) => {
@@ -309,12 +492,12 @@ const prepaidRecords = ref([
   {
     id: 'pr-02',
     tab: 'prepaid',
-    type: '收银台充值',
-    reason: '收银台充值',
+    type: '充值活动',
+    reason: '充值活动',
     store: '北京头号空间',
     changeAmount: '+¥500.00',
     afterAmount: '¥1050.00',
-    note: '有套餐时展示套餐名称和具体权益',
+    note: '有套餐时展示套餐名称和具体权益: 充500送100',
     operator: '小范',
     changedAt: '2024-12-15 12:20',
     dateKey: '2024-11-17'
@@ -322,27 +505,53 @@ const prepaidRecords = ref([
   {
     id: 'pr-03',
     tab: 'prepaid',
-    type: '收银台充值',
-    reason: '收银台充值',
+    type: '购买商品',
+    reason: '购买商品',
     store: '北京头号空间',
-    changeAmount: '+¥200.00',
-    afterAmount: '¥1250.00',
-    note: '',
-    operator: '玩家自助',
+    changeAmount: '-¥200.00',
+    afterAmount: '¥850.00',
+    note: '购买游戏周边商品',
+    operator: '小范',
     changedAt: '2024-12-13 16:28',
     dateKey: '2024-11-17'
   },
   {
     id: 'pr-04',
     tab: 'prepaid',
-    type: '收银台充值',
-    reason: '收银台充值',
+    type: '单次消费',
+    reason: '单次消费',
     store: '北京头号空间',
-    changeAmount: '+¥100.00',
-    afterAmount: '¥1350.00',
-    note: '',
-    operator: '小范',
+    changeAmount: '-¥100.00',
+    afterAmount: '¥750.00',
+    note: 'VR 体验消费',
+    operator: '玩家自助',
     changedAt: '2024-12-11 10:12',
+    dateKey: '2024-11-17'
+  },
+  {
+    id: 'pr-05',
+    tab: 'prepaid',
+    type: '退款返还',
+    reason: '退款返还',
+    store: '北京头号空间',
+    changeAmount: '+¥50.00',
+    afterAmount: '¥800.00',
+    note: '订单退款返回: 设备故障',
+    operator: '小范',
+    changedAt: '2024-12-10 14:10',
+    dateKey: '2024-11-17'
+  },
+  {
+    id: 'pr-06',
+    tab: 'prepaid',
+    type: '手动调整',
+    reason: '手动调整',
+    store: '北京头号空间',
+    changeAmount: '-¥30.00',
+    afterAmount: '¥770.00',
+    note: '系统结算差异修正',
+    operator: '系统管理员',
+    changedAt: '2024-12-09 09:30',
     dateKey: '2024-11-17'
   },
   {
@@ -399,9 +608,41 @@ const prepaidRecords = ref([
     type: '购买套票',
     reason: '购买套票',
     store: '北京头号空间',
-    changeAmount: '-¥50.00',
-    afterAmount: '¥200.00',
-    note: '',
+    ticketName: 'xx 游戏/1小时体验票',
+    statusLabel: '生效中',
+    expireDate: '2024-12-17',
+    changeQty: '+4',
+    remainQty: '4',
+    operator: '小范',
+    changedAt: '2024-12-16 13:49',
+    dateKey: '2024-11-17'
+  },
+  {
+    id: 'ticket-02',
+    tab: 'tickets',
+    type: '套票消费',
+    reason: '套票消费',
+    store: '北京头号空间',
+    ticketName: 'xx 游戏/1小时体验票',
+    statusLabel: '生效中',
+    expireDate: '2024-12-17',
+    changeQty: '+1',
+    remainQty: '1',
+    operator: '玩家自助',
+    changedAt: '2024-12-16 13:49',
+    dateKey: '2024-11-17'
+  },
+  {
+    id: 'ticket-03',
+    tab: 'tickets',
+    type: '套票消费',
+    reason: '套票消费',
+    store: '北京头号空间',
+    ticketName: 'xx 游戏/1次体验票',
+    statusLabel: '生效中',
+    expireDate: '2024-12-17',
+    changeQty: '+1',
+    remainQty: '1',
     operator: '小范',
     changedAt: '2024-12-16 13:49',
     dateKey: '2024-11-17'
@@ -423,14 +664,46 @@ const prepaidRecords = ref([
   {
     id: 'times-01',
     tab: 'times',
-    type: '购买次票',
-    reason: '购买次票',
+    type: '收银台购买',
+    reason: '收银台购买',
     store: '北京头号空间',
-    changeAmount: '-1次',
-    afterAmount: '4次',
+    changeQty: '+4',
+    afterQty: '5',
+    statusLabel: '生效中',
+    expireDate: '2024-12-17',
+    note: '有套餐的显示套餐名称和具体权益，没有的不显示',
+    operator: '小范',
+    changedAt: '20241216 13:49',
+    dateKey: '2024-11-17'
+  },
+  {
+    id: 'times-02',
+    tab: 'times',
+    type: '单次消费',
+    reason: '单次消费',
+    store: '北京头号空间',
+    changeQty: '-1',
+    afterQty: '1',
+    statusLabel: '生效中',
+    expireDate: '2024-12-17',
+    note: '',
+    operator: '玩家自助',
+    changedAt: '20241216 13:49',
+    dateKey: '2024-11-17'
+  },
+  {
+    id: 'times-03',
+    tab: 'times',
+    type: '单次消费',
+    reason: '单次消费',
+    store: '北京头号空间',
+    changeQty: '-1',
+    afterQty: '2',
+    statusLabel: '生效中',
+    expireDate: '2024-12-17',
     note: '',
     operator: '小范',
-    changedAt: '2024-12-16 13:49',
+    changedAt: '20241216 13:49',
     dateKey: '2024-11-17'
   }
 ])
@@ -479,6 +752,38 @@ const persistSaleMemberSession = () => {
   sessionStorage.setItem('sale:selected-member', JSON.stringify(saleMemberPayload))
 }
 
+const levelsMap = {
+  normal: '普通会员', silver: '银卡', gold: '金卡', diamond: '钻石'
+}
+
+const editMemberData = computed(() => ({
+  ...member.value
+}))
+
+const openPrepaidRecords = (tab = 'prepaid') => {
+  prepaidInitialTab.value = tab
+  showPrepaidRecords.value = true
+}
+
+const handleEditSave = (data) => {
+  if (data?.levelKey) {
+    member.value.levelKey = data.levelKey
+    member.value.level = levelsMap[data.levelKey] || '钻石'
+  }
+  if (data?.registerPercent != null) {
+    member.value.registerPercent = data.registerPercent
+  }
+  if (data?.birthdayPercent != null) {
+    member.value.birthdayPercent = data.birthdayPercent
+  }
+  if (data?.status) {
+    member.value.status = data.status
+  }
+  member.value.remark = data.remark || ''
+  ElMessage.success('会员资料已更新')
+  showEditMember.value = false
+}
+
 const handleFunc = (action) => {
   if (action === 'deduct') {
     showDeductionModal.value = true
@@ -487,6 +792,15 @@ const handleFunc = (action) => {
   if (action === 'gift') {
     persistSaleMemberSession()
     router.push({ path: '/sale', query: { tab: 'product', member: '1' } })
+    return
+  }
+  if (action === 'recharge') {
+    persistSaleMemberSession()
+    router.push({ path: '/sale', query: { tab: 'recharge', member: '1' } })
+    return
+  }
+  if (action === 'event') {
+    showMemberGifts.value = true
     return
   }
   ElMessage.info(`功能开发中：${action}`)
@@ -509,6 +823,12 @@ const handleMemberSelected = (selectedMember) => {
   }
 }
 
+const handleGiftIssue = (gift) => {
+  // 后续接入真实发放接口，此处仅记日志 + 提示
+  console.log('[赠送活动] 发放', { member: member.value.name, gift: gift.name })
+  ElMessage.success(`已向 ${member.value.name} 赠送「${gift.name}」`)
+}
+
 const handleNewMemberSubmit = (data) => {
   showNewMember.value = false
   if (data?.name) {
@@ -523,12 +843,6 @@ const handleDeductionConfirm = (payload) => {
   showDeductionSuccess.value = true
 }
 
-// ===== 工具方法 =====
-const copyValue = (text) => {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => ElMessage.success(`已复制：${text}`))
-  }
-}
 </script>
 
 <style scoped>

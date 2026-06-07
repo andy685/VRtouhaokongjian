@@ -149,11 +149,11 @@ import {
 import * as echarts from 'echarts/core'
 import { LineChart, BarChart } from 'echarts/charts'
 import {
-  TitleComponent, TooltipComponent, GridComponent, LegendComponent
+  TitleComponent, TooltipComponent, GridComponent, LegendComponent, GraphicComponent
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
-echarts.use([LineChart, BarChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer])
+echarts.use([LineChart, BarChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, GraphicComponent, CanvasRenderer])
 
 const message = useMessage()
 const trendPeriod = ref<'day' | 'week' | 'month'>('day')

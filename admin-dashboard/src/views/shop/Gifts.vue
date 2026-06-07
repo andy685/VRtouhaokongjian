@@ -425,10 +425,10 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '消费满100赠10元', condition: 'consume', threshold: 100, birthdayRange: 'birthday', giftDeposit: 10, giftPoints: 100, pointsValidText: '永久有效', giftTimes: 0, timesValidText: '-', count: 256, status: true },
-  { id: 2, shopName: '卓远天河路店', name: '充值满500赠50', condition: 'recharge', threshold: 500, birthdayRange: 'birthday', giftDeposit: 50, giftPoints: 500, pointsValidText: '365天', giftTimes: 0, timesValidText: '-', count: 128, status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '办理套餐赠游戏币', condition: 'package', threshold: 0, birthdayRange: 'birthday', giftDeposit: 0, giftPoints: 200, pointsValidText: '30天', giftTimes: 1, timesValidText: '30天', count: 86, status: false },
-  { id: 4, shopName: '卓远北京路店', name: '生日当月送大礼', condition: 'birthday', threshold: 0, birthdayRange: 'month', giftDeposit: 20, giftPoints: 500, pointsValidText: '永久有效', giftTimes: 2, timesValidText: '30天', count: 45, status: true },
+  { id: 1, shopName: '卓远亚运城店', name: '消费满100赠10元+100币', condition: 'consume', threshold: 100, birthdayRange: 'birthday', giftDeposit: 10, giftPoints: 100, pointsValidText: '永久有效', giftTimes: 0, timesValidText: '-', count: 256, status: true },
+  { id: 2, shopName: '卓远天河路店', name: '充值满500赠50元+500币', condition: 'recharge', threshold: 500, birthdayRange: 'birthday', giftDeposit: 50, giftPoints: 500, pointsValidText: '365天', giftTimes: 0, timesValidText: '-', count: 128, status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '办理套餐赠200币+1次体验', condition: 'package', threshold: 0, birthdayRange: 'birthday', giftDeposit: 0, giftPoints: 200, pointsValidText: '30天', giftTimes: 1, timesValidText: '30天', count: 86, status: false },
+  { id: 4, shopName: '卓远北京路店', name: '生日当月赠20元+500币+2次', condition: 'birthday', threshold: 0, birthdayRange: 'month', giftDeposit: 20, giftPoints: 500, pointsValidText: '永久有效', giftTimes: 2, timesValidText: '30天', count: 45, status: true },
 ])
 
 function handleAdd() {

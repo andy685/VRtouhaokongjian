@@ -12,9 +12,12 @@
         <!-- 头部 -->
         <header class="nmm-header">
           <h2>新增会员</h2>
-          <button type="button" class="nmm-close" aria-label="关闭" @click="$emit('close')">
-            <el-icon><Close /></el-icon>
-          </button>
+          <div class="nmm-header-actions">
+            <button type="button" class="nmm-refresh" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="nmm-close" aria-label="关闭" @click="$emit('close')">
+              <el-icon><Close /></el-icon>
+            </button>
+          </div>
         </header>
 
         <!-- 表单主体 -->
@@ -199,7 +202,7 @@ import DeductionSuccessModal from './DeductionSuccessModal.vue'
 const props = defineProps({
   visible: { type: Boolean, default: false }
 })
-const emit = defineEmits(['close', 'submit'])
+const emit = defineEmits(['close', 'submit', 'refresh'])
 
 const genders = ['男', '女']
 
@@ -439,6 +442,30 @@ const handleSuccessClose = () => {
 
 .nmm-close .el-icon {
   font-size: 20px;
+}
+
+.nmm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nmm-refresh {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #4f5d73;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nmm-refresh:hover {
+  background: rgba(255,255,255,0.55);
+  color: #2f7eff;
 }
 
 /* ---- 表单主体 ---- */

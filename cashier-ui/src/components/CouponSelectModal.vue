@@ -12,9 +12,12 @@
         <!-- 头部 -->
         <header class="csm-header">
           <h2>选择优惠券</h2>
-          <button type="button" class="csm-close" aria-label="关闭" @click="$emit('close')">
-            <el-icon><Close /></el-icon>
-          </button>
+          <div class="csm-header-actions">
+            <button type="button" class="csm-refresh" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="csm-close" aria-label="关闭" @click="$emit('close')">
+              <el-icon><Close /></el-icon>
+            </button>
+          </div>
         </header>
 
         <!-- 搜索栏 -->
@@ -34,16 +37,17 @@
             v-for="(coupon, idx) in filteredCoupons"
             :key="coupon.id"
             class="csm-coupon-card"
-            :class="{ selected: selectedCoupon === idx }"
+            :class="{ selected: isCouponSelected(coupon.id), disabled: !coupon.available }"
             @click="toggleSelect(idx)"
           >
             <!-- 第一行：名称 + 标签 -->
             <div class="csm-card-head">
               <strong class="csm-card-title">{{ coupon.name }}</strong>
-              <span v-if="coupon.tag" class="csm-card-tag">{{ coupon.tag }}</span>
+              <span v-if="coupon.tag" class="csm-card-tag" :data-tag="coupon.tag">{{ coupon.tag }}</span>
+              <span v-if="!coupon.available" class="csm-state-badge">不可用</span>
               <!-- 选中勾 -->
               <transition name="check-pop">
-                <span v-if="selectedCoupon === idx" class="csm-check-badge">
+                <span v-if="isCouponSelected(coupon.id)" class="csm-check-badge">
                   <el-icon><Check /></el-icon>已选
                 </span>
               </transition>
@@ -76,6 +80,14 @@
               可用时间：{{ coupon.validity }}
             </div>
 
+            <div v-if="!coupon.availableReason && coupon.validity && coupon.validity.includes('过期')" class="csm-unavailable-row">
+              该优惠券已过期
+            </div>
+
+            <div v-if="coupon.availableReason" class="csm-unavailable-row">
+              {{ coupon.availableReason }}
+            </div>
+
             <!-- 使用规则 -->
             <ul class="csm-rules-list">
               <li v-if="coupon.stores">
@@ -83,11 +95,22 @@
               </li>
               <li v-if="coupon.projects">
                 <label>可兑换项目：</label>{{ coupon.projects }}
-                <a href="javascript:void(0)" class="csm-link" @click.stop="toggleProjects(coupon.id)">
-                  {{ expandedIds.has(coupon.id) ? '收起' : '查看可兑换项目' }}
-                </a>
+                <a
+                  v-if="coupon.projectList && coupon.projectList.length > 0"
+                  href="javascript:void(0)"
+                  class="csm-link"
+                  @click.stop="toggleProjects(coupon.id)"
+                >{{ expandedIds.has(coupon.id) ? '收起 ▲' : '查看明细 ▼' }}</a>
                 <div v-if="expandedIds.has(coupon.id)" class="csm-projects-detail">
-                  <p>{{ coupon.projects }}</p>
+                  <template v-if="coupon.projectList && coupon.projectList.length > 0">
+                    <ul class="csm-project-items">
+                      <li v-for="(item, i) in coupon.projectList" :key="i">
+                        <span class="csm-project-dot"></span>{{ item }}
+                      </li>
+                    </ul>
+                    <p class="csm-project-count">共 {{ coupon.projectList.length }} 个项目</p>
+                  </template>
+                  <p v-else>{{ coupon.projects }}</p>
                 </div>
               </li>
               <li>
@@ -118,7 +141,7 @@ const props = defineProps({
   coupons: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['close', 'select'])
+const emit = defineEmits(['close', 'select', 'refresh'])
 
 const coupons = ref([])
 const selectedCoupon = ref(-1)
@@ -135,12 +158,49 @@ const toggleProjects = (id) => {
   expandedIds.value = s
 }
 
+const getCouponAvailability = (coupon) => {
+  if (!coupon) return { available: false, reason: '优惠券状态异常' }
+  if (coupon.validity && coupon.validity.includes('过期')) {
+    return { available: false, reason: '该优惠券已过期' }
+  }
+  const minAmount = Number(coupon.minAmount ?? 0)
+  const orderAmount = Number(props.orderAmount ?? 0)
+  if (orderAmount <= 0) {
+    return { available: false, reason: '请先选择商品后再使用优惠券' }
+  }
+  if (minAmount > 0 && orderAmount < minAmount) {
+    return { available: false, reason: `当前订单满 ¥${minAmount.toFixed(2)} 可用` }
+  }
+  return { available: true, reason: '' }
+}
+
+const isCouponSelected = (couponId) =>
+  selectedCoupon.value >= 0 && coupons.value[selectedCoupon.value]?.id === couponId
+
+const hydrateCoupons = () => {
+  coupons.value = (props.coupons || []).map(c => {
+    const availability = getCouponAvailability(c)
+    return {
+      ...c,
+      available: availability.available,
+      availableReason: availability.reason
+    }
+  })
+  if (props.currentCouponId) {
+    const idx = coupons.value.findIndex((c) => c.id === props.currentCouponId && c.available)
+    selectedCoupon.value = idx >= 0 ? idx : -1
+  } else if (selectedCoupon.value >= 0 && !coupons.value[selectedCoupon.value]?.available) {
+    selectedCoupon.value = -1
+  }
+}
+
 // 搜索过滤
 const filteredCoupons = computed(() => {
   const keyword = searchText.value.trim()
-  if (!keyword) return coupons.value
+  const sortedCoupons = [...coupons.value].sort((a, b) => Number(b.available) - Number(a.available))
+  if (!keyword) return sortedCoupons
   const kw = keyword.toLowerCase()
-  return coupons.value.filter(c =>
+  return sortedCoupons.filter(c =>
     c.name.toLowerCase().includes(kw) ||
     (c.code && c.code.toLowerCase().includes(kw))
   )
@@ -148,29 +208,37 @@ const filteredCoupons = computed(() => {
 
 watch(() => props.visible, (val) => {
   if (val) {
-    // 所有券默认可用
-    coupons.value = (props.coupons || []).map(c => ({ ...c }))
+    hydrateCoupons()
     searchText.value = ''
     expandedIds.value = new Set()
-    if (props.currentCouponId) {
-      const idx = coupons.value.findIndex((c) => c.id === props.currentCouponId)
-      selectedCoupon.value = idx >= 0 ? idx : -1
-    } else {
-      selectedCoupon.value = -1
-    }
+    if (!props.currentCouponId) selectedCoupon.value = -1
   }
 })
 
+watch(
+  () => [props.orderAmount, props.coupons],
+  () => {
+    if (!props.visible) return
+    hydrateCoupons()
+  },
+  { deep: true }
+)
+
 const toggleSelect = (idx) => {
-  if (selectedCoupon.value === idx) {
+  if (!filteredCoupons.value[idx]?.available) return
+  const targetId = filteredCoupons.value[idx]?.id
+  const rawIdx = coupons.value.findIndex(c => c.id === targetId)
+  if (rawIdx < 0) return
+  if (selectedCoupon.value === rawIdx) {
     selectedCoupon.value = -1
   } else {
-    selectedCoupon.value = idx
+    selectedCoupon.value = rawIdx
   }
 }
 
 const handleConfirm = () => {
   const coupon = selectedCoupon.value >= 0 ? coupons.value[selectedCoupon.value] : null
+  if (coupon && !coupon.available) return
   emit('select', coupon)
   emit('close')
 }
@@ -241,6 +309,31 @@ const handleConfirm = () => {
 
 .csm-close .el-icon {
   font-size: 20px;
+}
+
+.csm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.csm-refresh {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #4f5d73;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.csm-refresh:hover {
+  background: rgba(255, 255, 255, 0.55);
+  color: #2f7eff;
 }
 
 /* ---- 工具栏（搜索区）---- */
@@ -363,6 +456,19 @@ const handleConfirm = () => {
   box-shadow: 0 6px 20px rgba(17, 145, 255, 0.1);
 }
 
+.csm-coupon-card.disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+  border-color: #e5e7eb;
+  background: linear-gradient(to bottom, #fafafa 0%, #f5f7fa 100%);
+  box-shadow: none;
+}
+
+.csm-coupon-card.disabled:hover {
+  border-color: #e5e7eb;
+  box-shadow: none;
+}
+
 .csm-coupon-card.selected {
   border-color: #3791ff;
   border-width: 2px;
@@ -444,6 +550,18 @@ const handleConfirm = () => {
   border-radius: 999px;
   background: linear-gradient(90deg, #3791ff 0%, #2c6eff 100%);
   color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.csm-state-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #64748b;
   font-size: 11px;
   font-weight: 700;
 }
@@ -538,6 +656,13 @@ const handleConfirm = () => {
   margin-bottom: 8px;
 }
 
+.csm-unavailable-row {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #d97706;
+  font-weight: 600;
+}
+
 /* ---- 使用规则列表 ---- */
 .csm-rules-list {
   list-style: none;
@@ -550,7 +675,7 @@ const handleConfirm = () => {
 }
 
 .csm-rules-list li {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #6b7280;
   line-height: 1.6;
   position: relative;
@@ -585,10 +710,10 @@ const handleConfirm = () => {
 
 /* ---- 可兑换项目展开详情 ---- */
 .csm-projects-detail {
-  margin-top: 6px;
-  padding: 8px 12px;
+  margin-top: 8px;
+  padding: 10px 14px;
   background: #f0f6ff;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #d5eaf9;
   font-size: 12px;
   color: #374151;
@@ -597,6 +722,39 @@ const handleConfirm = () => {
 
 .csm-projects-detail p {
   margin: 0;
+}
+
+.csm-project-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px 12px;
+}
+
+.csm-project-items li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #374151;
+  padding: 2px 0;
+}
+
+.csm-project-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3791ff;
+  flex-shrink: 0;
+}
+
+.csm-project-count {
+  margin-top: 8px !important;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 /* ---- 空状态 ---- */

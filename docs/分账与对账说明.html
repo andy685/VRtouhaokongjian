@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>头号空间 - 拉卡拉分账与对账说明</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 280px;
+      background: #0a0f1a;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .logo {
+      padding: 0 20px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .logo h2 {
+      margin: 0;
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo .ver {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .logo .sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .sidebar a {
+      display: block;
+      text-decoration: none;
+      color: var(--muted);
+      padding: 7px 20px;
+      border-left: 3px solid transparent;
+      line-height: 1.35;
+      transition: .15s;
+      word-break: break-word;
+    }
+    .sidebar a:hover { color: var(--text); background: rgba(99,102,241,.08); }
+    .sidebar a.s1 { font-weight: 700; color: var(--text); font-size: 13px; margin-top: 4px; }
+    .sidebar a.s2 { padding-left: 32px; font-size: 12px; }
+    .sidebar a.s3 { padding-left: 44px; font-size: 11px; }
+    .main {
+      margin-left: 280px;
+      padding: 40px 56px 96px;
+      max-width: 1080px;
+    }
+    .hero {
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .meta {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+    .hero .pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(99,102,241,.12);
+      color: #c4b5fd;
+      font-size: 12px;
+      border: 1px solid rgba(99,102,241,.28);
+    }
+    h1, h2, h3, h4 {
+      scroll-margin-top: 24px;
+    }
+    h2 {
+      margin: 40px 0 18px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 28px 0 12px;
+      color: #c4b5fd;
+      font-size: 17px;
+    }
+    h4 {
+      margin: 20px 0 10px;
+      color: #93c5fd;
+      font-size: 15px;
+    }
+    p, li {
+      line-height: 1.85;
+      font-size: 14px;
+      color: var(--text);
+    }
+    ul, ol { padding-left: 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 24px;
+      font-size: 13px;
+    }
+    th {
+      background: #1a1a3e;
+      color: #a78bfa;
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 8px 10px;
+    }
+    td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      color: var(--text);
+      vertical-align: top;
+    }
+    tr:hover td { background: rgba(99,102,241,.04); }
+    code {
+      font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+    pre {
+      background: #0a0f1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    pre code {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    pre.mermaid {
+      text-align: center;
+      background: #0a0f1a;
+    }
+    blockquote {
+      margin: 14px 0;
+      padding: 10px 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(99,102,241,.06);
+      border-radius: 0 10px 10px 0;
+    }
+    blockquote p { color: #cbd5e1; font-size: 13px; }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+    .footer {
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 960px) {
+      .sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        margin-left: 0;
+        padding: 24px 20px 72px;
+      }
+    }
+    </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+  </script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>分账对账</h2>
+      <div class="ver">头号空间 - 拉卡拉分账与对账说明</div>
+      <div class="sub">拉卡拉分账、对账与结算规则</div>
+    </div>
+    <a href="#top" class="s1">文档目录</a>
+    <a href="#头号空间-拉卡拉分账与对账说明" class="s1">头号空间 - 拉卡拉分账与对账说明</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-角色与资金关系" class="s2">2. 角色与资金关系</a><a href="#3-拉卡拉分账边界" class="s2">3. 拉卡拉分账边界</a><a href="#31-现金收款边界" class="s3">3.1 现金收款边界</a><a href="#4-分账模式" class="s2">4. 分账模式</a><a href="#41-实时分账" class="s3">4.1 实时分账</a><a href="#42-周期结算分账" class="s3">4.2 周期结算分账</a><a href="#5-商家分账" class="s2">5. 商家分账</a><a href="#51-商家应结金额" class="s3">5.1 商家应结金额</a><a href="#52-会员充值" class="s3">5.2 会员充值</a><a href="#53-商家对账字段" class="s3">5.3 商家对账字段</a><a href="#6-代理商分润" class="s2">6. 代理商分润</a><a href="#61-分润来源" class="s3">6.1 分润来源</a><a href="#62-分润计算" class="s3">6.2 分润计算</a><a href="#63-拉卡拉打款" class="s3">6.3 拉卡拉打款</a><a href="#64-代理商对账字段" class="s3">6.4 代理商对账字段</a><a href="#7-cp结算" class="s2">7. CP结算</a><a href="#71-cp收益来源" class="s3">7.1 CP收益来源</a><a href="#72-有效体验口径" class="s3">7.2 有效体验口径</a><a href="#73-拉卡拉打款" class="s3">7.3 拉卡拉打款</a><a href="#74-cp对账字段" class="s3">7.4 CP对账字段</a><a href="#8-点播订单资金拆分" class="s2">8. 点播订单资金拆分</a><a href="#9-退款与分账回退" class="s2">9. 退款与分账回退</a><a href="#10-对账流程" class="s2">10. 对账流程</a><a href="#101-日对账" class="s3">10.1 日对账</a><a href="#102-月结算" class="s3">10.2 月结算</a><a href="#103-差异处理" class="s3">10.3 差异处理</a><a href="#11-状态机" class="s2">11. 状态机</a><a href="#12-推荐报表" class="s2">12. 推荐报表</a><a href="#13-接口与字段建议" class="s2">13. 接口与字段建议</a><a href="#14-接入注意" class="s2">14. 接入注意</a><a href="#15-参考资料" class="s2">15. 参考资料</a>
+  </aside>
+  <main class="main" id="top">
+    <section class="hero">
+      <h1>头号空间 - 拉卡拉分账与对账说明</h1>
+      <div class="meta">静态 HTML 版本，可直接放到站点或对象存储里访问。</div>
+      <div class="pill">拉卡拉分账、对账与结算规则</div>
+    </section>
+    <h1 id="头号空间-拉卡拉分账与对账说明">头号空间 - 拉卡拉分账与对账说明</h1>
+<blockquote>
+<p>版本：v1.1<br />
+日期：2026-06-07<br />
+适用范围：商家收银系统、PC点播系统、小程序支付、平台财务、商家分账、代理商分润、游戏供应商（CP）结算</p>
+</blockquote>
+<hr />
+<h2 id="1-文档目标">1. 文档目标</h2>
+<p>本文档重点说明：平台如何通过拉卡拉完成商家、代理商、游戏供应商（CP）的分账与对账。</p>
+<p>内部支付规则中的预存款、游戏币、优惠券仍需要入账，但它们不是拉卡拉当前交易里的可分账资金。文档将两类账分开：</p>
+<pre><code>拉卡拉资金账：微信、支付宝等真实支付资金
+平台业务账：预存款、游戏币、优惠、CP成本、代理商分润等业务权益</code></pre>
+<p>核心原则：<strong>真实资金走拉卡拉，会员资产走平台账，最终通过结算单把商家、代理商、CP的应收应付对齐</strong>。</p>
+<hr />
+<h2 id="2-角色与资金关系">2. 角色与资金关系</h2>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 43%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>在分账中的身份</th>
+<th>收款/收益来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>用户</td>
+<td>付款方</td>
+<td>微信、支付宝、会员预存款、游戏币</td>
+</tr>
+<tr>
+<td>商家/门店</td>
+<td>交易卖方、分账接收方</td>
+<td>商品销售、会员充值、门店点播收入</td>
+</tr>
+<tr>
+<td>平台</td>
+<td>分账发起方、规则计算方</td>
+<td>平台服务费、游戏豆差价、其他平台收益</td>
+</tr>
+<tr>
+<td>代理商</td>
+<td>分润接收方</td>
+<td>按商家交易、游戏豆采购或合同规则计算分润</td>
+</tr>
+<tr>
+<td>游戏供应商（CP）</td>
+<td>内容收益接收方</td>
+<td>按点播次数、游戏成本价或合同规则计算收益</td>
+</tr>
+<tr>
+<td>拉卡拉</td>
+<td>支付与分账通道</td>
+<td>负责收款、分账、结算、回调、对账文件</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-拉卡拉分账边界">3. 拉卡拉分账边界</h2>
+<p>拉卡拉只处理进入支付通道的真实资金，例如：</p>
+<pre><code>微信支付
+支付宝支付
+银行卡/扫码收款
+其他拉卡拉支持的外部支付</code></pre>
+<p>以下内容不属于当前拉卡拉交易中的可分账资金：</p>
+<pre><code>现金收款
+预存款消费
+游戏币消费
+优惠券抵扣
+活动赠送
+后台发放</code></pre>
+<p>这些内容必须通过平台业务账记录，再在周期结算时生成商家、代理商、CP的应收应付。</p>
+<p>举例：</p>
+<pre><code>用户本单消费 ¥100
+优惠券 -¥10
+预存款抵扣 ¥60
+游戏币抵扣 ¥20
+微信补差 ¥10</code></pre>
+<p>本单可进入拉卡拉分账的当前交易资金只有：</p>
+<pre><code>微信补差 ¥10</code></pre>
+<p>预存款 ¥60 和游戏币 20 需要进入平台业务账，用于商家收入确认、CP成本结算和代理商分润计算。</p>
+<h3 id="31-现金收款边界">3.1 现金收款边界</h3>
+<p>现金是外部收款，但不经过拉卡拉支付通道，因此不能做实时拉卡拉分账。</p>
+<p>现金订单必须进入平台现金账：</p>
+<pre><code>用户现金付款
+  ↓
+收银员确认收款
+  ↓
+平台记录现金支付流水
+  ↓
+进入日结/交班现金对账
+  ↓
+进入商家、代理商、CP周期结算</code></pre>
+<p>现金部分的分账处理有两种方式，需按合同和系统配置选择：</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>商家留存，结算抵扣</td>
+<td>现金由商家现场留存，平台在后续结算中扣除平台服务费、CP成本、代理商分润</td>
+<td>门店现金收银</td>
+</tr>
+<tr>
+<td>平台应收，商家补缴</td>
+<td>现金由商家现场收取，但平台生成应收账款，商家通过转账或后续拉卡拉结算补缴</td>
+<td>CP成本或平台服务费需要平台统一发放</td>
+</tr>
+</tbody>
+</table>
+<p>建议默认采用“商家留存，结算抵扣”。如果商家后续可结算金额不足以抵扣 CP 成本或代理商分润，应生成平台应收，并进入财务催收或下期滚动抵扣。</p>
+<p>现金订单在结算单中必须拆成两层金额：</p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 38%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>金额口径</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>门店实收</td>
+<td>用户实际交给门店的现金</td>
+<td>商家现场留存，进入交班现金盘点</td>
+</tr>
+<tr>
+<td>平台应收/应付</td>
+<td>现金订单对应的平台服务费、CP成本、代理佣金等</td>
+<td>优先从商家后续拉卡拉结算款抵扣；不足部分生成平台应收</td>
+</tr>
+</tbody>
+</table>
+<p>结算系统不能把现金伪造成拉卡拉通道实收，也不能对现金发起实时分账。现金只参与“应收应付计算”，不参与“拉卡拉当前交易可分账金额”。</p>
+<hr />
+<h2 id="4-分账模式">4. 分账模式</h2>
+<h3 id="41-实时分账">4.1 实时分账</h3>
+<p>适合场景：</p>
+<ul>
+<li>用户使用微信/支付宝直接支付。</li>
+<li>订单金额、分账比例、收款方在支付时已经明确。</li>
+<li>商家、代理商、CP均已完成拉卡拉分账接收方绑定。</li>
+</ul>
+<p>流程：</p>
+<pre><code>用户付款
+  ↓
+平台创建拉卡拉支付订单并标记可分账
+  ↓
+支付成功回调
+  ↓
+平台按订单规则生成分账指令
+  ↓
+拉卡拉执行分账
+  ↓
+拉卡拉回调分账结果
+  ↓
+平台更新商家/代理商/CP结算状态</code></pre>
+<h3 id="42-周期结算分账">4.2 周期结算分账</h3>
+<p>适合场景：</p>
+<ul>
+<li>订单中包含预存款或游戏币等会员资产。</li>
+<li>CP收益需要按点播次数、有效体验、退款冲正后净额计算。</li>
+<li>代理商分润按月度阶梯、合同规则或游戏豆采购额计算。</li>
+<li>单笔订单金额较小，不适合每笔实时拆分。</li>
+</ul>
+<p>流程：</p>
+<pre><code>订单完成
+  ↓
+平台记录支付拆分与业务流水
+  ↓
+日结/月结生成结算单
+  ↓
+平台计算商家、代理商、CP应结金额
+  ↓
+提交拉卡拉分账或代付
+  ↓
+同步拉卡拉状态与对账文件
+  ↓
+结算单完成或进入异常处理</code></pre>
+<p>建议默认采用：</p>
+<pre><code>商家微信/支付宝订单：可实时分账
+现金订单：周期结算，不做实时拉卡拉分账
+代理商分润：周期结算
+CP收益：周期结算
+包含预存款/游戏币的订单：周期结算</code></pre>
+<hr />
+<h2 id="5-商家分账">5. 商家分账</h2>
+<h3 id="51-商家应结金额">5.1 商家应结金额</h3>
+<p>商家应结金额由两部分组成：</p>
+<pre><code>拉卡拉通道实收
++ 现金实收
++ 预存款消费确认
++ 游戏币消费确认
+- 商家承担的优惠
+- 退款冲正
+- 平台服务费或合同约定扣款</code></pre>
+<p>其中：</p>
+<ul>
+<li>拉卡拉通道实收可以通过拉卡拉直接结算或分账给商家。</li>
+<li>现金实收由商家现场留存，不参与当前拉卡拉实时分账，但必须进入现金账和周期结算。</li>
+<li>预存款和游戏币是平台业务账确认的收入，不一定存在于当前拉卡拉交易资金中。</li>
+<li>如果商家承担平台服务费，可在结算单中扣除。</li>
+</ul>
+<h3 id="52-会员充值">5.2 会员充值</h3>
+<p>充值只能使用现金、微信、支付宝等外部支付。</p>
+<p>会员充值的账务口径：</p>
+<pre><code>用户外部支付 ¥100
+商家收到充值资金或进入待结算
+会员预存款 +¥100</code></pre>
+<p>充值本身不是消费收入，而是形成会员负债。会员后续消费时，才确认对应消费收入。</p>
+<h3 id="53-商家对账字段">5.3 商家对账字段</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>merchant_id</code></td>
+<td>商家ID</td>
+</tr>
+<tr>
+<td><code>store_id</code></td>
+<td>门店ID</td>
+</tr>
+<tr>
+<td><code>lakala_merchant_no</code></td>
+<td>拉卡拉商户号</td>
+</tr>
+<tr>
+<td><code>order_amount</code></td>
+<td>订单应付金额</td>
+</tr>
+<tr>
+<td><code>external_paid_amount</code></td>
+<td>外部支付实收</td>
+</tr>
+<tr>
+<td><code>lakala_paid_amount</code></td>
+<td>拉卡拉通道实收</td>
+</tr>
+<tr>
+<td><code>cash_paid_amount</code></td>
+<td>现金实收</td>
+</tr>
+<tr>
+<td><code>prepaid_consumed</code></td>
+<td>预存款消耗</td>
+</tr>
+<tr>
+<td><code>game_coin_consumed</code></td>
+<td>游戏币消耗</td>
+</tr>
+<tr>
+<td><code>merchant_discount_amount</code></td>
+<td>商家承担优惠</td>
+</tr>
+<tr>
+<td><code>platform_fee_amount</code></td>
+<td>平台服务费</td>
+</tr>
+<tr>
+<td><code>refund_amount</code></td>
+<td>退款冲正金额</td>
+</tr>
+<tr>
+<td><code>merchant_settle_amount</code></td>
+<td>商家应结金额</td>
+</tr>
+<tr>
+<td><code>platform_receivable_amount</code></td>
+<td>平台应收金额，适用于现金留存在商家但需向平台补缴的情况</td>
+</tr>
+<tr>
+<td><code>lakala_split_no</code></td>
+<td>拉卡拉分账流水号</td>
+</tr>
+<tr>
+<td><code>settle_status</code></td>
+<td>待分账/分账中/已到账/失败</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-代理商分润">6. 代理商分润</h2>
+<p>代理商分润建议采用周期结算，避免每笔订单实时拆分导致规则复杂、退款冲正困难。</p>
+<h3 id="61-分润来源">6.1 分润来源</h3>
+<p>代理商分润可以按合同配置从以下来源计算：</p>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>商家外部交易流水</td>
+<td>按商家微信/支付宝等外部收款净额计算</td>
+</tr>
+<tr>
+<td>商家消费收入</td>
+<td>按订单应付或净营收计算，包含会员资产消耗</td>
+</tr>
+<tr>
+<td>游戏豆采购</td>
+<td>按商家采购游戏豆金额或数量计算</td>
+</tr>
+<tr>
+<td>平台服务费</td>
+<td>从平台服务费中按比例分润</td>
+</tr>
+</tbody>
+</table>
+<p>实际采用哪一种，需要在代理商合同和后台配置中明确。</p>
+<h3 id="62-分润计算">6.2 分润计算</h3>
+<p>示例：</p>
+<pre><code>代理商分润 = 可分润基数 × 分润比例</code></pre>
+<p>若启用阶梯分润：</p>
+<pre><code>代理商分润 = 各档位基数 × 对应档位比例</code></pre>
+<p>退款、撤单、异常订单必须在分润计算前冲减。</p>
+<h3 id="63-拉卡拉打款">6.3 拉卡拉打款</h3>
+<p>代理商需先完成拉卡拉收款账户或分账接收方绑定。</p>
+<p>周期结算流程：</p>
+<pre><code>生成代理商分润结算单
+  ↓
+代理商确认或平台审核
+  ↓
+提交拉卡拉分账/代付
+  ↓
+拉卡拉回调到账结果
+  ↓
+结算单标记已到账</code></pre>
+<h3 id="64-代理商对账字段">6.4 代理商对账字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>agent_id</code></td>
+<td>代理商ID</td>
+</tr>
+<tr>
+<td><code>settlement_period</code></td>
+<td>结算周期</td>
+</tr>
+<tr>
+<td><code>base_amount</code></td>
+<td>分润基数</td>
+</tr>
+<tr>
+<td><code>commission_rate</code></td>
+<td>分润比例</td>
+</tr>
+<tr>
+<td><code>commission_amount</code></td>
+<td>应发分润</td>
+</tr>
+<tr>
+<td><code>refund_adjustment</code></td>
+<td>退款冲减</td>
+</tr>
+<tr>
+<td><code>actual_payout_amount</code></td>
+<td>实际打款金额</td>
+</tr>
+<tr>
+<td><code>lakala_receiver_no</code></td>
+<td>拉卡拉接收方编号</td>
+</tr>
+<tr>
+<td><code>lakala_split_no</code></td>
+<td>拉卡拉分账/代付流水号</td>
+</tr>
+<tr>
+<td><code>settle_status</code></td>
+<td>待确认/分账中/已到账/失败</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-cp结算">7. CP结算</h2>
+<p>CP是游戏内容供应商，收益应与点播、有效体验和合同成本价关联。</p>
+<h3 id="71-cp收益来源">7.1 CP收益来源</h3>
+<p>推荐口径：</p>
+<pre><code>CP收益 = 有效体验次数 × CP单次成本价</code></pre>
+<p>也可按合同配置为：</p>
+<pre><code>CP收益 = 游戏收入净额 × CP分成比例</code></pre>
+<p>采用哪种口径需要在游戏审核、合同或CP结算配置中明确。</p>
+<h3 id="72-有效体验口径">7.2 有效体验口径</h3>
+<p>以下情况可计入CP收益：</p>
+<ul>
+<li>订单支付成功。</li>
+<li>游戏会话进入有效体验状态。</li>
+<li>未发生全额退款或自动退还。</li>
+<li>该游戏已绑定CP和成本价/分成规则。</li>
+</ul>
+<p>以下情况不计入或需要冲正：</p>
+<ul>
+<li>游戏未启动成功。</li>
+<li>未进入首帧或未形成有效体验。</li>
+<li>订单全额退款。</li>
+<li>体验异常并触发退还。</li>
+</ul>
+<h3 id="73-拉卡拉打款">7.3 拉卡拉打款</h3>
+<p>CP需完成拉卡拉收款账户或分账接收方绑定。</p>
+<p>建议采用周期结算：</p>
+<pre><code>统计有效体验
+  ↓
+计算CP收益
+  ↓
+扣除退款/退还/异常冲正
+  ↓
+生成CP结算单
+  ↓
+提交拉卡拉分账/代付
+  ↓
+同步拉卡拉到账状态</code></pre>
+<h3 id="74-cp对账字段">7.4 CP对账字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cp_id</code></td>
+<td>CP供应商ID</td>
+</tr>
+<tr>
+<td><code>game_id</code></td>
+<td>游戏ID</td>
+</tr>
+<tr>
+<td><code>settlement_period</code></td>
+<td>结算周期</td>
+</tr>
+<tr>
+<td><code>valid_play_count</code></td>
+<td>有效体验次数</td>
+</tr>
+<tr>
+<td><code>cost_per_play</code></td>
+<td>单次成本价</td>
+</tr>
+<tr>
+<td><code>revenue_share_rate</code></td>
+<td>分成比例，若按比例结算</td>
+</tr>
+<tr>
+<td><code>cp_settle_amount</code></td>
+<td>CP应结金额</td>
+</tr>
+<tr>
+<td><code>refund_adjustment</code></td>
+<td>退款/退还冲减</td>
+</tr>
+<tr>
+<td><code>actual_payout_amount</code></td>
+<td>实际打款金额</td>
+</tr>
+<tr>
+<td><code>lakala_receiver_no</code></td>
+<td>拉卡拉接收方编号</td>
+</tr>
+<tr>
+<td><code>lakala_split_no</code></td>
+<td>拉卡拉分账/代付流水号</td>
+</tr>
+<tr>
+<td><code>settle_status</code></td>
+<td>待结算/分账中/已到账/失败</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-点播订单资金拆分">8. 点播订单资金拆分</h2>
+<p>PC点播订单需要同时看三层账：</p>
+<pre><code>用户支付账：用户实际怎么付款
+会员资产账：预存款/游戏币如何扣减
+CP成本账：本次有效体验产生多少CP收益</code></pre>
+<p>示例：</p>
+<pre><code>用户点播 ¥100
+优惠券 -¥10
+预存款 ¥60
+游戏币 20
+微信补差 ¥10
+CP成本 ¥18
+代理商分润 ¥3
+商家确认收入 ¥90</code></pre>
+<p>说明：</p>
+<ul>
+<li>拉卡拉当前交易只看到微信补差 ¥10。</li>
+<li>预存款 ¥60 和游戏币 20 由平台业务账确认。</li>
+<li>CP成本 ¥18 和代理商分润 ¥3 可以进入周期结算单，通过拉卡拉分账/代付给 CP 和代理商。</li>
+<li>商家最终收入需要扣除合同约定的平台服务费、CP成本或其他成本，具体按商业合同配置。</li>
+</ul>
+<p>现金点播示例：</p>
+<pre><code>用户现金支付 ¥90
+CP成本 ¥18
+代理商分润 ¥3
+商家现场留存现金 ¥90
+平台应收或下期抵扣 ¥21</code></pre>
+<p>说明：</p>
+<ul>
+<li>现金 ¥90 不进入拉卡拉实时分账。</li>
+<li>CP成本和代理商分润仍然需要结算。</li>
+<li>平台可从商家后续拉卡拉结算款中抵扣 ¥21；如果后续结算款不足，则生成平台应收。</li>
+</ul>
+<hr />
+<h2 id="9-退款与分账回退">9. 退款与分账回退</h2>
+<p>退款原则：原路返回，并同步冲正分账。</p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 38%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr>
+<th>原支付方式</th>
+<th>退款处理</th>
+<th>分账影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>微信/支付宝</td>
+<td>拉卡拉原渠道退款</td>
+<td>已分账需发起分账回退或在下期结算冲减</td>
+</tr>
+<tr>
+<td>现金</td>
+<td>线下退款并记录凭证</td>
+<td>现金实收冲减</td>
+</tr>
+<tr>
+<td>预存款</td>
+<td>退回会员预存款</td>
+<td>商家会员负债增加</td>
+</tr>
+<tr>
+<td>游戏币</td>
+<td>退回会员游戏币</td>
+<td>游戏币消耗冲正</td>
+</tr>
+<tr>
+<td>CP收益</td>
+<td>若体验无效或订单退款</td>
+<td>CP结算单冲减</td>
+</tr>
+<tr>
+<td>代理商分润</td>
+<td>若基数被退款冲减</td>
+<td>代理商结算单冲减</td>
+</tr>
+</tbody>
+</table>
+<p>全额退款：</p>
+<pre><code>按订单支付明细逐项原路退回，并冲正已生成的分账/结算记录</code></pre>
+<p>部分退款：</p>
+<pre><code>优先按被退商品对应的支付构成原路退回
+无法精确定位时，按整单支付比例退回</code></pre>
+<p>如果拉卡拉侧已完成分账且无法实时回退，应在下一个结算周期生成负向调整。</p>
+<hr />
+<h2 id="10-对账流程">10. 对账流程</h2>
+<h3 id="101-日对账">10.1 日对账</h3>
+<p>日对账重点核对拉卡拉外部资金。</p>
+<pre><code>拉卡拉交易文件
+  ↔ 平台支付流水
+  ↔ 订单外部支付金额</code></pre>
+<p>核对项：</p>
+<ul>
+<li>支付订单号</li>
+<li>拉卡拉交易号</li>
+<li>外部支付金额</li>
+<li>支付状态</li>
+<li>手续费</li>
+<li>退款状态</li>
+<li>分账状态</li>
+</ul>
+<h3 id="102-月结算">10.2 月结算</h3>
+<p>月结算重点核对商家、代理商、CP应结金额。</p>
+<pre><code>订单业务流水
+  ↔ 会员资产流水
+  ↔ 点播有效体验
+  ↔ 分润规则
+  ↔ 拉卡拉分账/代付结果</code></pre>
+<p>核对项：</p>
+<ul>
+<li>商家应结金额</li>
+<li>代理商应发分润</li>
+<li>CP应结收益</li>
+<li>退款冲减</li>
+<li>拉卡拉到账金额</li>
+<li>异常差异原因</li>
+</ul>
+<h3 id="103-差异处理">10.3 差异处理</h3>
+<table>
+<thead>
+<tr>
+<th>差异类型</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>拉卡拉支付成功但平台未入账</td>
+<td>补单，写入支付流水</td>
+</tr>
+<tr>
+<td>平台成功但拉卡拉未成功</td>
+<td>标记异常，禁止确认分账</td>
+</tr>
+<tr>
+<td>分账金额不一致</td>
+<td>暂停结算，人工复核规则与回调</td>
+</tr>
+<tr>
+<td>收款账户异常</td>
+<td>进入异常待处理，修复账户后重提</td>
+</tr>
+<tr>
+<td>已退款但已分账</td>
+<td>发起回退或下期负向调整</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-状态机">11. 状态机</h2>
+<p>建议分账结算状态：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pending</code></td>
+<td>待生成或待提交</td>
+</tr>
+<tr>
+<td><code>reviewing</code></td>
+<td>待平台/财务审核</td>
+</tr>
+<tr>
+<td><code>submitted</code></td>
+<td>已提交拉卡拉</td>
+</tr>
+<tr>
+<td><code>processing</code></td>
+<td>拉卡拉处理中</td>
+</tr>
+<tr>
+<td><code>settled</code></td>
+<td>已到账</td>
+</tr>
+<tr>
+<td><code>failed</code></td>
+<td>分账失败</td>
+</tr>
+<tr>
+<td><code>adjusting</code></td>
+<td>退款或差异调整中</td>
+</tr>
+<tr>
+<td><code>closed</code></td>
+<td>结算关闭</td>
+</tr>
+</tbody>
+</table>
+<p>每次状态变化必须记录：</p>
+<ul>
+<li>操作人或系统任务</li>
+<li>操作时间</li>
+<li>拉卡拉流水号</li>
+<li>回调原文摘要</li>
+<li>失败原因</li>
+<li>重试次数</li>
+</ul>
+<hr />
+<h2 id="12-推荐报表">12. 推荐报表</h2>
+<table>
+<thead>
+<tr>
+<th>报表</th>
+<th>重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>拉卡拉交易对账</td>
+<td>外部支付、退款、手续费、分账状态</td>
+</tr>
+<tr>
+<td>商家分账管理</td>
+<td>商家应结、到账、失败、异常账户</td>
+</tr>
+<tr>
+<td>代理商分润明细</td>
+<td>分润基数、比例、冲减、实发金额</td>
+</tr>
+<tr>
+<td>CP结算管理</td>
+<td>有效体验、成本价、收益、退款冲减</td>
+</tr>
+<tr>
+<td>CP对账中心</td>
+<td>平台计算金额与拉卡拉到账金额比对</td>
+</tr>
+<tr>
+<td>会员资产消耗报表</td>
+<td>预存款、游戏币的消费、退款、余额变化</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-接口与字段建议">13. 接口与字段建议</h2>
+<p>拉卡拉相关字段：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lakala_trade_no</code></td>
+<td>拉卡拉交易流水号</td>
+</tr>
+<tr>
+<td><code>lakala_split_no</code></td>
+<td>拉卡拉分账流水号</td>
+</tr>
+<tr>
+<td><code>lakala_refund_no</code></td>
+<td>拉卡拉退款流水号</td>
+</tr>
+<tr>
+<td><code>lakala_receiver_no</code></td>
+<td>分账接收方编号</td>
+</tr>
+<tr>
+<td><code>split_rule_snapshot</code></td>
+<td>本次分账规则快照</td>
+</tr>
+<tr>
+<td><code>split_status</code></td>
+<td>分账状态</td>
+</tr>
+<tr>
+<td><code>split_callback_payload</code></td>
+<td>回调原文或摘要</td>
+</tr>
+</tbody>
+</table>
+<p>结算单字段：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>settlement_id</code></td>
+<td>结算单ID</td>
+</tr>
+<tr>
+<td><code>settlement_type</code></td>
+<td>merchant/agent/cp</td>
+</tr>
+<tr>
+<td><code>settlement_period</code></td>
+<td>结算周期</td>
+</tr>
+<tr>
+<td><code>base_amount</code></td>
+<td>结算基数</td>
+</tr>
+<tr>
+<td><code>adjustment_amount</code></td>
+<td>调整金额</td>
+</tr>
+<tr>
+<td><code>payable_amount</code></td>
+<td>应付金额</td>
+</tr>
+<tr>
+<td><code>actual_payout_amount</code></td>
+<td>实际打款金额</td>
+</tr>
+<tr>
+<td><code>receiver_account_id</code></td>
+<td>收款账户</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>结算状态</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="14-接入注意">14. 接入注意</h2>
+<ul>
+<li>拉卡拉分账、回退、结算周期、手续费承担方、接收方绑定规则，以实际签约产品和开放平台文档为准。</li>
+<li>平台服务端保存私钥、证书、商户号等敏感配置，前端不得接触。</li>
+<li>所有分账指令必须幂等，避免回调重试造成重复入账。</li>
+<li>分账失败不能直接改金额，应生成失败记录并支持重提。</li>
+<li>会员资产消费不能伪造成拉卡拉实时交易，应通过结算单归集后处理。</li>
+</ul>
+<hr />
+<h2 id="15-参考资料">15. 参考资料</h2>
+<ul>
+<li>拉卡拉开放平台公共接入说明：<code>https://i.lakala.com/doc/openapi/index.html</code></li>
+<li>拉卡拉分账通产品介绍与API资料：以签约后的开放平台接口文档和商务合同为准。</li>
+</ul>
+
+    <div class="footer">Generated from Markdown in /Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs</div>
+  </main>
+</body>
+</html>

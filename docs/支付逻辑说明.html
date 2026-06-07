@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>头号空间 - 支付逻辑说明</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 280px;
+      background: #0a0f1a;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .logo {
+      padding: 0 20px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .logo h2 {
+      margin: 0;
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo .ver {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .logo .sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .sidebar a {
+      display: block;
+      text-decoration: none;
+      color: var(--muted);
+      padding: 7px 20px;
+      border-left: 3px solid transparent;
+      line-height: 1.35;
+      transition: .15s;
+      word-break: break-word;
+    }
+    .sidebar a:hover { color: var(--text); background: rgba(99,102,241,.08); }
+    .sidebar a.s1 { font-weight: 700; color: var(--text); font-size: 13px; margin-top: 4px; }
+    .sidebar a.s2 { padding-left: 32px; font-size: 12px; }
+    .sidebar a.s3 { padding-left: 44px; font-size: 11px; }
+    .main {
+      margin-left: 280px;
+      padding: 40px 56px 96px;
+      max-width: 1080px;
+    }
+    .hero {
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .meta {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+    .hero .pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(99,102,241,.12);
+      color: #c4b5fd;
+      font-size: 12px;
+      border: 1px solid rgba(99,102,241,.28);
+    }
+    h1, h2, h3, h4 {
+      scroll-margin-top: 24px;
+    }
+    h2 {
+      margin: 40px 0 18px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 28px 0 12px;
+      color: #c4b5fd;
+      font-size: 17px;
+    }
+    h4 {
+      margin: 20px 0 10px;
+      color: #93c5fd;
+      font-size: 15px;
+    }
+    p, li {
+      line-height: 1.85;
+      font-size: 14px;
+      color: var(--text);
+    }
+    ul, ol { padding-left: 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 24px;
+      font-size: 13px;
+    }
+    th {
+      background: #1a1a3e;
+      color: #a78bfa;
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 8px 10px;
+    }
+    td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      color: var(--text);
+      vertical-align: top;
+    }
+    tr:hover td { background: rgba(99,102,241,.04); }
+    code {
+      font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+    pre {
+      background: #0a0f1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    pre code {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    pre.mermaid {
+      text-align: center;
+      background: #0a0f1a;
+    }
+    blockquote {
+      margin: 14px 0;
+      padding: 10px 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(99,102,241,.06);
+      border-radius: 0 10px 10px 0;
+    }
+    blockquote p { color: #cbd5e1; font-size: 13px; }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+    .footer {
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 960px) {
+      .sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        margin-left: 0;
+        padding: 24px 20px 72px;
+      }
+    }
+    </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+  </script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>支付逻辑</h2>
+      <div class="ver">头号空间 - 支付逻辑说明</div>
+      <div class="sub">支付流程、会员扣费与订单服务</div>
+    </div>
+    <a href="#top" class="s1">文档目录</a>
+    <a href="#头号空间-支付逻辑说明" class="s1">头号空间 - 支付逻辑说明</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-关键定义" class="s2">2. 关键定义</a><a href="#3-支付方式范围" class="s2">3. 支付方式范围</a><a href="#4-自动抵扣规则" class="s2">4. 自动抵扣规则</a><a href="#41-默认优先级" class="s3">4.1 默认优先级</a><a href="#42-游戏币规则" class="s3">4.2 游戏币规则</a><a href="#43-充值规则" class="s3">4.3 充值规则</a><a href="#5-终端支付逻辑" class="s2">5. 终端支付逻辑</a><a href="#51-商家收银系统" class="s3">5.1 商家收银系统</a><a href="#52-会员扣费页面" class="s3">5.2 会员扣费页面</a><a href="#53-pc点播系统" class="s3">5.3 PC点播系统</a><a href="#54-小程序会员支付" class="s3">5.4 小程序会员支付</a><a href="#6-结算前预览" class="s2">6. 结算前预览</a><a href="#7-退款规则" class="s2">7. 退款规则</a><a href="#8-成功提示与小票" class="s2">8. 成功提示与小票</a><a href="#81-支付成功提示" class="s3">8.1 支付成功提示</a><a href="#82-小票字段" class="s3">8.2 小票字段</a><a href="#9-风控与异常" class="s2">9. 风控与异常</a><a href="#10-待接口落地字段" class="s2">10. 待接口落地字段</a>
+  </aside>
+  <main class="main" id="top">
+    <section class="hero">
+      <h1>头号空间 - 支付逻辑说明</h1>
+      <div class="meta">静态 HTML 版本，可直接放到站点或对象存储里访问。</div>
+      <div class="pill">支付流程、会员扣费与订单服务</div>
+    </section>
+    <h1 id="头号空间-支付逻辑说明">头号空间 - 支付逻辑说明</h1>
+<blockquote>
+<p>版本：v1.0<br />
+日期：2026-06-07<br />
+适用范围：商家收银系统、会员扣费、PC点播系统、小程序会员支付、订单与退款服务</p>
+</blockquote>
+<hr />
+<h2 id="1-文档目标">1. 文档目标</h2>
+<p>本文档定义头号空间各终端的支付方式、会员资产自动抵扣规则、补差规则、退款规则、小票与结算后提示口径。</p>
+<p>所有规则均围绕一个原则：<strong>涉及钱和会员资产的行为必须可预览、可确认、可追溯、可对账</strong>。</p>
+<hr />
+<h2 id="2-关键定义">2. 关键定义</h2>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr>
+<th>名称</th>
+<th>定义</th>
+<th>账务属性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预存款</td>
+<td>会员账户内的人民币余额，充值后进入会员账户</td>
+<td>会员负债，按人民币金额记账</td>
+</tr>
+<tr>
+<td>游戏币</td>
+<td>会员账户内的消费资产，汇率与预存款为 1:1，多数来自充值赠送</td>
+<td>会员资产，按数量记账，同时可折算人民币金额</td>
+</tr>
+<tr>
+<td>游戏豆</td>
+<td>商家或平台侧用于启动/消耗游戏的 B 端资源</td>
+<td>B 端运营资源，不是用户支付方式</td>
+</tr>
+<tr>
+<td>外部支付</td>
+<td>现金、微信支付、支付宝支付等实际收款渠道</td>
+<td>实收资金</td>
+</tr>
+<tr>
+<td>优惠券/活动优惠</td>
+<td>抵减订单应付金额的优惠权益</td>
+<td>冲减应收，不是支付方式</td>
+</tr>
+<tr>
+<td>补差</td>
+<td>会员资产不足时，剩余金额由外部支付补足</td>
+<td>混合支付的一部分</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注意：<code>游戏币</code> 和 <code>游戏豆</code> 是两套不同资产。游戏币面向会员，游戏豆面向商家/平台计费。</p>
+</blockquote>
+<hr />
+<h2 id="3-支付方式范围">3. 支付方式范围</h2>
+<p>未来商品或项目建议增加“可用支付范围”配置。</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>仅外部支付</td>
+<td>只能用现金、微信、支付宝等外部方式支付</td>
+</tr>
+<tr>
+<td>可预存款</td>
+<td>可使用会员预存款自动抵扣</td>
+</tr>
+<tr>
+<td>可游戏币</td>
+<td>可使用游戏币自动抵扣</td>
+</tr>
+<tr>
+<td>仅游戏币</td>
+<td>只能使用游戏币，游戏币不足时不可外部补差</td>
+</tr>
+<tr>
+<td>可混合支付</td>
+<td>可按系统规则使用会员资产，不足部分走外部补差</td>
+</tr>
+</tbody>
+</table>
+<p>默认未配置时，建议按普通消费处理：支持优惠、预存款、游戏币、外部补差。</p>
+<hr />
+<h2 id="4-自动抵扣规则">4. 自动抵扣规则</h2>
+<h3 id="41-默认优先级">4.1 默认优先级</h3>
+<p>默认消耗顺序：</p>
+<pre><code>优惠券/活动优惠 → 预存款 → 游戏币 → 外部支付补差</code></pre>
+<p>说明：</p>
+<ul>
+<li>优惠先抵扣订单金额，再计算会员资产消耗。</li>
+<li>预存款默认优先于游戏币。</li>
+<li>游戏币不作为收银员手动选择的支付按钮出现。</li>
+<li>游戏币由系统根据商品支付范围和商户优先级自动计算是否消耗。</li>
+<li>商户可以自定义会员资产消耗优先级，例如 <code>游戏币 → 预存款</code>，但不能突破商品支付范围限制。</li>
+</ul>
+<h3 id="42-游戏币规则">4.2 游戏币规则</h3>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>汇率</td>
+<td>游戏币与预存款按 1:1 抵扣</td>
+</tr>
+<tr>
+<td>是否可手动选择</td>
+<td>不允许主动选择，由系统自动决策</td>
+</tr>
+<tr>
+<td>是否可用于玩游戏</td>
+<td>必须支持，游戏币可以作为游戏体验类消费资产</td>
+</tr>
+<tr>
+<td>是否可与优惠券叠加</td>
+<td>支持，先优惠后抵扣</td>
+</tr>
+<tr>
+<td>是否可与预存款混用</td>
+<td>支持，由商户优先级决定顺序</td>
+</tr>
+<tr>
+<td>是否可与外部支付混用</td>
+<td>普通混合支付支持，<code>仅游戏币</code> 商品不支持补差</td>
+</tr>
+<tr>
+<td>有效期消耗顺序</td>
+<td>优先消耗最快过期的游戏币</td>
+</tr>
+</tbody>
+</table>
+<p>游戏币来源：</p>
+<pre><code>充值赠送
+活动赠送
+后台发放</code></pre>
+<p>游戏币目前不设置售卖型来源。若未来新增直接购买游戏币的业务，应作为新的充值类商品单独评审，并继续遵守“充值只能用外部支付”的规则。</p>
+<h3 id="43-充值规则">4.3 充值规则</h3>
+<p>充值储值只能使用外部支付：</p>
+<pre><code>现金 / 微信支付 / 支付宝支付</code></pre>
+<p>充值不允许使用：</p>
+<pre><code>预存款 / 游戏币 / 积分</code></pre>
+<p>原因：充值是向会员账户增加资产，不能用账户内已有资产再次充值。</p>
+<hr />
+<h2 id="5-终端支付逻辑">5. 终端支付逻辑</h2>
+<h3 id="51-商家收银系统">5.1 商家收银系统</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>支付逻辑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>散客普通消费</td>
+<td>外部支付</td>
+</tr>
+<tr>
+<td>会员普通消费</td>
+<td>按商品范围自动使用预存款/游戏币，不足时外部补差</td>
+</tr>
+<tr>
+<td>会员购买游戏体验</td>
+<td>支持预存款和游戏币，按商户优先级自动抵扣</td>
+</tr>
+<tr>
+<td>充值储值</td>
+<td>仅外部支付</td>
+</tr>
+<tr>
+<td>仅游戏币商品</td>
+<td>仅扣游戏币，不允许外部补差</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-会员扣费页面">5.2 会员扣费页面</h3>
+<p>会员扣费页面定位为“会员账户资产扣减”。</p>
+<p>建议规则：</p>
+<ul>
+<li>必须先选择会员。</li>
+<li>根据商品支付范围自动计算扣预存款或游戏币。</li>
+<li>如果商品允许混合支付，可展示外部补差入口。</li>
+<li>如果商品是 <code>仅游戏币</code>，游戏币不足时禁止扣费。</li>
+<li>扣费前必须展示本次资产消耗明细。</li>
+</ul>
+<h3 id="53-pc点播系统">5.3 PC点播系统</h3>
+<p>PC点播系统建议区分以下订单来源：</p>
+<table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr>
+<th>订单类型</th>
+<th>支付逻辑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小程序内会员支付</td>
+<td>用户确认后按会员资产优先级抵扣，不足时微信/支付宝补差</td>
+</tr>
+<tr>
+<td>直接支付-支付宝</td>
+<td>不消耗会员资产，仅支付宝支付</td>
+</tr>
+<tr>
+<td>直接支付-微信</td>
+<td>不消耗会员资产，仅微信支付</td>
+</tr>
+<tr>
+<td>会员点播</td>
+<td>按会员资产优先级自动抵扣，可补差</td>
+</tr>
+<tr>
+<td>直接点播</td>
+<td>外部支付，不走会员资产</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-小程序会员支付">5.4 小程序会员支付</h3>
+<p>小程序端必须让用户确认资产消耗明细：</p>
+<pre><code>本单将使用：
+预存款 ¥60.00
+游戏币 20
+微信补差 ¥10.00</code></pre>
+<p>用户确认后才发起扣款或补差支付。</p>
+<hr />
+<h2 id="6-结算前预览">6. 结算前预览</h2>
+<p>结算弹窗或结算面板必须展示系统自动计算结果。</p>
+<p>示例：</p>
+<pre><code>商品合计        ¥100.00
+优惠券          -¥10.00
+预存款抵扣      -¥60.00
+游戏币抵扣      -20
+仍需支付        ¥10.00</code></pre>
+<p>如果无需补差：</p>
+<pre><code>商品合计        ¥80.00
+预存款抵扣      -¥50.00
+游戏币抵扣      -30
+仍需支付        ¥0.00</code></pre>
+<p>按钮文案建议：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>主按钮文案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需要外部补差</td>
+<td>确认并支付 ¥xx</td>
+</tr>
+<tr>
+<td>全部会员资产抵扣</td>
+<td>确认扣款</td>
+</tr>
+<tr>
+<td>仅游戏币且余额充足</td>
+<td>确认兑换</td>
+</tr>
+<tr>
+<td>仅游戏币且余额不足</td>
+<td>游戏币不足</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-退款规则">7. 退款规则</h2>
+<p>退款原则：<strong>所有支付与资产消耗均原路返回</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>原支付/抵扣方式</th>
+<th>退款方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>现金</td>
+<td>线下现金退回，并记录退款操作</td>
+</tr>
+<tr>
+<td>微信支付</td>
+<td>原微信渠道退款</td>
+</tr>
+<tr>
+<td>支付宝支付</td>
+<td>原支付宝渠道退款</td>
+</tr>
+<tr>
+<td>预存款</td>
+<td>退回会员预存款</td>
+</tr>
+<tr>
+<td>游戏币</td>
+<td>退回会员游戏币</td>
+</tr>
+<tr>
+<td>优惠券</td>
+<td>按券规则恢复或不恢复，需记录原因</td>
+</tr>
+</tbody>
+</table>
+<p>全额退款：</p>
+<pre><code>按原订单支付明细全部原路退回</code></pre>
+<p>部分退款：</p>
+<pre><code>优先按被退商品对应的支付构成原路退回
+无法精确匹配商品时，按整单支付比例原路退回</code></pre>
+<p>退款必须保留原始支付流水，并新增退款/冲正流水，不能直接改写原流水。</p>
+<hr />
+<h2 id="8-成功提示与小票">8. 成功提示与小票</h2>
+<h3 id="81-支付成功提示">8.1 支付成功提示</h3>
+<p>结算成功后必须展示“支付拆分”和“会员资产变化”。</p>
+<p>示例：</p>
+<pre><code>支付成功
+
+支付明细
+优惠券：-¥10.00
+预存款抵扣：¥60.00
+游戏币抵扣：20
+微信支付：¥10.00
+
+会员资产
+预存款：¥300.00 → ¥240.00
+游戏币：2704 → 2684</code></pre>
+<h3 id="82-小票字段">8.2 小票字段</h3>
+<p>小票建议包含：</p>
+<ul>
+<li>订单号</li>
+<li>终端来源</li>
+<li>门店名称</li>
+<li>收银员/设备</li>
+<li>商品明细</li>
+<li>优惠明细</li>
+<li>预存款抵扣</li>
+<li>游戏币抵扣</li>
+<li>外部支付补差</li>
+<li>实收金额</li>
+<li>会员剩余预存款</li>
+<li>会员剩余游戏币</li>
+<li>退款状态或原路退款说明</li>
+</ul>
+<p>小票上的会员资产金额必须与订单支付明细和会员资产流水一致。</p>
+<hr />
+<h2 id="9-风控与异常">9. 风控与异常</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>处理规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>会员资产扣减失败</td>
+<td>订单不应完成，外部支付不应继续</td>
+</tr>
+<tr>
+<td>外部补差支付失败</td>
+<td>已冻结或预扣的会员资产需释放或冲正</td>
+</tr>
+<tr>
+<td>游戏币过期</td>
+<td>不可被抵扣，结算预览中应说明不可用原因</td>
+</tr>
+<tr>
+<td>优惠券失效</td>
+<td>自动取消选择，重新计算应付</td>
+</tr>
+<tr>
+<td>重复提交</td>
+<td>使用订单号/支付会话号做幂等</td>
+</tr>
+<tr>
+<td>资产不足</td>
+<td>显示差额和可选补差方式</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-待接口落地字段">10. 待接口落地字段</h2>
+<p>建议订单支付明细至少包含：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>order_id</code></td>
+<td>订单ID</td>
+</tr>
+<tr>
+<td><code>terminal_type</code></td>
+<td>收银系统/PC点播/小程序</td>
+</tr>
+<tr>
+<td><code>payment_lines</code></td>
+<td>支付拆分数组</td>
+</tr>
+<tr>
+<td><code>discount_lines</code></td>
+<td>优惠拆分数组</td>
+</tr>
+<tr>
+<td><code>asset_before</code></td>
+<td>会员资产扣减前快照</td>
+</tr>
+<tr>
+<td><code>asset_after</code></td>
+<td>会员资产扣减后快照</td>
+</tr>
+<tr>
+<td><code>priority_rule</code></td>
+<td>本单采用的资产优先级</td>
+</tr>
+<tr>
+<td><code>refundable_lines</code></td>
+<td>可退款支付明细</td>
+</tr>
+<tr>
+<td><code>idempotency_key</code></td>
+<td>幂等键</td>
+</tr>
+</tbody>
+</table>
+<p><code>payment_lines</code> 示例：</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;prepaid&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="fl">60.00</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;game_coin&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span> <span class="dt">&quot;exchange_rate&quot;</span><span class="fu">:</span> <span class="st">&quot;1:1&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;wechat&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="fl">10.00</span> <span class="fu">}</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+
+    <div class="footer">Generated from Markdown in /Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs</div>
+  </main>
+</body>
+</html>

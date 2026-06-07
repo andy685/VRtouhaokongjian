@@ -142,7 +142,7 @@ import * as echarts from 'echarts/core'
 import { LineChart, PieChart, BarChart } from 'echarts/charts'
 import {
   TitleComponent, TooltipComponent, GridComponent,
-  LegendComponent, DatasetComponent
+  LegendComponent, DatasetComponent, GraphicComponent
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import {
@@ -153,7 +153,7 @@ import {
 echarts.use([
   LineChart, PieChart, BarChart,
   TitleComponent, TooltipComponent, GridComponent,
-  LegendComponent, DatasetComponent, CanvasRenderer
+  LegendComponent, DatasetComponent, GraphicComponent, CanvasRenderer
 ])
 
 // CountUp 组件（简化版）

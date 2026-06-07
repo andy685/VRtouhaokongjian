@@ -12,9 +12,12 @@
         <!-- 头部 -->
         <header class="rcm-header">
           <h2>会员扫码注册</h2>
-          <button type="button" class="rcm-close" aria-label="关闭" @click="$emit('close')">
-            <el-icon><Close /></el-icon>
-          </button>
+          <div class="rcm-header-actions">
+            <button type="button" class="rcm-refresh" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="rcm-close" aria-label="关闭" @click="$emit('close')">
+              <el-icon><Close /></el-icon>
+            </button>
+          </div>
         </header>
 
         <!-- 图片区域 -->
@@ -37,7 +40,7 @@ import { Close } from '@element-plus/icons-vue'
 defineProps({
   visible: { type: Boolean, default: false }
 })
-defineEmits(['close'])
+defineEmits(['close', 'refresh'])
 </script>
 
 <style scoped>
@@ -81,7 +84,7 @@ defineEmits(['close'])
 .rcm-header h2 {
   margin: 0;
   color: #c9aaff;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 1px;
 }
@@ -106,7 +109,32 @@ defineEmits(['close'])
 }
 
 .rcm-close .el-icon {
-  font-size: 18px;
+  font-size: 20px;
+}
+
+.rcm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rcm-refresh {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #b39ddb;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rcm-refresh:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
 }
 
 /* ---- 内容区 — 玻璃光感 ---- */

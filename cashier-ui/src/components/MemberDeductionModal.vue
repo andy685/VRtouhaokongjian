@@ -12,7 +12,10 @@
         <!-- 头部 -->
         <header class="md-header">
           <h2>会员扣费</h2>
-          <button type="button" class="md-close-btn" @click="$emit('close')">×</button>
+          <div class="md-header-actions">
+            <button type="button" class="md-refresh-btn" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="md-close-btn" @click="$emit('close')">×</button>
+          </div>
         </header>
 
         <!-- 表单主体 -->
@@ -49,14 +52,35 @@
             </div>
           </div>
 
+          <!-- §5.2 资产消耗预览 -->
+          <div v-if="showAssetPreview" class="md-asset-preview">
+            <div class="md-asset-preview-title">本次将消耗</div>
+            <div class="md-asset-preview-grid">
+              <div class="md-asset-chip">
+                <span>扣费金额</span>
+                <strong>¥{{ totalDeductAmount.toFixed(2) }}</strong>
+              </div>
+              <div class="md-asset-chip">
+                <span>扣费来源</span>
+                <strong>{{ assetSourceLabel }}</strong>
+              </div>
+            </div>
+            <p v-if="!assetInsufficient" class="md-asset-note">
+              扣费后预存款余额 <em>¥{{ afterDeductionBalance.toFixed(2) }}</em>
+            </p>
+            <p v-else class="md-asset-warn">
+              余额不足！当前可用资产 ¥{{ totalMemberAssets.toFixed(2) }}，还差 ¥{{ shortageAmount.toFixed(2) }}
+            </p>
+          </div>
+
           <!-- 确认扣费按钮 -->
           <button
             type="button"
             class="md-submit-btn"
-            :disabled="!selectedDeviceId || processing"
+            :disabled="submitDisabled"
             @click="handleSubmit"
           >
-            {{ processing ? '处理中...' : '确认扣费' }}
+            {{ submitButtonText }}
           </button>
         </div>
       </section>
@@ -70,10 +94,12 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   visible: { type: Boolean, default: false },
   devices: { type: Array, default: () => [] },
-  member: { type: Object, default: null }
+  member: { type: Object, default: null },
+  // §5.2 会员资产用于预览消耗明细
+  memberAssets: { type: Object, default: null }
 })
 
-const emit = defineEmits(['close', 'confirm'])
+const emit = defineEmits(['close', 'confirm', 'refresh'])
 
 const selectedDeviceId = ref('')
 const deductCount = ref(1)
@@ -83,6 +109,60 @@ const devicePrice = computed(() => {
   if (!selectedDeviceId.value) return 0
   const d = props.devices.find(item => item.id === selectedDeviceId.value)
   return d ? Number(d.price || 0) : 0
+})
+
+const totalDeductAmount = computed(() => devicePrice.value * deductCount.value)
+
+// §5.2 资产消耗预览
+const showAssetPreview = computed(() => !!selectedDeviceId.value && !!props.memberAssets)
+
+const totalMemberAssets = computed(() => {
+  const balance = Number(props.memberAssets?.balance ?? 0)
+  const coins = Number(props.memberAssets?.coins ?? 0)
+  return Number((balance + coins).toFixed(2))
+})
+
+// 是否余额不足
+const assetInsufficient = computed(() =>
+  !!props.memberAssets && totalDeductAmount.value > totalMemberAssets.value
+)
+
+// 差额
+const shortageAmount = computed(() =>
+  Math.max(0, Number((totalDeductAmount.value - totalMemberAssets.value).toFixed(2)))
+)
+
+const assetSourceLabel = computed(() => {
+  const balance = Number(props.memberAssets?.balance ?? 0)
+  if (balance >= totalDeductAmount.value) return '预存款'
+  if (balance > 0) return '预存款 + 游戏币'
+  return '游戏币'
+})
+
+const afterDeductionBalance = computed(() => {
+  const balance = Number(props.memberAssets?.balance ?? 0)
+  const coins = Number(props.memberAssets?.coins ?? 0)
+  let remainingBalance = balance
+  let remainingAmount = totalDeductAmount.value
+  const fromBalance = Math.min(remainingAmount, remainingBalance)
+  remainingAmount -= fromBalance
+  remainingBalance -= fromBalance
+  if (remainingAmount > 0) {
+    remainingBalance -= remainingAmount
+  }
+  return Math.max(0, Number(remainingBalance.toFixed(2)))
+})
+
+// 按钮是否禁用
+const submitDisabled = computed(() =>
+  !selectedDeviceId.value || processing.value || assetInsufficient.value
+)
+
+// 按钮文案
+const submitButtonText = computed(() => {
+  if (processing.value) return '处理中...'
+  if (assetInsufficient.value) return '余额不足'
+  return '确认扣费'
 })
 
 watch(() => props.visible, (val) => {
@@ -148,6 +228,12 @@ const handleSubmit = () => {
   font-weight: 700;
 }
 
+.md-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .md-close-btn {
   width: 32px;
   height: 32px;
@@ -166,6 +252,26 @@ const handleSubmit = () => {
 
 .md-close-btn:hover {
   color: #1e293b;
+}
+
+.md-refresh-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.md-refresh-btn:hover {
+  color: #3b82f6;
 }
 
 /* ---- 表单主体 ---- */
@@ -297,6 +403,75 @@ const handleSubmit = () => {
   font-variant-numeric: tabular-nums;
   font-family: inherit;
   outline: none;
+}
+
+/* --- 资产消耗预览 --- */
+.md-asset-preview {
+  padding: 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff7ed 0%, #fff 100%);
+}
+
+.md-asset-preview-title {
+  color: #9a5a28;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.md-asset-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.md-asset-chip {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.15);
+}
+
+.md-asset-chip span,
+.md-asset-chip strong {
+  display: block;
+}
+
+.md-asset-chip span {
+  color: #9a5a28;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.md-asset-chip strong {
+  margin-top: 3px;
+  color: #ea580c;
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-asset-note {
+  margin: 8px 0 0;
+  color: #7c4a22;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.md-asset-note em {
+  font-style: normal;
+  font-weight: 800;
+  color: #ea580c;
+}
+
+/* 余额不足警告 */
+.md-asset-warn {
+  margin: 8px 0 0;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 /* --- 提交按钮 --- */

@@ -14,7 +14,10 @@
             <span class="prm-header-avatar">{{ memberInitial }}</span>
             <h2>{{ memberName }} - 会员日志</h2>
           </div>
-          <button type="button" class="prm-close-btn" @click="$emit('close')">×</button>
+          <div class="prm-header-actions">
+            <button type="button" class="prm-refresh-btn" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="prm-close-btn" @click="$emit('close')">×</button>
+          </div>
         </header>
 
         <div class="prm-body">
@@ -47,7 +50,21 @@
               </div>
             </div>
 
-            <div v-else class="prm-filters">
+            <div v-if="activeTab !== 'coins'" class="prm-filters">
+              <!-- 套票：汇总与筛选项同行 -->
+              <template v-if="activeTab === 'tickets'">
+                <div class="prm-filter-group">
+                  <span>当前套票总数：<strong>{{ ticketSummary.total }}</strong></span>
+                </div>
+                <div class="prm-filter-divider"></div>
+              </template>
+              <!-- 预存次数：汇总与筛选项同行 -->
+              <template v-if="activeTab === 'times'">
+                <div class="prm-filter-group">
+                  <span>当前预存次数：<strong>{{ timesSummary.total }}</strong></span>
+                </div>
+                <div class="prm-filter-divider"></div>
+              </template>
               <div class="prm-filter-group">
                 <label>变动时间：</label>
                 <div class="prm-date-range">
@@ -70,7 +87,7 @@
           </section>
 
           <div class="prm-table-card">
-            <table class="prm-table" :class="{ 'prm-table-game': activeTab === 'games', 'prm-table-coins': activeTab === 'coins' }">
+            <table class="prm-table" :class="{ 'prm-table-game': activeTab === 'games', 'prm-table-coins': activeTab === 'coins', 'prm-table-tickets': activeTab === 'tickets', 'prm-table-times': activeTab === 'times' }">
               <thead>
                 <tr v-if="activeTab === 'games'">
                   <th>发生门店</th>
@@ -88,6 +105,28 @@
                   <th>剩余数量</th>
                   <th>已用/已退数量</th>
                   <th>备注</th>
+                </tr>
+                <tr v-else-if="activeTab === 'tickets'">
+                  <th>变更原因</th>
+                  <th>发生门店</th>
+                  <th>套票名称</th>
+                  <th>状态</th>
+                  <th>过期日期</th>
+                  <th>变更数量</th>
+                  <th>剩余数量</th>
+                  <th>操作人</th>
+                  <th>更改时间</th>
+                </tr>
+                <tr v-else-if="activeTab === 'times'">
+                  <th>变更原因</th>
+                  <th>发生门店</th>
+                  <th>变更预存次数</th>
+                  <th>变更后预存次数</th>
+                  <th>状态</th>
+                  <th>过期日期</th>
+                  <th>备注</th>
+                  <th>操作人</th>
+                  <th>更改时间</th>
                 </tr>
                 <tr v-else>
                   <th>变更原因</th>
@@ -117,6 +156,32 @@
                     <td class="prm-amount">{{ row.remainQty }}</td>
                     <td class="prm-amount">{{ row.usedQty }}</td>
                     <td class="prm-note-cell">{{ row.note || '--' }}</td>
+                  </template>
+                  <template v-else-if="activeTab === 'tickets'">
+                    <td>{{ row.reason }}</td>
+                    <td>{{ row.store }}</td>
+                    <td>{{ row.ticketName }}</td>
+                    <td>{{ row.statusLabel }}</td>
+                    <td>{{ row.expireDate }}</td>
+                    <td class="prm-amount" :class="{ income: String(row.changeQty).startsWith('+'), expense: String(row.changeQty).startsWith('-') }">
+                      {{ row.changeQty }}
+                    </td>
+                    <td class="prm-amount">{{ row.remainQty }}</td>
+                    <td>{{ row.operator }}</td>
+                    <td>{{ row.changedAt }}</td>
+                  </template>
+                  <template v-else-if="activeTab === 'times'">
+                    <td>{{ row.reason }}</td>
+                    <td>{{ row.store }}</td>
+                    <td class="prm-amount" :class="{ income: String(row.changeQty).startsWith('+'), expense: String(row.changeQty).startsWith('-') }">
+                      {{ row.changeQty }}
+                    </td>
+                    <td class="prm-amount">{{ row.afterQty }}</td>
+                    <td>{{ row.statusLabel }}</td>
+                    <td>{{ row.expireDate }}</td>
+                    <td class="prm-note-cell">{{ row.note || '--' }}</td>
+                    <td>{{ row.operator }}</td>
+                    <td>{{ row.changedAt }}</td>
                   </template>
                   <template v-else>
                   <td>{{ row.reason }}</td>
@@ -165,10 +230,18 @@ const props = defineProps({
     type: Object,
     default: () => ({ total: 0, available: 0, pending: 0 })
   },
+  ticketSummary: {
+    type: Object,
+    default: () => ({ total: 0 })
+  },
+  timesSummary: {
+    type: Object,
+    default: () => ({ total: 0 })
+  },
   records: { type: Array, default: () => [] }
 })
 
-defineEmits(['close'])
+defineEmits(['close', 'refresh'])
 
 const tabs = [
   { key: 'games', label: '游戏记录' },
@@ -180,10 +253,10 @@ const tabs = [
 
 const tabTypeMap = {
   games: ['单次消费', '购买商品'],
-  prepaid: ['收银台充值'],
+  prepaid: ['收银台充值', '充值活动', '单次消费', '购买商品', '退款返还', '手动调整'],
   coins: ['收银台充值', '单次消费'],
-  tickets: ['购买套票'],
-  times: ['购买次票']
+  tickets: ['购买套票', '套票消费', '退款退还', '手动调整', '过期作废'],
+  times: ['收银台购买', '单次消费']
 }
 
 const activeTab = ref('prepaid')
@@ -196,7 +269,7 @@ const dateRange = ref({
 })
 
 const memberInitial = computed(() => (props.memberName || '会').charAt(0))
-const showTypeFilter = computed(() => activeTab.value !== 'games' && activeTab.value !== 'coins')
+const showTypeFilter = computed(() => activeTab.value !== 'games')
 
 const activeTypeOptions = computed(() => tabTypeMap[activeTab.value] || [])
 
@@ -292,6 +365,12 @@ watch(
   font-weight: 700;
 }
 
+.prm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .prm-close-btn {
   width: 32px;
   height: 32px;
@@ -304,6 +383,24 @@ watch(
   cursor: pointer;
   font-size: 24px;
   line-height: 1;
+}
+
+.prm-refresh-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.prm-refresh-btn:hover {
+  color: #3b82f6;
 }
 
 .prm-body {
@@ -327,7 +424,7 @@ watch(
 .prm-tabs {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 32px;
   padding-bottom: 12px;
   border-bottom: 1px solid #edf2f7;
 }
@@ -337,7 +434,7 @@ watch(
   border: 0;
   background: transparent;
   color: #3c4658;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   padding: 0 0 8px;
@@ -361,9 +458,9 @@ watch(
 .prm-filters {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
   padding-top: 14px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .prm-coins-summary {
@@ -379,7 +476,7 @@ watch(
   gap: 10px;
   padding: 0 34px;
   color: #111827;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -392,7 +489,7 @@ watch(
 }
 
 .prm-coins-item strong {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -400,21 +497,43 @@ watch(
 .prm-filter-group {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .prm-filter-group label {
   color: #111827;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.prm-filter-group span {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.prm-filter-group span strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.prm-filter-divider {
+  width: 1px;
+  height: 24px;
+  background: #d7dfeb;
+  flex-shrink: 0;
 }
 
 .prm-date-range {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 12px;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
   border: 1px solid #8bc0ff;
   border-radius: 8px;
   background: #fff;
@@ -422,37 +541,45 @@ watch(
 
 .prm-date-range span {
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 .prm-date-input,
 .prm-select {
-  height: 38px;
+  height: 34px;
   border: 0;
   background: transparent;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
 }
 
+.prm-date-input {
+  width: 134px;
+  flex-shrink: 0;
+}
+
 .prm-select {
-  min-width: 180px;
-  padding: 0 12px;
+  min-width: 140px;
+  padding: 0 28px 0 12px;
   border: 1px solid #dbe6f3;
   border-radius: 8px;
   background: #fff;
 }
 
 .prm-query-btn {
-  height: 38px;
-  padding: 0 16px;
+  height: 34px;
+  padding: 0 14px;
   border: 0;
   border-radius: 8px;
   background: linear-gradient(135deg, #3b9cff 0%, #245cff 100%);
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .prm-table-card {
@@ -503,37 +630,40 @@ watch(
 
 .prm-table th:nth-child(1),
 .prm-table td:nth-child(1) {
-  width: 12%;
+  width: 14%;
 }
 
 .prm-table th:nth-child(2),
 .prm-table td:nth-child(2) {
-  width: 10%;
+  width: 12%;
 }
 
 .prm-table th:nth-child(3),
 .prm-table td:nth-child(3) {
-  width: 11%;
+  width: 14%;
 }
 
 .prm-table th:nth-child(4),
 .prm-table td:nth-child(4) {
-  width: 12%;
+  width: 14%;
 }
 
 .prm-table th:nth-child(5),
 .prm-table td:nth-child(5) {
-  width: 35%;
+  width: 20%;
 }
 
 .prm-table th:nth-child(6),
 .prm-table td:nth-child(6) {
-  width: 8%;
+  width: 12%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .prm-table th:nth-child(7),
 .prm-table td:nth-child(7) {
-  width: 12%;
+  width: 14%;
 }
 
 .prm-table-game th:nth-child(1),
@@ -557,7 +687,177 @@ watch(
 }
 
 .prm-table-coins {
-  min-width: 1500px;
+  min-width: 1200px;
+}
+
+.prm-table-coins thead th {
+  padding: 14px 12px;
+}
+
+.prm-table-coins tbody td {
+  padding: 13px 12px;
+}
+
+/* ---- 游戏币记录：9 列专属宽度 ---- */
+.prm-table-coins th:nth-child(1),
+.prm-table-coins td:nth-child(1) {
+  width: 10%;
+}
+
+.prm-table-coins th:nth-child(2),
+.prm-table-coins td:nth-child(2) {
+  width: 14%;
+}
+
+.prm-table-coins th:nth-child(3),
+.prm-table-coins td:nth-child(3) {
+  width: 7%;
+}
+
+.prm-table-coins th:nth-child(4),
+.prm-table-coins td:nth-child(4) {
+  width: 9%;
+}
+
+.prm-table-coins th:nth-child(5),
+.prm-table-coins td:nth-child(5) {
+  width: 8%;
+}
+
+.prm-table-coins th:nth-child(6),
+.prm-table-coins td:nth-child(6) {
+  width: 10%;
+}
+
+.prm-table-coins th:nth-child(7),
+.prm-table-coins td:nth-child(7) {
+  width: 10%;
+}
+
+.prm-table-coins th:nth-child(8),
+.prm-table-coins td:nth-child(8) {
+  width: 11%;
+}
+
+.prm-table-coins th:nth-child(9),
+.prm-table-coins td:nth-child(9) {
+  width: 21%;
+}
+
+/* ---- 套票记录：9 列专属宽度 ---- */
+.prm-table-tickets {
+  min-width: 1100px;
+}
+
+.prm-table-tickets thead th {
+  padding: 14px 12px;
+}
+
+.prm-table-tickets tbody td {
+  padding: 13px 12px;
+}
+
+.prm-table-tickets th:nth-child(1),
+.prm-table-tickets td:nth-child(1) {
+  width: 10%;
+}
+
+.prm-table-tickets th:nth-child(2),
+.prm-table-tickets td:nth-child(2) {
+  width: 11%;
+}
+
+.prm-table-tickets th:nth-child(3),
+.prm-table-tickets td:nth-child(3) {
+  width: 18%;
+}
+
+.prm-table-tickets th:nth-child(4),
+.prm-table-tickets td:nth-child(4) {
+  width: 8%;
+}
+
+.prm-table-tickets th:nth-child(5),
+.prm-table-tickets td:nth-child(5) {
+  width: 10%;
+}
+
+.prm-table-tickets th:nth-child(6),
+.prm-table-tickets td:nth-child(6) {
+  width: 9%;
+}
+
+.prm-table-tickets th:nth-child(7),
+.prm-table-tickets td:nth-child(7) {
+  width: 9%;
+}
+
+.prm-table-tickets th:nth-child(8),
+.prm-table-tickets td:nth-child(8) {
+  width: 9%;
+}
+
+.prm-table-tickets th:nth-child(9),
+.prm-table-tickets td:nth-child(9) {
+  width: 16%;
+}
+
+/* ---- 预存次数记录：9 列专属宽度 ---- */
+.prm-table-times {
+  min-width: 1100px;
+}
+
+.prm-table-times thead th {
+  padding: 14px 12px;
+}
+
+.prm-table-times tbody td {
+  padding: 13px 12px;
+}
+
+.prm-table-times th:nth-child(1),
+.prm-table-times td:nth-child(1) {
+  width: 10%;
+}
+
+.prm-table-times th:nth-child(2),
+.prm-table-times td:nth-child(2) {
+  width: 11%;
+}
+
+.prm-table-times th:nth-child(3),
+.prm-table-times td:nth-child(3) {
+  width: 11%;
+}
+
+.prm-table-times th:nth-child(4),
+.prm-table-times td:nth-child(4) {
+  width: 13%;
+}
+
+.prm-table-times th:nth-child(5),
+.prm-table-times td:nth-child(5) {
+  width: 8%;
+}
+
+.prm-table-times th:nth-child(6),
+.prm-table-times td:nth-child(6) {
+  width: 10%;
+}
+
+.prm-table-times th:nth-child(7),
+.prm-table-times td:nth-child(7) {
+  width: 20%;
+}
+
+.prm-table-times th:nth-child(8),
+.prm-table-times td:nth-child(8) {
+  width: 7%;
+}
+
+.prm-table-times th:nth-child(9),
+.prm-table-times td:nth-child(9) {
+  width: 10%;
 }
 
 .prm-amount {
@@ -583,7 +883,7 @@ watch(
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 0 16px;
+  padding: 14px 0 28px;
   border-top: 1px solid #edf2f7;
 }
 

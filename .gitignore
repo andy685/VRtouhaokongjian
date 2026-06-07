@@ -7,3 +7,5 @@ dist/
 *.xlsx
 backend/node_modules/
 backend/dist/
+.codebuddy/
+.playwright-mcp/

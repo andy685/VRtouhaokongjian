@@ -307,10 +307,46 @@
               <span>实付</span>
               <strong><span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}</strong>
             </div>
+            <div v-if="showAssetSettlementStatus" class="asset-status-card" :class="`asset-status-card--${assetSettlementTone}`">
+              <div class="asset-status-head">
+                <div class="asset-status-copy">
+                  <strong>{{ assetSettlementTitle }}</strong>
+                  <span>{{ assetSettlementDescription }}</span>
+                </div>
+                <em>{{ assetSettlementBadge }}</em>
+              </div>
+              <div class="asset-status-lines">
+                <div>
+                  <span>预存款抵扣</span>
+                  <strong>¥{{ assetDeductionPreview.prepaid.toFixed(2) }}</strong>
+                </div>
+                <div>
+                  <span>游戏币抵扣</span>
+                  <strong>{{ assetDeductionPreview.coins.toFixed(2) }}</strong>
+                </div>
+                <div>
+                  <span>仍需补差</span>
+                  <strong>¥{{ assetDeductionPreview.external.toFixed(2) }}</strong>
+                </div>
+              </div>
+            </div>
           </div>
-          <button class="checkout-btn" type="button" :disabled="cartItems.length === 0" @click="checkout">
-            去结算&nbsp; <span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}
+          <button class="checkout-btn" type="button" :disabled="saleCheckoutDisabled" @click="checkout">
+            <span>{{ saleCheckoutButtonText }}</span>
+            <template v-if="showSaleCheckoutAmount">
+              &nbsp;<span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}
+            </template>
           </button>
+          <div v-if="showSaleAuxiliaryActions" class="checkout-aux-actions">
+            <button
+              v-if="showGoRechargeAction"
+              type="button"
+              class="checkout-secondary-btn checkout-secondary-btn--accent"
+              @click="goToRechargeTab"
+            >
+              去充值
+            </button>
+          </div>
         </footer>
       </template>
     </aside>
@@ -345,6 +381,9 @@
       :coupon="paymentCoupon"
       :discount-amount="paymentDiscountAmount"
       :payable-amount="paymentPayableAmount"
+      :allowed-method-ids="paymentAllowedMethodIds"
+      :default-method-id="paymentDefaultMethodId"
+      :asset-deduction="paymentAssetDeduction"
       @close="handlePaymentClose"
       @confirm="handlePaymentConfirm"
     />
@@ -353,6 +392,7 @@
       :visible="showDeductionModal"
       :devices="deductionDevices"
       :member="selectedMember"
+      :member-assets="selectedMember ? { balance: selectedMember.balance, coins: selectedMember.coins } : null"
       @close="showDeductionModal = false"
       @confirm="handleDeductionConfirm"
     />
@@ -360,6 +400,8 @@
     <DeductionSuccessModal
       :visible="showDeductionSuccess"
       :count="lastDeductionCount"
+      :details="lastDeductionDetails"
+      :asset-changes="lastDeductionAssetChanges"
       @close="showDeductionSuccess = false"
     />
 
@@ -368,6 +410,7 @@
       title="充值成功"
       subtitle="本次充值如下"
       :details="lastRechargeDetails"
+      :asset-changes="lastRechargeAssetChanges"
       @close="showRechargeSuccess = false"
     />
 
@@ -376,6 +419,8 @@
       :title="lastSaleTitle"
       :subtitle="lastSaleSubtitle"
       :details="lastSaleDetails"
+      :payment-lines="lastSalePaymentLines"
+      :asset-changes="lastSaleAssetChanges"
       @close="showSaleSuccess = false"
     />
 
@@ -440,10 +485,15 @@ const showRechargeSuccess = ref(false)
 const showSaleSuccess = ref(false)
 const showRegisterSuccess = ref(false)
 const lastDeductionCount = ref(1)
+const lastDeductionDetails = ref([])
+const lastDeductionAssetChanges = ref([])
 const lastRechargeDetails = ref([])
+const lastRechargeAssetChanges = ref([])
 const lastSaleTitle = ref('支付成功')
 const lastSaleSubtitle = ref('本次消费如下')
 const lastSaleDetails = ref([])
+const lastSalePaymentLines = ref([])
+const lastSaleAssetChanges = ref([])
 const lastRegisterDetails = ref([])
 const selectedCoupon = ref(null)
 const pendingNewMember = ref(null)
@@ -474,7 +524,14 @@ const COUPON_POOL = [
     minAmount: 20,
     code: 'CP-9901',
     stores: '卓远亚运城店、卓远天河路店、卓远白云万达',
-    projects: '可兑换次，21个项目可选',
+    projects: '可兑换1次 · 21个项目可选',
+    projectList: [
+      'VR过山车', '星际穿越', '深海探险', '极速飞车', '密室逃脱VR',
+      '射击对抗', '飞行模拟', '恐怖医院', '太空漫步', '赛车竞速',
+      '蹦极模拟', '僵尸围城', '龙卷风体验', '幻影星空', '城市漫游',
+      '海底世界', '恐龙时代', '火山探险', '雪域飞驰', '奇幻森林',
+      '未来战士'
+    ],
     dateRule: '无限制',
     otherRule: '暂无'
   },
@@ -489,8 +546,12 @@ const COUPON_POOL = [
     validity: '2024/12/13 ~ 2025/01/15',
     minAmount: 0,
     code: 'CP-TX02',
-    stores: '卓远设备项目、普德信乐、套餐充值、套票、商品',
-    projects: '卓远天河路店、卓远亚运城店、佛山顺德店、幻影星空体验店 NO.14692',
+    stores: '卓远亚运城店、卓远天河路店、佛山顺德店、幻影星空体验店',
+    projects: '指定门店设备项目可选',
+    projectList: [
+      'VR过山车', '星际穿越', '深海探险', '极速飞车', '射击对抗',
+      '飞行模拟', '太空漫步', '赛车竞速', '蹦极模拟', '僵尸围城'
+    ],
     dateRule: '无限制',
     otherRule: '暂无'
   },
@@ -507,6 +568,10 @@ const COUPON_POOL = [
     code: 'CP-DZ03',
     stores: '全门店通用',
     projects: '全场消费项目可用',
+    projectList: [
+      '全部VR体验项目', '全部竞技类项目', '全部模拟器项目',
+      '全部恐怖主题', '全部休闲探索', '全部儿童专区'
+    ],
     dateRule: '仅限工作日使用',
     otherRule: '不可与其他优惠叠加'
   },
@@ -523,6 +588,11 @@ const COUPON_POOL = [
     code: 'CP-NR04',
     stores: '全门店通用',
     projects: '单次消费类目可用',
+    projectList: [
+      'VR过山车', '星际穿越', '深海探险', '极速飞车', '密室逃脱VR',
+      '射击对抗', '飞行模拟', '恐怖医院', '太空漫步', '赛车竞速',
+      '蹦极模拟', '僵尸围城', '龙卷风体验', '幻影星空'
+    ],
     dateRule: '无限制',
     otherRule: '仅限首次到店会员'
   },
@@ -539,6 +609,7 @@ const COUPON_POOL = [
     code: 'CP-CZ06',
     stores: '卓远亚运城店、卓远天河路店',
     projects: '储值活动专用',
+    projectList: ['账户储值充值（满300元可用）'],
     dateRule: '周末及节假日不可用',
     otherRule: '每用户限用1张'
   },
@@ -555,6 +626,10 @@ const COUPON_POOL = [
     code: 'CP-ZK07',
     stores: '全门店通用',
     projects: '全场任意消费',
+    projectList: [
+      '全部VR体验项目', '全部竞技类项目', '全部模拟器项目',
+      '全部商品类目', '全部套餐活动'
+    ],
     dateRule: '无限制',
     otherRule: '可与会员折扣叠加'
   },
@@ -571,6 +646,11 @@ const COUPON_POOL = [
     code: 'CP-HY08',
     stores: '全门店通用',
     projects: '除储值外所有项目',
+    projectList: [
+      '全部VR体验项目', '全部竞技类项目', '全部模拟器项目',
+      '全部恐怖主题', '全部休闲探索', '全部儿童专区',
+      '全部商品类目', '全部套餐活动'
+    ],
     dateRule: '每月18日会员日可用',
     otherRule: '需登录后领取'
   },
@@ -579,8 +659,17 @@ const COUPON_POOL = [
 // 当前用户拥有的券
 const userCoupons = ref([])
 
+const isCouponAvailable = (coupon, amount) => {
+  if (!coupon) return false
+  if (coupon.validity && coupon.validity.includes('过期')) return false
+  const minAmount = Number(coupon.minAmount ?? 0)
+  return Number(amount) > 0 && Number(amount) >= minAmount
+}
+
 // 当前用户可用券数量
-const availableCouponCount = computed(() => userCoupons.value.length)
+const availableCouponCount = computed(() =>
+  userCoupons.value.filter(coupon => isCouponAvailable(coupon, totalAmount.value)).length
+)
 
 // 随机抽取 n 张不重复的券
 const pickRandomCoupons = (count) => {
@@ -614,6 +703,10 @@ const paymentCoupon = ref(null)
 const paymentDiscountAmount = ref(0)
 const paymentPayableAmount = ref(0)
 const paymentMode = ref('sale')
+const paymentAllowedMethodIds = ref([])
+const paymentDefaultMethodId = ref('')
+const paymentAssetDeduction = ref(null)
+const SALE_OTHER_METHOD_IDS = ['cash', 'offline_pay', 'offline_wechat']
 
 const persistSaleMemberSession = (member) => {
   if (!member) return
@@ -670,12 +763,12 @@ const products = ref([
   ]},
   { id: 7, name: '畅玩 5 次套票', price: 88, category: 'package', desc: '有效期 30 天', cover: createCover('#7a87ff', '#4f5ef2', '5') },
   { id: 8, name: '畅玩 10 次套票', price: 168, category: 'package', desc: '有效期 90 天', cover: createCover('#6eb9ff', '#3f7dff', '10') },
-  { id: 9, name: '游戏币 20 枚', price: 20, category: 'product', desc: '即买即用', cover: createCover('#ff8e56', '#f25f43', '20'), panelTitle: '商品详情', detail: [
-    { label: '商品名称', value: '游戏币 20 枚' },
+  { id: 9, name: 'VR眼罩卫生包', price: 20, category: 'product', desc: '一次性用品', cover: createCover('#ff8e56', '#f25f43', 'H'), panelTitle: '商品详情', detail: [
+    { label: '商品名称', value: 'VR眼罩卫生包' },
     { label: '单价', value: '¥20.00', highlight: true },
-    { label: '数量', value: '20 枚/份' },
-    { label: '适用范围', value: '全场设备通用' },
-    { label: '有效期说明', value: '购买后永久有效，不可退换' },
+    { label: '规格', value: '一次性眼罩 + 清洁湿巾' },
+    { label: '适用范围', value: '全场VR设备通用' },
+    { label: '取用说明', value: '吧台领取，当日使用' },
     { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
   ]},
   { id: 10, name: '饮品套餐', price: 18, category: 'product', desc: '吧台商品', cover: createCover('#ff9dc2', '#ff5f9d', 'D'), panelTitle: '商品详情', detail: [
@@ -718,6 +811,12 @@ const customRechargeValue = computed(() => {
   const value = Number(customRechargeAmount.value)
   return Number.isFinite(value) && value > 0 ? value : 0
 })
+
+watch(totalAmount, (amount) => {
+  if (selectedCoupon.value && !isCouponAvailable(selectedCoupon.value, amount)) {
+    selectedCoupon.value = null
+  }
+})
 const isCustomRechargeActive = computed(() => !selectedRechargeProduct.value && customRechargeValue.value > 0)
 const selectedRechargePlan = computed(() => {
   if (selectedRechargeProduct.value) {
@@ -743,7 +842,72 @@ const rechargeBonusCoins = computed(() => {
   return match ? Number(match[1]) : 0
 })
 const memberBalance = computed(() => Number(selectedMember.value?.balance ?? 0))
+const memberCoins = computed(() => Number(selectedMember.value?.coins ?? 0))
 const projectedBalance = computed(() => memberBalance.value + rechargeAmount.value)
+const buildAssetDeduction = () => {
+  if (!selectedMember.value) {
+    return { prepaid: 0, coins: 0, external: payableAmount.value }
+  }
+  const prepaid = Math.min(memberBalance.value, payableAmount.value)
+  const remainingAfterPrepaid = Math.max(0, payableAmount.value - prepaid)
+  const coins = Math.min(memberCoins.value, remainingAfterPrepaid)
+  const external = Math.max(0, remainingAfterPrepaid - coins)
+  return {
+    prepaid: Number(prepaid.toFixed(2)),
+    coins: Number(coins.toFixed(2)),
+    external: Number(external.toFixed(2))
+  }
+}
+const assetDeductionPreview = computed(buildAssetDeduction)
+const canCoverWithMemberAssets = computed(() =>
+  !!selectedMember.value &&
+  cartItems.value.length > 0 &&
+  !isRechargeTab.value &&
+  assetDeductionPreview.value.external <= 0
+)
+const showAssetSettlementStatus = computed(() =>
+  !!selectedMember.value &&
+  cartItems.value.length > 0 &&
+  !isRechargeTab.value
+)
+const assetSettlementTone = computed(() => canCoverWithMemberAssets.value ? 'ready' : 'warning')
+const assetSettlementTitle = computed(() => canCoverWithMemberAssets.value ? '会员资产可覆盖' : '会员资产不足，可补差')
+const assetSettlementDescription = computed(() => {
+  if (canCoverWithMemberAssets.value) {
+    return '预存款优先，游戏币自动补足；无需选择游戏币。'
+  }
+  return `预存款和游戏币先自动抵扣，剩余 ¥${assetDeductionPreview.value.external.toFixed(2)} 可用现金/微信/支付宝补差。`
+})
+const assetSettlementBadge = computed(() => {
+  if (canCoverWithMemberAssets.value) return '全额抵扣'
+  return `补差 ¥${assetDeductionPreview.value.external.toFixed(2)}`
+})
+const saleCheckoutDisabled = computed(() => {
+  if (cartItems.value.length === 0) return true
+  return false
+})
+const saleCheckoutButtonText = computed(() => {
+  if (cartItems.value.length === 0) return '去结算'
+  if (selectedMember.value) {
+    return '确认结算'
+  }
+  return '去结算'
+})
+const showSaleCheckoutAmount = computed(() =>
+  cartItems.value.length > 0
+)
+const showSaleAuxiliaryActions = computed(() =>
+  !!selectedMember.value &&
+  cartItems.value.length > 0 &&
+  !isRechargeTab.value &&
+  assetDeductionPreview.value.external > 0
+)
+const showGoRechargeAction = computed(() =>
+  !!selectedMember.value &&
+  cartItems.value.length > 0 &&
+  !isRechargeTab.value &&
+  assetDeductionPreview.value.external > 0
+)
 const memberAvatarLoadError = ref(false)
 const createFallbackMemberAvatar = (name = '会') => histAvatar('#74b9ff', '#0984e3', (name || '会').charAt(0))
 const selectedMemberAvatar = computed(() => {
@@ -822,6 +986,21 @@ const clearRechargeSelection = () => {
   customRechargeAmount.value = ''
 }
 
+const syncSelectedMemberSnapshot = () => {
+  if (!selectedMember.value) return
+  persistSaleMemberSession(selectedMember.value)
+  const historyIndex = memberHistory.value.findIndex(member => member.id === selectedMember.value.id)
+  if (historyIndex > -1) {
+    memberHistory.value[historyIndex] = {
+      ...memberHistory.value[historyIndex],
+      balance: selectedMember.value.balance,
+      coins: selectedMember.value.coins,
+      tickets: selectedMember.value.tickets,
+      times: selectedMember.value.times
+    }
+  }
+}
+
 const checkout = () => {
   if (cartItems.value.length === 0) return
   paymentMode.value = 'sale'
@@ -830,6 +1009,9 @@ const checkout = () => {
   paymentCoupon.value = selectedCoupon.value
   paymentDiscountAmount.value = couponDiscount.value
   paymentPayableAmount.value = payableAmount.value
+  paymentAssetDeduction.value = selectedMember.value ? { ...assetDeductionPreview.value } : null
+  paymentAllowedMethodIds.value = SALE_OTHER_METHOD_IDS
+  paymentDefaultMethodId.value = paymentAssetDeduction.value?.external <= 0 ? '' : SALE_OTHER_METHOD_IDS[0]
   showPaymentModal.value = true
 }
 
@@ -841,12 +1023,33 @@ const checkoutRecharge = () => {
   paymentCoupon.value = null
   paymentDiscountAmount.value = 0
   paymentPayableAmount.value = rechargeAmount.value
+  paymentAssetDeduction.value = null
+  paymentAllowedMethodIds.value = SALE_OTHER_METHOD_IDS
+  paymentDefaultMethodId.value = SALE_OTHER_METHOD_IDS[0]
   showPaymentModal.value = true
 }
 
+const checkoutWithOtherMethods = () => {
+  if (cartItems.value.length === 0) return
+  paymentMode.value = 'sale'
+  paymentItems.value = cartItems.value.map((item) => ({ ...item }))
+  paymentTotalAmount.value = totalAmount.value
+  paymentCoupon.value = selectedCoupon.value
+  paymentDiscountAmount.value = couponDiscount.value
+  paymentPayableAmount.value = payableAmount.value
+  paymentAssetDeduction.value = null
+  paymentAllowedMethodIds.value = SALE_OTHER_METHOD_IDS
+  paymentDefaultMethodId.value = SALE_OTHER_METHOD_IDS[0]
+  showPaymentModal.value = true
+}
+
+const goToRechargeTab = () => {
+  activeTab.value = 'recharge'
+}
+
 const handleMemberSelected = (member) => {
-  selectedMember.value = member
-  persistSaleMemberSession(member)
+  selectedMember.value = { ...member }
+  syncSelectedMemberSnapshot()
   showMemberSelect.value = false
   // 更新历史记录（去重后置顶）
   const idx = memberHistory.value.findIndex((m) => m.id === member.id)
@@ -892,6 +1095,9 @@ const handleRegisterSuccessClose = () => {
 
 const handlePaymentClose = () => {
   showPaymentModal.value = false
+  paymentAllowedMethodIds.value = []
+  paymentDefaultMethodId.value = ''
+  paymentAssetDeduction.value = null
   // 取消支付时清理注册暂存数据
   pendingNewMember.value = null
 }
@@ -910,6 +1116,11 @@ const handlePaymentConfirm = (payload) => {
   let shouldShowSaleSuccess = false
   const completedRechargePlan = selectedRechargePlan.value
   if (paymentMode.value === 'recharge' && selectedMember.value && completedRechargePlan) {
+    // §8.1 充值前资产快照
+    const assetBefore = {
+      balance: Number(selectedMember.value.balance ?? 0),
+      coins: Number(selectedMember.value.coins ?? 0)
+    }
     lastRechargeDetails.value = [
       { label: '到账预存款', value: `¥${rechargeAmount.value.toFixed(2)}` }
     ]
@@ -921,6 +1132,12 @@ const handlePaymentConfirm = (payload) => {
       balance: Number(selectedMember.value.balance ?? 0) + rechargeAmount.value,
       coins: Number(selectedMember.value.coins ?? 0) + rechargeBonusCoins.value
     }
+    // §8.1 充值后资产变化
+    lastRechargeAssetChanges.value = [
+      { label: '预存款', before: `¥${assetBefore.balance.toFixed(2)}`, after: `¥${selectedMember.value.balance.toFixed(2)}` },
+      ...(rechargeBonusCoins.value > 0 ? [{ label: '游戏币', before: `${assetBefore.coins}`, after: `${selectedMember.value.coins}` }] : [])
+    ]
+    syncSelectedMemberSnapshot()
     selectedRechargeProduct.value = null
     customRechargeAmount.value = ''
     shouldShowRechargeSuccess = true
@@ -934,7 +1151,16 @@ const handlePaymentConfirm = (payload) => {
     const isAllPackage = categories.length === 1 && categories[0] === 'package'
     const isAllProduct = categories.length === 1 && categories[0] === 'product'
 
-    lastSaleTitle.value = '支付成功'
+    const assetDeduction = payload.assetDeduction || { prepaid: 0, coins: 0, external: paymentPayableAmount.value }
+    const usedMemberAssets = assetDeduction.prepaid > 0 || assetDeduction.coins > 0
+
+    // §8.1 消费前资产快照
+    const assetBefore = selectedMember.value ? {
+      balance: Number(selectedMember.value.balance ?? 0),
+      coins: Number(selectedMember.value.coins ?? 0)
+    } : null
+
+    lastSaleTitle.value = usedMemberAssets ? '会员资产结算成功' : '支付成功'
     if (isAllSingle) {
       lastSaleSubtitle.value = '本次消费如下'
     } else if (isAllPackage) {
@@ -945,10 +1171,70 @@ const handlePaymentConfirm = (payload) => {
       lastSaleSubtitle.value = '本次消费如下'
     }
 
-    lastSaleDetails.value = saleItems.map((item) => ({
+    const saleLineDetails = saleItems.map((item) => ({
       label: item.name,
+      subvalue: `${item.quantity} × ¥${item.price.toFixed(2)}`,
       value: `¥${(item.price * item.quantity).toFixed(2)}`
     }))
+
+    if (usedMemberAssets && selectedMember.value) {
+      selectedMember.value = {
+        ...selectedMember.value,
+        balance: Math.max(0, Number((Number(selectedMember.value.balance ?? 0) - assetDeduction.prepaid).toFixed(2))),
+        coins: Math.max(0, Number((Number(selectedMember.value.coins ?? 0) - assetDeduction.coins).toFixed(2)))
+      }
+      syncSelectedMemberSnapshot()
+    }
+
+    // §8.1 消费后资产变化
+    if (assetBefore) {
+      const changes = []
+      if (assetDeduction.prepaid > 0) {
+        changes.push({ label: '预存款', before: `¥${assetBefore.balance.toFixed(2)}`, after: `¥${(assetBefore.balance - assetDeduction.prepaid).toFixed(2)}` })
+      }
+      if (assetDeduction.coins > 0) {
+        changes.push({ label: '游戏币', before: `${assetBefore.coins}`, after: `${assetBefore.coins - assetDeduction.coins}` })
+      }
+      lastSaleAssetChanges.value = changes
+    } else {
+      lastSaleAssetChanges.value = []
+    }
+
+    // §10 结构化支付拆分行（展示在成功弹窗中）
+    const paymentDisplayLines = []
+    if (paymentCoupon.value) {
+      paymentDisplayLines.push({ label: '优惠券', value: `-¥${(paymentTotalAmount.value - paymentDiscountAmount.value - paymentPayableAmount.value).toFixed(2)}`, isDiscount: true })
+    }
+    if (assetDeduction.prepaid > 0) {
+      paymentDisplayLines.push({ label: '预存款抵扣', value: `¥${assetDeduction.prepaid.toFixed(2)}`, isPayment: true })
+    }
+    if (assetDeduction.coins > 0) {
+      paymentDisplayLines.push({ label: '游戏币抵扣', value: `${assetDeduction.coins.toFixed(2)}`, isPayment: true })
+    }
+    if (assetDeduction.external > 0) {
+      const externalLabel = payload.paymentMethod === 'cash' ? '现金支付'
+        : payload.paymentMethod === 'offline_wechat' ? '微信支付'
+        : payload.paymentMethod === 'offline_pay' ? '支付宝支付'
+        : '外部支付'
+      paymentDisplayLines.push({ label: externalLabel, value: `¥${assetDeduction.external.toFixed(2)}`, isPayment: true })
+    }
+    lastSalePaymentLines.value = paymentDisplayLines
+
+    const saleSummaryDetails = [
+      { label: '商品合计', value: `¥${paymentTotalAmount.value.toFixed(2)}`, isSummary: true },
+      ...(paymentCoupon.value ? [{ label: '优惠券', value: paymentCoupon.value.name, isSummary: true }] : []),
+      ...(paymentDiscountAmount.value > 0 ? [{ label: '优惠合计', value: `-¥${paymentDiscountAmount.value.toFixed(2)}`, isSummary: true }] : []),
+      { label: '应付总计', value: `¥${paymentPayableAmount.value.toFixed(2)}`, isSummary: true },
+      ...(assetDeduction.prepaid > 0 ? [{ label: '预存款抵扣', value: `-¥${assetDeduction.prepaid.toFixed(2)}`, isSummary: true }] : []),
+      ...(assetDeduction.coins > 0 ? [{ label: '游戏币抵扣', value: `-${assetDeduction.coins.toFixed(2)}`, isSummary: true }] : []),
+      ...(assetDeduction.external > 0 ? [{ label: '补差支付', value: `¥${assetDeduction.external.toFixed(2)}`, isSummary: true }] : []),
+      { label: '支付方式', value: payload.paymentMethodName || '未记录', isSummary: true },
+      ...(payload.paymentMethod === 'cash' && assetDeduction.external > 0
+        ? [{ label: '对账提示', value: '现金入现金账，周期结算', isSummary: true }]
+        : [])
+    ]
+
+    lastSaleDetails.value = [...saleLineDetails, ...saleSummaryDetails]
 
     // 清空购物车和优惠券
     cartItems.value = []
@@ -991,6 +1277,9 @@ const handlePaymentConfirm = (payload) => {
   }
 
   showPaymentModal.value = false
+  paymentAllowedMethodIds.value = []
+  paymentDefaultMethodId.value = ''
+  paymentAssetDeduction.value = null
   if (shouldShowRechargeSuccess) {
     setTimeout(() => {
       showRechargeSuccess.value = true
@@ -1030,7 +1319,58 @@ const handleProductLeave = () => {
 
 const handleDeductionConfirm = (payload) => {
   console.log('扣费确认:', payload)
+  // §5.2 扣费前资产快照
+  const assetBefore = selectedMember.value ? {
+    balance: Number(selectedMember.value.balance ?? 0),
+    coins: Number(selectedMember.value.coins ?? 0)
+  } : null
+  const totalAmount = payload.totalAmount || 0
+
+  // 防御性校验：余额不足则阻止扣费
+  if (assetBefore) {
+    const totalAssets = assetBefore.balance + assetBefore.coins
+    if (totalAmount > totalAssets) {
+      console.warn('扣费失败：会员资产不足', { totalAmount, totalAssets })
+      return
+    }
+  }
+
+  const deviceName = payload.device?.name || '未知设备'
+
   lastDeductionCount.value = payload.count || 1
+  lastDeductionDetails.value = [
+    { label: '设备', value: deviceName },
+    { label: '单价', value: `¥${(payload.price || 0).toFixed(2)}` },
+    { label: '人数', value: `${payload.count || 1}` },
+    { label: '扣费金额', value: `¥${totalAmount.toFixed(2)}` }
+  ]
+
+  // 扣费后更新资产并记录变化
+  if (selectedMember.value && assetBefore) {
+    let remaining = totalAmount
+    const fromBalance = Math.min(remaining, assetBefore.balance)
+    remaining -= fromBalance
+    const fromCoins = Math.min(remaining, assetBefore.coins)
+
+    selectedMember.value = {
+      ...selectedMember.value,
+      balance: Math.max(0, Number((assetBefore.balance - fromBalance).toFixed(2))),
+      coins: Math.max(0, Number((assetBefore.coins - fromCoins).toFixed(2)))
+    }
+    syncSelectedMemberSnapshot()
+
+    const changes = []
+    if (fromBalance > 0) {
+      changes.push({ label: '预存款', before: `¥${assetBefore.balance.toFixed(2)}`, after: `¥${selectedMember.value.balance.toFixed(2)}` })
+    }
+    if (fromCoins > 0) {
+      changes.push({ label: '游戏币', before: `${assetBefore.coins}`, after: `${selectedMember.value.coins}` })
+    }
+    lastDeductionAssetChanges.value = changes
+  } else {
+    lastDeductionAssetChanges.value = []
+  }
+
   showDeductionModal.value = false
   showDeductionSuccess.value = true
   // TODO: 调用实际扣费接口
@@ -1227,13 +1567,14 @@ const handleDeductionConfirm = (payload) => {
 }
 
 .mini-action {
-  min-width: 118px;
-  min-height: 34px;
+  min-width: 124px;
+  min-height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 8px;
+  padding: 0 12px;
+  border-radius: 9px;
   background: #fff;
   color: #171b24;
   text-decoration: none;
@@ -1244,8 +1585,8 @@ const handleDeductionConfirm = (payload) => {
 }
 
 .mini-action-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   display: block;
   object-fit: contain;
 }
@@ -1931,6 +2272,97 @@ const handleDeductionConfirm = (payload) => {
   color: #fc630a;
 }
 
+.asset-status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+
+.asset-status-card--ready {
+  background: #effbf4;
+  border-color: #b7ebc6;
+}
+
+.asset-status-card--warning {
+  background: #fff6e8;
+  border-color: #ffd8a8;
+}
+
+.asset-status-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.asset-status-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.asset-status-copy strong {
+  color: #171b24;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.asset-status-copy span {
+  color: #5b6472;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.asset-status-head em {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #171b24;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.asset-status-lines {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.asset-status-lines div {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.asset-status-lines span,
+.asset-status-lines strong {
+  display: block;
+}
+
+.asset-status-lines span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.asset-status-lines strong {
+  margin-top: 3px;
+  color: #171b24;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
 .checkout-btn {
   width: 100%;
   min-height: 48px;
@@ -1949,6 +2381,41 @@ const handleDeductionConfirm = (payload) => {
   cursor: not-allowed;
   opacity: 0.55;
   box-shadow: none;
+}
+
+.checkout-aux-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.checkout-secondary-btn {
+  flex: 1;
+  min-height: 40px;
+  border: 1px solid #d5eaf9;
+  border-radius: 10px;
+  background: #fff;
+  color: #2f6fa9;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.checkout-secondary-btn:hover {
+  border-color: #93c5fd;
+  background: #f5fbff;
+}
+
+.checkout-secondary-btn--accent {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.checkout-secondary-btn--accent:hover {
+  border-color: #fb923c;
+  background: #ffedd5;
 }
 
 /* ===== 购物车优惠券区域 ===== */

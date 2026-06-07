@@ -21,7 +21,7 @@
           v-model:current-page="currentPage"
           :page-size="20"
           :total="100"
-          layout="total, prev, pager, next"
+          layout="prev, pager, next"
         />
       </div>
     </el-card>
@@ -51,6 +51,6 @@ const logs = ref([
 .pagination {
   margin-top: 20px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 </style>

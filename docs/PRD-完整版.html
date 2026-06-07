@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>头号空间 PRD v1.3.3_20260604_1339 — 产品需求文档</title><style>  :root {
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>头号空间 PRD v1.3.3_20260607_0209 — 产品需求文档</title><style>  :root {
     --bg: #0f172a; --card: #1e293b; --border: #334155;
     --accent: #6366f1; --accent2: #8b5cf6;
     --green: #34d399; --amber: #fb923c; --red: #f87171; --blue: #60a5fa;
@@ -42,11 +42,11 @@
   blockquote p { font-size: 13px; color: var(--muted); }
   hr { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
   ul, ol { padding-left: 24px; margin: 8px 0; }
-  strong { color: var(--text); }</style><script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"; mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose" });</script></head><body><div class="sidebar"><div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v1.3.3_20260604_1339</div></div><a href="#top" class="s1">📋 文档目录</a><a href="#头号空间-产品需求文档-prd" class="s1">头号空间 - 产品需求文档（PRD）</a><a href="#文档目录" class="s2">📑 文档目录</a><a href="#1-产品概述" class="s2">1. 产品概述</a><a href="#1-1-产品定义" class="s3">1.1 产品定义</a><a href="#1-2-核心价值主张" class="s3">1.2 核心价值主张</a><a href="#1-3-目标用户画像" class="s3">1.3 目标用户画像</a><a href="#2-商业模式与市场定位" class="s2">2. 商业模式与市场定位</a><a href="#2-1-核心业务模式" class="s3">2.1 核心业务模式</a><a href="#2-2-游戏豆收入详解" class="s3">2.2 游戏豆收入详解</a><a href="#2-3-分润体系设计" class="s3">2.3 分润体系设计</a><a href="#3-系统整体架构" class="s2">3. 系统整体架构</a><a href="#3-1-各子系统总览" class="s3">3.1 各子系统总览</a><a href="#3-2-子系统间交互关系" class="s3">3.2 子系统间交互关系</a><a href="#4-子系统功能详解" class="s2">4. 子系统功能详解</a><a href="#4-1-c端微信小程序" class="s3">4.1 C端微信小程序</a><a href="#4-2-pc收银系统" class="s3">4.2 PC收银系统</a><a href="#4-3-pc游戏终端" class="s3">4.3 PC游戏终端</a><a href="#4-4-vr头显终端" class="s3">4.4 VR头显终端</a><a href="#4-5-游戏sdk" class="s3">4.5 游戏SDK</a><a href="#4-6-商家管理后台" class="s3">4.6 商家管理后台</a><a href="#4-7-代理商系统" class="s3">4.7 代理商系统</a><a href="#4-8-官方总运营后台" class="s3">4.8 官方总运营后台</a><a href="#4-9-cp供应商终端-v1-6-新增" class="s3">4.9 CP供应商终端（v1.6 新增）</a><a href="#5-核心业务流程" class="s2">5. 核心业务流程</a><a href="#5-1-用户到店消费完整闭环-六端联动时序图" class="s3">5.1 用户到店消费完整闭环（六端联动时序图）</a><a href="#5-2-订单生命周期" class="s3">5.2 订单生命周期</a><a href="#5-3-结算分润流程-v1-3-完整版" class="s3">5.3 结算分润流程（v1.3 完整版）</a><a href="#5-4-会员生命周期" class="s3">5.4 会员生命周期</a><a href="#5-5-设备状态机" class="s3">5.5 设备状态机</a><a href="#5-6-多人session计费规则-v1-3-新增" class="s3">5.6 多人Session计费规则（v1.3 新增）</a><a href="#5-7-vr终端离线-异常恢复流程-v1-3-新增" class="s3">5.7 VR终端离线/异常恢复流程（v1.3 新增）</a><a href="#6-关键数据概要" class="s2">6. 关键数据概要</a><a href="#7-rbac-角色权限体系" class="s2">7. RBAC 角色权限体系</a><a href="#7-1-八角色层级" class="s3">7.1 八角色层级</a><a href="#7-2-数据隔离规则" class="s3">7.2 数据隔离规则</a><a href="#7-3-子系统权限矩阵-v1-6-完整版" class="s3">7.3 子系统权限矩阵（v1.6 完整版）</a><a href="#8-技术方案概要-产品视角" class="s2">8. 技术方案概要（产品视角）</a><a href="#9-开发规划里程碑" class="s2">9. 开发规划里程碑</a><a href="#9-1-里程碑总览" class="s3">9.1 里程碑总览</a><a href="#9-2-各里程碑详解" class="s3">9.2 各里程碑详解</a><a href="#a-附录" class="s2">A. 附录</a></div><div class="main" id="top"><h1 id="头号空间---产品需求文档prd">头号空间 - 产品需求文档（PRD）</h1>
+  strong { color: var(--text); }</style><script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"; mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose" });</script></head><body><div class="sidebar"><div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v1.3.3_20260607_0209</div></div><a href="#top" class="s1">📋 文档目录</a><a href="#头号空间-产品需求文档-prd" class="s1">头号空间 - 产品需求文档（PRD）</a><a href="#文档目录" class="s2">📑 文档目录</a><a href="#1-产品概述" class="s2">1. 产品概述</a><a href="#1-1-产品定义" class="s3">1.1 产品定义</a><a href="#1-2-核心价值主张" class="s3">1.2 核心价值主张</a><a href="#1-3-目标用户画像" class="s3">1.3 目标用户画像</a><a href="#2-商业模式与市场定位" class="s2">2. 商业模式与市场定位</a><a href="#2-1-核心业务模式" class="s3">2.1 核心业务模式</a><a href="#2-2-游戏豆收入详解" class="s3">2.2 游戏豆收入详解</a><a href="#2-3-分润体系设计" class="s3">2.3 分润体系设计</a><a href="#2-4-支付资产与拉卡拉分账总口径-v1-7新增" class="s3">2.4 支付资产与拉卡拉分账总口径（v1.7新增）</a><a href="#3-系统整体架构" class="s2">3. 系统整体架构</a><a href="#3-1-各子系统总览" class="s3">3.1 各子系统总览</a><a href="#3-2-子系统间交互关系" class="s3">3.2 子系统间交互关系</a><a href="#4-子系统功能详解" class="s2">4. 子系统功能详解</a><a href="#4-1-c端微信小程序" class="s3">4.1 C端微信小程序</a><a href="#4-2-pc收银系统" class="s3">4.2 PC收银系统</a><a href="#4-3-pc游戏终端" class="s3">4.3 PC游戏终端</a><a href="#4-4-vr头显终端" class="s3">4.4 VR头显终端</a><a href="#4-5-游戏sdk" class="s3">4.5 游戏SDK</a><a href="#4-6-商家管理后台" class="s3">4.6 商家管理后台</a><a href="#4-7-代理商系统" class="s3">4.7 代理商系统</a><a href="#4-8-官方总运营后台" class="s3">4.8 官方总运营后台</a><a href="#4-9-cp供应商终端-v1-6-新增" class="s3">4.9 CP供应商终端（v1.6 新增）</a><a href="#5-核心业务流程" class="s2">5. 核心业务流程</a><a href="#5-1-用户到店消费完整闭环-六端联动时序图" class="s3">5.1 用户到店消费完整闭环（六端联动时序图）</a><a href="#5-2-订单生命周期" class="s3">5.2 订单生命周期</a><a href="#5-3-结算分润流程-v1-3-完整版" class="s3">5.3 结算分润流程（v1.3 完整版）</a><a href="#5-4-会员生命周期" class="s3">5.4 会员生命周期</a><a href="#5-5-设备状态机" class="s3">5.5 设备状态机</a><a href="#5-6-多人session计费规则-v1-3-新增" class="s3">5.6 多人Session计费规则（v1.3 新增）</a><a href="#5-7-vr终端离线-异常恢复流程-v1-3-新增" class="s3">5.7 VR终端离线/异常恢复流程（v1.3 新增）</a><a href="#6-关键数据概要" class="s2">6. 关键数据概要</a><a href="#7-rbac-角色权限体系" class="s2">7. RBAC 角色权限体系</a><a href="#7-1-八角色层级" class="s3">7.1 八角色层级</a><a href="#7-2-数据隔离规则" class="s3">7.2 数据隔离规则</a><a href="#7-3-子系统权限矩阵-v1-6-完整版" class="s3">7.3 子系统权限矩阵（v1.6 完整版）</a><a href="#8-技术方案概要-产品视角" class="s2">8. 技术方案概要（产品视角）</a><a href="#9-开发规划里程碑" class="s2">9. 开发规划里程碑</a><a href="#9-1-里程碑总览" class="s3">9.1 里程碑总览</a><a href="#9-2-各里程碑详解" class="s3">9.2 各里程碑详解</a><a href="#a-附录" class="s2">A. 附录</a></div><div class="main" id="top"><h1 id="头号空间---产品需求文档prd">头号空间 - 产品需求文档（PRD）</h1>
 <blockquote>
-<p><strong>版本</strong>: v1.6<br />
-<strong>日期</strong>: 2026年6月2日<br />
-<strong>状态</strong>: 正式发布（CP供应商终端新增）<br />
+<p><strong>版本</strong>: v1.7<br />
+<strong>日期</strong>: 2026年6月7日<br />
+<strong>状态</strong>: 正式发布（支付资产与拉卡拉分账口径补充）<br />
 <strong>密级</strong>: 内部公开<br />
 <strong>作者</strong>: 产品团队<br />
 <strong>面向读者</strong>: 技术开发团队、测试团队、运营团队、管理层、游戏CP开发者</p>
@@ -420,6 +420,117 @@
 </tr>
 </tbody>
 </table>
+<h3 id="支付资产与拉卡拉分账总口径v1.7新增">2.4 支付资产与拉卡拉分账总口径（v1.7新增）</h3>
+<blockquote>
+<p>详细规则见独立文档：<code>docs/支付逻辑说明.md</code>、<code>docs/分账与对账说明.md</code>。本节为 PRD 总体口径，所有终端与后台原型必须遵守。</p>
+</blockquote>
+<h4 id="支付资产分层">2.4.1 支付资产分层</h4>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 57%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>名称</th>
+<th>定义</th>
+<th style="text-align: center;">是否进入拉卡拉实时分账</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>微信/支付宝</td>
+<td>通过拉卡拉或支付通道完成的真实支付资金</td>
+<td style="text-align: center;">是</td>
+<td>可实时分账或进入拉卡拉结算</td>
+</tr>
+<tr>
+<td>现金</td>
+<td>门店现场收取的真实资金</td>
+<td style="text-align: center;">否</td>
+<td>不经过拉卡拉，进入现金账和周期结算</td>
+</tr>
+<tr>
+<td>预存款</td>
+<td>会员账户人民币余额</td>
+<td style="text-align: center;">否</td>
+<td>会员负债释放，平台业务账确认</td>
+</tr>
+<tr>
+<td>游戏币</td>
+<td>会员账户消费资产，和预存款 1:1 抵扣</td>
+<td style="text-align: center;">否</td>
+<td>系统自动抵扣，不作为手动支付按钮</td>
+</tr>
+<tr>
+<td>游戏豆</td>
+<td>商家/平台侧 B 端运营资源</td>
+<td style="text-align: center;">否</td>
+<td>用于启动游戏和 CP 成本，不是 C 端支付方式</td>
+</tr>
+<tr>
+<td>优惠券/活动优惠</td>
+<td>冲减订单应付金额的权益</td>
+<td style="text-align: center;">否</td>
+<td>先优惠，再计算会员资产和外部支付</td>
+</tr>
+</tbody>
+</table>
+<h4 id="会员资产自动抵扣">2.4.2 会员资产自动抵扣</h4>
+<p>默认消耗顺序：</p>
+<pre><code>优惠券/活动优惠 → 预存款 → 游戏币 → 外部支付补差</code></pre>
+<p>业务规则：</p>
+<ul>
+<li>商户可自定义预存款与游戏币的消耗优先级，但不能突破商品支付范围限制。</li>
+<li>游戏币不允许收银员或用户主动选择，系统按商品规则和商户优先级自动决策是否消耗。</li>
+<li>游戏币目前来源为充值赠送、活动赠送、后台发放，不设置售卖型来源。</li>
+<li>充值储值只能使用现金、微信、支付宝等外部支付，不允许使用预存款、游戏币或积分充值。</li>
+<li><code>仅游戏币</code> 商品不允许外部支付补差，游戏币不足时禁止购买或兑换。</li>
+</ul>
+<h4 id="拉卡拉分账边界">2.4.3 拉卡拉分账边界</h4>
+<p>拉卡拉处理的是微信、支付宝等进入支付通道的真实资金。现金、预存款、游戏币、优惠券不属于当前拉卡拉交易中的实时可分账资金。</p>
+<p>分账默认策略：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>分账方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>微信/支付宝直付订单</td>
+<td>可实时拉卡拉分账</td>
+</tr>
+<tr>
+<td>现金订单</td>
+<td>周期结算，不做实时拉卡拉分账</td>
+</tr>
+<tr>
+<td>包含预存款/游戏币的订单</td>
+<td>平台业务账归集后周期结算</td>
+</tr>
+<tr>
+<td>代理商分润</td>
+<td>周期结算，通过拉卡拉分账/代付</td>
+</tr>
+<tr>
+<td>CP收益</td>
+<td>周期结算，通过拉卡拉分账/代付</td>
+</tr>
+</tbody>
+</table>
+<p>现金处理口径：</p>
+<pre><code>现金由商家现场留存
+  ↓
+进入交班/日结现金账
+  ↓
+进入商家、代理商、CP周期结算
+  ↓
+平台从后续拉卡拉结算款中抵扣，或生成平台应收</code></pre>
 <hr />
 <h2 id="系统整体架构">3. 系统整体架构</h2>
 <h3 id="各子系统总览">3.1 各子系统总览</h3>
@@ -756,6 +867,141 @@
 </tr>
 </tbody>
 </table>
+<h4 id="小程序付款结算流程">4.1.6 小程序付款结算流程（v1.8 新增）</h4>
+<blockquote>
+<p>用户扫描设备二维码后进入付款结算页面，系统按固定优先级自动抵扣会员资产，不足部分通过微信支付补差。<br />
+核心原则：<strong>支付前必须可预览、可确认、可追溯。</strong></p>
+</blockquote>
+<h5>页面状态流转</h5>
+<pre><code>加载中(loading) → 付款结算(confirm) → 支付中(processing) → 支付成功(success)
+                                                       ↘ 支付失败(failed)
+</code></pre>
+<table>
+<thead><tr><th>状态</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>loading</code></td><td>扫码后加载订单信息、查询会员数据</td></tr>
+<tr><td><code>confirm</code></td><td>展示订单内容 + 会员资产 + 支付明细，用户确认后发起支付</td></tr>
+<tr><td><code>processing</code></td><td>提交支付请求，展示处理中动画，禁止退出</td></tr>
+<tr><td><code>success</code></td><td>支付成功，展示支付方式、订单详情，指引用户前往设备体验</td></tr>
+<tr><td><code>failed</code></td><td>支付失败，展示失败原因和重试/返回入口</td></tr>
+</tbody>
+</table>
+<h5>抵扣链（核心计费规则）</h5>
+<p>系统按固定优先级自动计算每笔支付的资产消耗，顺序不可调整：</p>
+<pre><code>优惠券(减面值) → 会员折扣 → 预存款 → 游戏币 → 微信支付(补差)
+</code></pre>
+<table>
+<thead><tr><th>步骤</th><th>名称</th><th>计算公式</th></tr></thead>
+<tbody>
+<tr><td>①</td><td>原价</td><td><code>originalPrice = unitPrice</code></td></tr>
+<tr><td>②</td><td>优惠券后</td><td><code>amountAfterCoupon = max(0, originalPrice - couponDiscountAmount)</code></td></tr>
+<tr><td>③</td><td>会员折扣后应付</td><td><code>priceAfterDiscount = amountAfterCoupon × (member.discount / 10)</code></td></tr>
+<tr><td>④</td><td>预存款抵扣</td><td><code>prepaidDeduction = min(member.balance, priceAfterDiscount)</code></td></tr>
+<tr><td>⑤</td><td>预存款抵扣后剩余</td><td><code>afterPrepaid = priceAfterDiscount - prepaidDeduction</code></td></tr>
+<tr><td>⑥</td><td>游戏币抵扣量</td><td><code>coinDeduction = min(member.coins, ceil(afterPrepaid))</code></td></tr>
+<tr><td>⑦</td><td>游戏币抵扣金额</td><td><code>coinValue = coinDeduction</code>（汇率 1:1）</td></tr>
+<tr><td>⑧</td><td>微信应付/缺口</td><td><code>remainingPay = afterPrepaid - coinValue</code></td></tr>
+</tbody>
+</table>
+<p><strong>关键规则</strong>：</p>
+<ul>
+<li><strong>汇率</strong>：游戏币与人民币为 1:1</li>
+<li><strong>游戏币粒度</strong>：不足 1 元时按 1 币扣除（向上取整）</li>
+<li><strong>不为负</strong>：每一步结果均 <code>max(0, ...)</code> 确保不出现负值</li>
+<li><strong>缺口判定</strong>：<code>shortage = remainingPay</code>，当 <code>shortage &gt; 0</code> 时判定为预存款+游戏币不足</li>
+</ul>
+<h5>付款结算页（confirm 状态）</h5>
+<table>
+<thead><tr><th>模块</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td>导航栏</td><td>返回按钮 + &#34;付款结算&#34;标题</td></tr>
+<tr><td>会员卡片</td><td>姓名、等级、折扣、预存款、游戏币、套票、预存次数</td></tr>
+<tr><td>订单内容</td><td>游戏名称、时长、标签、原价</td></tr>
+<tr><td>支付明细</td><td>完整抵扣链展示（原价 → 优惠券 → 折扣 → 抵扣 → 应付）</td></tr>
+<tr><td>底部按钮</td><td>确认并支付 / 微信补差</td></tr>
+</tbody>
+</table>
+<p><strong>不足提醒</strong>（<code>shortage &gt; 0</code> 时）：</p>
+<ul>
+<li>会员卡片变色（变深紫色）</li>
+<li>显示黄色警告条：&#34;预存款+游戏币不足，需微信补差&#34;</li>
+<li>支付明细末尾&#34;应付&#34;变红</li>
+<li>底部按钮变红，文案变为&#34;微信补差 ¥xx.xx&#34;</li>
+</ul>
+<p><strong>按钮文案规则</strong>：</p>
+<table>
+<thead><tr><th>条件</th><th>按钮文案</th></tr></thead>
+<tbody>
+<tr><td><code>shortage &gt; 0</code></td><td>微信补差 ¥xx.xx</td></tr>
+<tr><td><code>shortage == 0</code></td><td>确认并支付 ¥xx.xx</td></tr>
+<tr><td>处理中</td><td>loading 动画 + &#34;处理中...&#34;</td></tr>
+</tbody>
+</table>
+<h5>支付成功页（success 状态）</h5>
+<p><strong>支付方式标签</strong>（根据实际支付构成动态显示）：</p>
+<ul>
+<li>有预存款抵扣 → <code>预存款 ¥xx.xx</code>（紫色标签）</li>
+<li>有游戏币抵扣 → <code>xx 游戏币</code>（橙色标签）</li>
+<li>有微信支付 → <code>微信支付 ¥xx.xx</code>（绿色标签）</li>
+</ul>
+<table>
+<thead><tr><th>字段</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td>游戏</td><td>游戏名称</td></tr>
+<tr><td>时长</td><td>xx分钟</td></tr>
+<tr><td>订单号</td><td>VR202606070001 格式</td></tr>
+<tr><td>设备提示</td><td>&#34;xx号设备 已准备就绪，请前往开始体验&#34;</td></tr>
+</tbody>
+</table>
+<h5>支付失败页（failed 状态）</h5>
+<table>
+<thead><tr><th>场景</th><th>展示标题</th><th>说明</th><th>触发条件</th></tr></thead>
+<tbody>
+<tr><td>订单已失效</td><td>订单已失效</td><td>订单超时或已被使用</td><td>后端返回 <code>order_status = expired/cancelled</code>，如订单超过有效期、已被他人支付、设备端取消订单</td></tr>
+<tr><td>支付超时</td><td>支付超时</td><td>支付处理超时</td><td>点击确认支付后，微信支付 API 在 30~60 秒内无响应，前端请求超时或后端回调超时</td></tr>
+<tr><td>余额不足</td><td>余额不足</td><td>微信支付余额不足</td><td>微信支付 JSAPI 返回失败，用户微信零钱/银行卡余额不足以覆盖剩余应付金额</td></tr>
+</tbody>
+</table>
+<blockquote><p><strong>注意</strong>：<code>failTitle</code> 由调用方（父组件 / 后端 API 返回）通过 prop 传入，MiniPayFlow 组件不自行判断失败类型。</p></blockquote>
+<p><strong>失败处理指引</strong>：返回设备端重新展示付款码 → 确认网络正常后再次发起支付 → 如已扣款，稍后在订单中心查看结果</p>
+<h5>场景示例（8 种覆盖主流组合）</h5>
+<blockquote><p>以下示例原价 38 元，基础会员折扣 9 折</p></blockquote>
+<table>
+<thead><tr><th>#</th><th>场景</th><th>优惠券</th><th>折扣</th><th>预存款</th><th>游戏币</th><th>折后应付</th><th>预存款抵扣</th><th>游戏币抵扣</th><th>微信应付</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>纯预存款全覆盖</td><td>0</td><td>9</td><td>100</td><td>0</td><td>34.20</td><td>34.20</td><td>0</td><td>0</td></tr>
+<tr><td>2</td><td>纯游戏币全覆盖</td><td>0</td><td>9</td><td>0</td><td>50</td><td>34.20</td><td>0</td><td>35</td><td>0</td></tr>
+<tr><td>3</td><td>预存款+游戏币全覆盖</td><td>0</td><td>9</td><td>20</td><td>30</td><td>34.20</td><td>20</td><td>15</td><td>0</td></tr>
+<tr><td>4</td><td>预存款不足→补差</td><td>0</td><td>9</td><td>10</td><td>0</td><td>34.20</td><td>10</td><td>0</td><td>24.20</td></tr>
+<tr><td>5</td><td>游戏币不足→补差</td><td>0</td><td>9</td><td>0</td><td>20</td><td>34.20</td><td>0</td><td>20</td><td>14.20</td></tr>
+<tr><td>6</td><td>预存款+币均不足→补差</td><td>0</td><td>9</td><td>10</td><td>10</td><td>34.20</td><td>10</td><td>10</td><td>14.20</td></tr>
+<tr><td>7</td><td>优惠券+折扣+全额覆盖</td><td>5</td><td>8.5</td><td>100</td><td>30</td><td>28.05</td><td>28.05</td><td>0</td><td>0</td></tr>
+<tr><td>8</td><td>优惠券+折扣+不足→补差</td><td>5</td><td>8.5</td><td>10</td><td>0</td><td>28.05</td><td>10</td><td>0</td><td>18.05</td></tr>
+</tbody>
+</table>
+<p><strong>示例计算演示（场景 6）</strong>：</p>
+<pre><code>原价：                  ¥38.00
+优惠券：                   0
+会员折扣(9折)：          -¥3.80
+折后应付：               ¥34.20
+─────────────────────────────
+预存款抵扣：             -¥10.00  （余额 ¥10，全扣）
+游戏币抵扣：            -10 币    （剩余 ¥24.20 → 25 币需要，余额 10 币）
+─────────────────────────────
+微信应付：               ¥14.20   ← 不足，需补差
+</code></pre>
+<h5>Demo 项目</h5>
+<p>小程序支付流程 Demo 位于 <code>miniapp-payment/</code> 目录：</p>
+<table>
+<thead><tr><th>文件</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>MiniPayFlow.vue</code></td><td>支付流程核心组件，实现 5 种状态和抵扣计算</td></tr>
+<tr><td><code>DemoPreview.vue</code></td><td>演示控制面板，支持 8 种场景切换 + 手机框/全屏预览</td></tr>
+</tbody>
+</table>
+<p>启动方式：</p>
+<pre><code>cd miniapp-payment &amp;&amp; npx vite --port 9528
+</code></pre>
 <hr />
 <h3 id="pc收银系统">4.2 PC收银系统</h3>
 <blockquote>
@@ -794,7 +1040,7 @@
 </tr>
 <tr>
 <td>💰 <strong>充值/办卡</strong></td>
-<td>选择金额或套餐，微信/支付宝/现金/余额支付</td>
+<td>选择金额或套餐，仅支持微信/支付宝/现金等外部支付</td>
 </tr>
 <tr>
 <td>🎫 <strong>套票/套餐</strong></td>
@@ -821,7 +1067,7 @@
 <h4 id="收银台核心4tab-结构">4.2.2 收银台核心（4Tab 结构）</h4>
 <p>收银台是PC收银系统的核心页面，采用 <strong>左-中-右</strong> 三段式布局：</p>
 <ul>
-<li><strong>左侧（顾客身份区）</strong>：搜索/扫码识别会员，选中后显示会员信息（余额/积分/等级/折扣）</li>
+<li><strong>左侧（顾客身份区）</strong>：搜索/扫码识别会员，选中后显示会员信息（预存款/游戏币/积分/等级/折扣）</li>
 <li><strong>中间（4Tab销售区）</strong>：</li>
 </ul>
 <table>
@@ -869,7 +1115,181 @@
 <ul>
 <li><strong>右侧（结算单区）</strong>：实时显示待结商品列表、合计金额、优惠、实付，点击”去结算”完成收银</li>
 </ul>
-<p><strong>支付方式</strong>: 微信扫码 / 支付宝扫码 / 现金 / 余额支付</p>
+<p><strong>支付方式</strong>: 微信扫码 / 支付宝扫码 / 现金 / 会员资产自动抵扣（预存款/游戏币）</p>
+<h4 id="会员资产自动抵扣规则销售页">4.2.2.1 会员资产自动抵扣规则（销售页）</h4>
+<p>为避免收银员在”切换会员 / 调整购物车 / 试算优惠”过程中发生误扣款，<strong>选择会员仅代表识别会员身份，不代表立即扣预存款或游戏币</strong>。会员资产实际扣减发生在收银员点击结算区主按钮并确认支付成功之后。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>会员识别</strong></td>
+<td>选择会员后，页面立即展示会员等级、预存款、游戏币、可用优惠和会员价，但<strong>不自动扣款</strong></td>
+</tr>
+<tr>
+<td><strong>可用会员资产范围</strong></td>
+<td>单次消费 / 套票 / 实体商品默认支持预存款和游戏币自动抵扣；充值活动<strong>不支持</strong>会员资产支付</td>
+</tr>
+<tr>
+<td><strong>游戏币决策</strong></td>
+<td>游戏币不作为手动支付按钮出现，由系统根据商品支付范围和商户优先级自动计算是否消耗</td>
+</tr>
+<tr>
+<td><strong>默认优先级</strong></td>
+<td>默认按<code>优惠券/活动优惠 → 预存款 → 游戏币 → 外部支付补差</code>计算，商户可自定义预存款和游戏币优先级</td>
+</tr>
+<tr>
+<td><strong>订单拆分</strong></td>
+<td>充值单与消费单必须分开结算，不允许同一订单同时包含”充值”与”消费扣款”</td>
+</tr>
+<tr>
+<td><strong>扣款时点</strong></td>
+<td>收银员确认结算后，系统创建订单、扣减预存款/游戏币、写入会员资产流水</td>
+</tr>
+<tr>
+<td><strong>价格计算顺序</strong></td>
+<td>商品原价 → 会员价/折扣 → 优惠券/活动优惠 → 会员资产自动抵扣 → 外部支付补差</td>
+</tr>
+<tr>
+<td><strong>默认支付推荐</strong></td>
+<td>当会员资产足够时，结算区默认推荐<code>确认扣款</code>；仍保留切换为微信/支付宝/现金的入口</td>
+</tr>
+</tbody>
+</table>
+<h4 id="会员资产不足处理规则">4.2.2.2 会员资产不足处理规则</h4>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 37%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>页面表现</th>
+<th>处理规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>会员资产足够</strong></td>
+<td>结算区显示<code>将扣预存款 ¥X + 游戏币 Y</code>，主按钮文案为<code>确认扣款</code></td>
+<td>点击后进入二次确认，确认成功即完成扣款</td>
+</tr>
+<tr>
+<td><strong>会员资产不足但允许补差</strong></td>
+<td>结算区显示<code>仍需支付 ¥XX.XX</code>，展示微信/支付宝/现金入口</td>
+<td>会员资产先按规则扣减，剩余金额走外部支付</td>
+</tr>
+<tr>
+<td><strong>仅游戏币商品且游戏币不足</strong></td>
+<td>显示<code>游戏币不足</code>，主按钮禁用</td>
+<td>不允许外部补差，不允许用预存款替代</td>
+</tr>
+<tr>
+<td><strong>充值场景</strong></td>
+<td>不展示会员资产抵扣</td>
+<td>充值只能用微信/支付宝/现金</td>
+</tr>
+<tr>
+<td><strong>商品不支持会员资产</strong></td>
+<td>提示<code>当前商品不支持会员资产支付</code></td>
+<td>仅展示外部支付方式</td>
+</tr>
+</tbody>
+</table>
+<h4 id="销售页结算交互调整">4.2.2.3 销售页结算交互调整</h4>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 37%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr>
+<th>触发条件</th>
+<th>主按钮文案</th>
+<th>次要操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>未选会员</td>
+<td><code>去结算 ¥XX.XX</code></td>
+<td>微信 / 支付宝 / 现金</td>
+</tr>
+<tr>
+<td>已选会员且会员资产足够</td>
+<td><code>确认扣款</code></td>
+<td>改其他方式支付</td>
+</tr>
+<tr>
+<td>已选会员且需补差</td>
+<td><code>确认并支付 ¥XX.XX</code></td>
+<td>微信 / 支付宝 / 现金</td>
+</tr>
+<tr>
+<td>仅游戏币商品且游戏币不足</td>
+<td><code>游戏币不足</code>（禁用）</td>
+<td>引导活动赠送或后台处理</td>
+</tr>
+<tr>
+<td>充值Tab</td>
+<td><code>立即充值 ¥XX.XX</code></td>
+<td>不展示会员资产抵扣</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>推荐实现</strong>: 销售页保留”结算确认”这一步。会员资产抵扣区只展示系统计算结果，不把游戏币做成可手动选择的支付按钮。</p>
+</blockquote>
+<h4 id="销售成功结果展示规范">4.2.2.4 销售成功结果展示规范</h4>
+<p>支付成功后的结果弹窗应采用<strong>小票式结构</strong>，用于让收银员与顾客快速复核本单信息。</p>
+<table>
+<colgroup>
+<col style="width: 60%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr>
+<th>展示区域</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>逐项明细</strong></td>
+<td>每个商品一行，左侧显示商品名，次行显示<code>数量 × 单价</code>，右侧显示该行小计</td>
+</tr>
+<tr>
+<td><strong>汇总信息</strong></td>
+<td>底部按顺序显示<code>商品合计</code>、<code>优惠券</code>（如有）、<code>优惠合计</code>（如有）、<code>预存款抵扣</code>、<code>游戏币抵扣</code>、<code>外部支付补差</code>、<code>实付总计</code></td>
+</tr>
+<tr>
+<td><strong>会员资产变化</strong></td>
+<td>展示预存款和游戏币的扣减前后值，例如<code>预存款 ¥300 → ¥240</code>、<code>游戏币 2704 → 2684</code></td>
+</tr>
+<tr>
+<td><strong>标题</strong></td>
+<td>普通支付显示<code>支付成功</code>；会员资产全额抵扣显示<code>扣款成功</code>；混合支付显示<code>支付成功</code></td>
+</tr>
+<tr>
+<td><strong>一致性要求</strong></td>
+<td>单项消费与多项消费均使用同一结果结构，不因订单项数不同切换成完全不同样式</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>说明</strong>: 成功结果页必须能回溯顾客是否使用了优惠券、扣了多少预存款、扣了多少游戏币、外部补差多少，不能只展示商品明细而缺少结算结果。</p>
+</blockquote>
 <h4 id="功能说明-1">4.2.3 功能说明</h4>
 <table>
 <colgroup>
@@ -893,11 +1313,11 @@
 </tr>
 <tr>
 <td><strong>收银台</strong></td>
-<td>4Tab商品销售区，右侧结算单实时汇总。支持会员识别后享受折扣价</td>
+<td>4Tab商品销售区，右侧结算单实时汇总。支持会员识别后享受折扣价和会员资产自动抵扣</td>
 </tr>
 <tr>
 <td><strong>会员管理</strong></td>
-<td>查询/新增会员，支持手机号搜索和扫码识别。会员信息含等级/余额/积分/次数</td>
+<td>查询/新增会员，支持手机号搜索和扫码识别。会员信息含等级/预存款/游戏币/积分/次数</td>
 </tr>
 <tr>
 <td><strong>订单管理</strong></td>
@@ -928,11 +1348,11 @@
 <tbody>
 <tr>
 <td><strong>销售</strong></td>
-<td>单次消费无需选会员按原价结算。充值活动和套票必须先选会员。实体商品自动扣库存</td>
+<td>单次消费无需选会员按原价结算。识别会员后可享会员价、优惠券和会员资产自动抵扣能力，但<strong>不会因为选中会员而自动扣资产</strong>。充值活动和套票必须先选会员。实体商品自动扣库存</td>
 </tr>
 <tr>
 <td><strong>支付</strong></td>
-<td>支持微信/支付宝/现金/余额四种方式。微信/支付宝使用服务商模式</td>
+<td>支持微信/支付宝/现金/会员资产自动抵扣。微信/支付宝使用服务商模式；预存款和游戏币仅在点击结算确认后发生扣减</td>
 </tr>
 <tr>
 <td><strong>退款</strong></td>
@@ -945,6 +1365,10 @@
 <tr>
 <td><strong>离线</strong></td>
 <td>断网时商品缓存本地，订单入本地队列，联网后批量同步</td>
+</tr>
+<tr>
+<td><strong>会员资产不足</strong></td>
+<td>若会员资产不足且商品允许补差，则提示差额并允许微信/支付宝/现金补差；若商品为<code>仅游戏币</code>，游戏币不足时禁止结算</td>
 </tr>
 </tbody>
 </table>
@@ -963,7 +1387,7 @@
 <tbody>
 <tr>
 <td><strong>到店消费（收银开单）</strong></td>
-<td>顾客到前台 → 收银员选”单次消费”Tab → 可选会员识别 → 点击游戏加入结算单 → 确认金额 → 选支付方式 → 顾客付款 → 打印小票 → 分配VR设备</td>
+<td>顾客到前台 → 收银员选”单次消费”Tab → 可选会员识别 → 点击游戏加入结算单 → 系统试算会员价/优惠/预存款/游戏币/补差金额 → 收银员确认扣款或外部补差 → 支付成功 → 打印小票 → 分配VR设备</td>
 </tr>
 <tr>
 <td><strong>会员充值</strong></td>
@@ -976,6 +1400,90 @@
 <tr>
 <td><strong>交接班</strong></td>
 <td>点击交接班 → 显示营收汇总 → 输入现金盘点额 → 系统自动计算差异 → 接班人确认 → 完成</td>
+</tr>
+</tbody>
+</table>
+<h4 id="会员扣费页补充规则">4.2.6 会员扣费页补充规则</h4>
+<p>会员扣费页（菜单：<code>会员扣费</code>）与销售页在会员资产能力上遵循同一原则，但页面定位为“会员账户资产扣减”。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>扣费前校验</strong></td>
+<td>根据商品支付范围自动计算预存款、游戏币和补差金额</td>
+</tr>
+<tr>
+<td><strong>游戏币规则</strong></td>
+<td>游戏币不作为手动按钮，由系统自动决策；<code>仅游戏币</code>商品游戏币不足时禁止扣费</td>
+</tr>
+<tr>
+<td><strong>资产不足提示</strong></td>
+<td>页面显示<code>仍需支付 ¥XX.XX</code>或<code>游戏币不足</code>，按商品规则决定是否允许补差</td>
+</tr>
+<tr>
+<td><strong>充值引导</strong></td>
+<td>预存款不足且商品不允许游戏币或补差时，可提供<code>去充值</code>入口，跳转到销售页充值Tab，并保留当前会员上下文</td>
+</tr>
+<tr>
+<td><strong>优惠参与</strong></td>
+<td>会员扣费页若使用优惠券，实扣金额按<code>商品合计 - 优惠合计</code>计算</td>
+</tr>
+<tr>
+<td><strong>扣费成功结果</strong></td>
+<td>成功弹窗采用与销售页一致的小票式结构，展示<code>商品合计</code>、<code>优惠券</code>（如有）、<code>优惠合计</code>、<code>预存款抵扣</code>、<code>游戏币抵扣</code>、<code>外部补差</code>、<code>会员资产变化</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="现有收银原型调整清单v1.7新增">4.2.7 现有收银原型调整清单（v1.7新增）</h4>
+<p>结合当前收银系统原型，需做以下调整：</p>
+<table>
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr>
+<th>页面/组件</th>
+<th>需要调整的内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>销售页右侧结算栏</td>
+<td>从“余额是否足够”升级为“会员资产抵扣预览”，展示优惠、预存款、游戏币、仍需支付</td>
+</tr>
+<tr>
+<td>支付弹窗</td>
+<td>支付方式按钮只展示微信/支付宝/现金等外部支付；会员资产抵扣放在金额明细区，游戏币不做手动按钮</td>
+</tr>
+<tr>
+<td>会员扣费页</td>
+<td>由“仅余额扣费”升级为“预存款/游戏币自动扣费”，并支持按商品规则判断是否允许补差</td>
+</tr>
+<tr>
+<td>成功弹窗/小票</td>
+<td>增加预存款和游戏币的扣减前后值；混合支付需拆分展示每一类支付</td>
+</tr>
+<tr>
+<td>订单详情</td>
+<td>支付内容字段需拆成<code>优惠明细</code>、<code>预存款抵扣</code>、<code>游戏币抵扣</code>、<code>外部支付补差</code>、<code>退款/冲正记录</code></td>
+</tr>
+<tr>
+<td>交接班/日结</td>
+<td>保留现金盘点，同时新增会员资产消耗统计；现金不进入拉卡拉实时分账</td>
+</tr>
+<tr>
+<td>商品配置原型</td>
+<td>增加商品支付范围：<code>仅外部支付</code>、<code>可预存款</code>、<code>可游戏币</code>、<code>仅游戏币</code>、<code>可混合支付</code></td>
 </tr>
 </tbody>
 </table>
@@ -1016,7 +1524,7 @@
 </tr>
 <tr>
 <td style="text-align: center;">④ 支付</td>
-<td>扫码付款（或会员余额抵扣）</td>
+<td>扫码付款（或会员资产自动抵扣）</td>
 <td>生成二维码，15分钟倒计时</td>
 </tr>
 <tr>
@@ -1080,7 +1588,7 @@
 <td style="text-align: center;">4</td>
 <td><strong>扫码支付</strong></td>
 <td>大二维码(微信/支付宝) + 金额 + 15分钟倒计时 + 状态轮询</td>
-<td>会员可用余额抵扣</td>
+<td>会员可按规则使用预存款/游戏币抵扣</td>
 </tr>
 <tr>
 <td style="text-align: center;">5</td>
@@ -1103,7 +1611,7 @@
 <tr>
 <td style="text-align: center;">8</td>
 <td><strong>结算完成</strong></td>
-<td>消费明细 + 剩余余额/次数 + 评分入口 + “返回首页”</td>
+<td>消费明细 + 剩余预存款/游戏币 + 评分入口 + “返回首页”</td>
 <td>可打印小票</td>
 </tr>
 <tr>
@@ -1143,11 +1651,11 @@
 </tr>
 <tr>
 <td><strong>会员登录</strong></td>
-<td>支持微信扫码登录和输入手机号验证。登录后享受会员价、查看余额/次数。不登录以散客身份按原价体验</td>
+<td>支持微信扫码登录和输入手机号验证。登录后享受会员价、查看预存款/游戏币。不登录以散客身份按原价体验</td>
 </tr>
 <tr>
 <td><strong>扫码支付</strong></td>
-<td>选择游戏后生成支付二维码（微信+支付宝），显示金额和15分钟倒计时。会员可用余额或次数直接扣除</td>
+<td>选择游戏后生成支付二维码（微信+支付宝），显示金额和15分钟倒计时。会员可按规则使用预存款/游戏币，资产不足时外部支付补差</td>
 </tr>
 <tr>
 <td><strong>设备分配与引导</strong></td>
@@ -1159,7 +1667,7 @@
 </tr>
 <tr>
 <td><strong>结算评价</strong></td>
-<td>游戏结束后展示消费明细（游戏名称/时长/金额）、剩余余额/次数，提供五星评分入口</td>
+<td>游戏结束后展示消费明细（游戏名称/时长/金额）、剩余预存款/游戏币，提供五星评分入口</td>
 </tr>
 </tbody>
 </table>
@@ -1178,11 +1686,11 @@
 <tbody>
 <tr>
 <td><strong>身份</strong></td>
-<td>散客无需登录按原价支付。会员登录后显示会员价，可用余额或次数消费。同一终端一次接待一位顾客</td>
+<td>散客无需登录按原价支付。会员登录后显示会员价，可用预存款/游戏币消费。同一终端一次接待一位顾客</td>
 </tr>
 <tr>
 <td><strong>支付</strong></td>
-<td>支持微信/支付宝扫码、会员余额/次数扣除。扫码支付15分钟超时自动取消。支付成功即时分配VR设备</td>
+<td>支持微信/支付宝扫码、会员资产自动抵扣。扫码支付15分钟超时自动取消。支付成功即时分配VR设备</td>
 </tr>
 <tr>
 <td><strong>设备分配</strong></td>
@@ -1225,7 +1733,7 @@
 </tr>
 <tr>
 <td><strong>会员自助体验</strong></td>
-<td>到店→登录(微信扫码/手机验证)→ 显示会员信息→ 浏览游戏(会员价)→ 选游戏→ 余额扣款或扫码→ 分配设备→ 佩戴VR→ 玩游戏→ 结算(含积分变动)</td>
+<td>到店→登录(微信扫码/手机验证)→ 显示会员信息→ 浏览游戏(会员价)→ 选游戏→ 系统展示预存款/游戏币/补差明细 → 用户确认支付 → 分配设备 → 佩戴VR → 玩游戏 → 结算(含资产变动)</td>
 </tr>
 <tr>
 <td><strong>提前结束</strong></td>
@@ -1517,7 +2025,7 @@
 </tbody>
 </table>
 <h5 id="游戏豆余额不足提示">游戏豆余额不足提示</h5>
-<p>PC 终端在以下时机检测并提示余额不足：</p>
+<p>PC 终端在以下时机检测并提示商家游戏豆余额不足：</p>
 <table>
 <thead>
 <tr>
@@ -1532,7 +2040,7 @@
 </tr>
 <tr>
 <td>多人模式选人数后</td>
-<td>弹窗：「余额不足，建议减少人数」</td>
+<td>弹窗：「商家游戏豆余额不足，建议减少人数」</td>
 </tr>
 <tr>
 <td>扫码支付前</td>
@@ -1548,14 +2056,14 @@
 <h5 id="时长限制与自动结束">时长限制与自动结束</h5>
 <p>对于开启时长限制的游戏： - PC 终端监控界面（Playing）大字体显示剩余时间 + 进度条 - 倒计时 1 分钟时发出视觉提醒，10 秒时数字倒数 - 倒计时归零 → 后端自动终止 Session → VR 退出 → PC 跳转结算 - 提供「提前结束」按钮，按实际游玩时长结算</p>
 <p><strong>游戏详情接口返回的运营字段</strong>：</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;runPlatform&quot;</span><span class="fu">:</span> <span class="st">&quot;host&quot;</span><span class="fu">,</span>         <span class="er">//</span> <span class="er">host</span> <span class="er">|</span> <span class="er">allInOne</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gameBeanCost&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span>            <span class="er">//</span> <span class="er">游戏豆消耗（个/次/人）</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payMode&quot;</span><span class="fu">:</span> <span class="st">&quot;single&quot;</span><span class="fu">,</span>           <span class="er">//</span> <span class="er">single</span> <span class="er">|</span> <span class="er">multi</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gameType&quot;</span><span class="fu">:</span> <span class="st">&quot;standalone&quot;</span><span class="fu">,</span>      <span class="er">//</span> <span class="er">standalone</span> <span class="er">|</span> <span class="er">online</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeLimitEnabled&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span>      <span class="er">//</span> <span class="er">时长限制开关</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeLimitMinutes&quot;</span><span class="fu">:</span> <span class="dv">10</span>         <span class="er">//</span> <span class="er">限制时长（分钟）</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;runPlatform&quot;</span><span class="fu">:</span> <span class="st">&quot;host&quot;</span><span class="fu">,</span>         <span class="er">//</span> <span class="er">host</span> <span class="er">|</span> <span class="er">allInOne</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gameBeanCost&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span>            <span class="er">//</span> <span class="er">游戏豆消耗（个/次/人）</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payMode&quot;</span><span class="fu">:</span> <span class="st">&quot;single&quot;</span><span class="fu">,</span>           <span class="er">//</span> <span class="er">single</span> <span class="er">|</span> <span class="er">multi</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gameType&quot;</span><span class="fu">:</span> <span class="st">&quot;standalone&quot;</span><span class="fu">,</span>      <span class="er">//</span> <span class="er">standalone</span> <span class="er">|</span> <span class="er">online</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeLimitEnabled&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span>      <span class="er">//</span> <span class="er">时长限制开关</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeLimitMinutes&quot;</span><span class="fu">:</span> <span class="dv">10</span>         <span class="er">//</span> <span class="er">限制时长（分钟）</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <hr />
 <h3 id="vr头显终端">4.4 VR头显终端</h3>
 <blockquote>
@@ -1867,23 +2375,23 @@
 </blockquote>
 <p>后端→VR终端的MQTT命令topic：<code>/device/{deviceId}/command</code></p>
 <p><strong>指令格式</strong>：</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;launch_game&quot;</span><span class="fu">,</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;params&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;game_id&quot;</span><span class="fu">:</span> <span class="st">&quot;roller-coaster-vr&quot;</span><span class="fu">,</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;game_package&quot;</span><span class="fu">:</span> <span class="st">&quot;com.thk.rollercoster&quot;</span><span class="fu">,</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;launch_type&quot;</span><span class="fu">:</span> <span class="st">&quot;unity_scene&quot;</span><span class="fu">,</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;arguments&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;session_id&quot;</span><span class="fu">:</span> <span class="st">&quot;sess_20260504_abc123&quot;</span><span class="fu">,</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;api_base_url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://api.touhaokongjian.com/v2&quot;</span><span class="fu">,</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;store_token&quot;</span><span class="fu">:</span> <span class="st">&quot;tk_store_szft_xxxxxx&quot;</span><span class="fu">,</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;member_id&quot;</span><span class="fu">:</span> <span class="st">&quot;mb_001&quot;</span><span class="fu">,</span></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;game_params&quot;</span><span class="fu">:</span> <span class="st">&quot;{</span><span class="ch">\&quot;</span><span class="st">difficulty</span><span class="ch">\&quot;</span><span class="st">:</span><span class="ch">\&quot;</span><span class="st">normal</span><span class="ch">\&quot;</span><span class="st">,</span><span class="ch">\&quot;</span><span class="st">language</span><span class="ch">\&quot;</span><span class="st">:</span><span class="ch">\&quot;</span><span class="st">zh-CN</span><span class="ch">\&quot;</span><span class="st">}&quot;</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;expires_at&quot;</span><span class="fu">:</span> <span class="dv">1714435200000</span><span class="fu">,</span></span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;signature&quot;</span><span class="fu">:</span> <span class="st">&quot;hmac-sha256-...&quot;</span></span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;launch_game&quot;</span><span class="fu">,</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;params&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;game_id&quot;</span><span class="fu">:</span> <span class="st">&quot;roller-coaster-vr&quot;</span><span class="fu">,</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;game_package&quot;</span><span class="fu">:</span> <span class="st">&quot;com.thk.rollercoster&quot;</span><span class="fu">,</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;launch_type&quot;</span><span class="fu">:</span> <span class="st">&quot;unity_scene&quot;</span><span class="fu">,</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;arguments&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;session_id&quot;</span><span class="fu">:</span> <span class="st">&quot;sess_20260504_abc123&quot;</span><span class="fu">,</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;api_base_url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://api.touhaokongjian.com/v2&quot;</span><span class="fu">,</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;store_token&quot;</span><span class="fu">:</span> <span class="st">&quot;tk_store_szft_xxxxxx&quot;</span><span class="fu">,</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;member_id&quot;</span><span class="fu">:</span> <span class="st">&quot;mb_001&quot;</span><span class="fu">,</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;game_params&quot;</span><span class="fu">:</span> <span class="st">&quot;{</span><span class="ch">\&quot;</span><span class="st">difficulty</span><span class="ch">\&quot;</span><span class="st">:</span><span class="ch">\&quot;</span><span class="st">normal</span><span class="ch">\&quot;</span><span class="st">,</span><span class="ch">\&quot;</span><span class="st">language</span><span class="ch">\&quot;</span><span class="st">:</span><span class="ch">\&quot;</span><span class="st">zh-CN</span><span class="ch">\&quot;</span><span class="st">}&quot;</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;expires_at&quot;</span><span class="fu">:</span> <span class="dv">1714435200000</span><span class="fu">,</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;signature&quot;</span><span class="fu">:</span> <span class="st">&quot;hmac-sha256-...&quot;</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p><strong>Launcher处理流程</strong>：</p>
 <pre><code>收到 launch_game 指令
   → 校验 signature(防篡改)
@@ -2551,12 +3059,17 @@
 </tr>
 <tr>
 <td style="text-align: center;">🏪 <strong>商家结算</strong></td>
-<td>月度流水汇总/平台收入计算/待结算列表</td>
+<td>商家应结金额、现金留存抵扣、拉卡拉分账状态、平台应收</td>
 <td style="text-align: center;">超管/财务</td>
 </tr>
 <tr>
 <td style="text-align: center;">🤝 <strong>代理商结算</strong></td>
-<td>全平台代理商分润概览、按级别筛选、阶梯系数应用结果</td>
+<td>全平台代理商分润概览、按级别筛选、阶梯系数应用结果、拉卡拉打款状态</td>
+<td style="text-align: center;">超管/财务</td>
+</tr>
+<tr>
+<td style="text-align: center;">🎮 <strong>CP结算</strong></td>
+<td>有效体验次数、单次成本价、退款冲减、拉卡拉打款状态</td>
 <td style="text-align: center;">超管/财务</td>
 </tr>
 <tr>
@@ -2571,11 +3084,62 @@
 </tr>
 <tr>
 <td style="text-align: center;">🔍 <strong>对账中心</strong></td>
-<td>平台×渠道×商家×代理四方比对、差异高亮、人工调账、报告导出</td>
+<td>平台×拉卡拉×商家×代理商×CP 五方比对、差异高亮、人工调账、报告导出</td>
 <td style="text-align: center;">财务</td>
 </tr>
 </tbody>
 </table>
+<h4 id="拉卡拉分账管理要求v1.7新增">4.8.2.1 拉卡拉分账管理要求（v1.7新增）</h4>
+<p>平台财务模块需要支持三类结算对象：</p>
+<table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 29%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr>
+<th>结算对象</th>
+<th>结算来源</th>
+<th>默认结算方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>商家</td>
+<td>外部支付实收、现金实收、预存款消费确认、游戏币消费确认、退款冲正</td>
+<td>微信/支付宝可实时分账；现金和会员资产进入周期结算</td>
+</tr>
+<tr>
+<td>代理商</td>
+<td>游戏豆采购、商家交易流水、平台服务费等合同约定基数</td>
+<td>周期结算，通过拉卡拉分账/代付</td>
+</tr>
+<tr>
+<td>CP</td>
+<td>有效体验次数 × 单次成本价，或合同约定的收入分成</td>
+<td>周期结算，通过拉卡拉分账/代付</td>
+</tr>
+</tbody>
+</table>
+<p>现金订单处理：</p>
+<ul>
+<li>现金不进入拉卡拉实时分账。</li>
+<li>现金由商家现场留存，必须进入交班/日结现金账。</li>
+<li>若现金订单产生 CP 成本、代理商分润或平台服务费，优先从商家后续拉卡拉结算款中抵扣。</li>
+<li>后续结算款不足时，生成平台应收并支持财务催收或下期滚动抵扣。</li>
+</ul>
+<p>对账中心必须拆分展示：</p>
+<pre><code>拉卡拉通道实收
+现金实收
+预存款消耗
+游戏币消耗
+优惠减免
+退款冲正
+商家应结
+代理商应发
+CP应发
+平台应收</code></pre>
 <h4 id="代理商结算页">4.8.3 代理商结算页</h4>
 <blockquote>
 <p>平台方查看和管理所有代理商分润数据的主页面。</p>
@@ -2605,9 +3169,9 @@
 <li><strong>自动打款条件</strong>: 金额≥¥100、账户完整、无申诉、合约有效</li>
 <li><strong>状态流转</strong>: 待打款→打款中→已打款→完成，及异常拦截</li>
 <li><strong>自动校验</strong>: 4项规则全部满足才自动提交，任一不通过→人工处理</li>
-<li><strong>异常场景</strong>: 账户名不符/未开户/金额不足/申诉冻结等，支持重试或转为线下打款并上传凭证——|:—–:|———| | 数据中心 | 4 | 全局大屏/多维报表/内容消费大盘/设备总览 | | 门店体系 | 3 | 全平台门店CRUD/商家管理/代理商管理 | | 内容中心 | 6 | 游戏库CRUD/审核/Banner 管理/生日会主题资源/分发推送 | | 会员中心(全网) | 9 | 跨店检索/增长分析/储值审计/游戏币/预存次数 | | 订单流水 | 6 | 6种订单类型独立视图(cashier/vod/manual/balance/gamebean/promo) | | <strong>平台财务（★v1.3展开）</strong> | <strong>8</strong> | <strong>营收总览/游戏豆销售/商家结算/代理商结算/阶梯策略/打款管理/对账中心/财务报表</strong> | | 平台账号 | 2 | 员工账号/RBAC权限矩阵 | | 帮助通知 | 5 | 文档/FAQ/公告/推送/inbox | | 系统运维+支持 | 7 | 版本发布/告警/日志/工单/帮助 | | 个人中心 | 2 | 个人信息/安全设置 |</li>
+<li><strong>异常场景</strong>: 账户名不符/未开户/金额不足/申诉冻结等，支持重试或转为线下打款并上传凭证——|:—–:|———| | 数据中心 | 4 | 全局大屏/多维报表/内容消费大盘/设备总览 | | 门店体系 | 3 | 全平台门店CRUD/商家管理/代理商管理 | | 内容中心 | 6 | 游戏库CRUD/审核/Banner 管理/生日会主题资源/分发推送 | | 会员中心(全网) | 9 | 跨店检索/增长分析/储值审计/游戏币/预存次数 | | 订单流水 | 6 | 6种订单类型独立视图(cashier/vod/manual/balance/gamebean/promo) | | <strong>平台财务（★v1.7展开）</strong> | <strong>9</strong> | <strong>营收总览/游戏豆销售/商家结算/代理商结算/CP结算/阶梯策略/打款管理/对账中心/财务报表</strong> | | 平台账号 | 2 | 员工账号/RBAC权限矩阵 | | 帮助通知 | 5 | 文档/FAQ/公告/推送/inbox | | 系统运维+支持 | 7 | 版本发布/告警/日志/工单/帮助 | | 个人中心 | 2 | 个人信息/安全设置 |</li>
 </ul>
-<h4 id="平台财务模块详细页面清单8页">4.8.2 平台财务模块详细页面清单（8页）</h4>
+<h4 id="平台财务模块详细页面清单9页">4.8.2 平台财务模块详细页面清单（9页）</h4>
 <blockquote>
 <p>本模块是<strong>平台侧财务闭环的核心</strong>，对应代理商系统的「分润明细→结算记录→提现账户」三大页面，但视角为<strong>平台管理者视角</strong>——负责审核、打款、调整、异常处理。</p>
 </blockquote>
@@ -2637,12 +3201,17 @@
 </tr>
 <tr>
 <td style="text-align: center;">🏪 <strong>商家结算</strong></td>
-<td>月度流水汇总/平台收入计算/待结算列表/已打款记录</td>
+<td>商家应结金额、现金留存抵扣、拉卡拉分账状态、平台应收</td>
 <td style="text-align: center;">超管/财务</td>
 </tr>
 <tr>
 <td style="text-align: center;">🤝 <strong>代理商结算</strong></td>
-<td>全平台代理商分润概览/按级别筛选/阶梯系数应用结果/应发总额</td>
+<td>全平台代理商分润概览、阶梯系数应用结果、拉卡拉打款状态</td>
+<td style="text-align: center;">超管/财务</td>
+</tr>
+<tr>
+<td style="text-align: center;">🎮 <strong>CP结算</strong></td>
+<td>有效体验次数、单次成本价、退款冲减、拉卡拉打款状态</td>
 <td style="text-align: center;">超管/财务</td>
 </tr>
 <tr>
@@ -2657,7 +3226,7 @@
 </tr>
 <tr>
 <td style="text-align: center;">🔍 <strong>对账中心</strong></td>
-<td>平台×渠道×商家×代理四方比对+差异高亮+人工调账+报告导出(Excel/PDF)</td>
+<td>平台×拉卡拉×商家×代理商×CP 五方比对+差异高亮+人工调账+报告导出(Excel/PDF)</td>
 <td style="text-align: center;">财务</td>
 </tr>
 <tr>
@@ -3466,12 +4035,12 @@
 9. 离店</code></pre>
 <h4 id="场景二会员身份消费">5.1.2 场景二：会员身份消费</h4>
 <pre><code>1. 到店 → 2. 在PC终端点击&quot;微信扫码登录&quot; 或 输入手机号验证
-3. 验证身份 → 后端返回会员信息(余额¥256/金卡/95折)
+3. 验证身份 → 后端返回会员信息(预存款¥256/游戏币120/金卡/95折)
 4. 浏览游戏 → 价格显示会员价(打95折)
-5. 点击&quot;开始体验&quot; → 选择支付方式:
-   ├─ 余额支付: 直接扣款 → 进入分配设备
-   ├─ 次数/套票: 扣减剩余次数 → 进入分配设备
-   └─ 扫码支付: 显示二维码 → 手机扫码 → 进入分配设备
+5. 点击&quot;开始体验&quot; → 系统试算支付明细:
+   ├─ 会员资产足够: 展示预存款/游戏币扣减明细 → 用户确认 → 进入分配设备
+   ├─ 会员资产不足且允许补差: 展示资产抵扣 + 微信/支付宝补差 → 支付完成 → 进入分配设备
+   └─ 散客或不使用会员资产: 显示二维码 → 手机扫码 → 进入分配设备
 6. 后端分配空闲VR设备 → 显示&quot;请佩戴 #03 头盔&quot;
 7. 玩游戏 → 结束 → PC终端结算(含会员积分变动)</code></pre>
 <h4 id="场景三小程序预约到店">5.1.3 场景三：小程序预约到店</h4>
@@ -3661,6 +4230,32 @@
 </tr>
 </tbody>
 </table>
+<h4 id="拉卡拉分账与现金周期结算总流程v1.7新增">5.3.5 拉卡拉分账与现金周期结算总流程（v1.7新增）</h4>
+<p>除代理商游戏豆采购分润外，平台还需要处理商家、代理商、CP 的完整资金结算。</p>
+<pre class="mermaid">flowchart TB
+    A[&quot;订单完成&quot;] --&gt; B[&quot;拆分支付明细&quot;]
+    B --&gt; C1[&quot;拉卡拉通道实收&lt;br/&gt;微信/支付宝&quot;]
+    B --&gt; C2[&quot;现金实收&lt;br/&gt;门店现场留存&quot;]
+    B --&gt; C3[&quot;会员资产消耗&lt;br/&gt;预存款/游戏币&quot;]
+    C1 --&gt; D1[&quot;可实时分账或进入拉卡拉结算&quot;]
+    C2 --&gt; D2[&quot;进入交班/日结现金账&quot;]
+    C3 --&gt; D3[&quot;进入平台业务账&quot;]
+    D1 &amp; D2 &amp; D3 --&gt; E[&quot;生成商家/代理商/CP结算单&quot;]
+    E --&gt; F[&quot;扣除退款、优惠、CP成本、代理商分润、平台服务费&quot;]
+    F --&gt; G1[&quot;可用拉卡拉资金&lt;br/&gt;提交分账/代付&quot;]
+    F --&gt; G2[&quot;现金留存或资金不足&lt;br/&gt;生成平台应收/下期抵扣&quot;]
+    G1 --&gt; H[&quot;同步回调与对账文件&quot;]
+    G2 --&gt; I[&quot;财务跟进&lt;br/&gt;催收/转账/滚动抵扣&quot;]
+    H --&gt; J[&quot;已到账/失败/异常处理&quot;]</pre>
+<p>核心规则：</p>
+<ul>
+<li>微信/支付宝等拉卡拉通道资金可实时分账。</li>
+<li>现金不经过拉卡拉，默认由商家现场留存，只进入现金账和周期应收应付计算，不进入拉卡拉当前交易可分账金额。</li>
+<li>预存款和游戏币是平台业务账，不伪造成拉卡拉实时交易。</li>
+<li>CP收益按有效体验、单次成本价或合同分成规则计算。</li>
+<li>代理商分润按游戏豆采购、商家交易流水、平台服务费等合同基数计算。</li>
+<li>已退款、体验无效、自动退还等场景必须冲减商家、代理商、CP对应结算单。</li>
+</ul>
 <h3 id="会员生命周期">5.4 会员生命周期</h3>
 <p>注册 → 普通 → (首次充值)激活 → 银/金/钻/黑金五级升降 → (12月不活跃)降级 → 注销/黑名单</p>
 <h3 id="设备状态机">5.5 设备状态机</h3>
@@ -4420,8 +5015,24 @@ VR终端重新上电
 <td>Role-Based Access Control，基于角色的访问控制</td>
 </tr>
 <tr>
+<td><strong>预存款</strong></td>
+<td>会员账户内人民币余额，充值后形成会员负债，消费时释放</td>
+</tr>
+<tr>
+<td><strong>游戏币</strong></td>
+<td>会员账户消费资产，和预存款按1:1抵扣，由系统自动决策是否消耗</td>
+</tr>
+<tr>
 <td><strong>游戏豆</strong></td>
 <td>B端运营代币，商家从平台购买，用于启动游戏给C端用户体验</td>
+</tr>
+<tr>
+<td><strong>拉卡拉分账</strong></td>
+<td>通过拉卡拉对微信/支付宝等真实支付资金进行分账、结算、回调和对账</td>
+</tr>
+<tr>
+<td><strong>平台应收</strong></td>
+<td>现金由商家留存但需向平台补缴的金额，或后续结算款不足抵扣时形成的应收</td>
 </tr>
 <tr>
 <td><strong>OTA</strong></td>
@@ -4450,6 +5061,7 @@ VR终端重新上电
 📎 v1.4 新增: 游戏运营设置（游戏豆消耗、时长限制、付费模式）<br />
 📎 v1.5 新增: 生日会主题资源管理（通用配置 + 小寿星专属资源，平台端 &amp; 商家端数据互通）<br />
 📎 v1.6 新增: CP供应商终端（游戏CP自助提交游戏、按次结算、数据看板、提现管理），合并自 <code>cp-terminal-prd.md</code><br />
+📎 v1.7 新增: 支付资产自动抵扣、现金周期结算、拉卡拉商家/代理商/CP分账与原型调整清单<br />
 © 2026 头号空间 All Rights Reserved</p>
 </blockquote>
 </div></body></html>

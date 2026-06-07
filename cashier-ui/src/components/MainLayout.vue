@@ -99,7 +99,7 @@
             <strong>{{ currentTime }}</strong>
           </div>
           <button class="window-btn" type="button" aria-label="刷新">
-            <el-icon><Refresh /></el-icon>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
           </button>
           <button class="window-btn" type="button" aria-label="最小化">
             <el-icon><Minus /></el-icon>
@@ -129,7 +129,7 @@
             <strong>当班营收交班</strong>
             <div class="shift-modal-actions">
               <button type="button" class="shift-header-btn" aria-label="刷新">
-                <el-icon><Refresh /></el-icon>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
               </button>
               <button type="button" class="shift-header-btn" aria-label="关闭交班结算" @click="closeShiftModal">
                 <el-icon><Close /></el-icon>
@@ -224,7 +224,6 @@ import {
   Close,
   Document,
   Minus,
-  Refresh,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

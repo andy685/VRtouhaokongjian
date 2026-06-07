@@ -92,6 +92,7 @@
     <MemberSelectModal
       :visible="showMemberSelect"
       @close="showMemberSelect = false"
+      @select="handleMemberSelected"
     />
 
     <!-- 新增会员弹窗 -->
@@ -111,10 +112,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
 import RegisterCodeModal from '../../components/RegisterCodeModal.vue'
+
+const router = useRouter()
 
 const search = ref('')
 const currentPage = ref(1)
@@ -149,6 +153,13 @@ const handleNewMemberSubmit = (data) => {
     times: pkg && pkg.name.includes('次套票') ? parseInt(pkg.name) || 0 : 0,
     lastVisit: '-'
   })
+}
+
+const handleMemberSelected = (member) => {
+  showMemberSelect.value = false
+  if (member?.id) {
+    router.push(`/member/${member.id}`)
+  }
 }
 </script>
 

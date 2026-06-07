@@ -9,9 +9,11 @@
       @click.self="$emit('close')"
     >
       <section class="ds-dialog" :class="`ds-dialog--${type}`">
-        <button type="button" class="ds-close" :aria-label="`关闭${title}提示`" @click="$emit('close')">
-          <el-icon><Close /></el-icon>
-        </button>
+        <div class="ds-header-actions">
+          <button type="button" class="ds-close" :aria-label="`关闭${title}提示`" @click="$emit('close')">
+            <el-icon><Close /></el-icon>
+          </button>
+        </div>
 
         <div class="ds-hero">
           <!-- 注册类型：人像图标 -->
@@ -47,11 +49,51 @@
           <div class="ds-detail-card">
             <h3>{{ subtitle }}</h3>
             <dl class="ds-detail-list">
-              <div v-for="item in displayDetails" :key="item.label" class="ds-detail-row">
-                <dt>{{ item.label }}</dt>
+              <div
+                v-for="(item, idx) in displayDetails"
+                :key="item.label"
+                class="ds-detail-row"
+                :class="{ 'ds-detail-row--summary': item.isSummary, 'ds-detail-row--first-summary': item.isSummary && !displayDetails[idx - 1]?.isSummary }"
+              >
+                <dt>
+                  <span class="ds-detail-label">{{ item.label }}</span>
+                  <span v-if="item.subvalue" class="ds-detail-subvalue">{{ item.subvalue }}</span>
+                </dt>
                 <dd :class="{ 'dd-accent': type === 'register' && item.label === '会员姓名' }">{{ item.value }}</dd>
               </div>
             </dl>
+
+            <!-- §8.1 支付拆分区 -->
+            <template v-if="paymentLines && paymentLines.length > 0">
+              <div class="ds-divider"></div>
+              <h3 class="ds-section-title ds-section-title--payment">支付明细</h3>
+              <dl class="ds-detail-list">
+                <div v-for="line in paymentLines" :key="line.label" class="ds-detail-row">
+                  <dt>
+                    <span class="ds-detail-label">{{ line.label }}</span>
+                  </dt>
+                  <dd :class="{ 'dd-green': line.isDiscount, 'dd-red': line.isPayment }">{{ line.value }}</dd>
+                </div>
+              </dl>
+            </template>
+
+            <!-- §8.1 会员资产变化区 -->
+            <template v-if="assetChanges && assetChanges.length > 0">
+              <div class="ds-divider"></div>
+              <h3 class="ds-section-title ds-section-title--asset">会员资产</h3>
+              <dl class="ds-detail-list">
+                <div v-for="change in assetChanges" :key="change.label" class="ds-detail-row ds-detail-row--asset">
+                  <dt>
+                    <span class="ds-detail-label">{{ change.label }}</span>
+                  </dt>
+                  <dd>
+                    <span class="ds-asset-before">{{ change.before }}</span>
+                    <span class="ds-asset-arrow">→</span>
+                    <span class="ds-asset-after">{{ change.after }}</span>
+                  </dd>
+                </div>
+              </dl>
+            </template>
           </div>
         </div>
       </section>
@@ -69,7 +111,11 @@ const props = defineProps({
   title: { type: String, default: '扣费成功' },
   subtitle: { type: String, default: '本次扣费如下' },
   details: { type: Array, default: () => [] },
-  type: { type: String, default: 'default' }
+  type: { type: String, default: 'default' },
+  // §8.1 支付拆分行：[{label, value, isDiscount, isPayment}]
+  paymentLines: { type: Array, default: () => [] },
+  // §8.1 资产变化行：[{label, before, after}]
+  assetChanges: { type: Array, default: () => [] }
 })
 
 defineEmits(['close'])
@@ -96,7 +142,7 @@ const displayDetails = computed(() => {
 
 .ds-dialog {
   position: relative;
-  width: min(88vw, 356px);
+  width: min(92vw, 392px);
   min-height: 336px;
   display: flex;
   flex-direction: column;
@@ -104,13 +150,19 @@ const displayDetails = computed(() => {
   padding-top: 0;
 }
 
-.ds-close {
+.ds-header-actions {
   position: absolute;
   top: -24px;
   right: -30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.ds-close {
   width: 40px;
   height: 40px;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +305,7 @@ const displayDetails = computed(() => {
 .ds-hero h2 {
   margin: 0;
   color: #1a7cff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 900;
   line-height: 1.2;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
@@ -381,9 +433,68 @@ const displayDetails = computed(() => {
   padding-top: 4px;
   color: #050505;
   text-align: center;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 900;
   line-height: 1.35;
+}
+
+/* Section divider — straight line between areas */
+.ds-divider {
+  margin: 18px 0 14px;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Section titles inside unified card */
+.ds-section-title {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.ds-section-title--payment {
+  color: #059669;
+}
+
+.ds-section-title--asset {
+  color: #1e40af;
+}
+
+/* Color-coded values */
+.dd-green {
+  color: #059669 !important;
+}
+
+.dd-red {
+  color: #dc2626 !important;
+}
+
+/* Asset change row */
+.ds-detail-row--asset dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ds-asset-before {
+  color: #64748b;
+  font-weight: 700;
+  text-decoration: line-through;
+  font-size: 13px;
+}
+
+.ds-asset-arrow {
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.ds-asset-after {
+  color: #1e293b;
+  font-weight: 900;
+  font-size: 15px;
 }
 
 .ds-detail-list {
@@ -391,10 +502,10 @@ const displayDetails = computed(() => {
 }
 
 .ds-detail-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 32px;
+  gap: 18px;
 }
 
 .ds-detail-row + .ds-detail-row {
@@ -404,21 +515,65 @@ const displayDetails = computed(() => {
 .ds-detail-row dt,
 .ds-detail-row dd {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.4;
 }
 
 .ds-detail-row dt {
   color: #8e8e8e;
   font-weight: 500;
+  min-width: 0;
+}
+
+.ds-detail-label,
+.ds-detail-subvalue {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ds-detail-label {
+  color: #6b7280;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ds-detail-subvalue {
+  margin-top: 2px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .ds-detail-row dd {
-  min-width: 56px;
+  min-width: 72px;
   color: #050505;
   text-align: right;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Summary row: bolder, slightly larger, with separator above */
+.ds-detail-row--first-summary {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #d1d5db;
+}
+
+.ds-detail-row--summary dt {
+  font-weight: 800;
+}
+
+.ds-detail-row--summary .ds-detail-label {
+  color: #374151;
+}
+
+.ds-detail-row--summary dd {
+  font-size: 15px;
+  color: #0f172a;
 }
 
 /* Register member name highlight */
@@ -452,15 +607,12 @@ const displayDetails = computed(() => {
   }
 
   .ds-dialog {
-    width: min(92vw, 340px);
+    width: min(94vw, 356px);
   }
 
-  .ds-close {
+  .ds-header-actions {
     top: -24px;
     right: -8px;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
   }
 
   .ds-hero {

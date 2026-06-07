@@ -122,6 +122,11 @@
           <span class="sub-value">128 家</span>
           <span class="sub-detail">省级 8 / 区域 24 / 城市 96</span>
         </div>
+        <div class="sub-metric-card">
+          <span class="sub-label">本月提现手续费</span>
+          <span class="sub-value">¥2,268</span>
+          <span class="sub-detail">拉卡拉提现手续费（约 0.3%）</span>
+        </div>
       </div>
 
       <div class="table-card">
@@ -130,6 +135,45 @@
           <n-button quaternary size="tiny" @click="$router.push('/platform/finance/payouts')">查看全部</n-button>
         </div>
         <n-data-table :columns="agentRankColumns" :data="agentRankData" :pagination="false" striped size="small" />
+      </div>
+    </div>
+
+    <!-- ======================== 四、CP供应商结算概览 ======================== -->
+    <div class="section-block" style="border-bottom: none; padding-bottom: 0;">
+      <div class="section-title-bar">
+        <span class="section-badge cp">CP 供应商结算</span>
+        <span class="section-desc">CP 有效体验收益结算与打款状态</span>
+      </div>
+
+      <div class="sub-metrics-row">
+        <div class="sub-metric-card">
+          <span class="sub-label">待结算</span>
+          <span class="sub-value warning">¥128,450</span>
+          <span class="sub-detail">23 笔，含退款冲正调整中 2 笔</span>
+        </div>
+        <div class="sub-metric-card">
+          <span class="sub-label">本月已到账</span>
+          <span class="sub-value accent">¥342,800</span>
+          <span class="sub-detail">18 笔，拉卡拉代付成功</span>
+        </div>
+        <div class="sub-metric-card">
+          <span class="sub-label">本月提现手续费</span>
+          <span class="sub-value">¥1,028</span>
+          <span class="sub-detail">拉卡拉提现手续费（约 0.3%）</span>
+        </div>
+        <div class="sub-metric-card">
+          <span class="sub-label">异常 / 失败</span>
+          <span class="sub-value" style="color: #EF4444;">¥0</span>
+          <span class="sub-detail">无异常结算单</span>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="section-header">
+          <h3>近期 CP 结算流水</h3>
+          <n-button quaternary size="tiny" @click="$router.push('/platform/cp/settlement')">查看全部</n-button>
+        </div>
+        <n-data-table :columns="cpSettleColumns" :data="cpSettleData" :pagination="{ pageSize: 5 }" striped size="small" />
       </div>
     </div>
   </div>
@@ -144,10 +188,10 @@ import {
 } from 'naive-ui'
 import * as echarts from 'echarts/core'
 import { LineChart, BarChart } from 'echarts/charts'
-import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
+import { TitleComponent, TooltipComponent, GridComponent, LegendComponent, GraphicComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
-echarts.use([LineChart, BarChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer])
+echarts.use([LineChart, BarChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, GraphicComponent, CanvasRenderer])
 import {
   TrendingUpOutline, WalletOutline, PeopleOutline
 } from '@vicons/ionicons5'
@@ -168,18 +212,18 @@ const settlementColumns = [
   {
     title: '状态', key: 'status', width: 75, align: 'center',
     render: (row: any) => h(NTag, {
-      type: row.status === 'done' ? 'success' : row.status === 'pending' ? 'warning' : 'default',
+      type: row.status === 'settled' ? 'success' : row.status === 'pending' ? 'warning' : 'default',
       size: 'small', bordered: false
     }, () => row.statusText),
   },
 ]
 
 const settlementData = [
-  { settlementNo: 'ST2026042001', merchant: '深圳XX科技公司', amount: 137963, fee: 4138.89, actual: 133824.11, status: 'done', statusText: '已打款', payTime: '2026-04-20 10:00' },
+  { settlementNo: 'ST2026042001', merchant: '深圳XX科技公司', amount: 137963, fee: 4138.89, actual: 133824.11, status: 'settled', statusText: '已打款', payTime: '2026-04-20 10:00' },
   { settlementNo: 'ST2026042002', merchant: '广州YY传媒公司', amount: 78230, fee: 2346.9, actual: 75883.1, status: 'pending', statusText: '待打款', payTime: '-' },
   { settlementNo: 'ST2026042003', merchant: '北京ZZ娱乐公司', amount: 45680, fee: 1370.4, actual: 44309.6, status: 'processing', statusText: '处理中', payTime: '-' },
   { settlementNo: 'ST2026042004', merchant: '上海WW投资公司', amount: 97850, fee: 2935.5, actual: 94914.5, status: 'pending', statusText: '待打款', payTime: '-' },
-  { settlementNo: 'ST2026041301', merchant: '杭州AA文化公司', amount: 156200, fee: 4686, actual: 151514, status: 'done', statusText: '已打款', payTime: '2026-04-14 11:30' },
+  { settlementNo: 'ST2026041301', merchant: '杭州AA文化公司', amount: 156200, fee: 4686, actual: 151514, status: 'settled', statusText: '已打款', payTime: '2026-04-14 11:30' },
 ]
 
 // ---- 代理商分润排行 ----
@@ -193,6 +237,7 @@ const agentRankColumns = [
   }, () => row.level) },
   { title: '游戏豆采购额', key: 'monthlyFlow', width: 110, render: (row: any) => `¥${row.monthlyFlow.toLocaleString()}` },
   { title: '应发分润', key: 'commission', width: 115, render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.commission.toLocaleString()}`) },
+  { title: '提现手续费', key: 'payoutFee', width: 90, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.commission * 0.003)).toLocaleString()}` },
   { title: '实际分润率', key: 'effectiveRate', width: 85, align: 'center', render: (row: any) => `${row.effectiveRate}%` },
 ]
 
@@ -202,6 +247,41 @@ const agentRankData = [
   { rank: 3, agentName: '深圳城市代理-C', level: '城市代理', monthlyFlow: 120000, commission: 5700, effectiveRate: 4.75 },
   { rank: 4, agentName: '成都城市代理-E', level: '城市代理', monthlyFlow: 88000, commission: 3960, effectiveRate: 4.5 },
   { rank: 5, agentName: '武汉创新体验-F', level: '城市代理', monthlyFlow: 65000, commission: 2925, effectiveRate: 4.5 },
+]
+
+// ---- CP 供应商结算流水表（按分账与对账说明 第7章） ----
+const cpSettleColumns = [
+  { title: '结算单号', key: 'settlementNo', width: 140, ellipsis: { tooltip: true } },
+  { title: 'CP 供应商', key: 'cpName' },
+  {
+    title: '有效体验', key: 'validPlayCount', width: 80, align: 'center',
+    render: (row: any) => `${row.validPlayCount} 次`
+  },
+  { title: '应结金额', key: 'cpSettleAmount', width: 110, render: (row: any) => `¥${row.cpSettleAmount.toLocaleString()}` },
+  { title: '退款冲减', key: 'refundAdjustment', width: 90, render: (row: any) => row.refundAdjustment > 0 ? `-¥${row.refundAdjustment.toLocaleString()}` : '-' },
+  { title: '实发金额', key: 'actualPayout', width: 110, render: (row: any) => `¥${row.actualPayout.toLocaleString()}` },
+  { title: '提现手续费', key: 'payoutFee', width: 95, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.cpSettleAmount * 0.003)).toLocaleString()}` },
+  {
+    title: '拉卡拉流水', key: 'lakalaSplitNo', width: 150,
+    render: (row: any) => row.lakalaSplitNo
+      ? h('span', { style: 'font-family:monospace;font-size:12px;' }, row.lakalaSplitNo)
+      : '-'
+  },
+  {
+    title: '状态', key: 'status', width: 75, align: 'center',
+    render: (row: any) => h(NTag, {
+      type: row.status === 'settled' ? 'success' : row.status === 'pending' ? 'warning' : row.status === 'adjusting' ? 'error' : 'default',
+      size: 'small', bordered: false
+    }, () => row.statusText),
+  },
+]
+
+const cpSettleData = [
+  { settlementNo: 'CP2026042001', cpName: '广州星辰游戏科技', validPlayCount: 12850, cpSettleAmount: 192750, refundAdjustment: 1200, actualPayout: 191550, lakalaSplitNo: 'LS2026042000987654', status: 'settled', statusText: '已到账' },
+  { settlementNo: 'CP2026042002', cpName: '上海梦幻互动娱乐', validPlayCount: 8620, cpSettleAmount: 129300, refundAdjustment: 450, actualPayout: 128850, lakalaSplitNo: 'LS2026041900543210', status: 'settled', statusText: '已到账' },
+  { settlementNo: 'CP2026041801', cpName: '北京极客乐园 CP', validPlayCount: 5380, cpSettleAmount: 80700, refundAdjustment: 0, actualPayout: 80700, lakalaSplitNo: 'LS2026041700321098', status: 'settled', statusText: '已到账' },
+  { settlementNo: 'CP2026042501', cpName: '成都创梦空间游戏', validPlayCount: 3200, cpSettleAmount: 48000, refundAdjustment: 800, actualPayout: 47200, lakalaSplitNo: '', status: 'adjusting', statusText: '调整中' },
+  { settlementNo: 'CP2026042601', cpName: '杭州未来视界科技', validPlayTotal: 2100, cpSettleAmount: 31500, refundAdjustment: 0, actualPayout: 31500, lakalaSplitNo: '', status: 'pending', statusText: '待结算' },
 ]
 
 // ---- 图表初始化 ----
@@ -282,6 +362,11 @@ onUnmounted(() => {
 .section-badge.agent {
   background: #FFF7ED;
   color: #D97706;
+}
+
+.section-badge.cp {
+  background: #F3E8FF;
+  color: #7C3AED;
 }
 
 .section-desc {

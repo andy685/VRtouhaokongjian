@@ -14,7 +14,10 @@
             <span class="crm-header-avatar">{{ memberInitial }}</span>
             <h2>{{ memberName }} - 累计消耗</h2>
           </div>
-          <button type="button" class="crm-close-btn" @click="$emit('close')">×</button>
+          <div class="crm-header-actions">
+            <button type="button" class="crm-refresh-btn" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
+            <button type="button" class="crm-close-btn" @click="$emit('close')">×</button>
+          </div>
         </header>
 
         <div class="crm-body">
@@ -84,7 +87,7 @@ const props = defineProps({
   totalAmount: { type: Number, default: 0 }
 })
 
-defineEmits(['close'])
+defineEmits(['close', 'refresh'])
 
 const page = ref(1)
 const pageSize = 4
@@ -161,6 +164,12 @@ watch(() => props.visible, (val) => {
   font-weight: 700;
 }
 
+.crm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .crm-close-btn {
   width: 32px;
   height: 32px;
@@ -170,6 +179,24 @@ watch(() => props.visible, (val) => {
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
+}
+
+.crm-refresh-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.crm-refresh-btn:hover {
+  color: #3b82f6;
 }
 
 .crm-body {
@@ -195,12 +222,12 @@ watch(() => props.visible, (val) => {
   border-radius: 18px;
   background: #fff;
   color: #111827;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .crm-summary-card strong {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }

@@ -60,21 +60,55 @@
     </div>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetailModal" preset="card" :title="`结算明细 - ${currentRecord?.no || ''}`" style="width: 800px;" :bordered="false">
+    <n-modal v-model:show="showDetailModal" preset="card" :title="`结算明细 - ${currentRecord?.no || ''}`" style="width: 860px;" :bordered="false">
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
         <n-descriptions-item label="商家">{{ currentRecord.merchant }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
-        <n-descriptions-item label="总结算金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="总手续费">{{ `¥${currentRecord.fee}` }}</n-descriptions-item>
-        <n-descriptions-item label="实际到账">{{ `¥${(currentRecord.amount - currentRecord.fee).toLocaleString()}` }}</n-descriptions-item>
+        <n-descriptions-item label="拉卡拉商户号">{{ currentRecord.lakalaMerchantNo || '-' }}</n-descriptions-item>
         <n-descriptions-item label="状态">
-          <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
-            {{ currentRecord.statusText }}
+          <n-tag :type="statusTagType(currentRecord.status)" size="small">
+            {{ statusLabel(currentRecord.status) }}
           </n-tag>
         </n-descriptions-item>
-        <n-descriptions-item label="打款时间">{{ currentRecord.time }}</n-descriptions-item>
+        <n-descriptions-item label="拉卡拉分账流水号">
+          <span v-if="currentRecord.lakalaSplitNo" style="font-family: monospace; font-size: 12px;">{{ currentRecord.lakalaSplitNo }}</span>
+          <span v-else style="color: #999;">-</span>
+        </n-descriptions-item>
       </n-descriptions>
+
+      <!-- 资金构成（按分账与对账说明.md 第5.3节） -->
+      <div v-if="currentRecord" style="margin-top: 20px;">
+        <n-divider title-placement="left">资金构成</n-divider>
+        <div class="fund-breakdown">
+          <div class="fund-row fund-total">
+            <span class="fund-label">订单总额</span>
+            <span class="fund-value">¥{{ currentRecord.orderAmount?.toLocaleString() ?? currentRecord.amount.toLocaleString() }}</span>
+          </div>
+          <div class="fund-group-title">支付来源</div>
+          <div class="fund-rows-indent">
+            <div class="fund-row"><span class="fund-label">拉卡拉通道实收</span><span class="fund-value positive">¥{{ (currentRecord.lakalaPaidAmount ?? 0).toLocaleString() }}</span></div>
+            <div class="fund-row"><span class="fund-label">现金实收</span><span class="fund-value neutral">¥{{ (currentRecord.cashPaidAmount ?? 0).toLocaleString() }}</span></div>
+            <div class="fund-row"><span class="fund-label">预存款消耗</span><span class="fund-value neutral">¥{{ (currentRecord.prepaidConsumed ?? 0).toLocaleString() }}</span></div>
+            <div class="fund-row"><span class="fund-label">游戏币消耗</span><span class="fund-value neutral">¥{{ (currentRecord.gameCoinConsumed ?? 0).toLocaleString() }}</span></div>
+          </div>
+          <div class="fund-group-title">扣减项</div>
+          <div class="fund-rows-indent">
+            <div class="fund-row"><span class="fund-label">商家承担优惠</span><span class="fund-value negative">-¥{{ (currentRecord.merchantDiscountAmount ?? 0).toLocaleString() }}</span></div>
+            <div class="fund-row"><span class="fund-label">平台服务费</span><span class="fund-value negative">-¥{{ (currentRecord.platformFeeAmount ?? currentRecord.fee ?? 0).toLocaleString() }}</span></div>
+            <div class="fund-row"><span class="fund-label">退款冲正</span><span class="fund-value negative">-¥{{ (currentRecord.refundAmount ?? 0).toLocaleString() }}</span></div>
+          </div>
+          <div class="fund-divider"></div>
+          <div class="fund-row fund-result">
+            <span class="fund-label">商家应结金额</span>
+            <span class="fund-value result">¥{{ (currentRecord.merchantSettleAmount ?? (currentRecord.amount - currentRecord.fee)).toLocaleString() }}</span>
+          </div>
+          <div class="fund-row" v-if="currentRecord.platformReceivableAmount > 0">
+            <span class="fund-label">平台应收（现金订单抵扣）</span>
+            <span class="fund-value warning-text">¥{{ currentRecord.platformReceivableAmount.toLocaleString() }}</span>
+          </div>
+        </div>
+      </div>
       
       <!-- 店铺明细 -->
       <div style="margin-top: 20px;" v-if="currentRecord?.storeDetails?.length">
@@ -133,6 +167,16 @@ import {
 } from '@vicons/ionicons5'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
+import { STATUS_MERCHANT_LABELS, STATUS_TAG_TYPE } from '../../constants/settlementStatus'
+
+/** 商家端状态标签 */
+function statusLabel(status: string): string {
+  return STATUS_MERCHANT_LABELS[status as keyof typeof STATUS_MERCHANT_LABELS] ?? status
+}
+/** 商家端 Tag 类型 */
+function statusTagType(status: string): typeof STATUS_TAG_TYPE[keyof typeof STATUS_TAG_TYPE] {
+  return STATUS_TAG_TYPE[status as keyof typeof STATUS_TAG_TYPE] ?? 'default'
+}
 
 const message = useMessage()
 
@@ -141,8 +185,8 @@ const filterStatus = ref<string | null>(null)
 const filterDateRange = ref<[number, number] | null>(null)
 
 const statusOptions = [
-  { label: '已打款', value: 'done' },
-  { label: '待打款', value: 'pending' },
+  { label: '已到账', value: 'settled' },
+  { label: '待结算', value: 'pending' },
   { label: '处理中', value: 'processing' },
 ]
 
@@ -151,14 +195,20 @@ const columns = [
   { title: '结算单号', key: 'no', width: 150 },
   { title: '结算周期', key: 'period', width: 160 },
   { title: '结算金额', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  {
+    title: '拉卡拉分账流水号',
+    key: 'lakalaSplitNo',
+    width: 160,
+    ellipsis: { tooltip: true },
+    render: (row: any) => row.lakalaSplitNo ? row.lakalaSplitNo : '-'
+  },
   { title: '实际到账', key: 'actualAmount', width: 110, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString()}` },
   {
     title: '状态',
     key: 'status',
     width: 90,
     render(row: any) {
-      const typeMap: Record<string, string> = { done: 'success', pending: 'warning', processing: 'info' }
-      return h(NTag, { type: typeMap[row.status] as any, size: 'small', bordered: true }, () => row.statusText)
+      return h(NTag, { type: statusTagType(row.status), size: 'small', bordered: true }, () => statusLabel(row.status))
     }
   },
   { title: '打款时间', key: 'time', width: 140 },
@@ -172,7 +222,7 @@ const columns = [
   },
 ]
 
-// 模拟数据（实际应该从API获取，这里复用平台端的数据）
+// 模拟数据（实际应该从API获取，字段按分账与对账说明.md 第5.3节定义）
 const settlementData = ref([
   { 
     id: 1, 
@@ -182,9 +232,21 @@ const settlementData = ref([
     amount: 137963, 
     feeRate: 0.03, 
     fee: 4138.89, 
-    status: 'done', 
-    statusText: '已打款', 
+    status: 'settled', 
+    statusText: '已到账', 
     time: '2026-04-20 10:00',
+    lakalaMerchantNo: '890123456789',
+    lakalaSplitNo: 'LS2026042000156789',
+    orderAmount: 158000,
+    lakalaPaidAmount: 98000,
+    cashPaidAmount: 25000,
+    prepaidConsumed: 22000,
+    gameCoinConsumed: 13000,
+    merchantDiscountAmount: 3000,
+    platformFeeAmount: 4138.89,
+    refundAmount: 900,
+    merchantSettleAmount: 133824.11,
+    platformReceivableAmount: 0,
     voucher: '',
     storeDetails: [
       { store: '深圳福田旗舰店', amount: 85623, fee: 2568.69 },
@@ -199,9 +261,21 @@ const settlementData = ref([
     amount: 89000, 
     feeRate: 0.03, 
     fee: 2670.00, 
-    status: 'done', 
-    statusText: '已打款', 
+    status: 'settled', 
+    statusText: '已到账', 
     time: '2026-04-13 10:00',
+    lakalaMerchantNo: '890123456789',
+    lakalaSplitNo: 'LS2026041300112345',
+    orderAmount: 102000,
+    lakalaPaidAmount: 72000,
+    cashPaidAmount: 18000,
+    prepaidConsumed: 12000,
+    gameCoinConsumed: 8000,
+    merchantDiscountAmount: 1500,
+    platformFeeAmount: 2670.00,
+    refundAmount: 450,
+    merchantSettleAmount: 86330,
+    platformReceivableAmount: 0,
     voucher: '',
     storeDetails: [
       { store: '深圳福田旗舰店', amount: 55000, fee: 1650.00 },
@@ -217,8 +291,20 @@ const settlementData = ref([
     feeRate: 0.03, 
     fee: 2169.90, 
     status: 'pending', 
-    statusText: '待打款', 
+    statusText: '待结算', 
     time: '-',
+    lakalaMerchantNo: '890123456789',
+    lakalaSplitNo: '',
+    orderAmount: 85000,
+    lakalaPaidAmount: 50000,
+    cashPaidAmount: 16000,
+    prepaidConsumed: 14000,
+    gameCoinConsumed: 5000,
+    merchantDiscountAmount: 1000,
+    platformFeeAmount: 2169.90,
+    refundAmount: 330,
+    merchantSettleAmount: 70160.1,
+    platformReceivableAmount: 2169.9,
     voucher: '',
     storeDetails: [
       { store: '深圳福田旗舰店', amount: 42330, fee: 1269.90 },
@@ -257,7 +343,7 @@ const totalSettlement = computed(() => {
 
 const totalPaid = computed(() => {
   return filteredData.value
-    .filter(item => item.status === 'done')
+    .filter(item => item.status === 'settled')
     .reduce((sum, item) => sum + item.amount, 0)
 })
 
@@ -356,4 +442,43 @@ function openDetail(row: any) {
 .stat-content .value.warning { color: #F59E0B; }
 
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
+
+/* ===== 资金构成（分账与对账说明 第5.3节） ===== */
+.fund-breakdown {
+  background: #F8FAFC;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+.fund-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.fund-row.fund-total { font-weight: 700; font-size: 15px; }
+.fund-row.fund-result { font-weight: 700; font-size: 15px; margin-top: 4px;}
+.fund-label { color: #475569; }
+.fund-value { font-family: 'Orbitron', sans-serif; font-weight: 600; color: var(--text-primary); }
+.fund-value.positive { color: #059669; }
+.fund-value.negative { color: #DC2626; }
+.fund-value.neutral { color: #6B7280; }
+.fund-value.result { color: #2563EB; font-size: 16px; }
+.fund-value.warning-text { color: #D97706; }
+.fund-group-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 10px 0 4px;
+  padding-bottom: 2px;
+  border-bottom: 1px dashed #E2E8F0;
+}
+.fund-rows-indent { padding-left: 16px; }
+.fund-divider {
+  height: 1px;
+  background: #E2E8F0;
+  margin: 8px 0;
+}
 </style>
