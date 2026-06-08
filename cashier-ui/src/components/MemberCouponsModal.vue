@@ -191,7 +191,7 @@ watch(() => props.visible, (val) => {
   flex-direction: column;
   border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(180deg, #dff0ff 0%, #f7f9ff 100%);
+  background: #D9EBFC;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
 }
 
@@ -328,6 +328,25 @@ watch(() => props.visible, (val) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.mcm-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mcm-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mcm-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.mcm-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
 }
 
 /* ===== 优惠券卡片 ===== */

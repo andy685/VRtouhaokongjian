@@ -692,8 +692,8 @@ onUnmounted(() => {
 }
 
 .footer-action {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   display: grid;
   place-items: center;
   border: 0;
@@ -701,13 +701,11 @@ onUnmounted(() => {
   background: transparent;
   color: #155896;
   cursor: pointer;
-  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .footer-action:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  transform: translateY(-1px);
+  transform: scale(1.15);
 }
 
 .footer-action.active {
@@ -716,15 +714,15 @@ onUnmounted(() => {
 }
 
 .footer-icon {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
 }
 
 .footer-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: block;
   fill: currentColor;
 }
