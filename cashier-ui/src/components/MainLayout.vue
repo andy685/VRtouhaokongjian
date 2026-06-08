@@ -13,8 +13,9 @@
           class="side-nav-item"
           :class="{ active: isActive(item) }"
         >
-          <span class="filled-nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
+          <span class="filled-nav-icon" :class="{ 'filled-nav-icon--custom': item.iconSrc }" aria-hidden="true">
+            <img v-if="item.iconSrc" :src="item.iconSrc" alt="" class="custom-nav-icon" />
+            <svg v-else viewBox="0 0 24 24" focusable="false">
               <path v-for="path in item.paths" :key="path" :d="path" />
             </svg>
           </span>
@@ -23,13 +24,13 @@
       </nav>
 
       <div class="side-footer">
-        <router-link class="footer-action" to="/setting" aria-label="设置" :class="{ active: route.path.startsWith('/setting') }">
+        <button type="button" class="footer-action" aria-label="设置" @click="openSettingModal">
           <span class="footer-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" focusable="false">
               <path v-for="path in filledIcons.setting" :key="path" :d="path" />
             </svg>
           </span>
-        </router-link>
+        </button>
       </div>
     </aside>
 
@@ -213,11 +214,159 @@
         </section>
       </div>
     </transition>
+
+    <!-- 系统设置弹窗 -->
+    <transition name="modal-fade">
+      <div
+        v-if="settingModalOpen"
+        class="settings-modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label="系统设置"
+        @click.self="closeSettingModal"
+      >
+        <section class="settings-modal">
+          <header class="settings-modal-header">
+            <h2>系统设置</h2>
+            <button type="button" class="settings-close" aria-label="关闭系统设置" @click="closeSettingModal">
+              <el-icon><Close /></el-icon>
+            </button>
+          </header>
+
+          <div class="settings-modal-body">
+            <aside class="settings-sidebar">
+              <button
+                v-for="tab in settingTabs"
+                :key="tab.key"
+                type="button"
+                class="settings-sidebar-tab"
+                :class="{ active: activeSettingTab === tab.key }"
+                @click="activeSettingTab = tab.key"
+              >
+                {{ tab.label }}
+              </button>
+            </aside>
+
+            <div class="settings-content">
+              <!-- 会员设置 -->
+              <div v-if="activeSettingTab === 'member'" class="settings-panel">
+                <h3 class="settings-panel-title">会员设置</h3>
+                <div class="setting-row">
+                  <span class="setting-row-label">结算后是否登出会员</span>
+                  <button
+                    type="button"
+                    class="st-toggle"
+                    :class="{ active: settingForm.logoutAfterCheckout }"
+                    @click="settingForm.logoutAfterCheckout = !settingForm.logoutAfterCheckout"
+                  >
+                    <span class="st-toggle-text">{{ settingForm.logoutAfterCheckout ? '是' : '否' }}</span>
+                    <i class="st-toggle-knob"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 员工卡设置 - 列表视图 -->
+              <div v-if="activeSettingTab === 'staff'" class="settings-panel">
+                <h3 class="settings-panel-title">员工卡设置</h3>
+                <!-- 绑定账号表单 -->
+                <div v-if="staffView === 'bind'" class="staff-bind-form">
+                  <div class="staff-bind-select">
+                    <select v-model="staffBindForm.account" class="staff-select">
+                      <option value="">188******4442（有管理权限的账号）</option>
+                      <option value="a1">139****1111</option>
+                      <option value="a2">158****2222</option>
+                    </select>
+                  </div>
+                  <div class="staff-code-row">
+                    <input
+                      v-model="staffBindForm.code"
+                      type="text"
+                      class="staff-code-input"
+                      placeholder="请输入验证码"
+                    />
+                    <button type="button" class="staff-code-btn" @click="sendStaffCode">获取验证码</button>
+                  </div>
+                  <button type="button" class="staff-confirm-btn" @click="confirmStaffBind">确定</button>
+                </div>
+                <!-- 卡片列表 -->
+                <div v-else class="staff-table-wrap">
+                  <table class="staff-table">
+                    <thead>
+                      <tr>
+                        <th>姓名</th>
+                        <th>月刷卡数</th>
+                        <th>当前剩余刷卡数</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(card, idx) in staffCards" :key="idx">
+                        <td>{{ card.name }}</td>
+                        <td>{{ card.monthTotal }}</td>
+                        <td>
+                          <template v-if="card.editing">
+                            <input
+                              v-model.number="card.remainingDraft"
+                              type="text"
+                              class="staff-edit-input"
+                            />
+                          </template>
+                          <span v-else>{{ card.remaining }}</span>
+                        </td>
+                        <td>
+                          <template v-if="card.editing">
+                            <button type="button" class="staff-action-btn save" @click="saveStaffCard(idx)">保存</button>
+                          </template>
+                          <button
+                            v-else
+                            type="button"
+                            class="staff-action-btn edit"
+                            @click="editStaffCard(idx)"
+                          >编辑</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 基础设置 / Token 设置 -->
+              <div v-if="activeSettingTab === 'basic'" class="settings-panel">
+                <h3 class="settings-panel-title">Token 设置</h3>
+                <div class="token-row">
+                  <label class="token-label" for="sm-cashier-token">收银 Token：</label>
+                  <div class="token-panel" :class="{ editing: tokenEditing }">
+                    <template v-if="tokenEditing">
+                      <div class="token-edit-block">
+                        <input
+                          id="sm-cashier-token"
+                          v-model="draftCashierToken"
+                          class="token-input"
+                          type="text"
+                        />
+                        <div class="token-actions">
+                          <button type="button" class="token-action primary" @click="saveTokenEdit">保存</button>
+                          <button type="button" class="token-action secondary" @click="cancelTokenEdit">取消</button>
+                        </div>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div class="token-value" :title="cashierToken">{{ cashierToken }}</div>
+                      <button type="button" class="token-action ghost" @click="startTokenEdit">编辑</button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowDown,
@@ -231,9 +380,84 @@ const router = useRouter()
 const cashierPanelOpen = ref(false)
 const cashierMenuRef = ref(null)
 const shiftModalOpen = ref(false)
+const settingModalOpen = ref(false)
+const activeSettingTab = ref('member')
+const staffView = ref('list')
+const tokenEditing = ref(false)
 const printReceipt = ref(true)
 const reserveCash = ref('')
 const shiftRemark = ref('')
+
+/* ===== 系统设置弹窗 ===== */
+const settingTabs = [
+  { key: 'member', label: '会员设置' },
+  { key: 'staff',   label: '员工卡设置' },
+  { key: 'basic',   label: '基础设置' },
+]
+
+const settingForm = reactive({
+  logoutAfterCheckout: true,
+})
+
+const cashierToken = ref('REGRTRHRT2434534554645adFFF')
+const draftCashierToken = ref(cashierToken.value)
+
+const staffBindForm = reactive({
+  account: '',
+  code: '',
+})
+
+const staffCards = ref([
+  { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
+  { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
+  { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
+  { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
+  { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
+  { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
+])
+
+const openSettingModal = () => {
+  settingModalOpen.value = true
+}
+
+const closeSettingModal = () => {
+  settingModalOpen.value = false
+  tokenEditing.value = false
+  draftCashierToken.value = cashierToken.value
+  // 重置编辑状态
+  staffCards.value.forEach(c => { c.editing = false; c.remainingDraft = c.remaining })
+}
+
+const startTokenEdit = () => {
+  draftCashierToken.value = cashierToken.value
+  tokenEditing.value = true
+}
+
+const saveTokenEdit = () => {
+  cashierToken.value = draftCashierToken.value.trim() || cashierToken.value
+  tokenEditing.value = false
+}
+
+const cancelTokenEdit = () => {
+  tokenEditing.value = false
+  draftCashierToken.value = cashierToken.value
+}
+
+const editStaffCard = (idx) => {
+  const card = staffCards.value[idx]
+  card.editing = true
+  card.remainingDraft = card.remaining
+}
+
+const saveStaffCard = (idx) => {
+  const card = staffCards.value[idx]
+  card.remaining = Number(card.remainingDraft) || card.remaining
+  card.editing = false
+}
+
+const sendStaffCode = () => {}
+
+const confirmStaffBind = () => {}
 
 const cashCards = [
   { label: '备用金', value: '0.00', kind: 'reserve' },
@@ -282,13 +506,12 @@ const filledIcons = {
 }
 
 const navItems = [
-  { to: '/sale', label: '销售', paths: filledIcons.sale, match: ['/sale', '/result'] },
-  { to: '/member', label: '会员', paths: filledIcons.member, match: ['/member'], exclude: ['/member/deduct'] },
-  { to: '/member/deduct', label: '会员扣费', paths: filledIcons.deduct, match: ['/member/deduct'] },
-  { to: '/order', label: '订单', paths: filledIcons.order, match: ['/order'] },
-  { to: '/log', label: '日志', paths: filledIcons.log, match: ['/log'] },
-  { to: '/revenue', label: '营收', paths: filledIcons.revenue, match: ['/revenue'] },
-  { to: '/shift', label: '交班', paths: filledIcons.shift, match: ['/shift'] }
+  { to: '/sale', label: '销售', iconSrc: '/sale-icons/sale.svg', match: ['/sale', '/result'] },
+  { to: '/member', label: '会员', iconSrc: '/nav-icons/member.svg', match: ['/member'], exclude: ['/member/deduct'] },
+  { to: '/member/deduct', label: '会员扣费', iconSrc: '/nav-icons/member-deduct.svg', match: ['/member/deduct'] },
+  { to: '/order', label: '订单', iconSrc: '/nav-icons/order.svg', match: ['/order'] },
+  { to: '/log', label: '日志', iconSrc: '/nav-icons/log.svg', match: ['/log'] },
+  { to: '/revenue', label: '营收', iconSrc: '/nav-icons/revenue.svg', match: ['/revenue'] },
 ]
 
 const isActive = (item) => {
@@ -395,7 +618,7 @@ onUnmounted(() => {
 }
 
 .side-nav {
-  gap: 10px;
+  gap: 16px;
   margin-top: 18px;
 }
 
@@ -438,13 +661,24 @@ onUnmounted(() => {
   fill: currentColor;
 }
 
+.custom-nav-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  object-fit: contain;
+}
+
+.side-nav-item.active .filled-nav-icon--custom .custom-nav-icon {
+  filter: saturate(2.5) hue-rotate(-3deg) brightness(0.78) contrast(1.05);
+}
+
 .side-nav-item.active {
   color: #fff;
 }
 
 .side-nav-item.active .filled-nav-icon {
   background: #fff;
-  color: #1191ff;
+  color: #0F8BFF;
 }
 
 .side-nav-item:hover {
@@ -462,9 +696,11 @@ onUnmounted(() => {
   height: 44px;
   display: grid;
   place-items: center;
+  border: 0;
   border-radius: 12px;
+  background: transparent;
   color: #155896;
-  text-decoration: none;
+  cursor: pointer;
   transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
@@ -1213,5 +1449,468 @@ onUnmounted(() => {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+/* ========== 系统设置弹窗（复用登录页样式） ========== */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: var(--pos-overlay-backdrop, rgba(0, 0, 0, 0.76));
+}
+
+.settings-modal {
+  width: min(100%, 700px);
+  height: 520px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #d9ebff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-modal-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px 0 28px;
+  background: #edf3fa;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  flex-shrink: 0;
+}
+
+.settings-modal-header h2 {
+  margin: 0;
+  color: #1d2433;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.settings-close {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #4f5d73;
+  cursor: pointer;
+}
+
+.settings-close :deep(.el-icon) {
+  font-size: 20px;
+}
+
+.settings-modal-body {
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+.settings-sidebar {
+  padding: 24px 14px;
+  background: rgba(191, 220, 248, 0.72);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-sidebar-tab {
+  width: 100%;
+  height: 40px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #5a6b82;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.settings-sidebar-tab:hover {
+  color: #3791ff;
+  background: rgba(55, 145, 255, 0.08);
+}
+
+.settings-sidebar-tab.active {
+  background: linear-gradient(90deg, #3791ff 0%, #2c6eff 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(47, 126, 255, 0.2);
+}
+
+.settings-content {
+  padding: 28px 32px;
+  background: rgba(210, 230, 252, 0.82);
+  overflow-y: auto;
+}
+
+.settings-panel-title {
+  margin: 0 0 24px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* --- 设置行 + Toggle --- */
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.setting-row-label {
+  color: #1f2937;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.st-toggle {
+  position: relative;
+  width: 74px; height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 999px;
+  background: #d8e0ea;
+  color: #6f7f93;
+  cursor: pointer;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+.st-toggle.active {
+  background: linear-gradient(90deg, #3f9cff 0%, #2d6dff 100%);
+  color: #fff;
+}
+
+.st-toggle-text {
+  width: 100%;
+  padding: 0 30px 0 10px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  transition: padding .18s ease, text-align .18s ease;
+}
+
+.st-toggle.active .st-toggle-text {
+  padding: 0 30px 0 12px;
+}
+
+.st-toggle-knob {
+  position: absolute;
+  right: 4px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  transform: translateX(-42px);
+  transition: transform .18s ease;
+}
+
+.st-toggle.active .st-toggle-knob {
+  transform: translateX(0);
+}
+
+/* --- 员工卡绑定表单 --- */
+.staff-bind-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 420px;
+}
+
+.staff-select {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  background: #fff;
+  color: #4b5563;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.staff-code-row {
+  display: flex;
+  gap: 10px;
+}
+
+.staff-code-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  background: #fff;
+  color: #1d2433;
+  font-size: 14px;
+  outline: none;
+}
+
+.staff-code-input:focus,
+.staff-select:focus {
+  border-color: rgba(47, 126, 255, 0.42);
+  box-shadow: 0 0 0 3px rgba(47, 126, 255, 0.12);
+}
+
+.staff-code-btn {
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #2f7eff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.staff-code-btn:hover {
+  background: rgba(47, 126, 255, 0.06);
+}
+
+.staff-confirm-btn {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #3791ff 0%, #2c6eff 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(47, 110, 255, 0.18);
+  transition: background .18s ease;
+}
+
+.staff-confirm-btn:hover {
+  background: linear-gradient(90deg, #3186ef 0%, #2666ee 100%);
+}
+
+/* --- 员工卡表格 --- */
+.staff-table-wrap {
+  overflow-y: auto;
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.staff-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  background: #f8fafc;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  white-space: nowrap;
+}
+
+.staff-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #1f2937;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.04);
+}
+
+.staff-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.staff-edit-input {
+  width: 90px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid rgba(47, 126, 255, 0.35);
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.staff-edit-input:focus {
+  border-color: rgba(47, 126, 255, 0.65);
+  box-shadow: 0 0 0 3px rgba(47, 126, 255, 0.1);
+}
+
+.staff-action-btn {
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.staff-action-btn.edit {
+  background: transparent;
+  color: #2f7eff;
+}
+
+.staff-action-btn.edit:hover {
+  background: rgba(47, 126, 255, 0.06);
+}
+
+.staff-action-btn.save {
+  background: linear-gradient(90deg, #4ea2ff 0%, #3b85ee 100%);
+  color: #fff;
+}
+
+.staff-action-btn.save:hover {
+  background: linear-gradient(90deg, #3b95ef 0%, #2a78dd 100%);
+}
+
+/* --- Token 行（复用登录页样式） --- */
+.token-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.token-label {
+  padding-top: 11px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.token-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.token-panel.editing {
+  align-items: flex-start;
+}
+
+.token-edit-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.token-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.token-value {
+  width: 320px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #374151;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.token-input {
+  width: 320px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(47, 126, 255, 0.22);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.token-input:focus {
+  border-color: rgba(47, 126, 255, 0.52);
+  box-shadow: 0 0 0 3px rgba(47, 126, 255, 0.12);
+}
+
+.token-action {
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7890;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.token-action.ghost {
+  height: auto;
+  padding: 0;
+  border: 0;
+  color: #2f7eff;
+  font-size: 14px;
+}
+
+.token-action.primary {
+  min-width: 72px;
+  border-color: rgba(47, 126, 255, 0.18);
+  background: linear-gradient(90deg, #3791ff 0%, #2c6eff 100%);
+  color: #ffffff;
+}
+
+.token-action.secondary {
+  border-color: rgba(156, 163, 175, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  color: #374151;
+}
+
+.token-action.secondary:hover {
+  border-color: rgba(156, 163, 175, 0.3);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.token-action.primary:hover {
+  background: linear-gradient(90deg, #3186ef 0%, #2666ee 100%);
+}
+
+.setting-row-label {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 </style>

@@ -130,7 +130,7 @@
             </aside>
 
             <div class="settings-content">
-              <h3>Token 设置</h3>
+              <h3 class="settings-panel-title">Token 设置</h3>
               <div class="token-row">
                 <label class="token-label" for="cashier-token">收银 Token：</label>
                 <div class="token-panel" :class="{ editing: tokenEditing }">
@@ -265,17 +265,30 @@ const probeOrigin = async (origin, path) => {
 }
 
 const resolveAdminOrigin = async () => {
+  // 生产环境：同源部署，通过路径区分角色
   if (import.meta.env.PROD) {
     return window.location.origin
   }
 
+  // 无端口时直接返回当前 origin
   if (!window.location.port) {
     return window.location.origin
   }
 
   const currentPort = Number(window.location.port || 5173)
-  const knownPorts = [9527, 5174, 5175].filter((p) => p > 0 && p !== currentPort)
-  const candidatePorts = Array.from(new Set([...knownPorts, currentPort - 1, currentPort + 1].filter((port) => Number.isFinite(port) && port > 0 && port !== currentPort)))
+  // 明确指定 admin-dashboard 的开发端口（优先探测）
+  const adminDevPort = 9527
+  // 备选端口列表
+  const fallbackPorts = [5174, 5175]
+  // 构建候选端口：admin 优先 → 备选端口 → 相邻端口（排除当前端口）
+  const candidatePorts = Array.from(
+    new Set([
+      adminDevPort,
+      ...fallbackPorts,
+      currentPort - 1,
+      currentPort + 1,
+    ].filter((p) => Number.isFinite(p) && p > 0 && p !== currentPort))
+  )
 
   for (const port of candidatePorts) {
     const origin = createOrigin(port)
@@ -284,7 +297,8 @@ const resolveAdminOrigin = async () => {
     }
   }
 
-  return createOrigin(candidatePorts[0] || 5173)
+  // 全部探测失败时回退到 admin 默认端口
+  return createOrigin(adminDevPort)
 }
 
 const handleLogin = () => {
@@ -605,8 +619,8 @@ onBeforeUnmount(() => {
 
 .quick-actions {
   position: absolute;
-  top: 32px;
-  right: 92px;
+  top: 20px;
+  right: 32px;
 }
 
 .quick-actions-anchor {
@@ -709,11 +723,11 @@ onBeforeUnmount(() => {
 }
 
 .settings-modal-header {
-  height: 52px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px 0 22px;
+  padding: 0 20px 0 28px;
   background: #edf3fa;
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
@@ -721,7 +735,7 @@ onBeforeUnmount(() => {
 .settings-modal-header h2 {
   margin: 0;
   color: #1d2433;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -766,27 +780,28 @@ onBeforeUnmount(() => {
 }
 
 .settings-content {
-  padding: 22px 30px;
+  padding: 28px 32px;
   background: rgba(210, 230, 252, 0.82);
 }
 
-.settings-content h3 {
-  margin: 0 0 28px;
+.settings-panel-title {
+  margin: 0 0 24px;
   color: #111827;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .token-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
 }
 
 .token-label {
-  padding-top: 10px;
-  color: #1f2937;
+  padding-top: 11px;
+  color: #374151;
   font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -804,42 +819,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
-}
-
-.token-value {
-  width: 320px;
-  min-height: 38px;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #6b7280;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.token-input {
-  width: 320px;
-  height: 38px;
-  padding: 0 12px;
-  border: 1px solid rgba(47, 126, 255, 0.22);
-  border-radius: 6px;
-  background: #ffffff;
-  color: #4b5563;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  outline: none;
-}
-
-.token-input:focus {
-  border-color: rgba(47, 126, 255, 0.52);
-  box-shadow: 0 0 0 3px rgba(47, 126, 255, 0.12);
+  gap: 12px;
 }
 
 .token-actions {
@@ -848,17 +828,51 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
-.token-action {
-  height: 36px;
+.token-value {
+  width: 320px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
   padding: 0 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #374151;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.token-input {
+  width: 320px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(47, 126, 255, 0.22);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.token-input:focus {
+  border-color: rgba(47, 126, 255, 0.52);
+  box-shadow: 0 0 0 3px rgba(47, 126, 255, 0.12);
+}
+
+.token-action {
+  height: 38px;
+  padding: 0 16px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: #6b7890;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all .18s ease;
 }
 
 .token-action.ghost {
@@ -866,22 +880,24 @@ onBeforeUnmount(() => {
   padding: 0;
   border: 0;
   color: #2f7eff;
+  font-size: 14px;
 }
 
 .token-action.primary {
-  min-width: 90px;
+  min-width: 72px;
   border-color: rgba(47, 126, 255, 0.18);
   background: linear-gradient(90deg, #3791ff 0%, #2c6eff 100%);
   color: #ffffff;
 }
 
 .token-action.secondary {
-  border-color: rgba(107, 120, 144, 0.16);
-  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(156, 163, 175, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  color: #374151;
 }
 
 .token-action.secondary:hover {
-  border-color: rgba(107, 120, 144, 0.26);
+  border-color: rgba(156, 163, 175, 0.3);
   background: rgba(255, 255, 255, 0.96);
 }
 

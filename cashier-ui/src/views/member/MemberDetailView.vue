@@ -142,7 +142,17 @@
         </nav>
       </section>
 
-      <section class="mdv-side-card mdv-wechat-section">
+      <!-- 已绑定微信 -->
+      <section v-if="member.wechatBound" class="mdv-side-card mdv-wechat-section mdv-wechat-bound">
+        <h3>已绑定微信</h3>
+        <el-avatar :size="48" :src="member.wechatAvatar" class="mdv-wechat-avatar">
+          {{ member.wechatNickname?.charAt(0) || '微' }}
+        </el-avatar>
+        <p class="mdv-wechat-nickname">{{ member.wechatNickname || '微信用户' }}</p>
+      </section>
+
+      <!-- 未绑定微信 -->
+      <section v-else class="mdv-side-card mdv-wechat-section">
         <h3>绑定微信</h3>
         <div class="mdv-qr-box">
           <svg viewBox="0 0 100 100" class="mdv-qr-svg">
@@ -284,7 +294,10 @@ const member = ref({
   registerPercent: 95,
   birthdayPercent: 99,
   status: 'active',
-  remark: ''
+  remark: '',
+  wechatBound: true,
+  wechatNickname: '梦幻玩家',
+  wechatAvatar: ''
 })
 
 // ===== 资产数据 =====
@@ -1352,6 +1365,28 @@ const handleDeductionConfirm = (payload) => {
   margin: 20px 0 0;
   color: #8a8a8a;
   font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+/* 已绑定微信 */
+.mdv-wechat-bound {
+  gap: 8px;
+  padding: 20px 16px 16px;
+}
+
+.mdv-wechat-bound h3 {
+  margin-bottom: 12px;
+}
+
+.mdv-wechat-avatar :deep(.el-avatar) {
+  border: 2px solid #07c160;
+  box-shadow: 0 2px 8px rgba(7, 193, 96, 0.18);
+}
+
+.mdv-wechat-nickname {
+  margin: 4px 0 0;
+  color: #333;
+  font-size: var(--fs-body);
   font-weight: 600;
 }
 

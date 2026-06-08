@@ -63,6 +63,17 @@ textarea:focus-visible,
   outline-offset: 2px;
 }
 
+.side-nav a:focus,
+.side-nav a:focus-visible,
+.side-nav a:focus *,
+.side-nav a:focus-visible *,
+.side-nav a:focus-within,
+.side-nav *:focus,
+.side-nav *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

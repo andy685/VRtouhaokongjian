@@ -90,31 +90,31 @@ const routes = [
       {
         path: '/order/vod',
         name: 'VodOrder',
-        component: () => import('../views/order/VodOrderView.vue'),
+        component: () => import('../views/order/OrderListView.vue'),
         meta: { title: '点播系统订单', parent: '订单' }
       },
       {
         path: '/order/manual',
         name: 'ManualOrder',
-        component: () => import('../views/order/ManualOrderView.vue'),
+        component: () => import('../views/order/OrderListView.vue'),
         meta: { title: '手动扣费订单', parent: '订单' }
       },
       {
         path: '/order/recharge-edit',
         name: 'RechargeEdit',
-        component: () => import('../views/order/RechargeEditView.vue'),
+        component: () => import('../views/order/OrderListView.vue'),
         meta: { title: '修改储值订单', parent: '订单' }
       },
       {
         path: '/order/coin-exchange',
         name: 'CoinExchange',
-        component: () => import('../views/order/CoinExchangeView.vue'),
+        component: () => import('../views/order/OrderListView.vue'),
         meta: { title: '游戏币兑换订单', parent: '订单' }
       },
       {
         path: '/order/gift',
         name: 'GiftOrder',
-        component: () => import('../views/order/GiftOrderView.vue'),
+        component: () => import('../views/order/OrderListView.vue'),
         meta: { title: '活动赠送订单', parent: '订单' }
       },
       // 营收模块
