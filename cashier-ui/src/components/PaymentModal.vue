@@ -13,7 +13,6 @@
         <header class="pm-header">
           <h2>{{ title }}</h2>
           <div class="pm-header-actions">
-            <button type="button" class="pm-refresh-btn" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
             <button type="button" class="pm-close-btn" @click="$emit('close')">×</button>
           </div>
         </header>
@@ -147,7 +146,7 @@ const props = defineProps({
   title: { type: String, default: '付款结算' }
 })
 
-const emit = defineEmits(['close', 'confirm', 'refresh'])
+const emit = defineEmits(['close', 'confirm'])
 
 const couponDiscount = computed(() => {
   if (!props.coupon) return 0
@@ -293,10 +292,10 @@ const handleConfirm = () => {
   max-height: 92vh;
   display: flex;
   flex-direction: column;
-  border-radius: 4px;
+  border-radius: 16px;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #D9EBFC;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
 }
 
 /* ---- 头部 ---- */
@@ -306,13 +305,14 @@ const handleConfirm = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px 0 24px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0 14px 0 22px;
+  background: #edf3fa;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .pm-header h2 {
   margin: 0;
-  color: #1e293b;
+  color: #1d2433;
   font-size: 16px;
   font-weight: 700;
 }
@@ -324,43 +324,24 @@ const handleConfirm = () => {
 }
 
 .pm-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 4px;
+  border-radius: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: #4f5d73;
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .pm-close-btn:hover {
-  color: #1e293b;
-}
-
-.pm-refresh-btn {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  transition: color 0.15s ease;
-}
-
-.pm-refresh-btn:hover {
-  color: #3b82f6;
+  background: rgba(255, 255, 255, 0.55);
+  color: #2f7eff;
 }
 
 /* ---- 主体左右两栏 ---- */
@@ -368,6 +349,27 @@ const handleConfirm = () => {
   flex: 1;
   overflow-y: auto;
   display: flex;
+  gap: 16px;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.pm-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pm-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pm-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.pm-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
 }
 
 /* ===== 左栏 ===== */
@@ -376,8 +378,10 @@ const handleConfirm = () => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e2e8f0;
-  background: #f8fafc;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* --- 表格 --- */
@@ -393,8 +397,8 @@ const handleConfirm = () => {
   font-weight: 600;
   color: #64748b;
   font-size: 13px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  background: transparent;
 }
 
 .pm-table thead th:nth-child(2),
@@ -405,18 +409,18 @@ const handleConfirm = () => {
 .pm-table tbody td {
   padding: 14px 20px;
   vertical-align: middle;
-  border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+  color: #1d2433;
   font-weight: 500;
 }
 
 .pm-table tbody tr:last-child td {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .pm-td-name {
   font-weight: 600;
-  color: #1e293b;
+  color: #1d2433;
 }
 
 .pm-td-qty {
@@ -459,12 +463,12 @@ const handleConfirm = () => {
 }
 
 .pm-sum-row span {
-  color: #475569;
+  color: #6b7280;
   font-weight: 500;
 }
 
 .pm-sum-row strong {
-  color: #1e293b;
+  color: #1d2433;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -475,7 +479,7 @@ const handleConfirm = () => {
 
 .pm-divider {
   height: 1px;
-  background: #e2e8f0;
+  background: rgba(15, 23, 42, 0.08);
   margin: 8px 0 12px;
 }
 
@@ -486,7 +490,7 @@ const handleConfirm = () => {
 }
 
 .pm-sum-total span {
-  color: #1e293b;
+  color: #1d2433;
   font-size: 14px;
   font-weight: 800;
 }
@@ -503,8 +507,8 @@ const handleConfirm = () => {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 20px 20px 24px;
-  background: #fff;
+  padding: 4px 4px 0 0;
+  background: transparent;
 }
 
 .pm-asset-plan {
@@ -522,7 +526,7 @@ const handleConfirm = () => {
 }
 
 .pm-section-title span {
-  color: #1e293b;
+  color: #1d2433;
   font-size: 14px;
   font-weight: 800;
 }
@@ -584,19 +588,19 @@ const handleConfirm = () => {
 .pm-pay-header > span:first-child {
   font-size: 14px;
   font-weight: 700;
-  color: #1e293b;
+  color: #1d2433;
 }
 
 .pm-note-link {
   font-size: 12px;
-  color: #2563EB;
+  color: #3791ff;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.15s ease;
 }
 
 .pm-note-link:hover {
-  color: #1d4ed8;
+  color: #2563eb;
   text-decoration: underline;
 }
 
@@ -613,10 +617,10 @@ const handleConfirm = () => {
   gap: 10px;
   min-height: 58px;
   padding: 10px 14px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid rgba(15, 23, 42, 0.08);
   border-radius: 10px;
   background: #fff;
-  color: #475569;
+  color: #4f5d73;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -625,14 +629,14 @@ const handleConfirm = () => {
 }
 
 .pm-method-btn:hover {
-  border-color: #93c5fd;
-  color: #2563EB;
+  border-color: #7cb8e6;
+  color: #3791ff;
 }
 
 .pm-method-btn.active {
-  border-color: #2563EB;
-  color: #2563EB;
-  background: #eff6ff;
+  border-color: #3791ff;
+  color: #3791ff;
+  background: #f0f7ff;
 }
 
 .pm-method-copy {
