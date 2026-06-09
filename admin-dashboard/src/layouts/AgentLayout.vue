@@ -188,17 +188,19 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const agentName = ref('深圳未来科技')
 
+const renderIcon = (comp: any) => () => h(NIcon, null, { default: () => h(comp) })
+
 // 代理商菜单配置
 const menuOptions: MenuOption[] = [
   {
     label: '首页概览',
     key: '/agent/dashboard',
-    icon: () => h(NIcon, { component: HomeOutline }),
+    icon: renderIcon(HomeOutline),
   },
   {
     label: '商家管理',
     key: 'merchants-group',
-    icon: () => h(NIcon, { component: PeopleOutline }),
+    icon: renderIcon(PeopleOutline),
     children: [
       { label: '商家列表', key: '/agent/merchants' },
     ]
@@ -206,7 +208,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '店铺概览',
     key: 'stores-group',
-    icon: () => h(NIcon, { component: StorefrontOutline }),
+    icon: renderIcon(StorefrontOutline),
     children: [
       { label: '店铺列表', key: '/agent/stores' },
       { label: '设备统计', key: '/agent/stores/devices' },
@@ -215,7 +217,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '分润中心',
     key: 'commission-group',
-    icon: () => h(NIcon, { component: WalletOutline }),
+    icon: renderIcon(WalletOutline),
     children: [
       { label: '分润明细', key: '/agent/commission' },
       { label: '结算记录', key: '/agent/settlement' },
@@ -225,7 +227,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '数据报表',
     key: 'reports-group',
-    icon: () => h(NIcon, { component: StatsChartOutline }),
+    icon: renderIcon(StatsChartOutline),
     children: [
       { label: '营收统计', key: '/agent/reports/revenue' },
       { label: '会员统计', key: '/agent/reports/members' },

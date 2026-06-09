@@ -174,6 +174,8 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const selectedShop = ref('futian')
 
+const renderIcon = (comp: any) => () => h(NIcon, null, { default: () => h(comp) })
+
 // 当前店铺信息
 const currentShop = computed(() => ({
   name: '深圳福田旗舰店',
@@ -192,12 +194,12 @@ const menuOptions: MenuOption[] = [
   {
     label: '首页',
     key: '/shop/workbench',
-    icon: () => h(NIcon, { component: HomeOutline }),
+    icon: renderIcon(HomeOutline),
   },
   {
     label: '商品管理',
     key: 'products-group',
-    icon: () => h(NIcon, { component: BagHandleOutline }),
+    icon: renderIcon(BagHandleOutline),
     children: [
       { label: '单次消费项目', key: '/shop/single-consumption' },
       { label: '实物商品', key: '/shop/products' },
@@ -206,7 +208,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '运营管理',
     key: 'marketing-group',
-    icon: () => h(NIcon, { component: GiftOutline }),
+    icon: renderIcon(GiftOutline),
     children: [
       { label: '充值套餐', key: '/shop/recharge' },
       { label: '套票', key: '/shop/packages' },
@@ -227,7 +229,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '会员管理',
     key: 'members-group',
-    icon: () => h(NIcon, { component: PeopleOutline }),
+    icon: renderIcon(PeopleOutline),
     children: [
       { label: '会员列表', key: '/shop/members' },
       { label: '会员级别', key: '/shop/member-levels' },
@@ -242,7 +244,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '数据报表',
     key: 'reports-group',
-    icon: () => h(NIcon, { component: StatsChartOutline }),
+    icon: renderIcon(StatsChartOutline),
     children: [
       { label: '店铺销售日报', key: '/shop/daily-sales' },
       { label: '历史营收统计', key: '/shop/historical-revenue' },
@@ -279,7 +281,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '财务管理',
     key: 'finance-group',
-    icon: () => h(NIcon, { component: WalletOutline }),
+    icon: renderIcon(WalletOutline),
     children: [
       { label: '结算记录', key: '/shop/settlement' },
       { label: '对账中心', key: '/shop/reconciliation' },
@@ -288,7 +290,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '内容管理',
     key: 'content-group',
-    icon: () => h(NIcon, { component: MusicalNotesOutline }),
+    icon: renderIcon(MusicalNotesOutline),
     children: [
       { label: '生日会主题资源', key: '/shop/birthday-theme' },
     ]
@@ -296,7 +298,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '设备管理',
     key: 'device-group',
-    icon: () => h(NIcon, { component: ConstructOutline }),
+    icon: renderIcon(ConstructOutline),
     children: [
       { label: '设备列表', key: '/shop/devices' },
       { label: '设备在线统计', key: '/shop/devices/online-stats' },
@@ -305,7 +307,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '系统设置',
     key: 'settings-group',
-    icon: () => h(NIcon, { component: SettingsOutline }),
+    icon: renderIcon(SettingsOutline),
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
       { label: '待机画面', key: '/shop/on-demand-settings' },
@@ -346,12 +348,12 @@ const breadcrumbs = computed<{ label: string; path?: string }[]>(() => {
 })
 
 const userMenuOptions = [
-  { label: '商家信息', key: 'shop-info', icon: () => h(NIcon, { component: StorefrontOutline }) },
-  { label: '个人信息', key: 'profile', icon: () => h(NIcon, { component: PersonOutline }) },
-  { label: '账户余额', key: 'balance', icon: () => h(NIcon, { component: WalletOutline }) },
-  { label: '安全设置', key: 'security', icon: () => h(NIcon, { component: ShieldCheckmarkOutline }) },
+  { label: '商家信息', key: 'shop-info', icon: renderIcon(StorefrontOutline) },
+  { label: '个人信息', key: 'profile', icon: renderIcon(PersonOutline) },
+  { label: '账户余额', key: 'balance', icon: renderIcon(WalletOutline) },
+  { label: '安全设置', key: 'security', icon: renderIcon(ShieldCheckmarkOutline) },
   { type: 'divider', key: 'd1' },
-  { label: '退出', key: 'logout', icon: () => h(NIcon, { component: LogOutOutline }) },
+  { label: '退出', key: 'logout', icon: renderIcon(LogOutOutline) },
 ]
 
 const createOrigin = (port: number) => {

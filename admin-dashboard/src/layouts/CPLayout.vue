@@ -171,6 +171,8 @@ const showRoleModal = ref(false)
 const cpName = ref('极境互动科技')
 const unreadCount = ref(3)
 
+const renderIcon = (comp: any) => () => h(NIcon, null, { default: () => h(comp) })
+
 const menuThemeOverrides = {
   itemTextColor: '#e2e8f0',
   itemTextColorActive: '#ffffff',
@@ -184,7 +186,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '数据中心',
     key: 'data-group',
-    icon: () => h(NIcon, { component: BarChartOutline }),
+    icon: renderIcon(BarChartOutline),
     children: [
       { label: '数据概览', key: '/cp/dashboard' },
       { label: '点播消费记录', key: '/cp/analytics/consumption' },
@@ -194,7 +196,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '游戏管理',
     key: 'games-group',
-    icon: () => h(NIcon, { component: GameControllerOutline }),
+    icon: renderIcon(GameControllerOutline),
     children: [
       { label: '我的游戏', key: '/cp/games' },
       { label: '上传新游戏', key: '/cp/games/add' },
@@ -203,7 +205,7 @@ const menuOptions: MenuOption[] = [
   {
     label: '收益管理',
     key: 'finance-group',
-    icon: () => h(NIcon, { component: WalletOutline }),
+    icon: renderIcon(WalletOutline),
     children: [
       { label: '收益总览', key: '/cp/finance' },
       { label: '结算记录', key: '/cp/finance/detail' },
