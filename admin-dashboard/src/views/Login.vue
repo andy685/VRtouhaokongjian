@@ -176,10 +176,7 @@ async function probeOrigin(origin: string, path: string) {
 }
 
 async function resolveCashierOrigin(path: string) {
-  if (import.meta.env.PROD) {
-    return window.location.origin
-  }
-
+  // 有 cashier-ui 运行吗？需要先探测
   if (!window.location.port) {
     return window.location.origin
   }
