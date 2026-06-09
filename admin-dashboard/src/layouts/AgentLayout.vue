@@ -39,6 +39,7 @@
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :render-label="renderMenuLabel"
+          :render-icon="renderMenuIcon"
           @update:value="handleMenuUpdate"
         />
       </nav>
@@ -188,7 +189,12 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const agentName = ref('深圳未来科技')
 
-const renderIcon = (comp: any) => () => h(NIcon, null, { default: () => h(comp) })
+const renderIcon = (IconComp: any) => () => h(IconComp)
+
+const renderMenuIcon = (option: MenuOption) => {
+  if (typeof option.icon !== 'function') return null
+  return (option.icon as () => any)()
+}
 
 // 代理商菜单配置
 const menuOptions: MenuOption[] = [

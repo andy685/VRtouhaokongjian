@@ -36,6 +36,7 @@
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :render-label="renderMenuLabel"
+          :render-icon="renderMenuIcon"
           :theme-overrides="menuThemeOverrides"
           @update:value="handleMenuUpdate"
         />
@@ -171,7 +172,12 @@ const showRoleModal = ref(false)
 const cpName = ref('极境互动科技')
 const unreadCount = ref(3)
 
-const renderIcon = (comp: any) => () => h(NIcon, null, { default: () => h(comp) })
+const renderIcon = (IconComp: any) => () => h(IconComp)
+
+const renderMenuIcon = (option: MenuOption) => {
+  if (typeof option.icon !== 'function') return null
+  return (option.icon as () => any)()
+}
 
 const menuThemeOverrides = {
   itemTextColor: '#e2e8f0',

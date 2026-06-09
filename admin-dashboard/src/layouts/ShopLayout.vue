@@ -33,6 +33,7 @@
           :collapsed="isCollapsed"
           :collapsed-width="64"
           :render-label="renderMenuLabel"
+          :render-icon="renderMenuIcon"
           @update:value="handleMenuUpdate"
         />
       </nav>
@@ -174,7 +175,12 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const selectedShop = ref('futian')
 
-const renderIcon = (comp: any) => () => h(NIcon, null, { default: () => h(comp) })
+const renderIcon = (IconComp: any) => () => h(IconComp)
+
+const renderMenuIcon = (option: MenuOption) => {
+  if (typeof option.icon !== 'function') return null
+  return (option.icon as () => any)()
+}
 
 // 当前店铺信息
 const currentShop = computed(() => ({
