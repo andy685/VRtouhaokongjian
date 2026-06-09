@@ -39,7 +39,6 @@
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :render-label="renderMenuLabel"
-          :render-icon="renderMenuIcon"
           @update:value="handleMenuUpdate"
           @update:expanded-keys="handleExpand"
         />
@@ -212,7 +211,6 @@ import {
   NMenu, NButton, NIcon, NAvatar, NBadge, NBreadcrumb, NBreadcrumbItem,
   NInput, NDropdown, NModal, NTag, NPopover,
 } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
 import {
   GridOutline, StorefrontOutline, BusinessOutline, GameControllerOutline, WalletOutline,
   SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
@@ -229,12 +227,7 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 
 // 稳定的 h() 引用，避免每次渲染重建 VNode
-const icon = (IconComp: any) => () => h(IconComp)
-
-const renderMenuIcon = (option: MenuOption) => {
-  if (typeof option.icon !== 'function') return null
-  return (option.icon as () => any)()
-}
+const icon = (IconComp: any) => h(IconComp)
 
 const createOrigin = (port: number) => {
   const { protocol, hostname } = window.location

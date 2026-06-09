@@ -39,7 +39,6 @@
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :render-label="renderMenuLabel"
-          :render-icon="renderMenuIcon"
           @update:value="handleMenuUpdate"
         />
       </nav>
@@ -174,7 +173,6 @@ import {
   NMenu, NButton, NIcon, NAvatar, NBadge, NBreadcrumb, NBreadcrumbItem,
   NDropdown, NModal, NTag,
 } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
 import {
   HomeOutline, PeopleOutline, StorefrontOutline, StatsChartOutline,
   WalletOutline, ChevronBackOutline, ChevronForwardOutline,
@@ -189,12 +187,7 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const agentName = ref('深圳未来科技')
 
-const renderIcon = (IconComp: any) => () => h(IconComp)
-
-const renderMenuIcon = (option: MenuOption) => {
-  if (typeof option.icon !== 'function') return null
-  return (option.icon as () => any)()
-}
+const renderIcon = (IconComp: any) => h(IconComp)
 
 // 代理商菜单配置
 const menuOptions: MenuOption[] = [

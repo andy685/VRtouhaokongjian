@@ -33,7 +33,6 @@
           :collapsed="isCollapsed"
           :collapsed-width="64"
           :render-label="renderMenuLabel"
-          :render-icon="renderMenuIcon"
           @update:value="handleMenuUpdate"
         />
       </nav>
@@ -156,7 +155,6 @@ import {
   NMenu, NButton, NIcon, NAvatar, NBadge, NBreadcrumb, NBreadcrumbItem,
   NSelect, NDropdown, NModal, NTag,
 } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
 import {
   BarChartOutline, PeopleOutline, PeopleCircleOutline, HardwareChipOutline,
   StatsChartOutline, BagHandleOutline, GiftOutline,
@@ -175,12 +173,7 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const selectedShop = ref('futian')
 
-const renderIcon = (IconComp: any) => () => h(IconComp)
-
-const renderMenuIcon = (option: MenuOption) => {
-  if (typeof option.icon !== 'function') return null
-  return (option.icon as () => any)()
-}
+const renderIcon = (IconComp: any) => h(IconComp)
 
 // 当前店铺信息
 const currentShop = computed(() => ({

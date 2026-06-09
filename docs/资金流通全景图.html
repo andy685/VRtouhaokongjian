@@ -89,11 +89,11 @@
   <div class="title-bar">
     <div class="tag">Money Flow</div>
     <h1>头号空间 · 资金流通全景图</h1>
-    <div class="sub">C端消费 → 商家运营 → 平台枢纽 → 代理分润，全链路资金流转</div>
+    <div class="sub">C端消费 → 商家运营 → 平台枢纽 → CP结算 → 代理分润，全链路资金流转</div>
   </div>
 
   <div class="diagram-body">
-    <svg viewBox="0 0 960 780" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 960 900" xmlns="http://www.w3.org/2000/svg">
 
       <!-- ========== 全局箭头标记 ========== -->
       <defs>
@@ -102,6 +102,7 @@
         <marker id="arrowAmber"  markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#F59E0B"/></marker>
         <marker id="arrowCyan"   markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#06B6D4"/></marker>
         <marker id="arrowRed"    markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#EF4444"/></marker>
+        <marker id="arrowPurple" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#8B5CF6"/></marker>
       </defs>
 
       <!--
@@ -109,10 +110,11 @@
           - C端用户   y: 30 ~ 122   (高度 92)
           - 商家/门店  y: 260 ~ 352  (高度 92)
           - 平台运营   y: 470 ~ 570  (高度 100)
-          - 代理商    y: 670 ~ 762  (高度 92)
+          - CP供应商  y: 640 ~ 732  (高度 92)
+          - 代理商    y: 790 ~ 882  (高度 92)
           - 银行账户   x: 700, y: 330 ~ 408  (商家右下方，接收提现)
 
-          竖向主线 x=480 连接四张卡片
+          竖向主线 x=480 连接五张卡片
           左右标注全部独立于卡片区域，空间充足不会重叠
       -->
 
@@ -131,11 +133,18 @@
       <text x="272" y="414" text-anchor="middle" font-size="10" fill="#6B7280">¥1/豆 · 微信/支付宝/对公转账</text>
 
       <!-- ================================================================ -->
-      <!-- ③ 分润标注 —— 平台和代理商之间，靠左 -->
+      <!-- ③ 代理分润标注 —— 平台给代理商，靠左 -->
       <!-- ================================================================ -->
-      <rect x="168" y="590" width="210" height="40" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.2"/>
-      <text x="273" y="608" text-anchor="middle" font-size="13" fill="#F59E0B" font-weight="700">③ 代理分润</text>
-      <text x="273" y="624" text-anchor="middle" font-size="10" fill="#6B7280">按辖区采购额 · 阶梯 3%~12% · T+1月结</text>
+      <rect x="168" y="730" width="210" height="40" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.2"/>
+      <text x="273" y="748" text-anchor="middle" font-size="13" fill="#F59E0B" font-weight="700">③ 代理分润</text>
+      <text x="273" y="764" text-anchor="middle" font-size="10" fill="#6B7280">平台→代理商 · 按辖区采购额 · T+1月结</text>
+
+      <!-- ================================================================ -->
+      <!-- ⑥ CP分账标注 —— 平台和CP之间，靠左 -->
+      <!-- ================================================================ -->
+      <rect x="168" y="590" width="210" height="40" rx="6" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.2"/>
+      <text x="273" y="608" text-anchor="middle" font-size="13" fill="#8B5CF6" font-weight="700">⑥ CP分账</text>
+      <text x="273" y="624" text-anchor="middle" font-size="10" fill="#6B7280">按有效体验次数 · 成本价/分成 · T+1结算</text>
 
       <!-- ================================================================ -->
       <!-- ④ 提现标注 —— 放在商家→银行卡箭头正上方，与银行卡保持间距 -->
@@ -175,9 +184,14 @@
       <line x1="480" y1="352" x2="480" y2="470" stroke="#10B981" stroke-width="3.2" marker-end="url(#arrowGreen)"/>
 
       <!-- ================================================================ -->
-      <!-- ③ 分润竖向主线 -->
+      <!-- ③ 代理分润竖向主线 -->
       <!-- ================================================================ -->
-      <line x1="480" y1="570" x2="480" y2="670" stroke="#F59E0B" stroke-width="3.2" marker-end="url(#arrowAmber)"/>
+      <line x1="480" y1="570" x2="480" y2="790" stroke="#F59E0B" stroke-width="3.2" marker-end="url(#arrowAmber)"/>
+
+      <!-- ================================================================ -->
+      <!-- ⑥ CP分账竖向主线 -->
+      <!-- ================================================================ -->
+      <line x1="480" y1="570" x2="480" y2="640" stroke="#8B5CF6" stroke-width="3.2" marker-end="url(#arrowPurple)"/>
 
       <!-- ================================================================ -->
       <!-- 角色卡片 -->
@@ -216,16 +230,28 @@
         <text x="54" y="33" font-size="15" font-weight="700" fill="#065F46">平台运营</text>
         <text x="54" y="50" font-size="11" fill="#6B7280">超管 · 财务中心</text>
         <text x="16" y="76" font-size="11" fill="#4B5563">• 游戏豆统一定价 ¥1/豆</text>
-        <text x="16" y="92" font-size="11" fill="#4B5563">• 对账 · 分账 · 打款</text>
+        <text x="16" y="92" font-size="11" fill="#4B5563">• 对账 · 分账 · 打款 · CP结算</text>
       </g>
 
-      <!-- ── 代理商 ── -->
-      <g transform="translate(380, 670)">
+      <!-- ── CP供应商 ── -->
+      <g transform="translate(380, 640)">
         <rect x="0" y="0" width="200" height="92" rx="12" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.5"/>
         <rect x="0" y="0" width="200" height="5" rx="3" fill="#8B5CF6"/>
         <circle cx="28" cy="36" r="16" fill="#EDE9FE"/>
+        <text x="28" y="41" text-anchor="middle" font-size="16">🎮</text>
+        <text x="54" y="35" font-size="15" font-weight="700" fill="#5B21B6">CP 供应商</text>
+        <text x="54" y="52" font-size="11" fill="#6B7280">游戏内容 · 内容收益</text>
+        <text x="28" y="73" font-size="11" fill="#4B5563">• 有效体验 × 成本价分成</text>
+        <text x="28" y="88" font-size="11" fill="#4B5563">• 拉卡拉周期打款</text>
+      </g>
+
+      <!-- ── 代理商 ── -->
+      <g transform="translate(380, 790)">
+        <rect x="0" y="0" width="200" height="92" rx="12" fill="#FDF4FF" stroke="#E9D5FF" stroke-width="1.5"/>
+        <rect x="0" y="0" width="200" height="5" rx="3" fill="#A855F7"/>
+        <circle cx="28" cy="36" r="16" fill="#FAE8FF"/>
         <text x="28" y="41" text-anchor="middle" font-size="16">🤝</text>
-        <text x="54" y="35" font-size="15" font-weight="700" fill="#5B21B6">代理商</text>
+        <text x="54" y="35" font-size="15" font-weight="700" fill="#7E22CE">代理商</text>
         <text x="54" y="52" font-size="11" fill="#6B7280">城市 · 区域 · 省级</text>
         <text x="28" y="73" font-size="11" fill="#4B5563">• 按辖区采购额阶梯分润</text>
         <text x="28" y="88" font-size="11" fill="#4B5563">• 次月 15 日拉卡拉打款</text>
@@ -254,8 +280,8 @@
       <text x="500" y="416" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">②</text>
 
       <!-- ③ 在平台→代理商连线上 -->
-      <circle cx="500" cy="620" r="11" fill="#F59E0B"/>
-      <text x="500" y="625" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">③</text>
+      <circle cx="500" cy="680" r="11" fill="#F59E0B"/>
+      <text x="500" y="685" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">③</text>
 
       <!-- ④ 在提现线上（商家→银行卡连线中点偏左） -->
       <circle cx="630" cy="320" r="11" fill="#06B6D4"/>
@@ -264,6 +290,10 @@
       <!-- ⑤ 在退款弧线起点（商家右上角） -->
       <circle cx="618" cy="258" r="11" fill="#EF4444"/>
       <text x="618" y="263" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">⑤</text>
+
+      <!-- ⑥ 在平台→CP连线上 -->
+      <circle cx="500" cy="605" r="11" fill="#8B5CF6"/>
+      <text x="500" y="610" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">⑥</text>
 
     </svg>
   </div>
@@ -276,6 +306,10 @@
     <div class="legend-item">
       <div class="legend-color" style="background:#10B981;"></div>
       <span><b>② 游戏豆采购流</b> — 商家买豆→平台，¥1/豆</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background:#8B5CF6;"></div>
+      <span><b>⑥ CP分账流</b> — 平台→CP，有效体验×成本价，T+1结算</span>
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background:#F59E0B;"></div>
