@@ -132,12 +132,14 @@
         <n-form-item label="排序" path="sort">
           <n-input-number v-model:value="formData.sort" :min="0" placeholder="1" style="width: 200px;" />
         </n-form-item>
-        <n-form-item label="适用设备" path="devices" required>
-          <n-checkbox-group v-model:value="formData.devices">
+        <n-form-item label="适用项目" path="projects" required>
+          <n-checkbox-group v-model:value="formData.projects">
             <n-space>
-              <n-checkbox value="vr" label="VR设备" />
-              <n-checkbox value="screen" label="银幕互动" />
-              <n-checkbox value="ar" label="AR体验" />
+              <n-checkbox value="vr_shooting" label="VR射击" />
+              <n-checkbox value="vr_racing" label="VR赛车" />
+              <n-checkbox value="vr_horror" label="VR恐怖" />
+              <n-checkbox value="screen_interact" label="银幕互动" />
+              <n-checkbox value="ar_explore" label="AR探索" />
             </n-space>
           </n-checkbox-group>
         </n-form-item>
@@ -206,7 +208,7 @@ const formData = ref({
   validDays: 30,
   validDate: null,
   sort: 1,
-  devices: ['vr'],
+  projects: ['vr_shooting'],
   memberTypes: ['bronze', 'silver', 'gold', 'normal'],
   terminal: 'all',
   status: true
@@ -217,7 +219,7 @@ const formRules = {
   name: { required: true, message: '请输入套票名称', trigger: 'blur' },
   type: { required: true, message: '请选择套票类型', trigger: 'change' },
   price: { required: true, type: 'number' as const, message: '请输入售价', trigger: 'blur' },
-  devices: { required: true, type: 'array' as const, message: '请选择适用设备', trigger: 'change' },
+  projects: { required: true, type: 'array' as const, message: '请选择适用项目', trigger: 'change' },
   memberTypes: { required: true, type: 'array' as const, message: '请选择可购会员', trigger: 'change' }
 }
 
@@ -334,7 +336,7 @@ function handleAdd() {
     validDays: 30,
     validDate: null,
     sort: 1,
-    devices: ['vr'],
+    projects: ['vr_shooting'],
     memberTypes: ['bronze', 'silver', 'gold', 'normal'],
     terminal: 'all',
     status: true
@@ -358,7 +360,7 @@ function handleEdit(row: any) {
     validDays: 30,
     validDate: null,
     sort: 1,
-    devices: ['vr'],
+    projects: ['vr_shooting'],
     memberTypes: ['bronze', 'silver', 'gold', 'normal'],
     terminal: 'all',
     status: row.status

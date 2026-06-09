@@ -71,7 +71,6 @@
           <div class="gift-preview">
             <n-tag v-if="manualGiftActivity?.giftDeposit > 0" size="small" type="success">预存款 ¥{{ manualGiftActivity?.giftDeposit }}</n-tag>
             <n-tag v-if="manualGiftActivity?.giftPoints > 0" size="small" type="info">游戏币 {{ manualGiftActivity?.giftPoints }}</n-tag>
-            <n-tag v-if="manualGiftActivity?.giftTimes > 0" size="small" type="warning">次数 {{ manualGiftActivity?.giftTimes }}</n-tag>
           </div>
         </n-form-item>
         <n-form-item label="发放对象" required>
@@ -191,32 +190,6 @@
           <n-date-picker v-model:value="formData.pointsValidDate" type="date" placeholder="选择截止日期" />
         </n-form-item>
         
-        <!-- 赠送次数 -->
-        <n-form-item label="赠送次数" path="giftTimes">
-          <n-input-number v-model:value="formData.giftTimes" :min="0" placeholder="0" style="width: 100%;">
-            <template #suffix>次</template>
-          </n-input-number>
-        </n-form-item>
-        <!-- 次数有效期（填写次数后显示） -->
-        <n-form-item v-if="formData.giftTimes > 0" label="次数有效期" path="timesValidType" required>
-          <n-radio-group v-model:value="formData.timesValidType">
-            <n-space>
-              <n-radio value="forever">永久有效</n-radio>
-              <n-radio value="duration">有效时长</n-radio>
-              <n-radio value="date">限定日期</n-radio>
-            </n-space>
-          </n-radio-group>
-        </n-form-item>
-        <n-form-item v-if="formData.giftTimes > 0 && formData.timesValidType === 'duration'" label="次数有效时长" path="timesValidDays" required>
-          <n-input-number v-model:value="formData.timesValidDays" :min="1" placeholder="365" style="width: 200px;">
-            <template #suffix>天</template>
-          </n-input-number>
-          <span class="form-hint" style="margin-left: 8px;">* 自获取日起算</span>
-        </n-form-item>
-        <n-form-item v-if="formData.giftTimes > 0 && formData.timesValidType === 'date'" label="次数截止日期" path="timesValidDate" required>
-          <n-date-picker v-model:value="formData.timesValidDate" type="date" placeholder="选择截止日期" />
-        </n-form-item>
-        
         <n-form-item label="排序" path="sort">
           <n-input-number v-model:value="formData.sort" :min="0" placeholder="1" style="width: 200px;" />
         </n-form-item>
@@ -327,10 +300,6 @@ function getDefaultFormData() {
     pointsValidType: 'forever',
     pointsValidDays: 365,
     pointsValidDate: null,
-    giftTimes: 0,
-    timesValidType: 'forever',
-    timesValidDays: 365,
-    timesValidDate: null,
     sort: 1,
     memberTypes: ['bronze', 'silver', 'gold', 'platinum', 'diamond'],
     terminal: 'all',
@@ -397,8 +366,6 @@ const columns: DataTableColumns = [
   { title: '赠送预存款', key: 'giftDeposit', width: 110, render: (row) => row.giftDeposit > 0 ? `¥${row.giftDeposit}` : '-' },
   { title: '赠送游戏币', key: 'giftPoints', width: 100, render: (row) => row.giftPoints > 0 ? `${row.giftPoints}` : '-' },
   { title: '游戏币有效期', key: 'pointsValidText', width: 120 },
-  { title: '赠送次数', key: 'giftTimes', width: 90, render: (row) => row.giftTimes > 0 ? `${row.giftTimes}次` : '-' },
-  { title: '次数有效期', key: 'timesValidText', width: 120 },
   { title: '状态', key: 'status', width: 80, render: (row) =>
     h(NTag, { type: row.status ? 'success' : 'warning', size: 'small' },
       { default: () => row.status ? '启用' : '停售' })
@@ -425,10 +392,10 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '消费满100赠10元+100币', condition: 'consume', threshold: 100, birthdayRange: 'birthday', giftDeposit: 10, giftPoints: 100, pointsValidText: '永久有效', giftTimes: 0, timesValidText: '-', count: 256, status: true },
-  { id: 2, shopName: '卓远天河路店', name: '充值满500赠50元+500币', condition: 'recharge', threshold: 500, birthdayRange: 'birthday', giftDeposit: 50, giftPoints: 500, pointsValidText: '365天', giftTimes: 0, timesValidText: '-', count: 128, status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '办理套餐赠200币+1次体验', condition: 'package', threshold: 0, birthdayRange: 'birthday', giftDeposit: 0, giftPoints: 200, pointsValidText: '30天', giftTimes: 1, timesValidText: '30天', count: 86, status: false },
-  { id: 4, shopName: '卓远北京路店', name: '生日当月赠20元+500币+2次', condition: 'birthday', threshold: 0, birthdayRange: 'month', giftDeposit: 20, giftPoints: 500, pointsValidText: '永久有效', giftTimes: 2, timesValidText: '30天', count: 45, status: true },
+  { id: 1, shopName: '卓远亚运城店', name: '消费满100赠10元+100币', condition: 'consume', threshold: 100, birthdayRange: 'birthday', giftDeposit: 10, giftPoints: 100, pointsValidText: '永久有效', count: 256, status: true },
+  { id: 2, shopName: '卓远天河路店', name: '充值满500赠50元+500币', condition: 'recharge', threshold: 500, birthdayRange: 'birthday', giftDeposit: 50, giftPoints: 500, pointsValidText: '365天', count: 128, status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '办理套餐赠200币', condition: 'package', threshold: 0, birthdayRange: 'birthday', giftDeposit: 0, giftPoints: 200, pointsValidText: '30天', count: 86, status: false },
+  { id: 4, shopName: '卓远北京路店', name: '生日当月赠20元+500币', condition: 'birthday', threshold: 0, birthdayRange: 'month', giftDeposit: 20, giftPoints: 500, pointsValidText: '永久有效', count: 45, status: true },
 ])
 
 function handleAdd() {
@@ -453,10 +420,6 @@ function handleEdit(row: any) {
     pointsValidType: 'forever',
     pointsValidDays: 365,
     pointsValidDate: null,
-    giftTimes: row.giftTimes,
-    timesValidType: 'forever',
-    timesValidDays: 365,
-    timesValidDate: null,
     sort: 1,
     memberTypes: ['bronze', 'silver', 'gold', 'normal'],
     terminal: 'all',

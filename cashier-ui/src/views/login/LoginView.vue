@@ -245,60 +245,14 @@ const systemEntries = [
   { key: 'cp', label: '供应商后台', path: '/login?role=cp', external: true }
 ]
 
-const probeOrigin = async (origin, path) => {
-  const controller = new AbortController()
-  const timer = window.setTimeout(() => controller.abort(), 500)
-
-  try {
-    await fetch(`${origin}${path}`, {
-      method: 'HEAD',
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-    return true
-  } catch {
-    return false
-  } finally {
-    window.clearTimeout(timer)
-  }
-}
-
 const resolveAdminOrigin = async () => {
   // 生产环境：同源部署，通过路径区分角色
   if (import.meta.env.PROD) {
     return window.location.origin
   }
 
-  // 无端口时直接返回当前 origin
-  if (!window.location.port) {
-    return window.location.origin
-  }
-
-  const currentPort = Number(window.location.port || 5173)
-  // 明确指定 admin-dashboard 的开发端口（优先探测）
-  const adminDevPort = 9527
-  // 备选端口列表
-  const fallbackPorts = [5174, 5175]
-  // 构建候选端口：admin 优先 → 备选端口 → 相邻端口（排除当前端口）
-  const candidatePorts = Array.from(
-    new Set([
-      adminDevPort,
-      ...fallbackPorts,
-      currentPort - 1,
-      currentPort + 1,
-    ].filter((p) => Number.isFinite(p) && p > 0 && p !== currentPort))
-  )
-
-  for (const port of candidatePorts) {
-    const origin = createOrigin(port)
-    if (await probeOrigin(origin, '/login')) {
-      return origin
-    }
-  }
-
-  // 全部探测失败时回退到 admin 默认端口
-  return createOrigin(adminDevPort)
+  // 开发环境：直接使用 admin-dashboard 固定端口
+  return createOrigin(9527)
 }
 
 const handleLogin = () => {

@@ -13,7 +13,6 @@
         <header class="md-header">
           <h2>会员扣费</h2>
           <div class="md-header-actions">
-            <button type="button" class="md-refresh-btn" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
             <button type="button" class="md-close-btn" @click="$emit('close')">×</button>
           </div>
         </header>
@@ -21,12 +20,39 @@
         <!-- 表单主体 -->
         <div class="md-body">
           <!-- 选择设备 -->
-          <div class="md-field">
+          <div class="md-field" ref="deviceFieldRef">
             <label class="md-label">选择设备</label>
-            <select v-model="selectedDeviceId" class="md-select" placeholder="请搜索或者选择设备">
-              <option value="" disabled>请搜索或者选择设备</option>
-              <option v-for="d in devices" :key="d.id" :value="d.id">{{ d.name }}</option>
-            </select>
+            <div class="md-dropdown" :class="{ 'md-dropdown-open': deviceDropdownOpen }">
+              <button
+                type="button"
+                class="md-dropdown-trigger"
+                @click="toggleDeviceDropdown"
+                @blur="onDeviceDropdownBlur"
+              >
+                <span class="md-dropdown-text" :class="{ 'md-dropdown-placeholder': !selectedDeviceId }">
+                  {{ selectedDeviceLabel || '请搜索或者选择设备' }}
+                </span>
+                <svg class="md-dropdown-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </button>
+              <transition name="md-drop-fade">
+                <ul v-if="deviceDropdownOpen" class="md-dropdown-menu">
+                  <li
+                    v-for="d in devices"
+                    :key="d.id"
+                    class="md-dropdown-item"
+                    :class="{ 'md-dropdown-item-active': selectedDeviceId === d.id }"
+                    @mousedown.prevent="selectDevice(d)"
+                  >
+                    {{ d.name }}
+                  </li>
+                  <li v-if="devices.length === 0" class="md-dropdown-item md-dropdown-item-empty">
+                    暂无设备
+                  </li>
+                </ul>
+              </transition>
+            </div>
           </div>
 
           <!-- 设备单价 -->
@@ -89,7 +115,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -99,11 +125,40 @@ const props = defineProps({
   memberAssets: { type: Object, default: null }
 })
 
-const emit = defineEmits(['close', 'confirm', 'refresh'])
+const emit = defineEmits(['close', 'confirm'])
 
 const selectedDeviceId = ref('')
 const deductCount = ref(1)
 const processing = ref(false)
+
+// --- 自定义下拉 ---
+const deviceDropdownOpen = ref(false)
+const deviceFieldRef = ref(null)
+
+const selectedDeviceLabel = computed(() => {
+  if (!selectedDeviceId.value) return ''
+  const d = props.devices.find(item => item.id === selectedDeviceId.value)
+  return d ? d.name : ''
+})
+
+const toggleDeviceDropdown = () => {
+  deviceDropdownOpen.value = !deviceDropdownOpen.value
+}
+
+const selectDevice = (d) => {
+  selectedDeviceId.value = d.id
+  deviceDropdownOpen.value = false
+}
+
+const onDeviceDropdownBlur = (e) => {
+  // 延迟关闭，让 mousedown 先执行
+  nextTick(() => {
+    const el = deviceFieldRef.value
+    if (el && !el.contains(document.activeElement)) {
+      deviceDropdownOpen.value = false
+    }
+  })
+}
 
 const devicePrice = computed(() => {
   if (!selectedDeviceId.value) return 0
@@ -170,6 +225,7 @@ watch(() => props.visible, (val) => {
     selectedDeviceId.value = ''
     deductCount.value = 1
     processing.value = false
+    deviceDropdownOpen.value = false
   }
 })
 
@@ -204,10 +260,10 @@ const handleSubmit = () => {
   width: min(100%, 400px);
   display: flex;
   flex-direction: column;
-  border-radius: 4px;
+  border-radius: 16px;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #D9EBFC;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
 }
 
 /* ---- 头部 ---- */
@@ -217,13 +273,14 @@ const handleSubmit = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px 0 24px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0 14px 0 22px;
+  background: #edf3fa;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .md-header h2 {
   margin: 0;
-  color: #1e293b;
+  color: #1d2433;
   font-size: 16px;
   font-weight: 700;
 }
@@ -235,52 +292,33 @@ const handleSubmit = () => {
 }
 
 .md-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 4px;
+  border-radius: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: #4f5d73;
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .md-close-btn:hover {
-  color: #1e293b;
-}
-
-.md-refresh-btn {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  transition: color 0.15s ease;
-}
-
-.md-refresh-btn:hover {
-  color: #3b82f6;
+  background: rgba(255, 255, 255, 0.55);
+  color: #2f7eff;
 }
 
 /* ---- 表单主体 ---- */
 .md-body {
-  padding: 28px 28px 24px;
+  padding: 24px 28px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background: #fff;
+  background: transparent;
 }
 
 /* --- 表单行 --- */
@@ -293,55 +331,150 @@ const handleSubmit = () => {
 .md-label {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: #4f5d73;
 }
 
-/* --- 下拉选择 --- */
-.md-select {
+/* --- 自定义下拉选择 --- */
+.md-dropdown {
+  position: relative;
+  isolation: isolate;
+}
+
+.md-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
   height: 42px;
-  padding: 0 12px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 4px;
+  padding: 0 12px 0 12px;
+  border: 1.5px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
   background: #fff;
-  color: #1e293b;
+  color: #1d2433;
   font-size: 14px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, border-radius 0.15s ease;
 }
 
-.md-select:hover {
-  border-color: #93c5fd;
+.md-dropdown-trigger:hover {
+  border-color: #7cb8e6;
 }
 
-.md-select:focus {
-  border-color: #2563EB;
+.md-dropdown-open .md-dropdown-trigger {
+  border-color: #3791ff;
+  border-radius: 10px 10px 0 0;
+  border-bottom-color: rgba(15, 23, 42, 0.04);
 }
 
-.md-select option {
-  color: #1e293b;
+.md-dropdown-text {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.md-dropdown-placeholder {
+  color: #94a3b8;
+}
+
+.md-dropdown-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.md-dropdown-open .md-dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+.md-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  border: 1.5px solid #3791ff;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  max-height: 196px;
+  overflow-y: auto;
+}
+
+.md-dropdown-item {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  color: #4f5d73;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.md-dropdown-item:hover {
+  background: #f0f7ff;
+  color: #1d2433;
+}
+
+.md-dropdown-item-active {
+  background: #e8f4fd;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.md-dropdown-item-empty {
+  color: #94a3b8;
+  cursor: default;
+}
+
+/* --- 下拉过渡 --- */
+.md-drop-fade-enter-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.md-drop-fade-leave-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.md-drop-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.md-drop-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* --- 旧的 select 样式已移除 --- */
 
 /* --- 输入框 --- */
 .md-input {
   height: 42px;
   padding: 0 14px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 4px;
-  background: #f8fafc;
-  color: #1e293b;
+  border: 1.5px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #1d2433;
   font-size: 15px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .md-input:focus {
-  border-color: #2563EB;
+  border-color: #3791ff;
   background: #fff;
 }
 
@@ -355,8 +488,8 @@ const handleSubmit = () => {
 .md-stepper {
   display: inline-flex;
   align-items: center;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 4px;
+  border: 1.5px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -367,9 +500,9 @@ const handleSubmit = () => {
   align-items: center;
   justify-content: center;
   border: 0;
-  border-right: 1.5px solid #e2e8f0;
+  border-right: 1.5px solid rgba(15, 23, 42, 0.08);
   background: #fff;
-  color: #2563EB;
+  color: #3791ff;
   cursor: pointer;
   font-size: 18px;
   font-weight: 400;
@@ -379,11 +512,11 @@ const handleSubmit = () => {
 
 .md-step-btn:last-child {
   border-right: 0;
-  border-left: 1.5px solid #e2e8f0;
+  border-left: 1.5px solid rgba(15, 23, 42, 0.08);
 }
 
 .md-step-btn:hover:not(:disabled) {
-  background: #eff6ff;
+  background: #f0f7ff;
 }
 
 .md-step-btn:disabled {
@@ -397,7 +530,7 @@ const handleSubmit = () => {
   text-align: center;
   border: 0;
   background: #fff;
-  color: #1e293b;
+  color: #1d2433;
   font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -480,7 +613,7 @@ const handleSubmit = () => {
   width: 100%;
   height: 46px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 12px;
   background: #F97316;
   color: #fff;
   cursor: pointer;

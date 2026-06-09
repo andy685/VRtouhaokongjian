@@ -121,31 +121,6 @@
           <n-date-picker v-model:value="formData.pointsValidDate" type="date" placeholder="选择截止日期" />
         </n-form-item>
         
-        <!-- 到账次数 -->
-        <n-form-item label="到账次数" path="times" required>
-          <n-input-number v-model:value="formData.times" :min="0" placeholder="0" style="width: 100%;">
-            <template #suffix>次</template>
-          </n-input-number>
-        </n-form-item>
-        <!-- 次数有效期（填写次数后显示） -->
-        <n-form-item v-if="formData.times > 0" label="次数有效期" path="timesValidType" required>
-          <n-radio-group v-model:value="formData.timesValidType">
-            <n-space>
-              <n-radio value="forever">永久有效</n-radio>
-              <n-radio value="duration">有效时长</n-radio>
-              <n-radio value="date">限定日期</n-radio>
-            </n-space>
-          </n-radio-group>
-        </n-form-item>
-        <n-form-item v-if="formData.times > 0 && formData.timesValidType === 'duration'" label="次数有效时长" path="timesValidDays" required>
-          <n-input-number v-model:value="formData.timesValidDays" :min="1" placeholder="365" style="width: 200px;">
-            <template #suffix>天</template>
-          </n-input-number>
-          <span class="form-hint" style="margin-left: 8px;">* 自充值日起算</span>
-        </n-form-item>
-        <n-form-item v-if="formData.times > 0 && formData.timesValidType === 'date'" label="次数截止日期" path="timesValidDate" required>
-          <n-date-picker v-model:value="formData.timesValidDate" type="date" placeholder="选择截止日期" />
-        </n-form-item>
         
         <n-form-item label="排序" path="sort">
           <n-input-number v-model:value="formData.sort" :min="0" placeholder="1" style="width: 200px;" />
@@ -213,10 +188,6 @@ const formData = ref({
   pointsValidType: 'forever',
   pointsValidDays: 365,
   pointsValidDate: null,
-  times: 0,
-  timesValidType: 'forever',
-  timesValidDays: 365,
-  timesValidDate: null,
   sort: 1,
   memberTypes: ['bronze', 'silver', 'gold', 'normal'],
   terminal: 'all',
@@ -229,7 +200,6 @@ const formRules = {
   amount: { required: true, type: 'number' as const, message: '请输入售卖金额', trigger: 'blur' },
   deposit: { required: true, type: 'number' as const, message: '请输入到账预存款', trigger: 'blur' },
   points: { required: true, type: 'number' as const, message: '请输入到账游戏币', trigger: 'blur' },
-  times: { required: true, type: 'number' as const, message: '请输入到账次数', trigger: 'blur' },
   memberTypes: { required: true, type: 'array' as const, message: '请选择可购会员', trigger: 'change' }
 }
 
@@ -266,8 +236,6 @@ const columns: DataTableColumns = [
   { title: '到账预存款', key: 'deposit', width: 120, render: (row) => `¥${row.deposit}` },
   { title: '到账游戏币', key: 'points', width: 100 },
   { title: '游戏币有效期', key: 'pointsValidText', width: 140 },
-  { title: '到账次数', key: 'times', width: 100 },
-  { title: '次数有效期', key: 'timesValidText', width: 140 },
   { title: '状态', key: 'status', width: 80, render: (row) =>
     h(NTag, { type: row.status ? 'success' : 'warning', size: 'small' },
       { default: () => row.status ? '启用' : '暂停' })
@@ -287,11 +255,11 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '充100送20', coverUrl: createCover('100+20', '#2563eb', '#1d4ed8'), amount: 100, deposit: 120, points: 100, pointsValidText: '永久有效', times: 0, timesValidText: '-', status: true },
-  { id: 2, shopName: '卓远天河路店', name: '充300送100', coverUrl: createCover('300+100', '#10b981', '#059669'), amount: 300, deposit: 400, points: 300, pointsValidText: '365天', times: 0, timesValidText: '-', status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '充500送200', coverUrl: createCover('500+200', '#7c3aed', '#5b21b6'), amount: 500, deposit: 700, points: 500, pointsValidText: '永久有效', times: 1, timesValidText: '365天', status: true },
-  { id: 4, shopName: '卓远北京路店', name: '充1000送500', coverUrl: createCover('1000+500', '#f59e0b', '#d97706'), amount: 1000, deposit: 1500, points: 1000, pointsValidText: '2026-12-31', times: 2, timesValidText: '永久有效', status: true },
-  { id: 5, shopName: '卓远天河路店', name: '月度会员卡', coverUrl: createCover('会员卡', '#0f766e', '#115e59'), amount: 200, deposit: 220, points: 200, pointsValidText: '永久有效', times: 30, timesValidText: '30天', status: true },
+  { id: 1, shopName: '卓远亚运城店', name: '充100送20', coverUrl: createCover('100+20', '#2563eb', '#1d4ed8'), amount: 100, deposit: 120, points: 100, pointsValidText: '永久有效', status: true },
+  { id: 2, shopName: '卓远天河路店', name: '充300送100', coverUrl: createCover('300+100', '#10b981', '#059669'), amount: 300, deposit: 400, points: 300, pointsValidText: '365天', status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '充500送200', coverUrl: createCover('500+200', '#7c3aed', '#5b21b6'), amount: 500, deposit: 700, points: 500, pointsValidText: '永久有效', status: true },
+  { id: 4, shopName: '卓远北京路店', name: '充1000送500', coverUrl: createCover('1000+500', '#f59e0b', '#d97706'), amount: 1000, deposit: 1500, points: 1000, pointsValidText: '2026-12-31', status: true },
+  { id: 5, shopName: '卓远天河路店', name: '月度会员卡', coverUrl: createCover('会员卡', '#0f766e', '#115e59'), amount: 200, deposit: 220, points: 200, pointsValidText: '永久有效', status: true },
 ])
 
 function getShopName(shop: string | null) {
@@ -331,10 +299,6 @@ function handleAdd() {
     pointsValidType: 'forever',
     pointsValidDays: 365,
     pointsValidDate: null,
-    times: 0,
-    timesValidType: 'forever',
-    timesValidDays: 365,
-    timesValidDate: null,
     sort: 1,
     memberTypes: ['bronze', 'silver', 'gold', 'normal'],
     terminal: 'all',
@@ -357,10 +321,6 @@ function handleEdit(row: any) {
     pointsValidType: 'forever',
     pointsValidDays: 365,
     pointsValidDate: null,
-    times: row.times,
-    timesValidType: 'forever',
-    timesValidDays: 365,
-    timesValidDate: null,
     sort: 1,
     memberTypes: ['bronze', 'silver', 'gold', 'normal'],
     terminal: 'all',
@@ -392,10 +352,6 @@ function handleSubmit() {
     points: formData.value.points || 0,
     pointsValidText: formData.value.points > 0
       ? resolveValidText(formData.value.pointsValidType, formData.value.pointsValidDays, formData.value.pointsValidDate)
-      : '-',
-    times: formData.value.times || 0,
-    timesValidText: formData.value.times > 0
-      ? resolveValidText(formData.value.timesValidType, formData.value.timesValidDays, formData.value.timesValidDate)
       : '-',
     status: formData.value.status
   }

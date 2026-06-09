@@ -184,9 +184,9 @@ async function resolveCashierOrigin(path: string) {
     return window.location.origin
   }
 
-  const currentPort = Number(window.location.port || 5174)
+  const currentPort = Number(window.location.port || 9527)
   const candidatePorts = Array.from(
-    new Set([currentPort + 1, currentPort - 1, 9528, 5173, 5174].filter((port) => Number.isFinite(port) && port > 0))
+    new Set([9526, currentPort + 1, currentPort - 1, 5173, 5174].filter((port) => Number.isFinite(port) && port > 0))
   )
 
   for (const port of candidatePorts) {
@@ -196,7 +196,7 @@ async function resolveCashierOrigin(path: string) {
     }
   }
 
-  return createOrigin(candidatePorts[0] || 9528)
+  return createOrigin(candidatePorts[0] || 9526)
 }
 
 // 表单规则
