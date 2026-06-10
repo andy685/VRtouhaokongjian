@@ -2,8 +2,8 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <div>
-        <h1>生日会主题资源</h1>
-        <p class="header-desc">管理线下生日会活动的音频、视频等主题资源，支持通用配置和寿星专属内容</p>
+        <h1>奇幻派对主题资源</h1>
+        <p class="header-desc">管理线下奇幻派对活动的音频、视频等主题资源，支持通用配置和寿星专属内容</p>
       </div>
     </div>
 

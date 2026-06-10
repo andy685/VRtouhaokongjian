@@ -82,7 +82,7 @@
             <template v-else-if="activeTab === 'swipe'">
               <div class="msm-device-view">
                 <div class="msm-card-reader">
-                  <img src="/card-reader-enabled-icon-v5.svg.svg?v=1" alt="刷会员卡" />
+                  <img :src="`${BASE_URL}card-reader-enabled-icon-v5.svg.svg?v=1`" alt="刷会员卡" />
                 </div>
                 <p class="msm-device-hint">请刷会员卡</p>
               </div>
@@ -92,7 +92,7 @@
             <template v-else-if="activeTab === 'scan'">
               <div class="msm-device-view">
                 <div class="msm-scan-illustration">
-                  <img src="/member-scan-illustration.png" alt="扫码枪扫码会员码" />
+                  <img :src="`${BASE_URL}member-scan-illustration.png`" alt="扫码枪扫码会员码" />
                 </div>
                 <p class="msm-device-hint">使用扫码枪扫码会员码</p>
               </div>
@@ -131,6 +131,8 @@
 <script setup>
 import { ref } from 'vue'
 import { Close, Search } from '@element-plus/icons-vue'
+
+const BASE_URL = import.meta.env.BASE_URL
 
 defineProps({
   visible: { type: Boolean, default: false },

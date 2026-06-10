@@ -2,7 +2,7 @@
   <div class="pos-shell">
     <aside class="pos-sidebar" aria-label="收银系统主导航">
       <router-link class="brand-mark" to="/sale" aria-label="头号空间收银首页">
-        <img src="/app-logo.png" alt="头号空间" />
+        <img :src="`${BASE_URL}app-logo.png`" alt="头号空间" />
       </router-link>
 
       <nav class="side-nav">
@@ -375,6 +375,8 @@ import {
   Minus,
 } from '@element-plus/icons-vue'
 
+const BASE_URL = import.meta.env.BASE_URL
+
 const route = useRoute()
 const router = useRouter()
 const cashierPanelOpen = ref(false)
@@ -506,12 +508,12 @@ const filledIcons = {
 }
 
 const navItems = [
-  { to: '/sale', label: '销售', iconSrc: '/sale-icons/sale.svg', match: ['/sale', '/result'] },
-  { to: '/member', label: '会员', iconSrc: '/nav-icons/member.svg', match: ['/member'], exclude: ['/member/deduct'] },
-  { to: '/member/deduct', label: '会员扣费', iconSrc: '/nav-icons/member-deduct.svg', match: ['/member/deduct'] },
-  { to: '/order', label: '订单', iconSrc: '/nav-icons/order.svg', match: ['/order'] },
-  { to: '/log', label: '日志', iconSrc: '/nav-icons/log.svg', match: ['/log'] },
-  { to: '/revenue', label: '营收', iconSrc: '/nav-icons/revenue.svg', match: ['/revenue'] },
+  { to: '/sale', label: '销售', iconSrc: `${BASE_URL}sale-icons/sale.svg`, match: ['/sale', '/result'] },
+  { to: '/member', label: '会员', iconSrc: `${BASE_URL}nav-icons/member.svg`, match: ['/member'], exclude: ['/member/deduct'] },
+  { to: '/member/deduct', label: '会员扣费', iconSrc: `${BASE_URL}nav-icons/member-deduct.svg`, match: ['/member/deduct'] },
+  { to: '/order', label: '订单', iconSrc: `${BASE_URL}nav-icons/order.svg`, match: ['/order'] },
+  { to: '/log', label: '日志', iconSrc: `${BASE_URL}nav-icons/log.svg`, match: ['/log'] },
+  { to: '/revenue', label: '营收', iconSrc: `${BASE_URL}nav-icons/revenue.svg`, match: ['/revenue'] },
 ]
 
 const isActive = (item) => {

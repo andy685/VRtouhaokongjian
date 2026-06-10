@@ -6,11 +6,11 @@
         <strong>未登入会员</strong>
         <div class="member-actions">
           <button class="mini-action" type="button" @click="showMemberSelect = true">
-            <img class="mini-action-icon" src="/sale-icons/select-member.svg" alt="" />
+            <img class="mini-action-icon" :src="`${BASE_URL}sale-icons/select-member.svg`" alt="" />
             选择会员
           </button>
           <button class="mini-action" type="button" @click="showNewMember = true">
-            <img class="mini-action-icon" src="/sale-icons/add-member.svg" alt="" />
+            <img class="mini-action-icon" :src="`${BASE_URL}sale-icons/add-member.svg`" alt="" />
             新增会员
           </button>
         </div>
@@ -274,7 +274,7 @@
           </article>
 
           <div v-if="cartItems.length === 0" class="cart-empty">
-            <img src="/cart-empty-icon.png" alt="" class="cart-empty-icon" />
+            <img :src="`${BASE_URL}cart-empty-icon.png`" alt="" class="cart-empty-icon" />
             <span>购物车空空 咱也没有</span>
           </div>
         </div>
@@ -445,6 +445,8 @@ import CouponSelectModal from '../../components/CouponSelectModal.vue'
 import PaymentModal from '../../components/PaymentModal.vue'
 import MemberDeductionModal from '../../components/MemberDeductionModal.vue'
 import DeductionSuccessModal from '../../components/DeductionSuccessModal.vue'
+
+const BASE_URL = import.meta.env.BASE_URL
 
 const route = useRoute()
 

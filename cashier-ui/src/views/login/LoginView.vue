@@ -3,9 +3,9 @@
     <div class="login-shell">
       <section class="visual-panel" aria-hidden="true">
         <div class="visual-brand">
-          <img src="/login-brand-logo.png" alt="" />
+          <img :src="`${BASE_URL}login-brand-logo.png`" alt="" />
         </div>
-        <div class="visual-fill"></div>
+        <div class="visual-fill" :style="heroBgStyle"></div>
       </section>
 
       <nav class="quick-actions" aria-label="登录辅助入口">
@@ -175,7 +175,7 @@
           </button>
 
           <div class="upgrade-art" aria-hidden="true">
-            <img src="/upgrade-rocket.png" alt="" />
+            <img :src="`${BASE_URL}upgrade-rocket.png`" alt="" />
           </div>
 
           <div class="upgrade-hero">
@@ -214,10 +214,17 @@
 
 <script setup>
 import { Close, Lock, MoreFilled, User } from '@element-plus/icons-vue'
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const BASE_URL = import.meta.env.BASE_URL
+
 const router = useRouter()
+
+const heroBgStyle = computed(() => ({
+  background: `url('${BASE_URL}login-hero-body.jpg') center center / cover no-repeat`
+}))
+
 const menuOpen = ref(false)
 const menuRef = ref(null)
 const settingDialogVisible = ref(false)
@@ -406,7 +413,6 @@ onBeforeUnmount(() => {
   flex: 1 1 auto;
   position: relative;
   width: 100%;
-  background: url('/login-hero-body.jpg') center center / cover no-repeat;
   overflow: hidden;
 }
 

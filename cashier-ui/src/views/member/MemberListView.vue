@@ -8,13 +8,13 @@
         <button class="member-hero-btn" type="button" @click="showMemberSelect = true">
           <span class="member-btn-text">选择会员</span>
           <span class="member-btn-icon">
-            <img class="member-btn-icon-img" src="/member-page-icons/search.svg" alt="" />
+            <img class="member-btn-icon-img" :src="`${BASE_URL}member-page-icons/search.svg`" alt="" />
           </span>
         </button>
         <button class="member-hero-btn member-hero-btn--add" type="button" @click="showNewMember = true">
           <span class="member-btn-text">新增会员</span>
           <span class="member-btn-icon">
-            <img class="member-btn-icon-img" src="/member-page-icons/add.svg" alt="" />
+            <img class="member-btn-icon-img" :src="`${BASE_URL}member-page-icons/add.svg`" alt="" />
           </span>
         </button>
       </div>
@@ -117,6 +117,8 @@ import { Search } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
 import RegisterCodeModal from '../../components/RegisterCodeModal.vue'
+
+const BASE_URL = import.meta.env.BASE_URL
 
 const router = useRouter()
 

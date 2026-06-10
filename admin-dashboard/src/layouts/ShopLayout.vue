@@ -291,7 +291,7 @@ const menuOptions: MenuOption[] = [
     key: 'content-group',
     icon: renderIcon(MusicalNotesOutline),
     children: [
-      { label: '生日会主题资源', key: '/shop/birthday-theme' },
+      { label: '奇幻派对主题资源', key: '/shop/birthday-theme' },
     ]
   },
   {

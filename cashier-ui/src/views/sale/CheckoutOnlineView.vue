@@ -7,7 +7,7 @@
       
       <div class="qr-section">
         <div class="qr-code">
-          <img src="/qr-placeholder.svg" alt="支付二维码" />
+          <img :src="`${BASE_URL}qr-placeholder.svg`" alt="支付二维码" />
         </div>
         <div class="qr-info">
           <p>请使用支付宝或微信扫码支付</p>
@@ -43,6 +43,8 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { CreditCard, Wallet } from '@element-plus/icons-vue'
+
+const BASE_URL = import.meta.env.BASE_URL
 
 const router = useRouter()
 const remainingSeconds = ref(300) // 5分钟

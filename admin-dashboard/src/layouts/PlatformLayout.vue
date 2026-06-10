@@ -324,7 +324,7 @@ const menuOptions: MenuOption[] = [
       { label: '游戏审核', key: '/platform/games/review' },
       { label: '内容分发', key: '/platform/content' },
       { label: '小程序Banner', key: '/platform/banners' },
-      { label: '生日会主题资源', key: '/platform/birthday-theme' },
+      { label: '奇幻派对主题资源', key: '/platform/birthday-theme' },
     ]
   },
   {

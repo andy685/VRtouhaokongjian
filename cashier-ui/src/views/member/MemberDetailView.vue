@@ -64,7 +64,7 @@
         <div class="mdv-assets-grid">
           <!-- 预存款 -->
           <article class="mdv-asset-card card-balance">
-            <div class="card-icon card-icon-image"><img src="/member-icons/deposit.svg" alt="" /></div>
+            <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/deposit.svg`" alt="" /></div>
             <div class="card-body">
               <h3>预存款（元）</h3>
               <p class="card-value">{{ assets.balance.toFixed(2) }}</p>
@@ -76,7 +76,7 @@
 
           <!-- 游戏币 -->
           <article class="mdv-asset-card card-coins">
-            <div class="card-icon card-icon-image"><img src="/member-icons/coins.svg" alt="" /></div>
+            <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/coins.svg`" alt="" /></div>
             <div class="card-body">
               <h3>游戏币</h3>
               <p class="card-value">{{ assets.coins.toFixed(2) }}</p>
@@ -90,7 +90,7 @@
 
           <!-- 预存次数 -->
           <article class="mdv-asset-card card-times">
-            <div class="card-icon card-icon-image"><img src="/member-icons/times.svg" alt="" /></div>
+            <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/times.svg`" alt="" /></div>
             <div class="card-body">
               <h3>预存次数（次）</h3>
               <p class="card-value">{{ assets.times }}</p>
@@ -103,7 +103,7 @@
 
           <!-- 套票 -->
           <article class="mdv-asset-card card-ticket">
-            <div class="card-icon card-icon-image"><img src="/member-icons/ticket.svg" alt="" /></div>
+            <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/ticket.svg`" alt="" /></div>
             <div class="card-body">
               <h3>套票（张）</h3>
               <p class="card-value">{{ assets.tickets }}</p>
@@ -116,7 +116,7 @@
 
           <!-- 优惠券 -->
           <article class="mdv-asset-card card-coupon">
-            <div class="card-icon card-icon-image"><img src="/member-icons/coupon.svg" alt="" /></div>
+            <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/coupon.svg`" alt="" /></div>
             <div class="card-body">
               <h3>优惠券（张）</h3>
               <p class="card-value">{{ memberCoupons.length }}</p>
@@ -174,11 +174,11 @@
 
       <div class="mdv-sb-actions">
         <button class="sb-switch-btn" @click="showMemberSelect = true">
-          <img class="sb-action-icon" src="/member-action-icons/switch-member.svg" alt="" />
+          <img class="sb-action-icon" :src="`${BASE_URL}member-action-icons/switch-member.svg`" alt="" />
           切换会员
         </button>
         <button class="sb-add-btn" @click="showNewMember = true">
-          <img class="sb-action-icon" src="/member-action-icons/add-member.svg" alt="" />
+          <img class="sb-action-icon" :src="`${BASE_URL}member-action-icons/add-member.svg`" alt="" />
           新增会员
         </button>
       </div>
@@ -273,6 +273,8 @@ import PrepaidRecordsModal from '../../components/PrepaidRecordsModal.vue'
 import EditMemberModal from '../../components/EditMemberModal.vue'
 import MemberCouponsModal from '../../components/MemberCouponsModal.vue'
 import MemberGiftsModal from '../../components/MemberGiftsModal.vue'
+
+const BASE_URL = import.meta.env.BASE_URL
 
 const router = useRouter()
 
@@ -740,10 +742,10 @@ const deductionDevices = ref([
 
 // ===== 功能区按钮 =====
 const funcButtons = ref([
-  { label: '会员扣费', cls: 'fn-rent', action: 'deduct', icon: '/member-action-icons/deduct.png' },
-  { label: '兑换礼品', cls: 'fn-gift', action: 'gift', icon: '/member-action-icons/gift.png' },
-  { label: '赠送活动', cls: 'fn-event', action: 'event', icon: '/member-action-icons/event.png' },
-  { label: '修改储值', cls: 'fn-recharge', action: 'recharge', icon: '/member-action-icons/recharge.png' }
+  { label: '会员扣费', cls: 'fn-rent', action: 'deduct', icon: `${BASE_URL}member-action-icons/deduct.png` },
+  { label: '兑换礼品', cls: 'fn-gift', action: 'gift', icon: `${BASE_URL}member-action-icons/gift.png` },
+  { label: '赠送活动', cls: 'fn-event', action: 'event', icon: `${BASE_URL}member-action-icons/event.png` },
+  { label: '修改储值', cls: 'fn-recharge', action: 'recharge', icon: `${BASE_URL}member-action-icons/recharge.png` }
 ])
 
 const persistSaleMemberSession = () => {

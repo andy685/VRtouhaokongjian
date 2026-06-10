@@ -23,7 +23,7 @@
         <!-- 图片区域 -->
         <div class="rcm-body">
           <img
-            src="/register-qr-poster.png"
+            :src="`${BASE_URL}register-qr-poster.png`"
             alt="扫码注册会员二维码"
             class="rcm-poster-img"
           />
@@ -36,6 +36,8 @@
 
 <script setup>
 import { Close } from '@element-plus/icons-vue'
+
+const BASE_URL = import.meta.env.BASE_URL
 
 defineProps({
   visible: { type: Boolean, default: false }
