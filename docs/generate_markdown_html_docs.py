@@ -12,6 +12,13 @@ PANDOC = "/opt/homebrew/bin/pandoc"
 
 DOCS = [
     {
+        "md": ROOT / "头号空间-产品需求文档-PRD-v1.3.md",
+        "html": ROOT / "PRD-完整版.html",
+        "title": "头号空间 - 产品需求文档 PRD v1.3",
+        "brand": "PRD 完整版",
+        "subtitle": "产品定位、业务模型、功能需求与技术架构",
+    },
+    {
         "md": ROOT / "头号空间-页面功能详细规格书-v1.0.md",
         "html": ROOT / "功能规格说明书-v3.0.html",
         "title": "头号空间 - 功能规格说明书 v3.0",
