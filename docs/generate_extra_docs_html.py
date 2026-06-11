@@ -46,13 +46,9 @@ DOCS = [
         "brand": "CP 终端",
         "subtitle": "游戏供应商终端需求与功能规格",
     },
-    {
-        "md": ROOT / "GitHub推送与同步指南.md",
-        "html": ROOT / "GitHub推送与同步指南.html",
-        "title": "头号空间 - GitHub 推送与同步指南",
-        "brand": "GitHub 指南",
-        "subtitle": "项目推送、多平台同步与自动化部署",
-    },
+    # 注意：VR终端UI设计预览.html 和 资金流通全景图.html 是手工制作的
+    # 可视化页面（含 SVG 动画/交互），不通过 pandoc 从 MD 生成。
+    # 其对应的 .md 文件仅作为文档逻辑的纯文本存档，修改 HTML 需直接编辑 HTML 源文件。
 ]
 
 

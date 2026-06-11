@@ -221,7 +221,7 @@
       <div class="sub">支付流程、会员扣费与订单服务</div>
     </div>
     <a href="#top" class="s1">文档目录</a>
-    <a href="#头号空间-支付逻辑说明" class="s1">头号空间 - 支付逻辑说明</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-关键定义" class="s2">2. 关键定义</a><a href="#3-支付方式范围" class="s2">3. 支付方式范围</a><a href="#4-自动抵扣规则" class="s2">4. 自动抵扣规则</a><a href="#41-默认优先级" class="s3">4.1 默认优先级</a><a href="#42-游戏币规则" class="s3">4.2 游戏币规则</a><a href="#43-充值规则" class="s3">4.3 充值规则</a><a href="#5-终端支付逻辑" class="s2">5. 终端支付逻辑</a><a href="#51-商家收银系统" class="s3">5.1 商家收银系统</a><a href="#52-会员扣费页面" class="s3">5.2 会员扣费页面</a><a href="#53-pc点播系统" class="s3">5.3 PC点播系统</a><a href="#54-小程序会员支付" class="s3">5.4 小程序会员支付</a><a href="#6-结算前预览" class="s2">6. 结算前预览</a><a href="#7-退款规则" class="s2">7. 退款规则</a><a href="#8-成功提示与小票" class="s2">8. 成功提示与小票</a><a href="#81-支付成功提示" class="s3">8.1 支付成功提示</a><a href="#82-小票字段" class="s3">8.2 小票字段</a><a href="#9-风控与异常" class="s2">9. 风控与异常</a><a href="#10-待接口落地字段" class="s2">10. 待接口落地字段</a>
+    <a href="#头号空间-支付逻辑说明" class="s1">头号空间 - 支付逻辑说明</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-关键定义" class="s2">2. 关键定义</a><a href="#3-支付方式范围" class="s2">3. 支付方式范围</a><a href="#4-自动抵扣规则" class="s2">4. 自动抵扣规则</a><a href="#41-默认优先级" class="s3">4.1 默认优先级</a><a href="#42-游戏币规则" class="s3">4.2 游戏币规则</a><a href="#43-充值规则" class="s3">4.3 充值规则</a><a href="#5-终端支付逻辑" class="s2">5. 终端支付逻辑</a><a href="#51-商家收银系统" class="s3">5.1 商家收银系统</a><a href="#52-会员扣费页面" class="s3">5.2 会员扣费页面</a><a href="#53-pc点播系统" class="s3">5.3 PC点播系统</a><a href="#54-小程序会员支付" class="s3">5.4 小程序会员支付</a><a href="#6-结算前预览" class="s2">6. 结算前预览</a><a href="#7-退款规则" class="s2">7. 退款规则</a><a href="#8-成功提示与小票" class="s2">8. 成功提示与小票</a><a href="#81-支付成功提示" class="s3">8.1 支付成功提示</a><a href="#82-小票字段" class="s3">8.2 小票字段</a><a href="#9-风控与异常" class="s2">9. 风控与异常</a><a href="#10-待接口落地字段" class="s2">10. 待接口落地字段</a><a href="#11-扫码支付流程（v11-新增）" class="s2">11. 扫码支付流程（v1.1 新增）</a><a href="#111-双弹窗架构" class="s3">11.1 双弹窗架构</a><a href="#112-支付分流逻辑" class="s3">11.2 支付分流逻辑</a><a href="#113-扫码弹窗状态机" class="s3">11.3 扫码弹窗状态机</a><a href="#114-两层校验机制" class="s3">11.4 两层校验机制</a><a href="#第-1-层格式校验（即时反馈）" class="s3">第 1 层：格式校验（即时反馈）</a><a href="#第-2-层后端验证（12s-延迟）" class="s3">第 2 层：后端验证（~1.2s 延迟）</a><a href="#115-扫码枪输入处理" class="s3">11.5 扫码枪输入处理</a><a href="#116-手动输入" class="s3">11.6 手动输入</a><a href="#117-错误提示规范" class="s3">11.7 错误提示规范</a><a href="#118-支付确认数据结构（v11-更新）" class="s3">11.8 支付确认数据结构（v1.1 更新）</a>
   </aside>
   <main class="main" id="top">
     <section class="hero">
@@ -231,9 +231,12 @@
     </section>
     <h1 id="头号空间-支付逻辑说明">头号空间 - 支付逻辑说明</h1>
 <blockquote>
-<p>版本：v1.0<br />
-日期：2026-06-07<br />
+<p>版本：v1.1<br />
+日期：2026-06-11<br />
 适用范围：商家收银系统、会员扣费、PC点播系统、小程序会员支付、订单与退款服务</p>
+</blockquote>
+<blockquote>
+<p><strong>v1.1 更新</strong>：新增加 §11”扫码支付流程”章节，涵盖扫码枪识别、双弹窗架构、两层校验机制、手动输入备选、错误提示规范。</p>
 </blockquote>
 <hr />
 <h2 id="1-文档目标">1. 文档目标</h2>
@@ -292,7 +295,7 @@
 </blockquote>
 <hr />
 <h2 id="3-支付方式范围">3. 支付方式范围</h2>
-<p>未来商品或项目建议增加“可用支付范围”配置。</p>
+<p>未来商品或项目建议增加”可用支付范围”配置。</p>
 <table>
 <thead>
 <tr>
@@ -324,6 +327,7 @@
 </tbody>
 </table>
 <p>默认未配置时，建议按普通消费处理：支持优惠、预存款、游戏币、外部补差。</p>
+<p><strong>微信/支付宝支付需扫码枪</strong>： - 收银员选择微信/支付宝支付后，必须使用扫码枪扫描玩家付款码。 - 系统对付款码进行格式校验 + 后端有效性验证，验证通过后方可完成支付。 - 扫码枪故障时可切换为手动输入模式。 - 现金和会员资产抵扣无需扫码，直接确认即可。</p>
 <hr />
 <h2 id="4-自动抵扣规则">4. 自动抵扣规则</h2>
 <h3 id="41-默认优先级">4.1 默认优先级</h3>
@@ -380,7 +384,7 @@
 <pre><code>充值赠送
 活动赠送
 后台发放</code></pre>
-<p>游戏币目前不设置售卖型来源。若未来新增直接购买游戏币的业务，应作为新的充值类商品单独评审，并继续遵守“充值只能用外部支付”的规则。</p>
+<p>游戏币目前不设置售卖型来源。若未来新增直接购买游戏币的业务，应作为新的充值类商品单独评审，并继续遵守”充值只能用外部支付”的规则。</p>
 <h3 id="43-充值规则">4.3 充值规则</h3>
 <p>充值储值只能使用外部支付：</p>
 <pre><code>现金 / 微信支付 / 支付宝支付</code></pre>
@@ -391,6 +395,10 @@
 <h2 id="5-终端支付逻辑">5. 终端支付逻辑</h2>
 <h3 id="51-商家收银系统">5.1 商家收银系统</h3>
 <table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 62%" />
+</colgroup>
 <thead>
 <tr>
 <th>场景</th>
@@ -418,10 +426,22 @@
 <td>仅游戏币商品</td>
 <td>仅扣游戏币，不允许外部补差</td>
 </tr>
+<tr>
+<td><strong>微信/支付宝补差</strong></td>
+<td><strong>必须经过扫码枪扫码 → 格式校验 → 后端验证 → 确认支付</strong></td>
+</tr>
+<tr>
+<td><strong>现金补差</strong></td>
+<td>直接确认，无需扫码</td>
+</tr>
+<tr>
+<td><strong>会员资产全额抵扣</strong></td>
+<td>直接确认扣款，无需选择支付方式</td>
+</tr>
 </tbody>
 </table>
 <h3 id="52-会员扣费页面">5.2 会员扣费页面</h3>
-<p>会员扣费页面定位为“会员账户资产扣减”。</p>
+<p>会员扣费页面定位为”会员账户资产扣减”。</p>
 <p>建议规则：</p>
 <ul>
 <li>必须先选择会员。</li>
@@ -489,6 +509,10 @@
 仍需支付        ¥0.00</code></pre>
 <p>按钮文案建议：</p>
 <table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 66%" />
+</colgroup>
 <thead>
 <tr>
 <th>场景</th>
@@ -497,8 +521,12 @@
 </thead>
 <tbody>
 <tr>
-<td>需要外部补差</td>
-<td>确认并支付 ¥xx</td>
+<td>需要外部补差（微信/支付宝）</td>
+<td>扫码支付（微信）¥xx.xx / 扫码支付（支付宝）¥xx.xx</td>
+</tr>
+<tr>
+<td>需要外部补差（现金）</td>
+<td>确认并支付 ¥xx.xx</td>
 </tr>
 <tr>
 <td>全部会员资产抵扣</td>
@@ -510,7 +538,7 @@
 </tr>
 <tr>
 <td>仅游戏币且余额不足</td>
-<td>游戏币不足</td>
+<td>游戏币不足（禁用）</td>
 </tr>
 </tbody>
 </table>
@@ -560,7 +588,7 @@
 <hr />
 <h2 id="8-成功提示与小票">8. 成功提示与小票</h2>
 <h3 id="81-支付成功提示">8.1 支付成功提示</h3>
-<p>结算成功后必须展示“支付拆分”和“会员资产变化”。</p>
+<p>结算成功后必须展示”支付拆分”和”会员资产变化”。</p>
 <p>示例：</p>
 <pre><code>支付成功
 
@@ -682,6 +710,251 @@
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;game_coin&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span> <span class="dt">&quot;exchange_rate&quot;</span><span class="fu">:</span> <span class="st">&quot;1:1&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;wechat&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="fl">10.00</span> <span class="fu">}</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<hr />
+<h2 id="扫码支付流程v1.1-新增-11-扫码支付流程v11-新增">11. 扫码支付流程（v1.1 新增） {#11-扫码支付流程（v11-新增）}</h2>
+<p>收银员选择微信支付或支付宝支付时，必须通过扫码枪扫描玩家付款码完成支付。系统采用<strong>双弹窗架构</strong>和<strong>两层校验机制</strong>确保支付安全。</p>
+<h3 id="111-双弹窗架构">11.1 双弹窗架构</h3>
+<p>收银系统包含两个支付相关弹窗：</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 42%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>弹窗</th>
+<th>触发条件</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>结算弹窗</strong></td>
+<td>收银员点击”去结算”</td>
+<td>展示订单明细、会员资产抵扣、支付方式选择</td>
+</tr>
+<tr>
+<td><strong>扫码弹窗</strong></td>
+<td>选择微信/支付宝后点击确认</td>
+<td>扫描玩家付款码，两层校验，手动输入备选</td>
+</tr>
+</tbody>
+</table>
+<p>现金和会员资产全额抵扣不弹出扫码弹窗，直接在结算弹窗确认即可。</p>
+<h3 id="112-支付分流逻辑">11.2 支付分流逻辑</h3>
+<pre><code>收银员点击结算确认
+    ├── 现金支付 → doConfirm() → 支付成功
+    ├── 会员资产全额抵扣 → doConfirm() → 扣款成功
+    └── 微信/支付宝 → openScanner() → 扫码弹窗</code></pre>
+<h3 id="113-扫码弹窗状态机">11.3 扫码弹窗状态机</h3>
+<p>扫码弹窗有 4 个状态：</p>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>状态</th>
+<th>说明</th>
+<th>视觉表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scanning</code></td>
+<td>等待扫码输入</td>
+<td>深色扫码框 + 四角白色边框 + 呼吸动画图标 + 激光扫描线动画</td>
+</tr>
+<tr>
+<td><code>verifying</code></td>
+<td>正在校验付款码有效性</td>
+<td>扫码框变暗金色 + 四角黄色边框 + 旋转加载动画 + “验证付款码中…”</td>
+</tr>
+<tr>
+<td><code>success</code></td>
+<td>付款码有效</td>
+<td>扫码框变深绿色 + 四角绿色边框 + ✓图标 + “扫码成功”</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>付款码无效</td>
+<td>扫码框变深红色 + 四角红色边框 + ✕图标 + 具体错误原因</td>
+</tr>
+</tbody>
+</table>
+<h3 id="114-两层校验机制">11.4 两层校验机制</h3>
+<h4 id="第-1-层格式校验即时反馈-第-1-层格式校验即时反馈">第 1 层：格式校验（即时反馈） {#第-1-层格式校验（即时反馈）}</h4>
+<p>扫码枪输入完成（80ms 无新输入）或回车后，立即进行格式校验：</p>
+<table>
+<thead>
+<tr>
+<th>校验项</th>
+<th>规则</th>
+<th>错误提示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>位数不足</td>
+<td>付款码长度 &lt; 15</td>
+<td><code>付款码位数不足（当前X位，至少15位）</code></td>
+</tr>
+<tr>
+<td>非数字字符</td>
+<td>付款码含非数字字符</td>
+<td><code>付款码只能包含数字，请重新扫描</code></td>
+</tr>
+<tr>
+<td>位数超长</td>
+<td>付款码长度 &gt; 20</td>
+<td><code>付款码位数超长（当前X位，最多20位）</code></td>
+</tr>
+</tbody>
+</table>
+<p>格式校验失败后，错误提示停留 2.5 秒，自动恢复为扫描状态，可重新输入。</p>
+<h4 id="第-2-层后端验证1.2s-延迟-第-2-层后端验证12s-延迟">第 2 层：后端验证（~1.2s 延迟） {#第-2-层后端验证（12s-延迟）}</h4>
+<p>格式校验通过后，系统进入 <code>verifying</code> 状态，模拟调用后端 API 验证付款码是否真实有效：</p>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>检测项</th>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连续相同数字</td>
+<td>≥8 个相同数字（如 <code>111111111111111111</code>）</td>
+<td>明显虚假的付款码</td>
+</tr>
+<tr>
+<td>连续递增/递减</td>
+<td>≥6 位连续递增或递减（如 <code>123456789012345678</code>、<code>987654321098765432</code>）</td>
+<td>简单输入序列</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>真实接入指引</strong>：生产环境中将 <code>simulateBackendVerification()</code> 替换为实际的 <code>POST /api/verify-payment-code</code> 调用，后端对接支付宝/微信支付服务商接口进行付款码验证。</p>
+</blockquote>
+<p>验证失败后错误提示停留 3 秒，同时手动输入框同步变红提示。</p>
+<h3 id="115-扫码枪输入处理">11.5 扫码枪输入处理</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>输入方式</strong></td>
+<td>隐藏的 <code>&lt;input&gt;</code> 自动聚焦，接收扫码枪键盘事件</td>
+</tr>
+<tr>
+<td><strong>防抖识别</strong></td>
+<td>80ms 内无新输入即判定扫码完成，自动触发识别</td>
+</tr>
+<tr>
+<td><strong>回车识别</strong></td>
+<td>部分扫码枪以回车结束，回车键直接触发识别</td>
+</tr>
+<tr>
+<td><strong>手动输入备选</strong></td>
+<td>扫码枪故障时，点击”手动输入付款码”切换为文本框输入</td>
+</tr>
+</tbody>
+</table>
+<h3 id="116-手动输入">11.6 手动输入</h3>
+<p>扫码枪故障或特殊情况下，收银员可点击”手动输入付款码”切换为文本框输入模式：</p>
+<table>
+<thead>
+<tr>
+<th>交互元素</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>输入框</strong></td>
+<td>支持输入 15-20 位数字，<code>SF Mono</code> 等宽字体</td>
+</tr>
+<tr>
+<td><strong>格式提示</strong></td>
+<td>无错误时显示”支持支付宝/微信 15~20 位数字付款码”</td>
+</tr>
+<tr>
+<td><strong>行内错误提示</strong></td>
+<td>红色边框 + 红色背景错误卡片，精准提示具体错误</td>
+</tr>
+<tr>
+<td><strong>错误自动清除</strong></td>
+<td>用户重新输入即清除错误状态</td>
+</tr>
+</tbody>
+</table>
+<p>手动输入同样经过两层校验，与扫码枪输入完全一致。</p>
+<h3 id="117-错误提示规范">11.7 错误提示规范</h3>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 35%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>扫码框提示</th>
+<th>手动输入框提示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>格式错误（位数/非数字）</td>
+<td>扫码框变红 + 错误原因</td>
+<td>输入框红框 + 红色错误卡片</td>
+</tr>
+<tr>
+<td>付款码无效（后端验证失败）</td>
+<td>扫码框变红 + “付款码无效或已过期，请重新扫描”</td>
+<td>输入框红框 + “付款码无效或已过期”</td>
+</tr>
+<tr>
+<td>空输入</td>
+<td>—</td>
+<td>输入框红框 + “请输入付款码”</td>
+</tr>
+</tbody>
+</table>
+<p>所有错误状态 2.5~3 秒后自动恢复，允许重新操作。</p>
+<h3 id="支付确认数据结构v1.1-更新-118-支付确认数据结构v11-更新">11.8 支付确认数据结构（v1.1 更新） {#118-支付确认数据结构（v11-更新）}</h3>
+<p><code>confirm</code> 事件除原有字段外，新增 <code>scannedCode</code> 字段：</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paymentMethod&quot;</span><span class="fu">:</span> <span class="st">&quot;offline_wechat&quot;</span><span class="fu">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paymentMethodName&quot;</span><span class="fu">:</span> <span class="st">&quot;微信&quot;</span><span class="fu">,</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="fl">10.00</span><span class="fu">,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;assetDeduction&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;prepaid&quot;</span><span class="fu">:</span> <span class="fl">60.00</span><span class="fu">,</span> <span class="dt">&quot;coins&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span> <span class="dt">&quot;external&quot;</span><span class="fu">:</span> <span class="fl">10.00</span> <span class="fu">},</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;paymentLines&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;prepaid&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="fl">60.00</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;game_coin&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span> <span class="dt">&quot;exchange_rate&quot;</span><span class="fu">:</span> <span class="st">&quot;1:1&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;wechat&quot;</span><span class="fu">,</span> <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="fl">10.00</span> <span class="fu">}</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;scannedCode&quot;</span><span class="fu">:</span> <span class="st">&quot;280123456789012345&quot;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>scannedCode</code> 在现金/会员资产抵扣时为 <code>null</code>。 ```</p>
 
     <div class="footer">Generated from Markdown in /Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs</div>
   </main>
