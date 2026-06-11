@@ -312,19 +312,20 @@ const handleMemberSelected = (member) => {
   height: 38px;
   padding: 0 14px;
   border-radius: 8px;
-  background: #f1f6fc;
-  border: 1px solid transparent;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #b8d3ee;
+  box-shadow: 0 6px 18px rgba(120, 163, 214, 0.1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .member-search-box:focus-within {
   border-color: #3a9bff;
-  box-shadow: 0 0 0 3px rgba(58, 155, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(58, 155, 255, 0.14), 0 8px 20px rgba(58, 155, 255, 0.14);
   background: #fff;
 }
 
 .member-search-box .el-icon {
-  color: #8e9bb0;
+  color: #5f7fa5;
   font-size: 16px;
 }
 
@@ -339,7 +340,7 @@ const handleMemberSelected = (member) => {
 }
 
 .member-search-box input::placeholder {
-  color: #a0aab9;
+  color: #7f91a8;
 }
 
 .member-count {
