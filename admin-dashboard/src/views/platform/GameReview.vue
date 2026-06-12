@@ -63,7 +63,7 @@
     </n-tabs>
 
     <!-- 审核弹窗 -->
-    <n-modal v-model:show="showReviewModal" preset="card" title="游戏审核" style="width: 720px;" :bordered="false">
+    <n-modal v-model:show="showReviewModal" preset="card" title="游戏审核" style="width: 980px;" :bordered="false">
       <template #header>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span>游戏审核</span>
@@ -72,43 +72,230 @@
         </div>
       </template>
       <template v-if="currentGame">
-        <!-- 游戏信息 -->
-        <n-descriptions label-placement="left" :column="2" bordered size="small">
-          <n-descriptions-item label="游戏名称">{{ currentGame.name }}</n-descriptions-item>
-          <n-descriptions-item label="版本号">{{ currentGame.version }}</n-descriptions-item>
-          <n-descriptions-item label="供应商">{{ currentGame.cpName }}</n-descriptions-item>
-          <n-descriptions-item label="游戏题材">{{ currentGame.category }}</n-descriptions-item>
-          <n-descriptions-item label="游戏大小">{{ currentGame.size }}</n-descriptions-item>
-          <n-descriptions-item label="游戏时长">{{ currentGame.duration }}分钟</n-descriptions-item>
-          <n-descriptions-item label="运行平台">{{ currentGame.platform }}</n-descriptions-item>
-          <n-descriptions-item label="玩法模式">{{ currentGame.gameMode }}</n-descriptions-item>
-          <n-descriptions-item label="提交时间">{{ currentGame.submitTime }}</n-descriptions-item>
-          <n-descriptions-item label="游戏描述" :span="2">{{ currentGame.description }}</n-descriptions-item>
-          <n-descriptions-item label="开发者备注" :span="2">{{ currentGame.devNote || '无' }}</n-descriptions-item>
-        </n-descriptions>
+        <div class="review-modal-body">
+          <section class="detail-panel">
+            <div class="detail-panel-head">
+              <div>
+                <h4>基础信息</h4>
+                <p>审核基础资料是否完整，确认版本、题材与体验方式一致。</p>
+              </div>
+              <div class="runtime-badges">
+                <n-tag size="small" type="info" :bordered="false">{{ currentGame.platform }}</n-tag>
+                <n-tag size="small" type="success" :bordered="false">{{ currentGame.gameModeLabel }}</n-tag>
+              </div>
+            </div>
+            <n-descriptions label-placement="left" :column="2" bordered size="small">
+              <n-descriptions-item label="游戏名称">{{ currentGame.name }}</n-descriptions-item>
+              <n-descriptions-item label="版本号">{{ currentGame.version }}</n-descriptions-item>
+              <n-descriptions-item label="供应商">{{ currentGame.cpName }}</n-descriptions-item>
+              <n-descriptions-item label="游戏题材">{{ currentGame.category }}</n-descriptions-item>
+              <n-descriptions-item label="游戏大小">{{ currentGame.size }}</n-descriptions-item>
+              <n-descriptions-item label="游戏时长">{{ currentGame.duration }} 分钟</n-descriptions-item>
+              <n-descriptions-item label="运行平台">{{ currentGame.platform }}</n-descriptions-item>
+              <n-descriptions-item label="玩法模式">{{ currentGame.gameModeLabel }}</n-descriptions-item>
+              <n-descriptions-item label="提交时间">{{ currentGame.submitTime }}</n-descriptions-item>
+              <n-descriptions-item label="体验人数">{{ currentGame.playerCountLabel }}</n-descriptions-item>
+              <n-descriptions-item label="游戏描述" :span="2">{{ currentGame.description }}</n-descriptions-item>
+              <n-descriptions-item label="开发者备注" :span="2">{{ currentGame.devNote || '无' }}</n-descriptions-item>
+            </n-descriptions>
+          </section>
 
-        <!-- 审核操作区 -->
-        <div class="review-section">
-          <h4>审核配置</h4>
-          <n-form label-placement="left" label-width="110">
-            <n-form-item label="游戏豆定价" required>
-              <n-input-number v-model:value="reviewForm.gameBeanCost" :min="1" placeholder="每次消耗游戏豆数量" style="width: 200px;" />
-              <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">豆/次</span>
-            </n-form-item>
-            <n-form-item label="单次成本" required>
-              <n-input-number v-model:value="reviewForm.costPerPlay" :min="0" :step="0.01" placeholder="每次给供应商多少钱" style="width: 200px;" />
-              <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">元/次（给CP的分成）</span>
-            </n-form-item>
-            <n-form-item label="价格摘要">
-              <span style="font-size: 13px; color: var(--text-muted);">
-                用户每次消耗 <b style="color: var(--text-primary);">{{ reviewForm.gameBeanCost || 0 }}</b> 游戏豆，
-                平台支付CP <b style="color: var(--text-primary);">¥{{ reviewForm.costPerPlay || 0 }}</b>/次
-              </span>
-            </n-form-item>
-            <n-form-item label="审核意见">
-              <n-input v-model:value="reviewForm.comment" type="textarea" :rows="2" placeholder="给CP的审核反馈（不通过时必填）" />
-            </n-form-item>
-          </n-form>
+          <section class="detail-panel">
+            <div class="detail-panel-head">
+              <div>
+                <h4>运行与资源规格</h4>
+                <p>对照运行架构校验资源构件、启动方式、联网依赖与安装目标。</p>
+              </div>
+              <n-tag size="small" type="warning" :bordered="false">
+                {{ getRequiredResourceCount(currentGame) }} 个必传资源
+              </n-tag>
+            </div>
+
+            <div class="architecture-summary">
+              <div class="architecture-title">
+                <strong>{{ runtimeMeta(currentGame.runtimeArchitecture).title }}</strong>
+                <span>{{ runtimeMeta(currentGame.runtimeArchitecture).description }}</span>
+              </div>
+              <div class="architecture-tags">
+                <n-tag
+                  v-for="tag in runtimeMeta(currentGame.runtimeArchitecture).tags"
+                  :key="tag"
+                  size="small"
+                  :bordered="false"
+                >
+                  {{ tag }}
+                </n-tag>
+              </div>
+            </div>
+
+            <div class="spec-grid">
+              <div class="spec-item">
+                <span>安装目标</span>
+                <strong>{{ installTargetLabelMap[currentGame.installTarget] || currentGame.installTarget || '未填写' }}</strong>
+              </div>
+              <div class="spec-item">
+                <span>包名 / 应用标识</span>
+                <strong>{{ currentGame.packageIdentifier || '未填写' }}</strong>
+              </div>
+              <div class="spec-item">
+                <span>启动入口</span>
+                <strong>{{ currentGame.entryPoint || '未填写' }}</strong>
+              </div>
+              <div class="spec-item">
+                <span>启动参数</span>
+                <strong>{{ currentGame.launchArgs || '无' }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.servicePort">
+                <span>PC 服务端口</span>
+                <strong>{{ currentGame.servicePort }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.startupOrder">
+                <span>启动顺序</span>
+                <strong>{{ startupOrderLabelMap[currentGame.startupOrder] || currentGame.startupOrder }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.networkMode">
+                <span>网络模式</span>
+                <strong>{{ networkModeLabelMap[currentGame.networkMode] || currentGame.networkMode }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.portList">
+                <span>开放端口</span>
+                <strong>{{ currentGame.portList }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.streamingProvider">
+                <span>云串流服务商</span>
+                <strong>{{ currentGame.streamingProvider }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.cloudGameId">
+                <span>云游戏 ID</span>
+                <strong>{{ currentGame.cloudGameId }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.externalPlatform">
+                <span>外部平台</span>
+                <strong>{{ currentGame.externalPlatform }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.externalGameId">
+                <span>平台游戏 ID</span>
+                <strong>{{ currentGame.externalGameId }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.webEntryUrl">
+                <span>WebXR 入口</span>
+                <strong>{{ currentGame.webEntryUrl }}</strong>
+              </div>
+              <div class="spec-item" v-if="currentGame.browserRequirement">
+                <span>浏览器要求</span>
+                <strong>{{ currentGame.browserRequirement }}</strong>
+              </div>
+            </div>
+
+            <div class="technical-note">
+              <span>安装与验收说明</span>
+              <p>{{ currentGame.technicalNote || '未填写安装说明' }}</p>
+            </div>
+          </section>
+
+          <section class="detail-panel">
+            <div class="detail-panel-head">
+              <div>
+                <h4>资源与素材下载</h4>
+                <p>审核时可逐项下载 APK、EXE、服务端、联机房间包以及运营素材进行核对。</p>
+              </div>
+            </div>
+
+            <div class="download-section">
+              <div class="download-group">
+                <div class="download-group-title">游戏资源构件</div>
+                <div class="resource-list">
+                  <div
+                    v-for="component in currentGame.resourceComponents"
+                    :key="component.role"
+                    class="resource-card"
+                  >
+                    <div class="resource-card-main">
+                      <div class="resource-card-title">
+                        <span>{{ resourceMeta(component.role).label }}</span>
+                        <n-tag v-if="component.required" size="tiny" type="error" :bordered="false">必传</n-tag>
+                        <n-tag v-else size="tiny" :bordered="false">可选</n-tag>
+                      </div>
+                      <p>{{ resourceMeta(component.role).description }}</p>
+                      <div class="resource-file-meta">
+                        <span>{{ component.fileName || '未上传资源文件' }}</span>
+                        <span>{{ component.fileSize || resourceMeta(component.role).maxSizeText }}</span>
+                      </div>
+                    </div>
+                    <n-button
+                      size="small"
+                      type="primary"
+                      secondary
+                      :disabled="!component.fileName"
+                      @click="downloadResource(currentGame, component)"
+                    >
+                      下载
+                    </n-button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="download-group">
+                <div class="download-group-title">运营素材</div>
+                <div class="asset-download-grid">
+                  <div class="asset-download-card">
+                    <div>
+                      <strong>游戏封面</strong>
+                      <p>{{ currentGame.coverName || '未上传封面' }}</p>
+                    </div>
+                    <n-button size="small" secondary :disabled="!currentGame.coverName" @click="downloadAsset(currentGame, 'cover')">下载</n-button>
+                  </div>
+                  <div class="asset-download-card">
+                    <div>
+                      <strong>宣传视频</strong>
+                      <p>{{ currentGame.videoName || '未上传宣传视频' }}</p>
+                    </div>
+                    <n-button size="small" secondary :disabled="!currentGame.videoName" @click="downloadAsset(currentGame, 'video')">下载</n-button>
+                  </div>
+                  <div
+                    v-for="banner in currentGame.bannerList"
+                    :key="banner.name"
+                    class="asset-download-card"
+                  >
+                    <div>
+                      <strong>展位图</strong>
+                      <p>{{ banner.name }}</p>
+                    </div>
+                    <n-button size="small" secondary @click="downloadBanner(currentGame, banner)">下载</n-button>
+                  </div>
+                  <div v-if="!currentGame.bannerList.length" class="asset-download-card empty">
+                    <div>
+                      <strong>展位图</strong>
+                      <p>未上传展位图</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="review-section">
+            <h4>审核配置</h4>
+            <n-form label-placement="left" label-width="110">
+              <n-form-item label="游戏豆定价" required>
+                <n-input-number v-model:value="reviewForm.gameBeanCost" :min="1" placeholder="每次消耗游戏豆数量" style="width: 200px;" />
+                <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">豆/次</span>
+              </n-form-item>
+              <n-form-item label="单次成本" required>
+                <n-input-number v-model:value="reviewForm.costPerPlay" :min="0" :step="0.01" placeholder="每次给供应商多少钱" style="width: 200px;" />
+                <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">元/次（给CP的分成）</span>
+              </n-form-item>
+              <n-form-item label="价格摘要">
+                <span style="font-size: 13px; color: var(--text-muted);">
+                  用户每次消耗 <b style="color: var(--text-primary);">{{ reviewForm.gameBeanCost || 0 }}</b> 游戏豆，
+                  平台支付CP <b style="color: var(--text-primary);">¥{{ reviewForm.costPerPlay || 0 }}</b>/次
+                </span>
+              </n-form-item>
+              <n-form-item label="审核意见">
+                <n-input v-model:value="reviewForm.comment" type="textarea" :rows="2" placeholder="给CP的审核反馈（不通过时必填）" />
+              </n-form-item>
+            </n-form>
+          </div>
         </div>
       </template>
       <template #footer>
@@ -144,14 +331,227 @@ const reviewResultOptions = [
   { label: '未通过', value: 'rejected' },
 ]
 
+type RuntimeArchitecture =
+  | 'pcvr'
+  | 'headset_native'
+  | 'headset_with_pc_service'
+  | 'multiplayer_server'
+  | 'webxr'
+  | 'media_experience'
+
+type ResourceRole =
+  | 'headset_client'
+  | 'headset_data'
+  | 'pc_client'
+  | 'pc_service'
+  | 'server_room'
+  | 'stream_client'
+  | 'web_bundle'
+  | 'media_content'
+  | 'dependency'
+  | 'patch'
+
+type ResourceComponent = {
+  role: ResourceRole
+  required: boolean
+  fileName: string
+  fileSize: string
+}
+
+type ReviewGame = {
+  id: number
+  name: string
+  cpName: string
+  version: string
+  category: string
+  size: string
+  duration: number
+  platform: string
+  gameMode: string
+  gameModeLabel: string
+  playerCountLabel: string
+  reviewType: 'new' | 'update'
+  submitTime: string
+  description: string
+  devNote: string
+  runtimeArchitecture: RuntimeArchitecture
+  installTarget: string
+  packageIdentifier: string
+  entryPoint: string
+  launchArgs: string
+  servicePort: string
+  startupOrder: string
+  networkMode: string
+  portList: string
+  technicalNote: string
+  streamingProvider: string
+  cloudGameId: string
+  externalPlatform: string
+  externalGameId: string
+  webEntryUrl: string
+  browserRequirement: string
+  coverName: string
+  videoName: string
+  bannerList: { name: string }[]
+  resourceComponents: ResourceComponent[]
+}
+
+const runtimeArchitectureOptions: Record<RuntimeArchitecture, { title: string; description: string; tags: string[] }> = {
+  pcvr: {
+    title: 'PCVR 主机运行',
+    description: '游戏安装在 Windows 主机，依赖头显串流或直连启动。',
+    tags: ['EXE/ZIP', 'PC'],
+  },
+  headset_native: {
+    title: '头显原生运行',
+    description: '游戏直接安装在头显中，上传 APK 或头显内容包即可。',
+    tags: ['APK', '头显'],
+  },
+  headset_with_pc_service: {
+    title: '头显 + PC 服务终端',
+    description: '单台或少量头显运行 APK，但必须连接本地 PC 服务做授权、同步、外设或房控。',
+    tags: ['单机为主', 'PC 服务'],
+  },
+  multiplayer_server: {
+    title: '多终端联机/主控',
+    description: '多台头显进入同一房间联机，必须有主控/房间服务统一建房、同步与结算。',
+    tags: ['多人联机', '主控服务'],
+  },
+  webxr: {
+    title: 'WebXR 浏览器游戏',
+    description: '通过浏览器访问 VR 内容，重点校验 URL、浏览器与缓存包。',
+    tags: ['URL', 'Web Bundle'],
+  },
+  media_experience: {
+    title: '沉浸式媒体内容',
+    description: '非传统交互游戏，常见于 360 视频、互动影片与轻交互展项。',
+    tags: ['视频资源', '媒体包'],
+  },
+}
+
+const resourceRoleOptions: Record<ResourceRole, { label: string; description: string; maxSizeText: string }> = {
+  headset_client: { label: '头显客户端', description: '安装在头显中的主程序包，通常为 APK。', maxSizeText: '建议单包 ≤ 8GB' },
+  headset_data: { label: '头显数据包', description: '拆分的 OBB/资源数据包，需与头显客户端配套。', maxSizeText: '建议单包 ≤ 20GB' },
+  pc_client: { label: 'PC 游戏主包', description: '安装在 Windows 主机的 EXE/ZIP 主程序。', maxSizeText: '建议单包 ≤ 30GB' },
+  pc_service: { label: 'PC 服务终端', description: '房控、授权、联网、启动器等服务程序。', maxSizeText: '建议单包 ≤ 5GB' },
+  server_room: { label: '联机房间服务', description: '多人联机房间创建、同步、结算所需服务端资源。', maxSizeText: '建议单包 ≤ 10GB' },
+  web_bundle: { label: 'WebXR 内容包', description: 'WebGL/WebXR 站点资源包、离线缓存包或静态资源。', maxSizeText: '建议单包 ≤ 5GB' },
+  media_content: { label: '媒体内容包', description: '360 视频、互动影片或媒体体验内容资源。', maxSizeText: '建议单包 ≤ 50GB' },
+  dependency: { label: '依赖组件', description: '驱动、运行库、授权文件等附加依赖。', maxSizeText: '建议单包 ≤ 2GB' },
+  patch: { label: '增量补丁', description: '更新审核时提交的差分补丁或热更新包。', maxSizeText: '建议单包 ≤ 10GB' },
+}
+
+const installTargetLabelMap: Record<string, string> = {
+  windows_pc: 'Windows 主机',
+  android_headset: 'Android 头显',
+  web: 'Web 浏览器',
+}
+
+const startupOrderLabelMap: Record<string, string> = {
+  pc_service_first: '先启动 PC 服务，再启动游戏',
+  controller_first: '先启动房控/联机服务，再启动客户端',
+  game_first: '先启动游戏，再由终端拉起依赖',
+}
+
+const networkModeLabelMap: Record<string, string> = {
+  offline: '离线单机',
+  lan: '局域网联机',
+  internet: '公网联机',
+  mixed: '混合网络',
+}
+
 // ========== 待审核数据 ==========
-const pendingData = ref([
-  { id: 1, name: '深海探险VR', cpName: '极境互动科技', version: '1.0.0', category: '冒险', size: '1.8GB', duration: 15, platform: '头显一体机', gameMode: '单机', reviewType: 'new', submitTime: '2026-05-28 14:30', description: '潜入深海世界，探索未知海域，与海洋生物互动。支持体感控制。', devNote: '这是我们首款海洋题材VR游戏，画面精美，适合全年龄段' },
-  { id: 2, name: '赛博朋克2079', cpName: '闪耀游戏工作室', version: '0.5.0', category: '射击', size: '3.2GB', duration: 20, platform: '主机游戏', gameMode: '联机', reviewType: 'new', submitTime: '2026-05-28 10:15', description: '未来都市背景的多人在线射击游戏，支持4人对战。', devNote: '目前是早期版本，后续会持续更新内容' },
-  { id: 3, name: '棋牌乐园', cpName: '乐游网络', version: '2.0.0', category: '休闲', size: '500MB', duration: 30, platform: '头显一体机', gameMode: '联机', reviewType: 'new', submitTime: '2026-05-29 09:00', description: '包含斗地主、麻将等多款经典棋牌游戏，支持语音交流。', devNote: '已在线下棋牌室验证，用户粘性强' },
-  { id: 4, name: '极限滑雪', cpName: '极境互动科技', version: '1.2.0', category: '体育', size: '2.1GB', duration: 12, platform: '头显一体机', gameMode: '单机', reviewType: 'new', submitTime: '2026-05-29 11:20', description: '模拟真实滑雪体验，多种赛道可选，支持体感控制。', devNote: '' },
-  { id: 5, name: '太空站', cpName: '星际科技', version: '1.0.0', category: '冒险', size: '4.5GB', duration: 25, platform: '主机游戏', gameMode: '单机', reviewType: 'new', submitTime: '2026-05-29 16:00', description: '在国际空间站中完成各种任务，体验宇航员生活。', devNote: '与航天局合作素材，画面真实度极高' },
-  { id: 6, name: '过山车VR', cpName: '极境互动科技', version: 'v2.4.0', category: '冒险', size: '280M', duration: 10, platform: '主机游戏', gameMode: '单机', reviewType: 'update', submitTime: '2026-05-30 09:15', description: '更新版本：新增两条赛道，优化画面渲染性能，修复联机掉线问题。', devNote: '根据用户反馈优化了晕动症适配参数' },
+const pendingData = ref<ReviewGame[]>([
+  {
+    id: 1, name: '深海探险VR', cpName: '极境互动科技', version: '1.0.0', category: '冒险', size: '1.8GB', duration: 15,
+    platform: '头显一体机', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    reviewType: 'new', submitTime: '2026-05-28 14:30', description: '潜入深海世界，探索未知海域，与海洋生物互动。支持体感控制。',
+    devNote: '这是我们首款海洋题材 VR 游戏，画面精美，适合全年龄段。',
+    runtimeArchitecture: 'headset_native', installTarget: 'android_headset', packageIdentifier: 'com.ocean.deepsea',
+    entryPoint: 'com.ocean.deepsea.MainActivity', launchArgs: '', servicePort: '', startupOrder: '', networkMode: 'offline',
+    portList: '', technicalNote: '头显内直接安装 APK。首次启动需授予存储与空间定位权限。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'deepsea-cover.png', videoName: 'deepsea-trailer.mp4', bannerList: [{ name: 'deepsea-booth-01.png' }, { name: 'deepsea-booth-02.png' }],
+    resourceComponents: [
+      { role: 'headset_client', required: true, fileName: 'deepsea-vr-v1.0.0.apk', fileSize: '1.8 GB' },
+      { role: 'dependency', required: false, fileName: 'deepsea-handtracking-plugin.zip', fileSize: '120 MB' },
+    ],
+  },
+  {
+    id: 2, name: '赛博朋克2079', cpName: '闪耀游戏工作室', version: '0.5.0', category: '射击', size: '3.2GB', duration: 20,
+    platform: 'PCVR', gameMode: 'online', gameModeLabel: '多人联机', playerCountLabel: '2-4 人',
+    reviewType: 'new', submitTime: '2026-05-28 10:15', description: '未来都市背景的多人在线射击游戏，支持 4 人对战。',
+    devNote: '目前是早期版本，后续会持续更新内容。',
+    runtimeArchitecture: 'pcvr', installTarget: 'windows_pc', packageIdentifier: 'steam-app-42079',
+    entryPoint: 'Cyber2079VR.exe', launchArgs: '-vr -matchmaking=lan', servicePort: '', startupOrder: '', networkMode: 'internet',
+    portList: 'TCP 27015, UDP 27016', technicalNote: '需先在 Windows 主机安装主包，头显通过串流模式接入；建议显卡 RTX 3070 及以上。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'cyberpunk-cover.png', videoName: 'cyberpunk-teaser.mp4', bannerList: [{ name: 'cyberpunk-booth.png' }],
+    resourceComponents: [
+      { role: 'pc_client', required: true, fileName: 'cyber2079-v0.5.0.zip', fileSize: '3.2 GB' },
+      { role: 'patch', required: false, fileName: 'cyber2079-hotfix-0501.patch', fileSize: '240 MB' },
+    ],
+  },
+  {
+    id: 3, name: '棋牌乐园', cpName: '乐游网络', version: '2.0.0', category: '休闲', size: '500MB', duration: 30,
+    platform: '头显一体机', gameMode: 'online', gameModeLabel: '房间联机', playerCountLabel: '2-6 人',
+    reviewType: 'new', submitTime: '2026-05-29 09:00', description: '包含斗地主、麻将等多款经典棋牌游戏，支持语音交流。',
+    devNote: '已在线下棋牌室验证，用户粘性强。',
+    runtimeArchitecture: 'multiplayer_server', installTarget: 'android_headset', packageIdentifier: 'com.leyou.cardvr',
+    entryPoint: 'com.leyou.cardvr.MainActivity', launchArgs: '', servicePort: '17777', startupOrder: 'controller_first', networkMode: 'lan',
+    portList: 'TCP 17777, UDP 17778', technicalNote: '头显与房间服务端需处于同一局域网，先启动房控程序再拉起头显客户端。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'card-vr-cover.png', videoName: '', bannerList: [],
+    resourceComponents: [
+      { role: 'headset_client', required: true, fileName: 'card-vr-v2.0.0.apk', fileSize: '500 MB' },
+      { role: 'server_room', required: true, fileName: 'card-vr-room-server-v2.0.0.zip', fileSize: '88 MB' },
+    ],
+  },
+  {
+    id: 4, name: '极限滑雪', cpName: '极境互动科技', version: '1.2.0', category: '体育', size: '2.1GB', duration: 12,
+    platform: '头显一体机', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    reviewType: 'new', submitTime: '2026-05-29 11:20', description: '模拟真实滑雪体验，多种赛道可选，支持体感控制。',
+    devNote: '',
+    runtimeArchitecture: 'headset_with_pc_service', installTarget: 'android_headset', packageIdentifier: 'com.extreme.ski',
+    entryPoint: 'com.extreme.ski.MainActivity', launchArgs: '--gyro-mode=comfort', servicePort: '17890',
+    startupOrder: 'pc_service_first', networkMode: 'lan', portList: 'TCP 17890', technicalNote: '头显安装 APK，PC 端同步启动授权服务；若房间断网会导致成绩上传失败。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'ski-cover.png', videoName: 'ski-demo.mp4', bannerList: [{ name: 'ski-booth-01.png' }],
+    resourceComponents: [
+      { role: 'headset_client', required: true, fileName: 'extreme-ski-v1.2.0.apk', fileSize: '1.4 GB' },
+      { role: 'pc_service', required: true, fileName: 'extreme-ski-service-v1.2.0.zip', fileSize: '220 MB' },
+    ],
+  },
+  {
+    id: 5, name: '太空站', cpName: '星际科技', version: '1.0.0', category: '冒险', size: '4.5GB', duration: 25,
+    platform: '沉浸式体验', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    reviewType: 'new', submitTime: '2026-05-29 16:00', description: '在国际空间站中完成各种任务，体验宇航员生活。',
+    devNote: '与航天局合作素材，画面真实度极高。',
+    runtimeArchitecture: 'media_experience', installTarget: 'android_headset', packageIdentifier: 'space-station-media',
+    entryPoint: '播放列表 / 主场景入口', launchArgs: '', servicePort: '', startupOrder: '', networkMode: 'offline',
+    portList: '', technicalNote: '内容以 360 视频和互动展项素材为主，头显本地播放即可，入场前校验素材完整性和播放顺序。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'space-cover.png', videoName: 'space-trailer.mp4', bannerList: [{ name: 'space-booth-01.png' }],
+    resourceComponents: [
+      { role: 'media_content', required: true, fileName: 'space-station-experience-v1.0.0.zip', fileSize: '4.5 GB' },
+      { role: 'dependency', required: false, fileName: 'space-station-codec-pack.zip', fileSize: '120 MB' },
+    ],
+  },
+  {
+    id: 6, name: '过山车VR', cpName: '极境互动科技', version: 'v2.4.0', category: '冒险', size: '280M', duration: 10,
+    platform: 'PCVR', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    reviewType: 'update', submitTime: '2026-05-30 09:15', description: '更新版本：新增两条赛道，优化画面渲染性能，修复联机掉线问题。',
+    devNote: '根据用户反馈优化了晕动症适配参数。',
+    runtimeArchitecture: 'pcvr', installTarget: 'windows_pc', packageIdentifier: 'rollercoaster-vr',
+    entryPoint: 'RollerCoasterVR.exe', launchArgs: '-vr -comfort=2', servicePort: '', startupOrder: '', networkMode: 'offline',
+    portList: '', technicalNote: '本次更新为主包 + 增量补丁模式，安装时先覆盖主包再执行补丁。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'rollercoaster-cover.png', videoName: 'rollercoaster-v240.mp4', bannerList: [{ name: 'rollercoaster-booth-01.png' }, { name: 'rollercoaster-booth-02.png' }],
+    resourceComponents: [
+      { role: 'pc_client', required: true, fileName: 'rollercoaster-vr-v2.4.0.zip', fileSize: '2.4 GB' },
+      { role: 'patch', required: false, fileName: 'rollercoaster-v2.4.0-hotfix.patch', fileSize: '280 MB' },
+    ],
+  },
 ])
 
 const pendingColumns = [
@@ -206,10 +606,79 @@ const reviewedColumns = [
 
 // ========== 审核弹窗 ==========
 const showReviewModal = ref(false)
-const currentGame = ref<any>(null)
+const currentGame = ref<ReviewGame | null>(null)
 const reviewForm = ref({ gameBeanCost: 20, costPerPlay: 6, comment: '' })
 
-function openReview(game: any) {
+function runtimeMeta(value: RuntimeArchitecture) {
+  return runtimeArchitectureOptions[value]
+}
+
+function resourceMeta(role: ResourceRole) {
+  return resourceRoleOptions[role]
+}
+
+function getRequiredResourceCount(game: ReviewGame) {
+  return game.resourceComponents.filter(item => item.required).length
+}
+
+function triggerMockDownload(fileName: string, content: string) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+function downloadResource(game: ReviewGame, component: ResourceComponent) {
+  if (!component.fileName) return
+  triggerMockDownload(
+    `${component.fileName}.txt`,
+    [
+      `游戏：${game.name}`,
+      `资源构件：${resourceMeta(component.role).label}`,
+      `原始文件名：${component.fileName}`,
+      `文件大小：${component.fileSize || '未知'}`,
+      `运行架构：${runtimeMeta(game.runtimeArchitecture).title}`,
+      `说明：${resourceMeta(component.role).description}`,
+    ].join('\n'),
+  )
+  message.success(`已开始下载 ${component.fileName}`)
+}
+
+function downloadAsset(game: ReviewGame, assetType: 'cover' | 'video') {
+  const fileName = assetType === 'cover' ? game.coverName : game.videoName
+  if (!fileName) return
+  const assetLabel = assetType === 'cover' ? '游戏封面' : '宣传视频'
+  triggerMockDownload(
+    `${fileName}.txt`,
+    [
+      `游戏：${game.name}`,
+      `素材类型：${assetLabel}`,
+      `原始文件名：${fileName}`,
+      '说明：当前为审核后台演示数据，后续可替换为真实文件下载地址。',
+    ].join('\n'),
+  )
+  message.success(`已开始下载${assetLabel}：${fileName}`)
+}
+
+function downloadBanner(game: ReviewGame, banner: { name: string }) {
+  triggerMockDownload(
+    `${banner.name}.txt`,
+    [
+      `游戏：${game.name}`,
+      '素材类型：展位图',
+      `原始文件名：${banner.name}`,
+      '说明：当前为审核后台演示数据，后续可替换为真实文件下载地址。',
+    ].join('\n'),
+  )
+  message.success(`已开始下载展位图：${banner.name}`)
+}
+
+function openReview(game: ReviewGame) {
   currentGame.value = game
   reviewForm.value = { gameBeanCost: 20, costPerPlay: 6, comment: '' }
   showReviewModal.value = true
@@ -291,4 +760,253 @@ function rejectGame() {
   border-top: 1px solid var(--border-color);
 }
 .review-section h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0 0 16px; }
+
+.review-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 72vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.detail-panel {
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+}
+
+.detail-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.detail-panel-head h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.detail-panel-head p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.runtime-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.architecture-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f5f8ff;
+  border: 1px solid #dbe7ff;
+}
+
+.architecture-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.architecture-title strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.architecture-title span {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.architecture-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  justify-content: flex-end;
+}
+
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #edf2f7;
+}
+
+.spec-item span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.spec-item strong {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.technical-note {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fffdf5;
+  border: 1px solid #f7ebc5;
+}
+
+.technical-note span {
+  display: block;
+  font-size: 12px;
+  color: #8a6d1d;
+  margin-bottom: 6px;
+}
+
+.technical-note p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.download-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.download-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.download-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.resource-list {
+  display: grid;
+  gap: 12px;
+}
+
+.resource-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #edf2f7;
+  background: white;
+}
+
+.resource-card-main {
+  min-width: 0;
+}
+
+.resource-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.resource-card-title span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.resource-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.resource-file-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.asset-download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.asset-download-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #edf2f7;
+  background: white;
+}
+
+.asset-download-card strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.asset-download-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.asset-download-card.empty {
+  opacity: 0.7;
+}
+
+@media (max-width: 900px) {
+  .stats-row,
+  .spec-grid,
+  .asset-download-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .architecture-summary,
+  .resource-card,
+  .asset-download-card,
+  .detail-panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 </style>

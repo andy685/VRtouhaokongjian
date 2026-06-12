@@ -97,24 +97,6 @@
           </div>
         </section>
 
-        <!-- 游戏资源包 -->
-        <section class="card asset-card">
-          <div class="card-head"><h4>游戏资源包</h4></div>
-          <div class="asset-single">
-            <n-upload accept=".zip,.apk,.obb,.rar,.7z" :show-file-list="false" :max="1" @before-upload="handlePackageUpload">
-              <n-button size="small" type="primary" secondary block strong>
-                <template #icon><n-icon :component="FolderOutline" /></template>
-                {{ form.packageName || '上传资源包' }}
-              </n-button>
-            </n-upload>
-            <div v-if="form.packageName" class="package-meta">
-              <span>{{ form.packageName }}</span>
-              <span class="package-size">{{ form.packageSize }}</span>
-              <n-button size="tiny" quaternary type="error" @click="removePackage">删除</n-button>
-            </div>
-            <span class="asset-hint">.zip/.apk/.obb/.rar/.7z ≤2GB</span>
-          </div>
-        </section>
       </div>
 
       <!-- 右栏：表单区 -->
@@ -152,7 +134,7 @@
             <div class="form-group">
               <label>标签</label>
               <div class="inline-items">
-                <n-dynamic-tags v-model:value="form.tags" :render-tag="renderTag" />
+                <n-dynamic-tags v-model:value="form.tags" />
                 <n-select v-if="showTagSelect" v-model:value="selectedTag" :options="tagOptions" placeholder="选择标签" filterable size="small" style="width:130px" @update:value="addTagFromSelect" />
                 <n-button v-else size="small" dashed @click="showTagSelect = true">+ 添加</n-button>
               </div>
@@ -208,6 +190,170 @@
           </div>
         </section>
 
+        <!-- 运行与资源规格 -->
+        <section class="card form-card">
+          <div class="card-head">
+            <h4>运行与资源规格</h4>
+            <n-tag size="small" type="info" bordered>{{ requiredResourceCount }} 个资源必填</n-tag>
+          </div>
+          <div class="form-body">
+            <div class="form-group">
+              <label>运行架构</label>
+              <div class="architecture-grid">
+                <button
+                  v-for="option in runtimeArchitectureOptions"
+                  :key="option.value"
+                  class="architecture-card"
+                  :class="{ active: form.runtimeArchitecture === option.value }"
+                  type="button"
+                  @click="selectRuntimeArchitecture(option.value)"
+                >
+                  <span class="architecture-icon">
+                    <n-icon :component="option.icon" size="22" />
+                  </span>
+                  <span class="architecture-copy">
+                    <strong>{{ option.title }}</strong>
+                    <small>{{ option.description }}</small>
+                  </span>
+                  <span class="architecture-tags">
+                    <n-tag v-for="tag in option.tags" :key="tag" size="tiny" :bordered="false">{{ tag }}</n-tag>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="resource-spec-block">
+              <div class="resource-spec-head">
+                <div>
+                  <strong>游戏资源构件</strong>
+                  <span>按运行架构上传对应构件，平台审核会逐项校验文件类型、启动方式和依赖说明。</span>
+                </div>
+                <n-icon :component="selectedRuntimeArchitecture.icon" size="24" />
+              </div>
+              <div class="runtime-summary">
+                <strong>{{ selectedRuntimeArchitecture.title }}</strong>
+                <span>{{ selectedRuntimeArchitecture.description }}</span>
+              </div>
+
+              <div class="resource-list">
+                <div
+                  v-for="component in form.resourceComponents"
+                  :key="component.role"
+                  class="resource-component"
+                  :class="{ required: component.required, uploaded: component.fileName }"
+                >
+                  <div class="resource-component-head">
+                    <div>
+                      <div class="resource-title">
+                        <n-icon :component="resourceMeta(component.role).icon" />
+                        <span>{{ resourceMeta(component.role).label }}</span>
+                        <n-tag v-if="component.required" size="tiny" type="error" :bordered="false">必填</n-tag>
+                        <n-tag v-else size="tiny" :bordered="false">可选</n-tag>
+                      </div>
+                      <p>{{ resourceMeta(component.role).description }}</p>
+                    </div>
+                    <n-button
+                      v-if="!component.required"
+                      size="tiny"
+                      quaternary
+                      type="error"
+                      @click="removeResourceComponent(component.role)"
+                    >移除</n-button>
+                  </div>
+                  <n-upload
+                    :accept="resourceMeta(component.role).accept"
+                    :show-file-list="false"
+                    :max="1"
+                    @before-upload="(options) => handleResourceUpload(component.role, options)"
+                  >
+                    <n-button size="small" secondary block strong>
+                      <template #icon><n-icon :component="FolderOutline" /></template>
+                      {{ component.fileName ? '更换文件' : `上传${resourceMeta(component.role).fileLabel}` }}
+                    </n-button>
+                  </n-upload>
+                  <div v-if="component.fileName" class="package-meta">
+                    <span>{{ component.fileName }}</span>
+                    <span class="package-size">{{ component.fileSize }}</span>
+                    <n-button size="tiny" quaternary type="error" @click="clearResourceFile(component.role)">删除文件</n-button>
+                  </div>
+                  <span class="asset-hint">{{ resourceMeta(component.role).acceptText }}，{{ resourceMeta(component.role).maxSizeText }}</span>
+                </div>
+              </div>
+
+              <div v-if="optionalResourceOptions.length" class="resource-add-row">
+                <n-select
+                  v-model:value="selectedResourceRole"
+                  :options="optionalResourceOptions"
+                  size="small"
+                  placeholder="添加可选资源构件"
+                  clearable
+                />
+                <n-button size="small" secondary :disabled="!selectedResourceRole" @click="addSelectedResourceComponent">添加</n-button>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>安装目标</label>
+                <n-select v-model:value="form.installTarget" :options="installTargetOptions" placeholder="选择安装位置" />
+              </div>
+              <div class="form-group">
+                <label>包名 / 应用标识</label>
+                <n-input v-model:value="form.packageIdentifier" placeholder="如 com.vendor.game 或 Steam AppID" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>启动入口</label>
+                <n-input v-model:value="form.entryPoint" placeholder="如 Game.exe / MainActivity / 启动协议" />
+              </div>
+              <div class="form-group">
+                <label>启动参数</label>
+                <n-input v-model:value="form.launchArgs" placeholder="如 -vr -room={roomId}" />
+              </div>
+            </div>
+
+            <div v-if="needsPcService" class="form-row-2">
+              <div class="form-group">
+                <label>PC 服务端口</label>
+                <n-input v-model:value="form.servicePort" placeholder="如 17890 / 8000-8010" />
+              </div>
+              <div class="form-group">
+                <label>启动顺序</label>
+                <n-select v-model:value="form.startupOrder" :options="startupOrderOptions" />
+              </div>
+            </div>
+
+            <div v-if="needsNetworkConfig" class="form-row-2">
+              <div class="form-group">
+                <label>网络模式</label>
+                <n-select v-model:value="form.networkMode" :options="networkModeOptions" />
+              </div>
+              <div class="form-group">
+                <label>开放端口</label>
+                <n-input v-model:value="form.portList" placeholder="如 TCP 7777, UDP 27015" />
+              </div>
+            </div>
+
+            <div v-if="form.runtimeArchitecture === 'webxr'" class="form-row-2">
+              <div class="form-group">
+                <label>WebXR 入口 URL</label>
+                <n-input v-model:value="form.webEntryUrl" placeholder="https://example.com/vr-game" />
+              </div>
+              <div class="form-group">
+                <label>浏览器要求</label>
+                <n-input v-model:value="form.browserRequirement" placeholder="如 Chromium 120+ / Pico Browser" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>安装与验收说明</label>
+              <n-input v-model:value="form.technicalNote" type="textarea" :rows="3" placeholder="说明安装步骤、依赖环境、联机房间、外设驱动、异常退出处理等..." />
+            </div>
+          </div>
+        </section>
+
         <!-- 运营配置 -->
         <section class="card form-card">
           <div class="card-head">
@@ -222,18 +368,6 @@
                 <template #suffix>个/次</template>
               </n-input-number>
               <n-text depth="3" style="font-size:11px;">提交后由平台运营审核定价，CP不可自行修改</n-text>
-            </div>
-
-            <!-- 运行平台 -->
-            <div class="form-group">
-              <label>运行平台</label>
-              <n-radio-group v-model:value="form.runPlatform">
-                <n-radio-button value="host" label="主机游戏">🖥️ 主机游戏 — 串流到头显设备</n-radio-button>
-                <n-radio-button value="allInOne" label="VR头显一体机">🥽 VR头显一体机游戏</n-radio-button>
-              </n-radio-group>
-              <n-text depth="3" style="font-size:11px;margin-top:4px;">
-                主机游戏：游戏在 PC 主机上运行，画面串流到头显；VR头显一体机：游戏直接在头显上运行
-              </n-text>
             </div>
 
             <!-- 玩法模式 -->
@@ -318,7 +452,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton, NInput, NInputNumber, NSelect, NSwitch, NCheckbox, NTag,
@@ -327,6 +461,8 @@ import {
 } from 'naive-ui'
 import {
   PlayOutline, VideocamOutline, ImageOutline, FolderOutline, ArrowBackOutline,
+  DesktopOutline, HeadsetOutline, HardwareChipOutline, ServerOutline,
+  CloudOutline, GlobeOutline, LayersOutline, FilmOutline, CubeOutline,
 } from '@vicons/ionicons5'
 
 const route = useRoute()
@@ -345,6 +481,43 @@ const isPlaying = ref(false)
 const videoProgress = ref(0)
 const showTagSelect = ref(false)
 const selectedTag = ref<string | null>(null)
+const selectedResourceRole = ref<ResourceRole | null>(null)
+
+type RuntimeArchitecture =
+  | 'pcvr'
+  | 'headset_native'
+  | 'headset_with_pc_service'
+  | 'multiplayer_server'
+  | 'webxr'
+  | 'media_experience'
+
+type ResourceRole =
+  | 'headset_client'
+  | 'headset_data'
+  | 'pc_client'
+  | 'pc_service'
+  | 'server_room'
+  | 'stream_client'
+  | 'web_bundle'
+  | 'media_content'
+  | 'dependency'
+  | 'patch'
+
+type ResourceComponent = {
+  role: ResourceRole
+  required: boolean
+  fileName: string
+  fileSize: string
+  fileUrl: string
+  version: string
+}
+
+type UploadBeforeOptions = {
+  file: {
+    name: string
+    file?: File | null
+  }
+}
 
 // 题材选项
 const categoryOptions = [
@@ -393,6 +566,68 @@ const timePresets = [
   { label: '3小时', value: 180 },
 ]
 
+const runtimeArchitectureOptions: {
+  value: RuntimeArchitecture
+  title: string
+  description: string
+  icon: any
+  tags: string[]
+  requiredRoles: ResourceRole[]
+  runPlatform: 'host' | 'allInOne'
+}[] = [
+  { value: 'pcvr', title: 'PCVR 主机运行', description: '游戏安装在 Windows 主机，画面串流或直连到头显。', icon: DesktopOutline, tags: ['EXE/ZIP', 'PC'], requiredRoles: ['pc_client'], runPlatform: 'host' },
+  { value: 'headset_native', title: '头显本地运行', description: '游戏直接安装在 Pico、Quest 等安卓头显内。', icon: HeadsetOutline, tags: ['APK', '头显'], requiredRoles: ['headset_client'], runPlatform: 'allInOne' },
+  { value: 'headset_with_pc_service', title: '头显 + PC 服务终端', description: '单台或少量头显运行 APK，但必须连接本地 PC 服务做授权、同步、外设或房控。', icon: HardwareChipOutline, tags: ['单机为主', 'PC服务'], requiredRoles: ['headset_client', 'pc_service'], runPlatform: 'allInOne' },
+  { value: 'multiplayer_server', title: '多终端联机/主控', description: '多台头显进入同一房间联机，必须有主控/房间服务统一建房、同步与结算。', icon: ServerOutline, tags: ['多人联机', '主控服务'], requiredRoles: ['headset_client', 'server_room'], runPlatform: 'allInOne' },
+  { value: 'webxr', title: 'WebXR/浏览器游戏', description: '通过浏览器、WebView 或离线 Web 包启动。', icon: GlobeOutline, tags: ['URL', 'Web'], requiredRoles: ['web_bundle'], runPlatform: 'allInOne' },
+  { value: 'media_experience', title: 'VR 影视/体验内容', description: '不是可执行程序，主要由视频、播放清单或座舱内容组成。', icon: FilmOutline, tags: ['MP4', '内容包'], requiredRoles: ['media_content'], runPlatform: 'allInOne' },
+]
+
+const resourceRoleOptions: Record<ResourceRole, {
+  label: string
+  description: string
+  fileLabel: string
+  accept: string
+  acceptText: string
+  maxSize: number
+  maxSizeText: string
+  icon: any
+}> = {
+  headset_client: { label: '头显客户端', description: '安装到 VR 头显内的安卓客户端，通常为 APK。', fileLabel: 'APK', accept: '.apk', acceptText: '仅支持 .apk', maxSize: 2 * 1024 * 1024 * 1024, maxSizeText: '≤2GB', icon: HeadsetOutline },
+  headset_data: { label: '头显数据包', description: 'APK 之外的 OBB、地图、素材或离线数据。', fileLabel: '数据包', accept: '.obb,.zip,.rar,.7z', acceptText: '支持 .obb/.zip/.rar/.7z', maxSize: 5 * 1024 * 1024 * 1024, maxSizeText: '≤5GB', icon: CubeOutline },
+  pc_client: { label: 'PC 游戏客户端', description: 'Windows 主机运行的游戏程序或绿色包。', fileLabel: 'PC 包', accept: '.exe,.zip,.rar,.7z', acceptText: '支持 .exe/.zip/.rar/.7z', maxSize: 10 * 1024 * 1024 * 1024, maxSizeText: '≤10GB', icon: DesktopOutline },
+  pc_service: { label: 'PC 服务终端', description: '为头显客户端提供联网、授权、房间或同步服务。', fileLabel: '服务端包', accept: '.exe,.zip,.rar,.7z', acceptText: '支持 .exe/.zip/.rar/.7z', maxSize: 5 * 1024 * 1024 * 1024, maxSizeText: '≤5GB', icon: HardwareChipOutline },
+  server_room: { label: '房间/主控服务', description: '多人联机、主控端、房间服务或局域网协调程序。', fileLabel: '服务包', accept: '.exe,.zip,.rar,.7z', acceptText: '支持 .exe/.zip/.rar/.7z', maxSize: 5 * 1024 * 1024 * 1024, maxSizeText: '≤5GB', icon: ServerOutline },
+  stream_client: { label: '串流客户端', description: '云串流或本地串流所需的门店侧客户端。', fileLabel: '客户端包', accept: '.apk,.exe,.zip,.rar,.7z', acceptText: '支持 .apk/.exe/.zip/.rar/.7z', maxSize: 2 * 1024 * 1024 * 1024, maxSizeText: '≤2GB', icon: CloudOutline },
+  web_bundle: { label: 'WebXR 离线包', description: '可选的离线 WebXR 资源包；纯在线 URL 可不上传。', fileLabel: 'Web 包', accept: '.zip,.rar,.7z', acceptText: '支持 .zip/.rar/.7z', maxSize: 2 * 1024 * 1024 * 1024, maxSizeText: '≤2GB', icon: GlobeOutline },
+  media_content: { label: '媒体内容包', description: 'VR 视频、播放清单、球幕或座舱体验内容。', fileLabel: '媒体包', accept: '.mp4,.mov,.zip,.rar,.7z', acceptText: '支持 .mp4/.mov/.zip/.rar/.7z', maxSize: 10 * 1024 * 1024 * 1024, maxSizeText: '≤10GB', icon: FilmOutline },
+  dependency: { label: '运行依赖/驱动', description: '显卡运行库、外设驱动、SteamVR 插件或厂商 SDK。', fileLabel: '依赖包', accept: '.exe,.msi,.zip,.rar,.7z', acceptText: '支持 .exe/.msi/.zip/.rar/.7z', maxSize: 2 * 1024 * 1024 * 1024, maxSizeText: '≤2GB', icon: CubeOutline },
+  patch: { label: '补丁/差分包', description: '只更新地图、素材、脚本或版本差分时使用。', fileLabel: '补丁包', accept: '.patch,.zip,.rar,.7z', acceptText: '支持 .patch/.zip/.rar/.7z', maxSize: 2 * 1024 * 1024 * 1024, maxSizeText: '≤2GB', icon: LayersOutline },
+}
+
+const installTargetOptions = [
+  { label: 'Windows 主机', value: 'windows_pc' },
+  { label: '安卓 VR 头显', value: 'android_headset' },
+  { label: '浏览器/WebView', value: 'web' },
+]
+
+const startupOrderOptions = [
+  { label: '先启动 PC 服务，再启动头显客户端', value: 'pc_service_first' },
+  { label: '先启动头显客户端，再连接 PC 服务', value: 'headset_first' },
+  { label: '主控端统一拉起客户端', value: 'controller_first' },
+]
+
+const networkModeOptions = [
+  { label: '离线可运行', value: 'offline' },
+  { label: '仅局域网', value: 'lan' },
+  { label: '需要公网', value: 'internet' },
+  { label: '局域网 + 公网授权', value: 'lan_with_auth' },
+]
+
+function createResourceComponent(role: ResourceRole, required = false): ResourceComponent {
+  return { role, required, fileName: '', fileSize: '', fileUrl: '', version: '' }
+}
+
 const form = ref({
   name: '',
   category: null as string | null,
@@ -401,6 +636,7 @@ const form = ref({
   duration: null as number | null,
   description: '',
   tags: [] as string[],
+  runtimeArchitecture: 'pcvr' as RuntimeArchitecture,
   runPlatform: 'host' as string,
   gameMode: 'standalone' as string,
   payMode: 'multi' as string,
@@ -418,6 +654,9 @@ const form = ref({
   bannerList: [] as { url: string; name: string }[],
   packageName: '',
   packageSize: '',
+  resourceComponents: [
+    createResourceComponent('pc_client', true),
+  ] as ResourceComponent[],
   // 游戏介绍长图
   longImageUrl: '',
   longImageName: '',
@@ -428,7 +667,92 @@ const form = ref({
   multiPlayer: false,
   hasVoiceChat: false,
   hasLeaderboard: false,
+  installTarget: 'windows_pc',
+  packageIdentifier: '',
+  entryPoint: '',
+  launchArgs: '',
+  servicePort: '',
+  startupOrder: 'pc_service_first',
+  networkMode: 'offline',
+  portList: '',
+  streamingProvider: '',
+  cloudGameId: '',
+  externalPlatform: null as string | null,
+  externalGameId: '',
+  webEntryUrl: '',
+  browserRequirement: '',
+  technicalNote: '',
 })
+
+const selectedRuntimeArchitecture = computed(() => (
+  runtimeArchitectureOptions.find(item => item.value === form.value.runtimeArchitecture) || runtimeArchitectureOptions[0]
+))
+
+const requiredResourceCount = computed(() => form.value.resourceComponents.filter(item => item.required).length)
+
+const optionalResourceOptions = computed(() => Object.entries(resourceRoleOptions)
+  .filter(([role]) => !form.value.resourceComponents.some(item => item.role === role))
+  .map(([value, meta]) => ({ label: meta.label, value })))
+
+const needsPcService = computed(() => ['headset_with_pc_service', 'multiplayer_server'].includes(form.value.runtimeArchitecture))
+
+const needsNetworkConfig = computed(() => (
+  ['headset_with_pc_service', 'multiplayer_server'].includes(form.value.runtimeArchitecture)
+))
+
+function resourceMeta(role: ResourceRole) {
+  return resourceRoleOptions[role]
+}
+
+function syncResourceComponents() {
+  const requiredRoles = selectedRuntimeArchitecture.value.requiredRoles
+  form.value.resourceComponents = form.value.resourceComponents
+    .filter(item => item.required || item.fileName || requiredRoles.includes(item.role))
+    .map(item => ({ ...item, required: requiredRoles.includes(item.role) }))
+
+  requiredRoles.forEach((role) => {
+    if (!form.value.resourceComponents.some(item => item.role === role)) {
+      form.value.resourceComponents.push(createResourceComponent(role, true))
+    }
+  })
+}
+
+function selectRuntimeArchitecture(value: RuntimeArchitecture) {
+  const selected = runtimeArchitectureOptions.find(item => item.value === value)
+  if (!selected) return
+  form.value.runtimeArchitecture = value
+  form.value.runPlatform = selected.runPlatform
+  if (value === 'pcvr') form.value.installTarget = 'windows_pc'
+  if (value === 'headset_native' || value === 'headset_with_pc_service' || value === 'multiplayer_server') {
+    form.value.installTarget = 'android_headset'
+  }
+  if (value === 'webxr') form.value.installTarget = 'web'
+  syncResourceComponents()
+  selectedResourceRole.value = null
+}
+
+function addSelectedResourceComponent() {
+  if (!selectedResourceRole.value) return
+  if (!form.value.resourceComponents.some(item => item.role === selectedResourceRole.value)) {
+    form.value.resourceComponents.push(createResourceComponent(selectedResourceRole.value))
+  }
+  selectedResourceRole.value = null
+}
+
+function removeResourceComponent(role: ResourceRole) {
+  const requiredRoles = selectedRuntimeArchitecture.value.requiredRoles
+  if (requiredRoles.includes(role)) return
+  form.value.resourceComponents = form.value.resourceComponents.filter(item => item.role !== role)
+}
+
+function clearResourceFile(role: ResourceRole) {
+  const target = form.value.resourceComponents.find(item => item.role === role)
+  if (!target) return
+  target.fileName = ''
+  target.fileSize = ''
+  target.fileUrl = ''
+  message.info(`${resourceMeta(role).label}文件已删除`)
+}
 
 // 模拟加载已有游戏数据
 function loadGameData(id: string) {
@@ -437,11 +761,16 @@ function loadGameData(id: string) {
       name: '过山车VR', category: 'scifi', version: 'v2.3.2', size: '256M', duration: 10,
       tags: ['热门', '全年龄', '刺激'],
       description: '体验身临其境的VR过山车之旅！穿越壮观的虚拟世界，感受失重与速度的极致刺激。',
-      runPlatform: 'host', gameMode: 'standalone', payMode: 'multi',
+      runtimeArchitecture: 'pcvr', runPlatform: 'host', gameMode: 'standalone', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 10,
       gameBeanCost: 20, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
       packageName: 'rollercoster-vr-v2.3.2.apk', packageSize: '256 MB',
+      installTarget: 'windows_pc', entryPoint: 'RollerCoasterVR.exe', packageIdentifier: 'rollercoaster-vr',
+      networkMode: 'offline',
+      resourceComponents: [
+        { ...createResourceComponent('pc_client', true), fileName: 'rollercoaster-vr-v2.3.2.zip', fileSize: '2.4 GB' },
+      ],
       supportShooting: false, supportWalking: true, supportSeated: true,
       multiPlayer: false, hasVoiceChat: false, hasLeaderboard: true,
     },
@@ -449,11 +778,17 @@ function loadGameData(id: string) {
       name: '恐怖医院', category: 'horror', version: 'v1.8.5', size: '500M', duration: 15,
       tags: ['惊悚恐怖', '最新VR'],
       description: '面对日益强悍的僵尸浪潮围困，人类与僵尸迎来最终对决。',
-      runPlatform: 'allInOne', gameMode: 'standalone', payMode: 'multi',
+      runtimeArchitecture: 'headset_with_pc_service', runPlatform: 'allInOne', gameMode: 'standalone', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 15,
       gameBeanCost: 25, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
       packageName: 'horror-hospital-v1.8.5.zip', packageSize: '500 MB',
+      installTarget: 'android_headset', entryPoint: 'com.vendor.horror.MainActivity', packageIdentifier: 'com.vendor.horror',
+      servicePort: '17890', startupOrder: 'pc_service_first', networkMode: 'lan', portList: 'TCP 17890, UDP 17891',
+      resourceComponents: [
+        { ...createResourceComponent('headset_client', true), fileName: 'horror-hospital-v1.8.5.apk', fileSize: '500 MB' },
+        { ...createResourceComponent('pc_service', true), fileName: 'horror-hospital-service-v1.8.5.zip', fileSize: '120 MB' },
+      ],
       supportShooting: true, supportWalking: true, supportSeated: false,
       multiPlayer: true, hasVoiceChat: true, hasLeaderboard: true,
     },
@@ -461,24 +796,32 @@ function loadGameData(id: string) {
       name: '极速赛车', category: 'sports', version: 'v3.1.0', size: '800M', duration: 8,
       tags: ['热门', '竞技射击'],
       description: '真实赛车模拟，多条赛道，支持联机对战。',
-      runPlatform: 'allInOne', gameMode: 'online', payMode: 'multi',
+      runtimeArchitecture: 'multiplayer_server', runPlatform: 'allInOne', gameMode: 'online', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 8,
       gameBeanCost: 15, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
       packageName: 'speed-racing-v3.1.0.apk', packageSize: '800 MB',
+      installTarget: 'android_headset', entryPoint: 'com.vendor.racing.MainActivity', packageIdentifier: 'com.vendor.racing',
+      servicePort: '7777', startupOrder: 'controller_first', networkMode: 'lan', portList: 'TCP 7777, UDP 7778',
+      resourceComponents: [
+        { ...createResourceComponent('headset_client', true), fileName: 'speed-racing-v3.1.0.apk', fileSize: '800 MB' },
+        { ...createResourceComponent('server_room', true), fileName: 'speed-racing-room-server-v3.1.0.zip', fileSize: '96 MB' },
+      ],
       supportShooting: false, supportWalking: false, supportSeated: true,
       multiPlayer: true, hasVoiceChat: false, hasLeaderboard: true,
     },
   }
   if (mockData[id]) {
     Object.assign(form.value, mockData[id])
+    syncResourceComponents()
   }
 }
 
 function togglePlay() { isPlaying.value = !isPlaying.value }
 
-function handleIconUpload(options: { file: File }) {
-  const { file } = options
+function handleIconUpload(options: UploadBeforeOptions) {
+  const file = options.file.file
+  if (!file) return false
   if (file.size > 5 * 1024 * 1024) { message.warning('封面临时文件不能超过5MB'); return false }
   form.value.coverUrl = URL.createObjectURL(file)
   form.value.coverName = file.name
@@ -488,8 +831,9 @@ function handleIconUpload(options: { file: File }) {
 
 function removeCover() { form.value.coverUrl = ''; form.value.coverName = ''; message.info('封面已删除') }
 
-function handleBannerUpload(options: { file: File }) {
-  const { file } = options
+function handleBannerUpload(options: UploadBeforeOptions) {
+  const file = options.file.file
+  if (!file) return false
   if (file.size > 5 * 1024 * 1024) { message.warning('展位图文件不能超过5MB'); return false }
   form.value.bannerList.push({ url: URL.createObjectURL(file), name: file.name })
   message.success(`展位图「${file.name}」上传成功（模拟）`)
@@ -502,8 +846,9 @@ function removeBanner(index: number) {
   message.info(`展位图「${item.name}」已删除`)
 }
 
-function handleVideoUpload(options: { file: File }) {
-  const { file } = options
+function handleVideoUpload(options: UploadBeforeOptions) {
+  const file = options.file.file
+  if (!file) return false
   if (file.size > 500 * 1024 * 1024) { message.warning('视频文件不能超过500MB'); return false }
   form.value.videoUrl = URL.createObjectURL(file)
   form.value.videoName = file.name
@@ -513,20 +858,27 @@ function handleVideoUpload(options: { file: File }) {
   return false
 }
 
-function handlePackageUpload(options: { file: File }) {
-  const { file } = options
-  if (file.size > 2 * 1024 * 1024 * 1024) { message.warning('资源包不能超过2GB'); return false }
-  form.value.packageName = file.name
-  form.value.packageSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB'
-  message.success(`资源包「${file.name}」上传成功（模拟）`)
+function handleResourceUpload(role: ResourceRole, options: UploadBeforeOptions) {
+  const file = options.file.file
+  if (!file) return false
+  const meta = resourceMeta(role)
+  if (file.size > meta.maxSize) {
+    message.warning(`${meta.label}不能超过${meta.maxSizeText.replace('≤', '')}`)
+    return false
+  }
+  const target = form.value.resourceComponents.find(item => item.role === role)
+  if (!target) return false
+  target.fileName = file.name
+  target.fileSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+  target.fileUrl = URL.createObjectURL(file)
+  message.success(`${meta.label}「${file.name}」上传成功（模拟）`)
   return false
 }
 
-function removePackage() { form.value.packageName = ''; form.value.packageSize = ''; message.info('资源包已删除') }
-
 // 游戏介绍长图上传
-function handleLongImageUpload(options: { file: File }) {
-  const { file } = options
+function handleLongImageUpload(options: UploadBeforeOptions) {
+  const file = options.file.file
+  if (!file) return false
   if (file.size > 10 * 1024 * 1024) { message.warning('长图文件不能超过10MB'); return false }
   form.value.longImageUrl = URL.createObjectURL(file)
   form.value.longImageName = file.name
@@ -538,10 +890,6 @@ function removeLongImage() {
   form.value.longImageUrl = ''
   form.value.longImageName = ''
   message.info('介绍长图已删除')
-}
-
-function renderTag({ tag, handleClose }: { tag: string; handleClose: () => void }) {
-  return h(NTag, { closable: true, round: true, type: 'info', size: 'small', onClose: handleClose }, () => tag)
 }
 
 function addTagFromSelect(value: string) {
@@ -558,6 +906,11 @@ function saveDraft() {
 function submitForReview() {
   if (!form.value.name || !form.value.category || !form.value.version) {
     message.warning('请填写必填项：游戏名称、游戏题材、版本号')
+    return
+  }
+  const missingResources = form.value.resourceComponents.filter(item => item.required && !item.fileName)
+  if (missingResources.length) {
+    message.warning(`请上传必填资源：${missingResources.map(item => resourceMeta(item.role).label).join('、')}`)
     return
   }
   const action = isUpdate.value ? '更新版本已提交审核' : '已提交审核'
@@ -833,6 +1186,161 @@ onMounted(() => {
   padding: 0 20px 4px;
 }
 
+/* ===== 运行架构与资源构件 ===== */
+.resource-spec-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.resource-spec-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  color: #2563eb;
+}
+.resource-spec-head strong {
+  display: block;
+  font-size: 13px;
+  color: #111827;
+  margin-bottom: 3px;
+}
+.resource-spec-head span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #64748b;
+}
+.runtime-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+.runtime-summary strong {
+  display: block;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+.runtime-summary span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.resource-component {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.resource-component.required {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+.resource-component.uploaded {
+  border-color: #bbf7d0;
+  background: #f7fef9;
+}
+.resource-component-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.resource-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.resource-component p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #64748b;
+}
+.resource-add-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.architecture-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.architecture-card {
+  min-height: 116px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.architecture-card:hover,
+.architecture-card:focus-visible {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  outline: none;
+}
+.architecture-card.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+.architecture-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #eef2ff;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.architecture-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.architecture-copy strong {
+  font-size: 13px;
+  color: #111827;
+}
+.architecture-copy small {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.45;
+}
+.architecture-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: auto;
+}
+
 /* ===== 时长限制卡片 ===== */
 .time-limit-card {
   background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
@@ -1015,5 +1523,6 @@ onMounted(() => {
   .main-grid { grid-template-columns: 1fr; }
   .left-col { position: static; }
   .form-row-2 { grid-template-columns: 1fr; }
+  .architecture-grid { grid-template-columns: 1fr; }
 }
 </style>
