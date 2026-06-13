@@ -13,20 +13,8 @@ ROOT = Path("/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs")
 PANDOC = "/opt/homebrew/bin/pandoc"
 
 DOCS = [
-    {
-        "md": ROOT / "游戏SDK开发文档.md",
-        "html": ROOT / "游戏SDK开发文档.html",
-        "title": "头号空间 - 游戏SDK开发文档",
-        "brand": "游戏SDK",
-        "subtitle": "SDK 接入、统计、异常与会话边界",
-    },
-    {
-        "md": ROOT / "游戏豆计费与自动退还规则.md",
-        "html": ROOT / "游戏豆计费与自动退还规则.html",
-        "title": "头号空间 - 游戏豆计费与自动退还规则",
-        "brand": "游戏豆规则",
-        "subtitle": "扣豆、自动退还、冲正与账务口径",
-    },
+    # 根目录专题文档已移出项目归档。当前文档中心只展示 PRD 统一版。
+    # 游戏豆计费统一口径维护在 PRD 第 10 章。
 ]
 
 

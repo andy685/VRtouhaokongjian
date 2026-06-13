@@ -11,51 +11,7 @@ ROOT = Path(__file__).resolve().parent
 PANDOC = "/opt/homebrew/bin/pandoc"
 
 DOCS = [
-    {
-        "md": ROOT / "分账与对账说明.md",
-        "html": ROOT / "分账与对账说明.html",
-        "title": "头号空间 - 拉卡拉分账与对账说明",
-        "brand": "分账对账",
-        "subtitle": "拉卡拉分账、对账与结算规则",
-    },
-    {
-        "md": ROOT / "支付逻辑说明.md",
-        "html": ROOT / "支付逻辑说明.html",
-        "title": "头号空间 - 支付逻辑说明",
-        "brand": "支付逻辑",
-        "subtitle": "支付流程、会员扣费与订单服务",
-    },
-    {
-        "md": ROOT / "退款逻辑说明.md",
-        "html": ROOT / "退款逻辑说明.html",
-        "title": "头号空间 - 退款逻辑说明",
-        "brand": "退款逻辑",
-        "subtitle": "退款流程、资金模型与状态流转",
-    },
-    {
-        "md": ROOT / "设备管理逻辑说明.md",
-        "html": ROOT / "设备管理逻辑说明.html",
-        "title": "头号空间 - 设备管理逻辑说明",
-        "brand": "设备管理",
-        "subtitle": "设备类型、Token 管理与绑定规则",
-    },
-    {
-        "md": ROOT / "cp-terminal-prd.md",
-        "html": ROOT / "cp-terminal-prd.html",
-        "title": "头号空间 - CP 端需求文档",
-        "brand": "CP 终端",
-        "subtitle": "游戏供应商终端需求与功能规格",
-    },
-    {
-        "md": ROOT / "小程序支付流程说明.md",
-        "html": ROOT / "小程序支付流程说明.html",
-        "title": "头号空间 - 小程序支付流程说明",
-        "brand": "小程序支付",
-        "subtitle": "微信小程序端支付结算页面流程设计",
-    },
-    # 注意：VR终端UI设计预览.html 和 资金流通全景图.html 是手工制作的
-    # 可视化页面（含 SVG 动画/交互），不通过 pandoc 从 MD 生成。
-    # 其对应的 .md 文件仅作为文档逻辑的纯文本存档，修改 HTML 需直接编辑 HTML 源文件。
+    # 根目录专题文档已移出项目归档。当前文档中心只展示 PRD 统一版。
 ]
 
 

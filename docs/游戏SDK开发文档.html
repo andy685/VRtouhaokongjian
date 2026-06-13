@@ -221,7 +221,7 @@
       <div class="sub">SDK 接入、统计、异常与会话边界</div>
     </div>
     <a href="#top" class="s1">文档目录</a>
-    <a href="#头号空间-游戏sdk开发文档" class="s1">头号空间 - 游戏SDK开发文档</a><a href="#目录" class="s2">目录</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-sdk定位与边界" class="s2">2. SDK定位与边界</a><a href="#21-定位" class="s3">2.1 定位</a><a href="#22-不负责的内容" class="s3">2.2 不负责的内容</a><a href="#23-设计原则" class="s3">2.3 设计原则</a><a href="#3-整体架构" class="s2">3. 整体架构</a><a href="#31-模块图" class="s3">3.1 模块图</a><a href="#32-数据流" class="s3">3.2 数据流</a><a href="#4-核心能力清单" class="s2">4. 核心能力清单</a><a href="#41-会话管理" class="s3">4.1 会话管理</a><a href="#42-启动与加载" class="s3">4.2 启动与加载</a><a href="#43-心跳与设备健康" class="s3">4.3 心跳与设备健康</a><a href="#44-异常上报" class="s3">4.4 异常上报</a><a href="#45-统计埋点" class="s3">4.5 统计埋点</a><a href="#46-离线缓存" class="s3">4.6 离线缓存</a><a href="#47-游戏豆自动退还" class="s3">4.7 游戏豆自动退还</a><a href="#5-事件与统计体系" class="s2">5. 事件与统计体系</a><a href="#51-事件总表" class="s3">5.1 事件总表</a><a href="#52-事件标准字段" class="s3">5.2 事件标准字段</a><a href="#53-启动统计口径" class="s3">5.3 启动统计口径</a><a href="#54-退还统计口径" class="s3">5.4 退还统计口径</a><a href="#55-session统计口径" class="s3">5.5 Session统计口径</a><a href="#56-设备健康统计口径" class="s3">5.6 设备健康统计口径</a><a href="#6-异常体系与告警规则" class="s2">6. 异常体系与告警规则</a><a href="#61-异常分级" class="s3">6.1 异常分级</a><a href="#62-异常分类" class="s3">6.2 异常分类</a><a href="#621-启动类异常" class="s3">6.2.1 启动类异常</a><a href="#622-运行类异常" class="s3">6.2.2 运行类异常</a><a href="#623-设备类异常" class="s3">6.2.3 设备类异常</a><a href="#624-网络类异常" class="s3">6.2.4 网络类异常</a><a href="#625-业务类异常" class="s3">6.2.5 业务类异常</a><a href="#63-异常上报字段" class="s3">6.3 异常上报字段</a><a href="#64-告警规则建议" class="s3">6.4 告警规则建议</a><a href="#7-接口设计" class="s2">7. 接口设计</a><a href="#71-sdk-对外接口" class="s3">7.1 SDK 对外接口</a><a href="#72-初始化参数" class="s3">7.2 初始化参数</a><a href="#73-会话创建参数" class="s3">7.3 会话创建参数</a><a href="#74-会话结束结果" class="s3">7.4 会话结束结果</a><a href="#75-事件上报接口建议" class="s3">7.5 事件上报接口建议</a><a href="#8-数据模型与落库建议" class="s2">8. 数据模型与落库建议</a><a href="#81-原始事件表" class="s3">8.1 原始事件表</a><a href="#82-会话表" class="s3">8.2 会话表</a><a href="#83-计费流水表" class="s3">8.3 计费流水表</a><a href="#84-日汇总表" class="s3">8.4 日汇总表</a><a href="#9-运行时流程" class="s2">9. 运行时流程</a><a href="#91-正常流程" class="s3">9.1 正常流程</a><a href="#92-摘盔暂停流程" class="s3">9.2 摘盔暂停流程</a><a href="#93-异常终止流程" class="s3">9.3 异常终止流程</a><a href="#94-自动退还流程" class="s3">9.4 自动退还流程</a><a href="#10-离线与重试机制" class="s2">10. 离线与重试机制</a><a href="#101-设计目标" class="s3">10.1 设计目标</a><a href="#102-队列策略" class="s3">10.2 队列策略</a><a href="#103-重试策略" class="s3">10.3 重试策略</a><a href="#104-幂等策略" class="s3">10.4 幂等策略</a><a href="#11-版本兼容与配置" class="s2">11. 版本、兼容与配置</a><a href="#111-sdk-版本策略" class="s3">11.1 SDK 版本策略</a><a href="#112-配置下发" class="s3">11.2 配置下发</a><a href="#113-兼容范围" class="s3">11.3 兼容范围</a><a href="#12-接入流程" class="s2">12. 接入流程</a><a href="#121-cp-接入步骤" class="s3">12.1 CP 接入步骤</a><a href="#122-推荐接入节点" class="s3">12.2 推荐接入节点</a><a href="#123-集成验收标准" class="s3">12.3 集成验收标准</a><a href="#13-测试与验收" class="s2">13. 测试与验收</a><a href="#131-功能测试" class="s3">13.1 功能测试</a><a href="#132-压力测试" class="s3">13.2 压力测试</a><a href="#133-验收指标建议" class="s3">13.3 验收指标建议</a><a href="#14-实施建议" class="s2">14. 实施建议</a><a href="#141-第一阶段" class="s3">14.1 第一阶段</a><a href="#142-第二阶段" class="s3">14.2 第二阶段</a><a href="#143-第三阶段" class="s3">14.3 第三阶段</a><a href="#15-附录术语与异常码" class="s2">15. 附录：术语与异常码</a><a href="#151-术语" class="s3">15.1 术语</a><a href="#152-建议异常码表" class="s3">15.2 建议异常码表</a><a href="#结语" class="s2">结语</a>
+    <a href="#头号空间-游戏sdk开发文档" class="s1">头号空间 - 游戏SDK开发文档</a><a href="#目录" class="s2">目录</a><a href="#1-文档目标" class="s2">1. 文档目标</a><a href="#2-sdk定位与边界" class="s2">2. SDK定位与边界</a><a href="#21-定位" class="s3">2.1 定位</a><a href="#22-不负责的内容" class="s3">2.2 不负责的内容</a><a href="#23-设计原则" class="s3">2.3 设计原则</a><a href="#3-整体架构" class="s2">3. 整体架构</a><a href="#31-模块图" class="s3">3.1 模块图</a><a href="#32-数据流" class="s3">3.2 数据流</a><a href="#4-核心能力清单" class="s2">4. 核心能力清单</a><a href="#41-会话管理" class="s3">4.1 会话管理</a><a href="#42-启动与加载" class="s3">4.2 启动与加载</a><a href="#43-心跳与设备健康" class="s3">4.3 心跳与设备健康</a><a href="#44-异常上报" class="s3">4.4 异常上报</a><a href="#45-统计埋点" class="s3">4.5 统计埋点</a><a href="#46-离线缓存" class="s3">4.6 离线缓存</a><a href="#47-游戏豆自动退还" class="s3">4.7 游戏豆自动退还</a><a href="#48-安全通信" class="s3">4.8 安全通信</a><a href="#49-多人-session-规则" class="s3">4.9 多人Session规则</a><a href="#410-时长限制与自动结束" class="s3">4.10 时长限制与自动结束</a><a href="#411-启动超时配置" class="s3">4.11 启动超时配置</a><a href="#5-事件与统计体系" class="s2">5. 事件与统计体系</a><a href="#51-事件总表" class="s3">5.1 事件总表</a><a href="#52-事件标准字段" class="s3">5.2 事件标准字段</a><a href="#53-启动统计口径" class="s3">5.3 启动统计口径</a><a href="#54-退还统计口径" class="s3">5.4 退还统计口径</a><a href="#55-session统计口径" class="s3">5.5 Session统计口径</a><a href="#56-设备健康统计口径" class="s3">5.6 设备健康统计口径</a><a href="#6-异常体系与告警规则" class="s2">6. 异常体系与告警规则</a><a href="#61-异常分级" class="s3">6.1 异常分级</a><a href="#62-异常分类" class="s3">6.2 异常分类</a><a href="#621-启动类异常" class="s3">6.2.1 启动类异常</a><a href="#622-运行类异常" class="s3">6.2.2 运行类异常</a><a href="#623-设备类异常" class="s3">6.2.3 设备类异常</a><a href="#624-网络类异常" class="s3">6.2.4 网络类异常</a><a href="#625-业务类异常" class="s3">6.2.5 业务类异常</a><a href="#63-异常上报字段" class="s3">6.3 异常上报字段</a><a href="#64-告警规则建议" class="s3">6.4 告警规则建议</a><a href="#7-接口设计" class="s2">7. 接口设计</a><a href="#71-sdk-对外接口" class="s3">7.1 SDK 对外接口</a><a href="#72-初始化参数" class="s3">7.2 初始化参数</a><a href="#73-会话创建参数" class="s3">7.3 会话创建参数</a><a href="#74-会话结束结果" class="s3">7.4 会话结束结果</a><a href="#75-事件上报接口建议" class="s3">7.5 事件上报接口建议</a><a href="#8-数据模型与落库建议" class="s2">8. 数据模型与落库建议</a><a href="#81-原始事件表" class="s3">8.1 原始事件表</a><a href="#82-会话表" class="s3">8.2 会话表</a><a href="#83-计费流水表" class="s3">8.3 计费流水表</a><a href="#84-日汇总表" class="s3">8.4 日汇总表</a><a href="#9-运行时流程" class="s2">9. 运行时流程</a><a href="#91-正常流程" class="s3">9.1 正常流程</a><a href="#92-摘盔暂停流程" class="s3">9.2 摘盔暂停流程</a><a href="#93-异常终止流程" class="s3">9.3 异常终止流程</a><a href="#94-自动退还流程" class="s3">9.4 自动退还流程</a><a href="#10-离线与重试机制" class="s2">10. 离线与重试机制</a><a href="#101-设计目标" class="s3">10.1 设计目标</a><a href="#102-队列策略" class="s3">10.2 队列策略</a><a href="#103-重试策略" class="s3">10.3 重试策略</a><a href="#104-幂等策略" class="s3">10.4 幂等策略</a><a href="#11-版本兼容与配置" class="s2">11. 版本、兼容与配置</a><a href="#111-sdk-版本策略" class="s3">11.1 SDK 版本策略</a><a href="#112-配置下发" class="s3">11.2 配置下发</a><a href="#113-兼容范围" class="s3">11.3 兼容范围</a><a href="#12-接入流程" class="s2">12. 接入流程</a><a href="#121-cp-接入步骤" class="s3">12.1 CP 接入步骤</a><a href="#122-推荐接入节点" class="s3">12.2 推荐接入节点</a><a href="#123-集成验收标准" class="s3">12.3 集成验收标准</a><a href="#13-测试与验收" class="s2">13. 测试与验收</a><a href="#131-功能测试" class="s3">13.1 功能测试</a><a href="#132-压力测试" class="s3">13.2 压力测试</a><a href="#133-验收指标建议" class="s3">13.3 验收指标建议</a><a href="#14-实施建议" class="s2">14. 实施建议</a><a href="#141-第一阶段" class="s3">14.1 第一阶段</a><a href="#142-第二阶段" class="s3">14.2 第二阶段</a><a href="#143-第三阶段" class="s3">14.3 第三阶段</a><a href="#15-附录术语与异常码" class="s2">15. 附录：术语与异常码</a><a href="#151-术语" class="s3">15.1 术语</a><a href="#152-建议异常码表" class="s3">15.2 建议异常码表</a><a href="#结语" class="s2">结语</a>
   </aside>
   <main class="main" id="top">
     <section class="hero">
@@ -231,11 +231,11 @@
     </section>
     <h1 id="头号空间-游戏sdk开发文档">头号空间 - 游戏SDK开发文档</h1>
 <blockquote>
-<p><strong>版本</strong>: v1.0<br />
-<strong>日期</strong>: 2026-06-04<br />
-<strong>状态</strong>: 设计稿 / 可进入研发拆解<br />
+<p><strong>版本</strong>: v1.1<br />
+<strong>日期</strong>: 2026-06-14<br />
+<strong>状态</strong>: 已对齐 PRD 完整版 v1.3 / 可进入研发拆解<br />
 <strong>适用范围</strong>: VR头显终端、游戏CP接入包、门店PC终端、商家后台、平台运营后台<br />
-<strong>参考来源</strong>: <a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/头号空间-产品需求文档-PRD-v1.3.md">头号空间-产品需求文档 PRD v1.3</a>, <a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/cp-terminal-prd.md">CP 端需求文档</a>, <a href="/Users/andy/Downloads/baidu/codebuddy/VRtouhaokongjian/docs/VR终端UI设计预览.html">VR终端UI设计预览</a></p>
+<strong>参考来源</strong>: <a href="./PRD-完整版.html">PRD-完整版.html</a></p>
 </blockquote>
 <hr />
 <h2 id="目录">目录</h2>
@@ -243,7 +243,20 @@
 <li><a href="#1-文档目标">文档目标</a></li>
 <li><a href="#2-sdk定位与边界">SDK定位与边界</a></li>
 <li><a href="#3-整体架构">整体架构</a></li>
-<li><a href="#4-核心能力清单">核心能力清单</a></li>
+<li><a href="#4-核心能力清单">核心能力清单</a>
+<ul>
+<li><a href="#41-会话管理">4.1 会话管理</a></li>
+<li><a href="#42-启动与加载">4.2 启动与加载</a></li>
+<li><a href="#43-心跳与设备健康">4.3 心跳与设备健康</a></li>
+<li><a href="#44-异常上报">4.4 异常上报</a></li>
+<li><a href="#45-统计埋点">4.5 统计埋点</a></li>
+<li><a href="#46-离线缓存">4.6 离线缓存</a></li>
+<li><a href="#47-游戏豆自动退还">4.7 游戏豆自动退还</a></li>
+<li><a href="#48-安全通信">4.8 安全通信</a></li>
+<li><a href="#49-多人-session-规则">4.9 多人 Session 规则</a></li>
+<li><a href="#410-时长限制与自动结束">4.10 时长限制与自动结束</a></li>
+<li><a href="#411-启动超时配置">4.11 启动超时配置</a></li>
+</ul></li>
 <li><a href="#5-事件与统计体系">事件与统计体系</a></li>
 <li><a href="#6-异常体系与告警规则">异常体系与告警规则</a></li>
 <li><a href="#7-接口设计">接口设计</a></li>
@@ -283,6 +296,7 @@
 <ul>
 <li>不做游戏玩法逻辑</li>
 <li>不做游戏内 UI 设计</li>
+<li>不展示计费/时间信息（VR内零UI，仅Logo+文字提示，计费和时间由PC终端展示）</li>
 <li>不做门店收银和支付</li>
 <li>不做平台分润和结算计算</li>
 <li>不做游戏资源审核</li>
@@ -299,6 +313,7 @@
 <hr />
 <h2 id="3-整体架构">3. 整体架构</h2>
 <h3 id="31-模块图">3.1 模块图</h3>
+<p>SDK 采用双通道通信架构：<strong>MQTT</strong> 承载实时设备指令（低延迟），<strong>HTTP</strong> 承载业务数据上报。</p>
 <pre class="mermaid">flowchart TB
     subgraph Game[&quot;VR游戏进程&quot;]
         G1[&quot;游戏主循环&quot;]
@@ -312,12 +327,13 @@
         S3[&quot;Heartbeat 心跳&quot;]
         S4[&quot;Exception 异常上报&quot;]
         S5[&quot;Offline Queue 离线队列&quot;]
-        S6[&quot;Transport 传输层&quot;]
+        S6[&quot;HTTP Transport&lt;br/&gt;业务数据&quot;]
+        S7[&quot;MQTT Client&lt;br/&gt;实时指令&quot;]
     end
 
     subgraph Backend[&quot;平台后端&quot;]
-        B1[&quot;Session API&quot;]
-        B2[&quot;事件接收&quot;]
+        B1[&quot;HTTP API&lt;br/&gt;事件接收/统计&quot;]
+        B2[&quot;MQTT Broker&lt;br/&gt;指令推送&quot;]
         B3[&quot;统计聚合&quot;]
         B4[&quot;告警中心&quot;]
         B5[&quot;看板查询&quot;]
@@ -332,8 +348,8 @@
     S2 --&gt; S5
     S5 --&gt; S6
     S6 --&gt; B1
-    S6 --&gt; B2
-    B2 --&gt; B3
+    S7 &lt;--&gt; B2
+    B1 --&gt; B3
     B3 --&gt; B4
     B3 --&gt; B5</pre>
 <h3 id="32-数据流">3.2 数据流</h3>
@@ -354,6 +370,10 @@
     SDK-&gt;&gt;API: endSession + flush queue</pre>
 <hr />
 <h2 id="4-核心能力清单">4. 核心能力清单</h2>
+<blockquote>
+<p><strong>参考：VR终端 ↔ PC终端 / SDK 协作矩阵（PRD 4.4.4）</strong></p>
+<p>SDK 在以下事件中承担职责：游戏加载、计时扣费（后台无感知）、时间到自动结束、提前结束通知、头盔摘下检测（P-Sensor）、游戏崩溃处理、设备心跳上报。选游戏、支付、分配设备、结算评价、系统设置等由 PC 终端负责，VR 终端负责游戏画面渲染和异常提示展示。</p>
+</blockquote>
 <h3 id="41-会话管理">4.1 会话管理</h3>
 <p>会话是统计和计费的最小业务单元。一次 Session 代表一次完整游玩过程。</p>
 <p>建议支持：</p>
@@ -428,6 +448,61 @@
 <li>携带 <code>origin_event_id</code>、<code>session_id</code>、<code>order_id</code> 等幂等字段</li>
 <li>让平台后端完成真正的冲正、退还和账务落库</li>
 </ul>
+<h3 id="48-安全通信">4.8 安全通信</h3>
+<p>SDK 所有网络通信必须满足以下安全规格（对齐 PRD 4.5）：</p>
+<ul>
+<li><strong>传输加密</strong>：TLS 1.3</li>
+<li><strong>请求签名</strong>：HMAC-SHA256 签名，防篡改和重放</li>
+<li><strong>设备注册</strong>：绑定硬件 SNR（序列号），防止设备伪造</li>
+<li><strong>MQTT 通道</strong>：设备指令使用 TLS 加密的 MQTT 连接</li>
+<li><strong>HTTP 通道</strong>：业务数据使用 HTTPS + HMAC 签名</li>
+</ul>
+<h3 id="49-多人-session-规则">4.9 多人 Session 规则</h3>
+<p>当游戏支持多人同时游玩时（对齐 PRD 4.3.7）：</p>
+<ul>
+<li><strong>设备分配</strong>：系统自动分配 N 台空闲 VR 设备，显示设备编号和位置指引</li>
+<li><strong>就绪等待</strong>：所有参与者佩戴就绪后统一进入游戏；超时未就绪的设备可跳过</li>
+<li><strong>独立 Session</strong>：各参与者拥有独立 Session，一人退出不影响其他人继续游戏</li>
+<li><strong>游戏豆消耗</strong>：总消耗 = 单人游戏豆消耗 × 参与人数</li>
+<li><strong>SDK 职责</strong>：每个设备上的 SDK 独立管理各自 Session，无需感知多人逻辑</li>
+</ul>
+<h3 id="410-时长限制与自动结束">4.10 时长限制与自动结束</h3>
+<p>对于开启时长限制的游戏（对齐 PRD 4.3.7）：</p>
+<ul>
+<li><strong>监控</strong>：SDK 在 Playing 状态持续计时</li>
+<li><strong>倒计时提醒</strong>：剩余 1 分钟时发出事件通知 → PC 终端显示视觉提醒 → 最后 10 秒数字倒数</li>
+<li><strong>超时处理</strong>：计时归零 → 后端自动终止 Session → VR 退出 → PC 跳转结算</li>
+<li><strong>提前结束</strong>：PC 终端发起 <code>force_end</code> 指令 → SDK 结束 Session → 按实际游玩时长结算</li>
+</ul>
+<h3 id="411-启动超时配置">4.11 启动超时配置</h3>
+<p>启动超时阈值建议通过平台动态配置下发（对齐 PRD Launcher 拉起协议）：</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>launch_timeout_ms</code></td>
+<td>3000</td>
+<td>游戏进程启动超时（ms）</td>
+</tr>
+<tr>
+<td><code>first_frame_timeout_ms</code></td>
+<td>10000</td>
+<td>首帧渲染超时（ms）</td>
+</tr>
+<tr>
+<td><code>load_asset_timeout_ms</code></td>
+<td>15000</td>
+<td>资源加载超时（ms）</td>
+</tr>
+</tbody>
+</table>
+<p>超过阈值触发对应异常码（LAUNCH_TIMEOUT / FIRST_FRAME_TIMEOUT / ASSET_LOAD_FAILED），并在条件满足时触发自动退还。</p>
 <hr />
 <h2 id="5-事件与统计体系">5. 事件与统计体系</h2>
 <h3 id="51-事件总表">5.1 事件总表</h3>
@@ -541,6 +616,7 @@
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;store_id&quot;</span><span class="fu">:</span> <span class="st">&quot;ST001&quot;</span><span class="fu">,</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;device_id&quot;</span><span class="fu">:</span> <span class="st">&quot;DEV009&quot;</span><span class="fu">,</span></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;session_id&quot;</span><span class="fu">:</span> <span class="st">&quot;S202606040001&quot;</span><span class="fu">,</span></span>
+<span id="cb3-11b"><a href="#cb3-11b" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;order_id&quot;</span><span class="fu">:</span> <span class="st">&quot;O202606040001&quot;</span><span class="fu">,</span></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;scene&quot;</span><span class="fu">:</span> <span class="st">&quot;launching&quot;</span><span class="fu">,</span></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;severity&quot;</span><span class="fu">:</span> <span class="st">&quot;error&quot;</span><span class="fu">,</span></span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="st">&quot;游戏启动超时&quot;</span><span class="fu">,</span></span>
@@ -625,6 +701,16 @@
 </tbody>
 </table>
 <h3 id="55-session统计口径">5.5 Session统计口径</h3>
+<blockquote>
+<p><strong>有效体验判定条件（对齐 PRD 10.9.2）</strong>：计入 CP 收益的 Session 必须同时满足以下全部条件：</p>
+<ol type="1">
+<li>订单支付成功</li>
+<li>游戏会话进入有效体验状态（到达首帧）</li>
+<li>游戏已绑定 CP 和单次成本价</li>
+<li>未触发自动退还或无效体验冲正</li>
+</ol>
+<p>不计入的情况：游戏未启动成功、未进入首帧、自动退还游戏豆、全额退款、财务人工判定为无效体验。</p>
+</blockquote>
 <table>
 <thead>
 <tr>
@@ -639,7 +725,7 @@
 </tr>
 <tr>
 <td>有效 Session 数</td>
-<td>实际开始且结束的会话</td>
+<td>满足上述全部判定条件的会话数（等价于「有效体验次数」）</td>
 </tr>
 <tr>
 <td>平均游玩时长</td>
@@ -901,6 +987,12 @@
 <td>否</td>
 <td>是否开启调试日志</td>
 </tr>
+<tr>
+<td><code>costPrice</code></td>
+<td>number</td>
+<td>否</td>
+<td>CP设定的单次成本价（¥），用于后端结算：<code>CP收益 = 有效体验次数 × costPrice</code></td>
+</tr>
 </tbody>
 </table>
 <h3 id="73-会话创建参数">7.3 会话创建参数</h3>
@@ -911,8 +1003,9 @@
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;order_id&quot;</span><span class="fu">:</span> <span class="st">&quot;O202606040001&quot;</span><span class="fu">,</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;price_plan&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;mode&quot;</span><span class="fu">:</span> <span class="st">&quot;time&quot;</span><span class="fu">,</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;minute&quot;</span><span class="fu">,</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;base_price&quot;</span><span class="fu">:</span> <span class="dv">2</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;second&quot;</span><span class="fu">,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;base_price&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb6-9b"><a href="#cb6-9b" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;cost_price&quot;</span><span class="fu">:</span> <span class="dv">2.00</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <h3 id="74-会话结束结果">7.4 会话结束结果</h3>
