@@ -1078,6 +1078,7 @@ const executeDeduct = () => {
   width: 140px;
   height: 40px;
 }
+.filter-select :deep(.el-select__wrapper),
 .filter-select :deep(.el-input__wrapper) {
   --el-input-border-color: var(--border);
   height: 40px;
@@ -1087,10 +1088,12 @@ const executeDeduct = () => {
   box-shadow: none;
   padding: 0 8px;
 }
+.filter-select :deep(.el-select__wrapper:hover),
 .filter-select :deep(.el-input__wrapper:hover) {
   --el-input-border-color: var(--border-active);
   border-color: var(--border-active);
 }
+.filter-select :deep(.el-select__wrapper.is-focus),
 .filter-select :deep(.el-input__wrapper.is-focus) {
   --el-input-border-color: var(--accent);
   border-color: var(--accent);
@@ -1759,17 +1762,20 @@ const executeDeduct = () => {
 
 <!-- 覆盖 element-plus 下拉样式 -->
 <style>
+.deduct-view .el-select .el-select__wrapper,
 .deduct-view .el-select .el-input__wrapper {
   --el-input-border-color: var(--border);
   border-color: var(--border);
   box-shadow: none;
 }
 
+.deduct-view .el-select .el-select__wrapper:hover,
 .deduct-view .el-select .el-input__wrapper:hover {
   --el-input-border-color: var(--border-active);
   border-color: var(--border-active);
 }
 
+.deduct-view .el-select .el-select__wrapper.is-focus,
 .deduct-view .el-select .el-input__wrapper.is-focus {
   --el-input-border-color: var(--accent);
   border-color: var(--accent);

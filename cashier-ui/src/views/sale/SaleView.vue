@@ -1798,13 +1798,26 @@ const handleDeductionConfirm = (payload) => {
   width: 140px;
   height: 40px;
 }
+.filter-select :deep(.el-select__wrapper),
 .filter-select :deep(.el-input__wrapper) {
+  --el-input-border-color: #d5eaf9;
   height: 40px;
   border: 1px solid #d5eaf9;
   border-radius: 8px;
   background: #fff;
   box-shadow: none;
   padding: 0 6px;
+}
+.filter-select :deep(.el-select__wrapper:hover),
+.filter-select :deep(.el-input__wrapper:hover) {
+  --el-input-border-color: #d5eaf9;
+  border-color: #d5eaf9;
+}
+.filter-select :deep(.el-select__wrapper.is-focus),
+.filter-select :deep(.el-input__wrapper.is-focus) {
+  --el-input-border-color: #d5eaf9;
+  border-color: #d5eaf9;
+  box-shadow: 0 0 0 1px #d5eaf9;
 }
 .filter-select :deep(.el-input__inner) {
   font-size: 11px;
