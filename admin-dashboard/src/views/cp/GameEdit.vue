@@ -361,6 +361,17 @@
             <n-tag size="small" type="info" bordered>提交后由平台审核</n-tag>
           </div>
           <div class="form-body">
+            <!-- 预设销售金额 -->
+            <div class="form-group">
+              <label>
+                <span class="required-mark">*</span> 预设销售金额
+                <n-text depth="3">（CP设置后由平台审核确认）</n-text>
+              </label>
+              <n-input-number v-model:value="form.presetPrice" :min="0.01" :max="9999" :precision="2" placeholder="请输入建议售价" style="width:100%">
+                <template #suffix>元/次</template>
+              </n-input-number>
+            </div>
+
             <!-- 游戏豆消耗 -->
             <div class="form-group">
               <label>游戏豆消耗 <n-text depth="3">（由平台审核定价，此处仅供参考）</n-text></label>
@@ -643,6 +654,7 @@ const form = ref({
   timeLimitEnabled: false,
   timeLimitMinutes: 10,
   gameBeanCost: 0,
+  presetPrice: null as number | null,
   devNote: '',
   // 资源
   coverUrl: '',
@@ -763,7 +775,7 @@ function loadGameData(id: string) {
       description: '体验身临其境的VR过山车之旅！穿越壮观的虚拟世界，感受失重与速度的极致刺激。',
       runtimeArchitecture: 'pcvr', runPlatform: 'host', gameMode: 'standalone', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 10,
-      gameBeanCost: 20, devNote: '',
+      gameBeanCost: 20, presetPrice: 38, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
       packageName: 'rollercoster-vr-v2.3.2.apk', packageSize: '256 MB',
       installTarget: 'windows_pc', entryPoint: 'RollerCoasterVR.exe', packageIdentifier: 'rollercoaster-vr',
@@ -780,7 +792,7 @@ function loadGameData(id: string) {
       description: '面对日益强悍的僵尸浪潮围困，人类与僵尸迎来最终对决。',
       runtimeArchitecture: 'headset_with_pc_service', runPlatform: 'allInOne', gameMode: 'standalone', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 15,
-      gameBeanCost: 25, devNote: '',
+      gameBeanCost: 25, presetPrice: 48, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
       packageName: 'horror-hospital-v1.8.5.zip', packageSize: '500 MB',
       installTarget: 'android_headset', entryPoint: 'com.vendor.horror.MainActivity', packageIdentifier: 'com.vendor.horror',
@@ -798,7 +810,7 @@ function loadGameData(id: string) {
       description: '真实赛车模拟，多条赛道，支持联机对战。',
       runtimeArchitecture: 'multiplayer_server', runPlatform: 'allInOne', gameMode: 'online', payMode: 'multi',
       timeLimitEnabled: true, timeLimitMinutes: 8,
-      gameBeanCost: 15, devNote: '',
+      gameBeanCost: 15, presetPrice: 30, devNote: '',
       coverUrl: '', videoUrl: '', videoCover: '', bannerList: [],
       packageName: 'speed-racing-v3.1.0.apk', packageSize: '800 MB',
       installTarget: 'android_headset', entryPoint: 'com.vendor.racing.MainActivity', packageIdentifier: 'com.vendor.racing',
@@ -906,6 +918,10 @@ function saveDraft() {
 function submitForReview() {
   if (!form.value.name || !form.value.category || !form.value.version) {
     message.warning('请填写必填项：游戏名称、游戏题材、版本号')
+    return
+  }
+  if (!form.value.presetPrice || form.value.presetPrice <= 0) {
+    message.warning('请填写预设销售金额')
     return
   }
   const missingResources = form.value.resourceComponents.filter(item => item.required && !item.fileName)
@@ -1166,6 +1182,11 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-muted, #999);
+}
+.required-mark {
+  color: #d03050;
+  font-weight: 700;
+  margin-right: 2px;
 }
 .form-row-2 {
   display: grid;

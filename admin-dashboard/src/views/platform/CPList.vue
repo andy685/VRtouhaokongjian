@@ -93,6 +93,10 @@
             <n-form-item label="身份证号">
               <n-input v-model:value="form.idCard" placeholder="请输入身份证号" maxlength="18" />
             </n-form-item>
+            <n-form-item label="提现手续费比例">
+              <n-input-number v-model:value="form.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
+              <span class="form-hint">例：0.005 = 0.5%，提现时扣除</span>
+            </n-form-item>
           </n-tab-pane>
         </n-tabs>
       </n-form>
@@ -129,6 +133,7 @@
             <n-descriptions-item label="银行卡号">{{ detailCp.bankAccount }}</n-descriptions-item>
             <n-descriptions-item label="开户人姓名">{{ detailCp.accountName }}</n-descriptions-item>
             <n-descriptions-item label="身份证号">{{ detailCp.idCard ? detailCp.idCard.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
+            <n-descriptions-item label="提现手续费比例">{{ detailCp.feeRate ? `${(detailCp.feeRate * 100).toFixed(1)}%` : '0.5%' }}</n-descriptions-item>
             <n-descriptions-item label="账户状态">
               <n-tag type="success" size="small">已绑定</n-tag>
             </n-descriptions-item>
@@ -182,6 +187,7 @@ const form = ref({
   bankAccount: '',
   accountName: '',
   idCard: '',
+  feeRate: 0.005,
   status: 'active',
   username: '',
   password: '',
@@ -209,13 +215,13 @@ const bankOptions = [
 ]
 
 const cpList = ref([
-  { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', bankCode: 'CMB', bankAccount: '6222****1234', accountName: '张伟', idCard: '110101199001011234', bankName: '招商银行北京望京支行', gameCount: 12, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
-  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', bankCode: 'ICBC', bankAccount: '6217****5678', accountName: '李明', idCard: '310101199102022345', bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
-  { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', bankCode: 'CCB', bankAccount: '6214****9012', accountName: '王芳', idCard: '440301199203033456', bankName: '建设银行深圳南山支行', gameCount: 10, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
-  { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', bankCode: 'ABC', bankAccount: '6228****3456', accountName: '赵磊', idCard: '330101199304044567', bankName: '农业银行杭州滨江支行', gameCount: 5, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
-  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', bankCode: 'BOC', bankAccount: '6230****7890', accountName: '陈静', idCard: '510101199405055678', bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
-  { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', bankCode: 'BOCOM', bankAccount: '6225****2345', accountName: '刘洋', idCard: '320101199506066789', bankName: '交通银行南京江宁支行', gameCount: 6, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
-  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', bankCode: 'SPDB', bankAccount: '6216****6789', accountName: '周婷', idCard: '420101199607077890', bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
+  { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', bankCode: 'CMB', bankAccount: '6222****1234', accountName: '张伟', idCard: '110101199001011234', feeRate: 0.005, bankName: '招商银行北京望京支行', gameCount: 12, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
+  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', bankCode: 'ICBC', bankAccount: '6217****5678', accountName: '李明', idCard: '310101199102022345', feeRate: 0.005, bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
+  { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', bankCode: 'CCB', bankAccount: '6214****9012', accountName: '王芳', idCard: '440301199203033456', feeRate: 0.005, bankName: '建设银行深圳南山支行', gameCount: 10, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
+  { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', bankCode: 'ABC', bankAccount: '6228****3456', accountName: '赵磊', idCard: '330101199304044567', feeRate: 0.006, bankName: '农业银行杭州滨江支行', gameCount: 5, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
+  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', bankCode: 'BOC', bankAccount: '6230****7890', accountName: '陈静', idCard: '510101199405055678', feeRate: 0.005, bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
+  { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', bankCode: 'BOCOM', bankAccount: '6225****2345', accountName: '刘洋', idCard: '320101199506066789', feeRate: 0.004, bankName: '交通银行南京江宁支行', gameCount: 6, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
+  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', bankCode: 'SPDB', bankAccount: '6216****6789', accountName: '周婷', idCard: '420101199607077890', feeRate: 0.005, bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
 ])
 
 const pagination = { pageSize: 10 }
@@ -274,7 +280,7 @@ function getBankName(code: string) {
 
 function openAdd() {
   editingCp.value = null
-  form.value = { name: '', contact: '', phone: '', bankCode: '', bankAccount: '', accountName: '', idCard: '', status: 'active', username: '', password: '' }
+  form.value = { name: '', contact: '', phone: '', bankCode: '', bankAccount: '', accountName: '', idCard: '', feeRate: 0.005, status: 'active', username: '', password: '' }
   showModal.value = true
 }
 function openEdit(row: any) {
@@ -283,6 +289,7 @@ function openEdit(row: any) {
     name: row.name, contact: row.contact, phone: row.phone,
     bankCode: row.bankCode || '', bankAccount: row.bankAccount || '',
     accountName: row.accountName || '', idCard: row.idCard || '',
+    feeRate: row.feeRate ?? 0.005,
     status: row.status,
     username: row.username || '', password: '',
   }

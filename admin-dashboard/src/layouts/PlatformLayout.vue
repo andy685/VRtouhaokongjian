@@ -385,7 +385,8 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: '代理商分账管理', key: '/platform/finance/payouts' },
           { label: '结算配置', key: '/platform/finance/agent-settlement-config' },
-          { label: '阶梯策略配置', key: '/platform/finance/tier-config' },
+          // 阶梯策略配置暂不启用
+          // { label: '阶梯策略配置', key: '/platform/finance/tier-config' },
         ]
       },
       {
@@ -434,14 +435,15 @@ const menuOptions: MenuOption[] = [
       { label: '反馈汇总', key: '/platform/feedback-summary' },
     ]
   },
-  {
-    label: '短信管理',
-    key: 'sms-group',
-    icon: icon(ChatbubbleOutline),
-    children: [
-      { label: '短信模板审核', key: '/platform/sms-template-audit' },
-    ]
-  },
+  // 短信管理暂不启用（与运营账户关联）
+  // {
+  //   label: '短信管理',
+  //   key: 'sms-group',
+  //   icon: icon(ChatbubbleOutline),
+  //   children: [
+  //     { label: '短信模板审核', key: '/platform/sms-template-audit' },
+  //   ]
+  // },
 ]
 
 const currentRoute = computed(() => route.path)

@@ -155,9 +155,8 @@ const couponColumns = [
 ]
 
 const couponData = [
-  { name: '新用户专享券', type: '满减券', value: '满100减20', issued: 156, used: 89, expire: '2026-12-31', status: 'active' },
-  { name: '周末畅玩券', type: '体验券', value: '免费体验10分钟', issued: 320, used: 201, expire: '2026-06-30', status: 'active' },
-  { name: '生日特权券', type: '赠品券', value: '免费VR体验1次', issued: 45, used: 32, expire: '2026-12-31', status: 'active' },
+  { name: '新用户专享券', type: '满减券', value: '减20元', issued: 156, used: 89, expire: '2026-12-31', status: 'active' },
+  { name: '周末畅玩券', type: '满减券', value: '减10元', issued: 320, used: 201, expire: '2026-06-30', status: 'active' },
   { name: '老客回馈券', type: '折扣券', value: '8折', issued: 200, used: 156, expire: '2026-04-30', status: 'active' },
 ]
 
@@ -171,7 +170,7 @@ const activities = ref([
 const levels = ref([
   { 
     name: '普通会员', gradient: 'linear-gradient(135deg, #94A3B8, #64748B)', ratio: '55%', threshold: '0',
-    benefits: ['享受会员价', '生日赠券', '游戏币抵现']
+    benefits: ['享受会员价', '新用户专享券自动发放', '游戏币抵现']
   },
   { 
     name: '青铜', gradient: 'linear-gradient(135deg, #CD7F32, #B87333)', ratio: '25%', threshold: '500',
@@ -188,8 +187,8 @@ const levels = ref([
 ])
 
 const rules = ref([
-  { id: 1, name: '新用户欢迎', description: '新会员注册自动发放新人礼包', icon: PersonAddOutline, color: '#3B82F6', trigger: '触发: 新用户注册', enabled: true },
-  { id: 2, name: '生日提醒', description: '会员生日当天自动发送祝福和优惠券', icon: GiftOutline, color: '#F59E0B', trigger: '触发: 生日当天', enabled: true },
+  { id: 1, name: '新人自动发券', description: '新会员注册时自动发放「新人注册欢迎券」', icon: PersonAddOutline, color: '#3B82F6', trigger: '触发: 新会员注册', enabled: true, couponName: '新人注册欢迎券' },
+  { id: 2, name: '生日提醒', description: '会员生日当天自动发送祝福和优惠券', icon: GiftOutline, color: '#F59E0B', trigger: '触发: 生日当天', enabled: false },
   { id: 3, name: '沉睡召回', description: '30天未消费会员发送召回优惠券', icon: NotificationsOutline, color: '#EF4444', trigger: '触发: 30天未消费', enabled: false },
   { id: 4, name: '充值提醒', description: '余额低于50元时提醒会员充值', icon: CardOutline, color: '#10B981', trigger: '触发: 余额<50元', enabled: true },
 ])

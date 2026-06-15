@@ -1400,8 +1400,8 @@ const sourceOptions = ['收银系统', '点播系统', '抖音']
 const statusOptions = ['完成', '已退款', '待支付']
 const deductTypeOptions = ['储蓄', '次数', '游戏币']
 const editTypeOptions = ['增加', '减少']
-const rechargeTypeOptions = ['充值活动', '单次消费', '购买商品', '套票', '商品']
-const exchangeTypeOptions = ['单次消费兑换', '套票兑换', '商品兑换']
+const rechargeTypeOptions = ['充值活动', '单次消费', '购买商品', '商品']
+const exchangeTypeOptions = ['单次消费兑换', '商品兑换']
 const exchangeStatusOptions = ['兑换成功', '兑换失败', '处理中']
 const activityNameOptions = ['新用户注册有礼', '五一劳动节活动', '会员生日特权', '周年庆大回馈']
 const giftTypeOptions = ['储值', '次数', '游戏币', '优惠券', '积分', '时长']
@@ -1600,7 +1600,8 @@ const maskPhone = (phone) => {
 
 const getExchangeTypeClass = (type) => {
   if (type === '单次消费兑换') return 'single'
-  if (type === '套票兑换') return 'package'
+  // 套票暂不启用
+  // if (type === '套票兑换') return 'package'
   if (type === '商品兑换') return 'goods'
   return 'single'
 }

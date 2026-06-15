@@ -29,7 +29,7 @@ html.append('<html lang="zh-CN">')
 html.append('<head>')
 html.append('<meta charset="UTF-8">')
 html.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
-html.append('<title>头号空间 PRD v1.3.3 — 产品需求文档</title>')
+html.append('<title>头号空间 PRD v2.1 — 产品需求文档</title>')
 html.append('<style>')
 html.append('  :root {')
 html.append('    --bg: #0f172a; --card: #1e293b; --border: #334155;')
@@ -86,7 +86,7 @@ html.append('</head><body>')
 
 # 生成侧边栏
 html.append('<div class="sidebar">')
-html.append('<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v1.3.3</div></div>')
+html.append('<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v2.1</div></div>')
 html.append('<a href="#top" class="s1">📋 文档目录</a>')
 for idx, (line_num, level, title) in enumerate(sections):
     anchor = re.sub(r'[^\w\u4e00-\u9fff]+', '-', title).strip('-').lower()

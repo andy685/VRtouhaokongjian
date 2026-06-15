@@ -232,12 +232,14 @@ const rechargePackages = [
   { name: '充8000送12000', price: 20000 }
 ]
 
-const ticketPackages = [
-  { name: '5次套票', price: 198 },
-  { name: '10次套票', price: 360 },
-  { name: '20次套票', price: 660 },
-  { name: '月卡畅玩', price: 880 }
-]
+// 套票暂不启用
+// const ticketPackages = [
+//   { name: '5次套票', price: 198 },
+//   { name: '10次套票', price: 360 },
+//   { name: '20次套票', price: 660 },
+//   { name: '月卡畅玩', price: 880 }
+// ]
+const ticketPackages = []
 
 // ===== 可见性判断 =====
 const hasRechargeData = computed(() => rechargePackages.length > 0)

@@ -158,14 +158,14 @@ const statusOptions = [
 ]
 
 const games = ref([
-  { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', playCountNum: 15800, rating: 4.9, sortOrder: 1, recommended: true, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线', tags: ['刺激', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 20, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 10, cpName: '极境互动科技' },
-  { id: 2, name: '恐怖医院', icon: '🏥', duration: 15, playCount: '12.3k', playCountNum: 12300, rating: 4.7, sortOrder: 3, recommended: true, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', status: 'online', statusText: '已上线', tags: ['恐怖', '成人', '沉浸'], runPlatform: 'host', gameBeanCost: 25, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 15, cpName: '闪耀游戏工作室' },
-  { id: 3, name: '极速赛车', icon: '🏎️', duration: 8, playCount: '10.5k', playCountNum: 10500, rating: 4.8, sortOrder: 2, recommended: false, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', status: 'online', statusText: '已上线', tags: ['竞速', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 15, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 8, cpName: '乐游网络' },
-  { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', playCountNum: 8900, rating: 4.6, sortOrder: 4, recommended: false, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'], runPlatform: 'allInOne', gameBeanCost: 10, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 20, cpName: '星际科技' },
-  { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', playCountNum: 7200, rating: 4.5, sortOrder: 5, recommended: false, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'], runPlatform: 'allInOne', gameBeanCost: 0, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 12, cpName: '未来幻境' },
-  { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', playCountNum: 6800, rating: 4.8, sortOrder: 6, recommended: false, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'], runPlatform: 'host', gameBeanCost: 35, gameType: 'standalone', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 30, cpName: '幻视科技' },
-  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'], runPlatform: 'allInOne', gameBeanCost: 0, gameType: 'online', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 25, cpName: '极境互动科技' },
-  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'], runPlatform: 'allInOne', gameBeanCost: 18, gameType: 'online', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 18, cpName: '闪耀游戏工作室' },
+  { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', playCountNum: 15800, rating: 4.9, sortOrder: 1, recommended: true, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线', tags: ['刺激', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 20, presetPrice: 38, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 10, cpName: '极境互动科技' },
+  { id: 2, name: '恐怖医院', icon: '🏥', duration: 15, playCount: '12.3k', playCountNum: 12300, rating: 4.7, sortOrder: 3, recommended: true, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', status: 'online', statusText: '已上线', tags: ['恐怖', '成人', '沉浸'], runPlatform: 'host', gameBeanCost: 25, presetPrice: 48, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 15, cpName: '闪耀游戏工作室' },
+  { id: 3, name: '极速赛车', icon: '🏎️', duration: 8, playCount: '10.5k', playCountNum: 10500, rating: 4.8, sortOrder: 2, recommended: false, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', status: 'online', statusText: '已上线', tags: ['竞速', '热门', '全年龄'], runPlatform: 'host', gameBeanCost: 15, presetPrice: 30, gameType: 'standalone', payMode: 'single', timeLimitEnabled: true, timeLimitMinutes: 8, cpName: '乐游网络' },
+  { id: 4, name: '海洋世界', icon: '🐳', duration: 20, playCount: '8.9k', playCountNum: 8900, rating: 4.6, sortOrder: 4, recommended: false, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)', status: 'online', statusText: '已上线', tags: ['科普', '亲子', '放松'], runPlatform: 'allInOne', gameBeanCost: 10, presetPrice: 25, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 20, cpName: '星际科技' },
+  { id: 5, name: '恐龙王国', icon: '🦖', duration: 12, playCount: '7.2k', playCountNum: 7200, rating: 4.5, sortOrder: 5, recommended: false, gradient: 'linear-gradient(135deg, #fa709a, #fee140)', status: 'draft', statusText: '草稿', tags: ['冒险', '亲子', '科普'], runPlatform: 'allInOne', gameBeanCost: 0, presetPrice: null, gameType: 'standalone', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 12, cpName: '未来幻境' },
+  { id: 6, name: 'CS对战', icon: '🔫', duration: 30, playCount: '6.8k', playCountNum: 6800, rating: 4.8, sortOrder: 6, recommended: false, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', status: 'online', statusText: '已上线', tags: ['射击', '多人', '竞技'], runPlatform: 'host', gameBeanCost: 35, presetPrice: 58, gameType: 'standalone', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 30, cpName: '幻视科技' },
+  { id: 7, name: '音乐节VR', icon: '🎵', duration: 25, playCount: '5.4k', playCountNum: 5400, rating: 4.4, sortOrder: 7, recommended: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)', status: 'offline', statusText: '已下架', tags: ['音乐', '休闲', '放松'], runPlatform: 'allInOne', gameBeanCost: 0, presetPrice: 22, gameType: 'online', payMode: 'single', timeLimitEnabled: false, timeLimitMinutes: 25, cpName: '极境互动科技' },
+  { id: 8, name: '太空漫步', icon: '🚀', duration: 18, playCount: '4.2k', playCountNum: 4200, rating: 4.3, sortOrder: 8, recommended: false, gradient: 'linear-gradient(135deg, #0c3483, #a2b6df)', status: 'online', statusText: '已上线', tags: ['科幻', '探索', '沉浸'], runPlatform: 'allInOne', gameBeanCost: 18, presetPrice: 35, gameType: 'online', payMode: 'multi', timeLimitEnabled: true, timeLimitMinutes: 18, cpName: '闪耀游戏工作室' },
 ])
 
 function toggleRecommend(game: any) {
@@ -217,7 +217,7 @@ const filteredGames = computed(() => {
 .game-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
 .game-card.disabled { opacity: 0.6; }
 
-.game-cover { height: 120px; display: flex; align-items: center; justify-content: center; position: relative; }
+.game-cover { aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; position: relative; }
 .game-icon { font-size: 48px; }
 .game-badge { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: white; }
 .game-badge.online { background: rgba(16,185,129,0.9); }
@@ -248,7 +248,7 @@ const filteredGames = computed(() => {
 .game-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .game-actions { display: flex; gap: 8px; }
 
-.detail-cover { height: 160px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+.detail-cover { aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 .detail-icon { font-size: 64px; }
 
 @media (max-width: 1200px) {

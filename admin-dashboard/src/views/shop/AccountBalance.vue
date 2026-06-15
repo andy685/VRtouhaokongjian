@@ -5,7 +5,8 @@
     </div>
 
     <n-tabs v-model:value="activeTab" type="line" class="account-tabs">
-      <n-tab-pane name="operating" tab="运营账户">
+      <!-- 运营账户暂不启用（与短信管理关联） -->
+      <!-- <n-tab-pane name="operating" tab="运营账户">
         <div class="balance-card">
           <div class="balance-label">可用余额（元）</div>
           <div class="balance-row">
@@ -18,7 +19,7 @@
             <n-button type="primary" class="action-btn" @click="handleRecharge">去充值</n-button>
           </div>
         </div>
-      </n-tab-pane>
+      </n-tab-pane> -->
 
       <n-tab-pane name="basic" tab="基础账户">
         <div class="balance-card basic-account">
@@ -324,7 +325,7 @@ import {
 
 const message = useMessage()
 const router = useRouter()
-const activeTab = ref('operating')
+const activeTab = ref('basic')
 
 // 提现账户相关
 const bankInfo = ref<{ bankName: string; bankNameText: string; cardNo: string; accountName: string; idCard: string } | null>({
@@ -677,9 +678,8 @@ function handleWithdraw() {
 function handleRecharge() {
   if (activeTab.value === 'game-bean') {
     router.push('/shop/account/game-bean/recharge')
-  } else {
-    router.push('/shop/account/recharge')
   }
+  // 运营账户已隐藏，不再跳转运营账户充值
 }
 
 function handleTransfer() {

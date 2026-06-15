@@ -285,10 +285,27 @@
                 <n-input-number v-model:value="reviewForm.costPerPlay" :min="0" :step="0.01" placeholder="每次给供应商多少钱" style="width: 200px;" />
                 <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">元/次（给CP的分成）</span>
               </n-form-item>
+              <n-form-item label="销售金额" required>
+                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                  <div v-if="currentGame.presetPrice != null" class="preset-price-ref">
+                    <span>CP建议零售价</span>
+                    <strong>¥{{ currentGame.presetPrice.toFixed(2) }}</strong>
+                    <span>元/次</span>
+                  </div>
+                  <div v-else class="preset-price-ref empty">
+                    <span>CP未提供建议零售价，请审核定价</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <n-input-number v-model:value="reviewForm.salePrice" :min="0" :max="9999" :precision="2" placeholder="设置最终售价" style="width: 200px;" />
+                    <span style="font-size: 12px; color: var(--text-muted);">元/次</span>
+                  </div>
+                </div>
+              </n-form-item>
               <n-form-item label="价格摘要">
                 <span style="font-size: 13px; color: var(--text-muted);">
-                  用户每次消耗 <b style="color: var(--text-primary);">{{ reviewForm.gameBeanCost || 0 }}</b> 游戏豆，
-                  平台支付CP <b style="color: var(--text-primary);">¥{{ reviewForm.costPerPlay || 0 }}</b>/次
+                  售价 <b style="color: var(--text-primary);">¥{{ reviewForm.salePrice || 0 }}</b>/次，
+                  消耗 <b style="color: var(--text-primary);">{{ reviewForm.gameBeanCost || 0 }}</b> 豆/次，
+                  分成 <b style="color: var(--text-primary);">¥{{ reviewForm.costPerPlay || 0 }}</b>/次
                 </span>
               </n-form-item>
               <n-form-item label="审核意见">
@@ -394,6 +411,7 @@ type ReviewGame = {
   videoName: string
   bannerList: { name: string }[]
   resourceComponents: ResourceComponent[]
+  presetPrice: number | null
 }
 
 const runtimeArchitectureOptions: Record<RuntimeArchitecture, { title: string; description: string; tags: string[] }> = {
@@ -476,6 +494,7 @@ const pendingData = ref<ReviewGame[]>([
       { role: 'headset_client', required: true, fileName: 'deepsea-vr-v1.0.0.apk', fileSize: '1.8 GB' },
       { role: 'dependency', required: false, fileName: 'deepsea-handtracking-plugin.zip', fileSize: '120 MB' },
     ],
+    presetPrice: 38,
   },
   {
     id: 2, name: '赛博朋克2079', cpName: '闪耀游戏工作室', version: '0.5.0', category: '射击', size: '3.2GB', duration: 20,
@@ -491,6 +510,7 @@ const pendingData = ref<ReviewGame[]>([
       { role: 'pc_client', required: true, fileName: 'cyber2079-v0.5.0.zip', fileSize: '3.2 GB' },
       { role: 'patch', required: false, fileName: 'cyber2079-hotfix-0501.patch', fileSize: '240 MB' },
     ],
+    presetPrice: 58,
   },
   {
     id: 3, name: '棋牌乐园', cpName: '乐游网络', version: '2.0.0', category: '休闲', size: '500MB', duration: 30,
@@ -506,6 +526,7 @@ const pendingData = ref<ReviewGame[]>([
       { role: 'headset_client', required: true, fileName: 'card-vr-v2.0.0.apk', fileSize: '500 MB' },
       { role: 'server_room', required: true, fileName: 'card-vr-room-server-v2.0.0.zip', fileSize: '88 MB' },
     ],
+    presetPrice: 25,
   },
   {
     id: 4, name: '极限滑雪', cpName: '极境互动科技', version: '1.2.0', category: '体育', size: '2.1GB', duration: 12,
@@ -521,6 +542,7 @@ const pendingData = ref<ReviewGame[]>([
       { role: 'headset_client', required: true, fileName: 'extreme-ski-v1.2.0.apk', fileSize: '1.4 GB' },
       { role: 'pc_service', required: true, fileName: 'extreme-ski-service-v1.2.0.zip', fileSize: '220 MB' },
     ],
+    presetPrice: 35,
   },
   {
     id: 5, name: '太空站', cpName: '星际科技', version: '1.0.0', category: '冒险', size: '4.5GB', duration: 25,
@@ -536,6 +558,7 @@ const pendingData = ref<ReviewGame[]>([
       { role: 'media_content', required: true, fileName: 'space-station-experience-v1.0.0.zip', fileSize: '4.5 GB' },
       { role: 'dependency', required: false, fileName: 'space-station-codec-pack.zip', fileSize: '120 MB' },
     ],
+    presetPrice: null,
   },
   {
     id: 6, name: '过山车VR', cpName: '极境互动科技', version: 'v2.4.0', category: '冒险', size: '280M', duration: 10,
@@ -551,6 +574,7 @@ const pendingData = ref<ReviewGame[]>([
       { role: 'pc_client', required: true, fileName: 'rollercoaster-vr-v2.4.0.zip', fileSize: '2.4 GB' },
       { role: 'patch', required: false, fileName: 'rollercoaster-v2.4.0-hotfix.patch', fileSize: '280 MB' },
     ],
+    presetPrice: 38,
   },
 ])
 
@@ -576,10 +600,10 @@ const pendingColumns = [
 
 // ========== 已审核数据 ==========
 const reviewedData = ref([
-  { id: 101, name: '恐怖医院', cpName: '极境互动科技', version: '1.8.5', result: 'passed', gameBeanCost: 25, costPerPlay: 8.75, reviewer: '管理员', reviewTime: '2026-05-18 15:30', comment: '内容质量优秀，通过' },
-  { id: 102, name: '末日求生', cpName: '极境互动科技', version: '0.9.1', result: 'rejected', gameBeanCost: 0, costPerPlay: 0, reviewer: '管理员', reviewTime: '2026-05-27 10:00', comment: '游戏描述与内容不符，请修改后重新提交' },
-  { id: 103, name: '极速赛车', cpName: '闪耀游戏工作室', version: '3.1.0', result: 'passed', gameBeanCost: 15, costPerPlay: 4.50, reviewer: '运营主管', reviewTime: '2026-05-15 14:00', comment: '品质优秀，定价15豆' },
-  { id: 104, name: '过山车VR', cpName: '极境互动科技', version: '2.3.2', result: 'passed', gameBeanCost: 20, costPerPlay: 6.00, reviewer: '管理员', reviewTime: '2026-05-20 11:30', comment: '热门游戏更新版本，保持原定价' },
+  { id: 101, name: '恐怖医院', cpName: '极境互动科技', version: '1.8.5', result: 'passed', gameBeanCost: 25, costPerPlay: 8.75, salePrice: 48, reviewer: '管理员', reviewTime: '2026-05-18 15:30', comment: '内容质量优秀，通过' },
+  { id: 102, name: '末日求生', cpName: '极境互动科技', version: '0.9.1', result: 'rejected', gameBeanCost: 0, costPerPlay: 0, salePrice: 0, reviewer: '管理员', reviewTime: '2026-05-27 10:00', comment: '游戏描述与内容不符，请修改后重新提交' },
+  { id: 103, name: '极速赛车', cpName: '闪耀游戏工作室', version: '3.1.0', result: 'passed', gameBeanCost: 15, costPerPlay: 4.50, salePrice: 30, reviewer: '运营主管', reviewTime: '2026-05-15 14:00', comment: '品质优秀，定价15豆' },
+  { id: 104, name: '过山车VR', cpName: '极境互动科技', version: '2.3.2', result: 'passed', gameBeanCost: 20, costPerPlay: 6.00, salePrice: 38, reviewer: '管理员', reviewTime: '2026-05-20 11:30', comment: '热门游戏更新版本，保持原定价' },
 ])
 
 const filteredReviewedData = computed(() => {
@@ -597,17 +621,18 @@ const reviewedColumns = [
       return h(NTag, { type: row.result === 'passed' ? 'success' : 'error', size: 'small', bordered: false }, () => row.result === 'passed' ? '通过' : '不通过')
     }
   },
-  { title: '游戏豆定价', key: 'gameBeanCost', width: 100, render: (row: any) => row.gameBeanCost ? `${row.gameBeanCost} 豆/次` : '-' },
+  { title: '售价', key: 'salePrice', width: 90, render: (row: any) => row.salePrice ? `¥${row.salePrice}/次` : '-' },
+  { title: '游戏豆', key: 'gameBeanCost', width: 90, render: (row: any) => row.gameBeanCost ? `${row.gameBeanCost} 豆/次` : '-' },
   { title: '分成成本', key: 'costPerPlay', width: 100, render: (row: any) => row.costPerPlay ? `¥${row.costPerPlay}/次` : '-' },
   { title: '审核人', key: 'reviewer', width: 90 },
   { title: '审核时间', key: 'reviewTime', width: 150 },
-  { title: '审核意见', key: 'comment', width: 200, ellipsis: { tooltip: true } },
+  { title: '审核意见', key: 'comment', width: 180, ellipsis: { tooltip: true } },
 ]
 
 // ========== 审核弹窗 ==========
 const showReviewModal = ref(false)
 const currentGame = ref<ReviewGame | null>(null)
-const reviewForm = ref({ gameBeanCost: 20, costPerPlay: 6, comment: '' })
+const reviewForm = ref({ gameBeanCost: 20, costPerPlay: 6, salePrice: 0, comment: '' })
 
 function runtimeMeta(value: RuntimeArchitecture) {
   return runtimeArchitectureOptions[value]
@@ -680,13 +705,22 @@ function downloadBanner(game: ReviewGame, banner: { name: string }) {
 
 function openReview(game: ReviewGame) {
   currentGame.value = game
-  reviewForm.value = { gameBeanCost: 20, costPerPlay: 6, comment: '' }
+  reviewForm.value = {
+    gameBeanCost: 20,
+    costPerPlay: 6,
+    salePrice: game.presetPrice ?? 0,
+    comment: '',
+  }
   showReviewModal.value = true
 }
 
 function approveGame() {
   if (!reviewForm.value.gameBeanCost || !reviewForm.value.costPerPlay) {
     message.warning('请设置游戏豆定价和单次成本')
+    return
+  }
+  if (!reviewForm.value.salePrice) {
+    message.warning('请设置销售金额')
     return
   }
   // 从待审核移除，加入已审核
@@ -701,12 +735,13 @@ function approveGame() {
       result: 'passed',
       gameBeanCost: reviewForm.value.gameBeanCost,
       costPerPlay: reviewForm.value.costPerPlay,
+      salePrice: reviewForm.value.salePrice,
       reviewer: '管理员',
       reviewTime: new Date().toLocaleString('zh-CN'),
       comment: reviewForm.value.comment || '审核通过',
     })
   }
-  message.success(`「${currentGame.value.name}」审核通过，定价 ${reviewForm.value.gameBeanCost} 豆/次，成本 ¥${reviewForm.value.costPerPlay}/次`)
+  message.success(`「${currentGame.value.name}」审核通过，售价 ¥${reviewForm.value.salePrice}/次，消耗 ${reviewForm.value.gameBeanCost} 豆/次，分成 ¥${reviewForm.value.costPerPlay}/次`)
   showReviewModal.value = false
 }
 
@@ -726,6 +761,7 @@ function rejectGame() {
       result: 'rejected',
       gameBeanCost: 0,
       costPerPlay: 0,
+      salePrice: 0,
       reviewer: '管理员',
       reviewTime: new Date().toLocaleString('zh-CN'),
       comment: reviewForm.value.comment,
@@ -760,6 +796,27 @@ function rejectGame() {
   border-top: 1px solid var(--border-color);
 }
 .review-section h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0 0 16px; }
+
+.preset-price-ref {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fef9f0;
+  border: 1px solid #f8d9a0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.preset-price-ref strong {
+  color: #d4790e;
+  font-size: 14px;
+}
+.preset-price-ref.empty {
+  background: #f8f9fb;
+  border-color: #dfe3e8;
+  color: #8e98a3;
+}
 
 .review-modal-body {
   display: flex;

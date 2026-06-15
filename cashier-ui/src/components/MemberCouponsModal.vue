@@ -393,13 +393,6 @@ watch(() => props.visible, (val) => {
   letter-spacing: 0.3px;
 }
 
-.mcm-card-tag[data-tag="特价"],
-.mcm-card-tag[data-tag="特价券"] {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-  color: #e65100;
-  border: 1px solid rgba(230, 81, 0, 0.15);
-}
-
 .mcm-card-tag[data-tag="特享"],
 .mcm-card-tag[data-tag="特享券"] {
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);

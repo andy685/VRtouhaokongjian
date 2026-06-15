@@ -52,11 +52,6 @@
 
         <n-card title="价格与库存" :bordered="false" class="form-card">
           <n-form :model="formData" label-placement="left" label-width="100">
-            <n-form-item label="成本价" path="cost">
-              <n-input-number v-model:value="formData.cost" :min="0" :precision="2" placeholder="0.00">
-                <template #prefix>¥</template>
-              </n-input-number>
-            </n-form-item>
             <n-form-item label="售价" path="price">
               <n-input-number v-model:value="formData.price" :min="0" :precision="2" placeholder="0.00">
                 <template #prefix>¥</template>
@@ -168,11 +163,11 @@ function getProductIcon(category: string | null) {
 
 function getDefaultProducts() {
   return [
-    { id: '1', name: '一次性眼罩', icon: '😷', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), category: 'consumable', cost: 0.8, price: 3.0, stock: 200, sales: 1256, status: 'on' },
-    { id: '2', name: 'VR手柄保护套', icon: '🧤', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), category: 'accessory', cost: 12, price: 29.0, stock: 15, sales: 328, status: 'on' },
-    { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), category: 'merchandise', cost: 35, price: 68.0, stock: 52, sales: 156, status: 'on' },
-    { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), category: 'merchandise', cost: 8, price: 18.0, stock: 3, sales: 289, status: 'on' },
-    { id: '5', name: '可乐330ml', icon: '🥤', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), category: 'drink', cost: 2, price: 5.0, stock: 30, sales: 856, status: 'on' },
+    { id: '1', name: '一次性眼罩', icon: '😷', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), category: 'consumable', price: 3.0, stock: 200, sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', icon: '🧤', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), category: 'accessory', price: 29.0, stock: 15, sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), category: 'merchandise', price: 68.0, stock: 52, sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), category: 'merchandise', price: 18.0, stock: 3, sales: 289, status: 'on' },
+    { id: '5', name: '可乐330ml', icon: '🥤', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), category: 'drink', price: 5.0, stock: 30, sales: 856, status: 'on' },
   ]
 }
 
@@ -194,7 +189,6 @@ const formData = ref({
   category: null as string | null,
   coverUrl: '',
   description: '',
-  cost: 0,
   price: 0,
   stock: 0,
   stockAlert: 10,
@@ -211,7 +205,6 @@ onMounted(() => {
         category: data.category,
         coverUrl: data.coverUrl || '',
         description: '',
-        cost: data.cost,
         price: parseFloat(data.price),
         stock: parseInt(data.stock),
         stockAlert: 10,
@@ -262,7 +255,6 @@ function handleSave() {
     icon: getProductIcon(formData.value.category),
     coverUrl: formData.value.coverUrl,
     category: formData.value.category,
-    cost: formData.value.cost,
     price: formData.value.price,
     stock: formData.value.stock,
     sales: productData.value?.sales ?? 0,

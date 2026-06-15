@@ -62,29 +62,34 @@
     </n-card>
 
     <!-- 手动发券弹窗 -->
-    <n-modal v-model:show="showManualSendModal" preset="card" title="手动发券" style="width: 520px;">
+    <n-modal v-model:show="showManualSendModal" preset="card" title="手动发券" style="width: 560px;">
       <n-form label-placement="left" label-width="90px">
         <n-form-item label="优惠券">
           <n-input :value="manualSendCoupon?.name" disabled />
         </n-form-item>
         <n-form-item label="发放对象" required>
           <n-radio-group v-model:value="manualSendTargetType">
-            <n-space>
+            <n-space vertical style="gap: 8px;">
               <n-radio value="member">指定会员</n-radio>
               <n-radio value="phone">输入手机号</n-radio>
+              <n-radio value="filter">全店筛选发放</n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
+
+        <!-- 指定会员 -->
         <n-form-item v-if="manualSendTargetType === 'member'" label="选择会员" required>
           <n-select
             v-model:value="manualSendMembers"
             multiple
             filterable
             placeholder="搜索会员姓名/手机号"
-            :options="memberOptions"
+            :options="allMemberOptions"
             :max-tag-count="3"
           />
         </n-form-item>
+
+        <!-- 输入手机号 -->
         <n-form-item v-if="manualSendTargetType === 'phone'" label="手机号" required>
           <n-input
             v-model:value="manualSendPhones"
@@ -93,6 +98,51 @@
             :rows="4"
           />
         </n-form-item>
+
+        <!-- 全店筛选发放 -->
+        <template v-if="manualSendTargetType === 'filter'">
+          <n-alert type="info" :bordered="false" style="margin-bottom: 16px;">
+            此方式将向符合筛选条件的全体会员批量发放优惠券，请确认优惠券预算后再操作。
+          </n-alert>
+          <n-form-item label="会员等级">
+            <n-checkbox-group v-model:value="manualSendFilterLevels">
+              <n-space>
+                <n-checkbox value="normal">普通会员</n-checkbox>
+                <n-checkbox value="bronze">青铜</n-checkbox>
+                <n-checkbox value="silver">白银</n-checkbox>
+                <n-checkbox value="gold">黄金</n-checkbox>
+                <n-checkbox value="diamond">钻石</n-checkbox>
+              </n-space>
+            </n-checkbox-group>
+            <div style="margin-top: 4px;">
+              <n-button text size="tiny" type="primary" @click="manualSendFilterLevels = ['normal','bronze','silver','gold','diamond']">全选</n-button>
+              <n-button text size="tiny" style="margin-left: 8px;" @click="manualSendFilterLevels = []">清空</n-button>
+            </div>
+          </n-form-item>
+          <n-form-item label="活跃状态">
+            <n-checkbox-group v-model:value="manualSendFilterStatuses">
+              <n-space>
+                <n-checkbox value="active">活跃（30天有消费）</n-checkbox>
+                <n-checkbox value="dormant">沉睡（30-60天）</n-checkbox>
+                <n-checkbox value="lost">流失（60天以上）</n-checkbox>
+                <n-checkbox value="inactive">未消费用户</n-checkbox>
+              </n-space>
+            </n-checkbox-group>
+            <div style="margin-top: 4px;">
+              <n-button text size="tiny" type="primary" @click="manualSendFilterStatuses = ['active','dormant','lost','inactive']">全选</n-button>
+              <n-button text size="tiny" style="margin-left: 8px;" @click="manualSendFilterStatuses = []">清空</n-button>
+            </div>
+          </n-form-item>
+          <!-- 筛选结果预览 -->
+          <n-form-item label="符合条件">
+            <div class="filter-preview">
+              <span class="filter-count">{{ filteredMemberCount }}</span>
+              <span class="filter-unit">人</span>
+              <span v-if="filteredMemberCount === 0" class="filter-empty-hint">请至少选择一项筛选条件</span>
+            </div>
+          </n-form-item>
+        </template>
+
         <n-form-item label="发放数量" required>
           <n-input-number v-model:value="manualSendCount" :min="1" :max="100" style="width: 150px;">
             <template #suffix>张/人</template>
@@ -105,7 +155,13 @@
       <template #footer>
         <n-space justify="center">
           <n-button @click="showManualSendModal = false">取消</n-button>
-          <n-button type="primary" @click="handleManualSendSubmit">确认发放</n-button>
+          <n-button
+            type="primary"
+            :disabled="!canManualSend"
+            @click="handleManualSendSubmit"
+          >
+            {{ manualSendTargetType === 'filter' ? `确认发放（${filteredMemberCount}人）` : '确认发放' }}
+          </n-button>
         </n-space>
       </template>
     </n-modal>
@@ -140,36 +196,56 @@
                 <template #suffix>折</template>
               </n-input-number>
             </n-form-item>
-            <!-- 特价券：一口价 -->
-            <n-form-item v-if="formData.type === 'special'" label="一口价" path="specialPrice" required>
-              <n-input-number v-model:value="formData.specialPrice" :min="0.01" :precision="2" style="width: 100%;">
-                <template #suffix>元</template>
-              </n-input-number>
-            </n-form-item>
-            <!-- 特价券：适用项目 -->
-            <n-form-item v-if="formData.type === 'special'" label="适用项目" path="specialItems" required>
-              <n-select
-                v-model:value="formData.specialItems"
-                multiple
-                filterable
-                placeholder="选择适用的消费项目"
-                :options="productOptions"
-                :max-tag-count="2"
-              />
-            </n-form-item>
-            <!-- 兑换券：兑换项目 -->
-            <n-form-item v-if="formData.type === 'exchange'" label="兑换内容" path="exchangeItems" required>
-              <n-select
-                v-model:value="formData.exchangeItems"
-                multiple
-                filterable
-                placeholder="选择可兑换的消费项目"
-                :options="productOptions"
-                :max-tag-count="2"
-              />
-            </n-form-item>
           </n-gi>
         </n-grid>
+
+        <!-- 自动发放 -->
+        <n-form-item label="自动发放">
+          <n-switch v-model:value="formData.autoDistribute" />
+          <span style="margin-left: 10px; font-size: 13px; color: #666;">用户满足筛选条件时自动发放优惠券</span>
+        </n-form-item>
+        <template v-if="formData.autoDistribute">
+          <n-alert type="info" :bordered="false" style="margin-bottom: 16px;">
+            满足以下<strong>全部</strong>筛选条件的用户，将在条件首次满足时自动获得此优惠券，无需手动发放。
+          </n-alert>
+          <n-form-item label="会员等级">
+            <n-checkbox-group v-model:value="formData.autoDistributeLevels">
+              <n-space>
+                <n-checkbox value="normal">普通会员</n-checkbox>
+                <n-checkbox value="bronze">青铜</n-checkbox>
+                <n-checkbox value="silver">白银</n-checkbox>
+                <n-checkbox value="gold">黄金</n-checkbox>
+                <n-checkbox value="diamond">钻石</n-checkbox>
+              </n-space>
+            </n-checkbox-group>
+            <div style="margin-top: 4px;">
+              <n-button text size="tiny" type="primary" @click="formData.autoDistributeLevels = ['normal','bronze','silver','gold','diamond']">全选</n-button>
+              <n-button text size="tiny" style="margin-left: 8px;" @click="formData.autoDistributeLevels = []">清空</n-button>
+            </div>
+          </n-form-item>
+          <n-form-item label="活跃状态">
+            <n-checkbox-group v-model:value="formData.autoDistributeStatuses">
+              <n-space>
+                <n-checkbox value="active">活跃（30天有消费）</n-checkbox>
+                <n-checkbox value="dormant">沉睡（30-60天）</n-checkbox>
+                <n-checkbox value="lost">流失（60天以上）</n-checkbox>
+                <n-checkbox value="inactive">未消费用户</n-checkbox>
+              </n-space>
+            </n-checkbox-group>
+            <div style="margin-top: 4px;">
+              <n-button text size="tiny" type="primary" @click="formData.autoDistributeStatuses = ['active','dormant','lost','inactive']">全选</n-button>
+              <n-button text size="tiny" style="margin-left: 8px;" @click="formData.autoDistributeStatuses = []">清空</n-button>
+            </div>
+          </n-form-item>
+          <n-form-item label="发放时机">
+            <n-radio-group v-model:value="formData.autoDistributeTiming">
+              <n-space vertical style="gap: 6px;">
+                <n-radio value="onMeet">用户首次满足条件时立即发放</n-radio>
+                <n-radio value="onRegister">新用户注册后立即发放（需勾选「未消费用户」状态）</n-radio>
+              </n-space>
+            </n-radio-group>
+          </n-form-item>
+        </template>
 
         <!-- 使用门槛 -->
         <n-form-item label="使用门槛" path="threshold">
@@ -251,6 +327,7 @@ import {
   NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NInputNumber, NTabs, NTab, NGrid, NGi, NTag, NDropdown,
   NDatePicker, NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup,
+  NAlert, NSwitch,
   useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
@@ -271,19 +348,57 @@ const filterKeyword = ref('')
 // 手动发券
 const showManualSendModal = ref(false)
 const manualSendCoupon = ref<any>(null)
-const manualSendTargetType = ref<'member' | 'phone'>('member')
+const manualSendTargetType = ref<'member' | 'phone' | 'filter'>('member')
 const manualSendMembers = ref<string[]>([])
 const manualSendPhones = ref('')
 const manualSendCount = ref(1)
 const manualSendRemark = ref('')
+const manualSendFilterLevels = ref<string[]>(['normal', 'bronze', 'silver', 'gold', 'diamond'])
+const manualSendFilterStatuses = ref<string[]>(['active', 'dormant', 'lost', 'inactive'])
 
-const memberOptions = [
-  { label: '张小明 (138****1234)', value: 'm1' },
-  { label: '李小红 (139****5678)', value: 'm2' },
-  { label: '王小强 (137****9012)', value: 'm3' },
-  { label: '陈小芳 (136****3456)', value: 'm4' },
-  { label: '刘大伟 (135****7890)', value: 'm5' },
-]
+// 扩展会员数据（包含等级和活跃状态）
+const allMembers = ref([
+  { id: 'm1', name: '张小明', phone: '138****1234', level: 'gold', levelLabel: '黄金', status: 'active', statusLabel: '活跃' },
+  { id: 'm2', name: '李小红', phone: '139****5678', level: 'silver', levelLabel: '白银', status: 'active', statusLabel: '活跃' },
+  { id: 'm3', name: '王小强', phone: '137****9012', level: 'bronze', levelLabel: '青铜', status: 'dormant', statusLabel: '沉睡' },
+  { id: 'm4', name: '陈小芳', phone: '136****3456', level: 'diamond', levelLabel: '钻石', status: 'active', statusLabel: '活跃' },
+  { id: 'm5', name: '刘大伟', phone: '135****7890', level: 'normal', levelLabel: '普通会员', status: 'lost', statusLabel: '流失' },
+  { id: 'm6', name: '赵小雪', phone: '134****1122', level: 'gold', levelLabel: '黄金', status: 'active', statusLabel: '活跃' },
+  { id: 'm7', name: '孙建国', phone: '133****3344', level: 'bronze', levelLabel: '青铜', status: 'inactive', statusLabel: '未消费' },
+  { id: 'm8', name: '周美玲', phone: '132****5566', level: 'silver', levelLabel: '白银', status: 'active', statusLabel: '活跃' },
+  { id: 'm9', name: '吴志远', phone: '131****7788', level: 'gold', levelLabel: '黄金', status: 'dormant', statusLabel: '沉睡' },
+  { id: 'm10', name: '郑晓燕', phone: '130****9900', level: 'diamond', levelLabel: '钻石', status: 'active', statusLabel: '活跃' },
+  { id: 'm11', name: '钱一鸣', phone: '129****2233', level: 'normal', levelLabel: '普通会员', status: 'inactive', statusLabel: '未消费' },
+  { id: 'm12', name: '韩美丽', phone: '128****4455', level: 'silver', levelLabel: '白银', status: 'active', statusLabel: '活跃' },
+])
+
+const allMemberOptions = computed(() =>
+  allMembers.value.map(m => ({
+    label: `${m.name} (${m.phone}) [${m.levelLabel}]`,
+    value: m.id
+  }))
+)
+
+// 筛选结果人数预览
+const filteredMemberCount = computed(() => {
+  if (manualSendTargetType.value !== 'filter') return 0
+  const levels = manualSendFilterLevels.value
+  const statuses = manualSendFilterStatuses.value
+  if (levels.length === 0 && statuses.length === 0) return 0
+  return allMembers.value.filter(m => {
+    const levelMatch = levels.length === 0 || levels.includes(m.level)
+    const statusMatch = statuses.length === 0 || statuses.includes(m.status)
+    return levelMatch && statusMatch
+  }).length
+})
+
+// 是否可以提交发放
+const canManualSend = computed(() => {
+  if (manualSendTargetType.value === 'member') return manualSendMembers.value.length > 0
+  if (manualSendTargetType.value === 'phone') return manualSendPhones.value.trim().length > 0
+  if (manualSendTargetType.value === 'filter') return filteredMemberCount.value > 0
+  return false
+})
 
 function openManualSend(row: any) {
   manualSendCoupon.value = row
@@ -292,20 +407,34 @@ function openManualSend(row: any) {
   manualSendPhones.value = ''
   manualSendCount.value = 1
   manualSendRemark.value = ''
+  manualSendFilterLevels.value = ['normal', 'bronze', 'silver', 'gold', 'diamond']
+  manualSendFilterStatuses.value = ['active', 'dormant', 'lost', 'inactive']
   showManualSendModal.value = true
 }
 
 function handleManualSendSubmit() {
+  let targetCount = 0
+  if (manualSendTargetType.value === 'member') {
+    targetCount = manualSendMembers.value.length
+  } else if (manualSendTargetType.value === 'phone') {
+    targetCount = manualSendPhones.value.split(/[\n,]+/).filter(s => s.trim()).length
+  } else if (manualSendTargetType.value === 'filter') {
+    targetCount = filteredMemberCount.value
+  }
   console.log('手动发券:', {
     coupon: manualSendCoupon.value?.name,
     targetType: manualSendTargetType.value,
     members: manualSendMembers.value,
     phones: manualSendPhones.value,
+    filterLevels: manualSendFilterLevels.value,
+    filterStatuses: manualSendFilterStatuses.value,
+    targetCount,
     count: manualSendCount.value,
+    totalSent: targetCount * manualSendCount.value,
     remark: manualSendRemark.value,
   })
   showManualSendModal.value = false
-  message.success('手动发券成功')
+  message.success(`发券成功！共发放 ${targetCount * manualSendCount.value} 张优惠券给 ${targetCount} 人`)
 }
 
 const shopOptions = [
@@ -330,10 +459,7 @@ function getDefaultFormData() {
     name: '',
     type: 'discount',
     value: 10,
-    specialPrice: 9.9,
     originalPrice: 48,
-    specialItems: [] as string[],
-    exchangeItems: [] as string[],
     threshold: 0,
     total: 0,
     limit: 1,
@@ -342,7 +468,11 @@ function getDefaultFormData() {
     validEndDate: null,
     memberTypes: ['bronze', 'silver', 'gold', 'platinum', 'diamond'],
     terminal: 'all',
-    status: true
+    status: true,
+    autoDistribute: false,
+    autoDistributeLevels: ['normal', 'bronze', 'silver', 'gold', 'diamond'],
+    autoDistributeStatuses: ['active', 'dormant', 'lost', 'inactive'],
+    autoDistributeTiming: 'onMeet',
   }
 }
 
@@ -357,9 +487,7 @@ const formRules = {
 
 const typeOptions = [
   { label: '满减券', value: 'discount' },
-  { label: '折扣券', value: 'rate' },
-  { label: '特价券', value: 'special' },
-  { label: '兑换券', value: 'exchange' }
+  { label: '折扣券', value: 'rate' }
 ]
 
 const terminalOptions = [
@@ -375,80 +503,80 @@ const totalClaimed = computed(() => tableData.value.reduce((sum, item) => sum + 
 const totalUsed = computed(() => tableData.value.reduce((sum, item) => sum + item.used, 0))
 const totalDiscount = computed(() => {
   return tableData.value.reduce((sum, item) => {
-    // 满减券直接加优惠金额
+    // 满减券：直接加优惠金额
     if (item.type === 'discount') {
       return sum + item.value * item.used
     }
     // 折扣券按平均折扣估算
     if (item.type === 'rate') {
-      return sum + Math.round(item.value * item.used * 0.1) // 假设平均消费100元
+      return sum + Math.round(item.value * item.used * 0.1)
     }
     return sum
   }, 0)
 })
 
 const columns: DataTableColumns = [
-  { title: '所属店铺', key: 'shopName', width: 150 },
+  { title: '所属店铺', key: 'shopName', width: 140 },
   { title: '优惠券名称', key: 'name', width: 150 },
-  { title: '类型', key: 'type', width: 100, render: (row) => {
-    const map: Record<string, string> = { discount: '满减券', rate: '折扣券', special: '特价券', exchange: '兑换券' }
-    return map[row.type] || row.type
+  { title: '类型', key: 'type', width: 110, render: (row) => {
+    const map: Record<string, string> = { discount: '满减券', rate: '折扣券' }
+    const typeLabel = map[row.type] || row.type
+    if (row.autoDistribute) {
+      return h(NTag, { type: 'info', size: 'small', bordered: true }, { default: () => typeLabel + '·自动' })
+    }
+    return typeLabel
   }},
-  { title: '优惠内容', key: 'content', width: 160, render: (row) => {
+  { title: '优惠内容', key: 'content', width: 140, render: (row) => {
     if (row.type === 'discount') return `减${row.value}元`
     if (row.type === 'rate') return `${row.value}折`
-    if (row.type === 'special') {
-      const items = row.specialItems?.map((id: string) => productOptions.find(p => p.value === id)?.label || id).join('、') || ''
-      return h('div', null, [
-        h('div', { style: 'font-weight: 600; color: #EF4444;' }, `¥${row.specialPrice}`),
-        h('div', { style: 'font-size: 11px; color: #999; margin-top: 2px;' }, items)
-      ])
-    }
-    if (row.type === 'exchange') {
-      const items = row.exchangeItems?.map((id: string) => productOptions.find(p => p.value === id)?.label || id).join('、') || row.value
-      return h('div', { style: 'font-size: 12px; color: #333;' }, items)
-    }
     return row.value
   }},
-  { title: '使用门槛', key: 'threshold', width: 100, render: (row) => row.threshold > 0 ? `满${row.threshold}元` : '无门槛' },
+  { title: '使用门槛', key: 'threshold', width: 100, render: (row) => {
+    return row.threshold > 0 ? `满${row.threshold}元` : '无门槛'
+  }},
+  { title: '发放方式', key: 'distMethod', width: 90, render: (row) => {
+    if (row.autoDistribute) return h(NTag, { type: 'info', size: 'tiny' }, { default: () => '自动' })
+    return h(NTag, { type: 'default', size: 'tiny' }, { default: () => '手动' })
+  }},
   { title: '已领/总量', key: 'claimed', width: 110, render: (row) => `${row.claimed}/${row.total || '∞'}` },
   { title: '已使用', key: 'used', width: 90 },
-  { title: '有效期', key: 'validText', width: 160, render: (row) => {
+  { title: '有效期', key: 'validText', width: 140, render: (row) => {
     if (row.validType === 'days') return `领取后${row.validDays}天`
     if (row.validType === 'date') return `截止${row.validEndDate}`
     return '永久有效'
   }},
-  { title: '状态', key: 'status', width: 90, render: (row) =>
+  { title: '状态', key: 'status', width: 80, render: (row) =>
     h(NTag, { type: row.status ? 'success' : 'warning', size: 'small' },
       { default: () => row.status ? '启用' : '暂停' })
   },
-  { title: '操作', key: 'actions', width: 180, render: (row) => {
-    return h(NSpace, { size: 4 }, {
-      default: () => [
-        h(NButton, { size: 'tiny', secondary: true, onClick: () => openManualSend(row) }, { default: () => '手动发券' }),
-        h(NButton, { size: 'tiny', quaternary: true, onClick: () => handleEdit(row) }, { default: () => '编辑' }),
-        h(NDropdown, {
-          options: [
-            { label: row.status ? '暂停' : '启用', key: 'toggle' },
-            { type: 'divider', key: 'd1' },
-            { label: '删除', key: 'delete' }
-          ],
-          onSelect: (key) => handleAction(key, row)
-        }, {
-          default: () => h(NButton, { quaternary: true, circle: true, size: 'tiny' },
-            { icon: () => h(NIcon, { component: EllipsisHorizontalOutline }) })
-        })
-      ]
-    })
+  { title: '操作', key: 'actions', width: 160, render: (row) => {
+    const buttons = []
+    // 自动发放的券不显示手动发券
+    if (!row.autoDistribute) {
+      buttons.push(h(NButton, { size: 'tiny', secondary: true, onClick: () => openManualSend(row) }, { default: () => '手动发券' }))
+    }
+    buttons.push(h(NButton, { size: 'tiny', quaternary: true, onClick: () => handleEdit(row) }, { default: () => '编辑' }))
+    buttons.push(h(NDropdown, {
+      options: [
+        { label: row.status ? '暂停' : '启用', key: 'toggle' },
+        { type: 'divider', key: 'd1' },
+        { label: '删除', key: 'delete' }
+      ],
+      onSelect: (key) => handleAction(key, row)
+    }, {
+      default: () => h(NButton, { quaternary: true, circle: true, size: 'tiny' },
+        { icon: () => h(NIcon, { component: EllipsisHorizontalOutline }) })
+    }))
+    return h(NSpace, { size: 4 }, { default: () => buttons })
   }}
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '新人专享券', type: 'discount', value: 20, exchangeItems: [], threshold: 100, claimed: 520, total: 1000, used: 186, validType: 'days', validDays: 30, validEndDate: null, status: true },
-  { id: 2, shopName: '卓远天河路店', name: '周末畅玩券', type: 'rate', value: 85, exchangeItems: [], threshold: 80, claimed: 320, total: 500, used: 245, validType: 'date', validDays: null, validEndDate: '2026-12-31', status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '会员专享券', type: 'exchange', value: 0, exchangeItems: ['product1'], threshold: 0, claimed: 180, total: 300, used: 120, validType: 'days', validDays: 7, validEndDate: null, status: false },
-  { id: 4, shopName: '卓远北京路店', name: '节日特惠券', type: 'discount', value: 50, exchangeItems: [], threshold: 200, claimed: 266, total: 200, used: 266, validType: 'forever', validDays: null, validEndDate: null, status: false },
-  { id: 5, shopName: '卓远亚运城店', name: '9.9元体验券', type: 'special', value: 0, specialPrice: 9.9, specialItems: ['product1', 'product2'], exchangeItems: [], threshold: 0, claimed: 350, total: 500, used: 128, validType: 'days', validDays: 30, validEndDate: null, status: true },
+  { id: 1, shopName: '卓远亚运城店', name: '新人注册欢迎券', type: 'discount', value: 20, threshold: 50, claimed: 520, total: 0, used: 186, validType: 'days', validDays: 30, validEndDate: null, status: true, autoDistribute: true },
+  { id: 2, shopName: '卓远天河路店', name: '周末畅玩券', type: 'rate', value: 85, threshold: 80, claimed: 320, total: 500, used: 245, validType: 'date', validDays: null, validEndDate: '2026-12-31', status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '会员专享券', type: 'discount', value: 15, threshold: 0, claimed: 180, total: 300, used: 120, validType: 'days', validDays: 7, validEndDate: null, status: false },
+  { id: 4, shopName: '卓远北京路店', name: '节日特惠券', type: 'discount', value: 50, threshold: 200, claimed: 266, total: 200, used: 266, validType: 'forever', validDays: null, validEndDate: null, status: false },
+  { id: 5, shopName: '卓远亚运城店', name: '9.9元体验券', type: 'discount', value: 10, threshold: 0, claimed: 350, total: 500, used: 128, validType: 'days', validDays: 30, validEndDate: null, status: true },
 ])
 
 // 根据tab筛选数据
@@ -485,9 +613,6 @@ function handleEdit(row: any) {
     name: row.name,
     type: row.type,
     value: row.value,
-    specialPrice: row.specialPrice || 9.9,
-    specialItems: row.specialItems || [],
-    exchangeItems: row.exchangeItems || [],
     threshold: row.threshold,
     total: row.total,
     limit: row.limit || 1,
@@ -495,6 +620,10 @@ function handleEdit(row: any) {
     validDays: row.validDays || 30,
     validEndDate: row.validEndDate || null,
     memberTypes: ['bronze', 'silver', 'gold', 'normal'],
+    autoDistribute: row.autoDistribute || false,
+    autoDistributeLevels: row.autoDistributeLevels || ['normal', 'bronze', 'silver', 'gold', 'diamond'],
+    autoDistributeStatuses: row.autoDistributeStatuses || ['active', 'dormant', 'lost', 'inactive'],
+    autoDistributeTiming: row.autoDistributeTiming || 'onMeet',
   }
   showModal.value = true
 }
@@ -531,4 +660,8 @@ function handleSubmit() {
 .stat-content .value { font-size: 24px; font-weight: 600; color: #333; }
 .table-card { border-radius: 12px; }
 .form-hint { font-size: 12px; color: #999; }
+.filter-preview { display: flex; align-items: baseline; gap: 4px; }
+.filter-count { font-size: 24px; font-weight: 700; color: #3B82F6; }
+.filter-unit { font-size: 14px; color: #666; }
+.filter-empty-hint { font-size: 13px; color: #999; margin-left: 4px; }
 </style>

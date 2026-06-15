@@ -68,18 +68,13 @@
             <!-- 赠送内容 -->
             <div class="mgm-card-reward">
               <div class="mgm-reward-row">
-                <template v-if="gift.giftDeposit > 0">
-                  <span class="mgm-reward-num">¥{{ gift.giftDeposit }}</span>
-                  <span class="mgm-reward-label">预存款</span>
-                </template>
                 <template v-if="gift.giftPoints > 0">
-                  <span v-if="gift.giftDeposit > 0" class="mgm-reward-plus">+</span>
                   <span class="mgm-reward-num">{{ gift.giftPoints.toLocaleString() }}</span>
                   <span class="mgm-reward-label">游戏币</span>
                   <span v-if="gift.pointsValidText" class="mgm-reward-valid">({{ gift.pointsValidText }})</span>
                 </template>
                 <template v-if="gift.giftTimes > 0">
-                  <span v-if="gift.giftDeposit > 0 || gift.giftPoints > 0" class="mgm-reward-plus">+</span>
+                  <span v-if="gift.giftPoints > 0" class="mgm-reward-plus">+</span>
                   <span class="mgm-reward-num">{{ gift.giftTimes }}次</span>
                   <span class="mgm-reward-label">体验</span>
                   <span v-if="gift.timesValidText && gift.timesValidText !== '-'" class="mgm-reward-valid">({{ gift.timesValidText }})</span>
@@ -244,7 +239,6 @@ const conditionDesc = (gift) => {
   const c = gift.condition
   if (c === 'consume') return `单笔消费满 ¥${gift.threshold} 即可获赠`
   if (c === 'recharge') return `单笔充值满 ¥${gift.threshold} 即可获赠`
-  if (c === 'package') return '办理任意充值套餐即可获赠'
   if (c === 'birthday') {
     const rangeMap = { birthday: '生日当天', week: '生日当周', month: '生日当月' }
     return `会员${rangeMap[gift.birthdayRange] || '生日当天'}可获赠`

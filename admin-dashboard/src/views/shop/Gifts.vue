@@ -40,15 +40,7 @@
           <span class="value">{{ totalPoints }}</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
-          <n-icon :component="WalletOutline" size="22" color="#fff" />
-        </div>
-        <div class="stat-content">
-          <span class="label">已赠送预存款</span>
-          <span class="value">¥{{ totalDeposit }}</span>
-        </div>
-      </div>
+
     </div>
 
     <!-- 活动列表 -->
@@ -69,7 +61,6 @@
         </n-form-item>
         <n-form-item label="赠送内容">
           <div class="gift-preview">
-            <n-tag v-if="manualGiftActivity?.giftDeposit > 0" size="small" type="success">预存款 ¥{{ manualGiftActivity?.giftDeposit }}</n-tag>
             <n-tag v-if="manualGiftActivity?.giftPoints > 0" size="small" type="info">游戏币 {{ manualGiftActivity?.giftPoints }}</n-tag>
           </div>
         </n-form-item>
@@ -144,26 +135,6 @@
           </template>
         </n-form-item>
         
-        <!-- 办理套餐时显示说明 -->
-        <n-form-item v-if="formData.condition === 'package'" label="触发说明" path="threshold">
-          <div class="condition-desc">办理任意充值套餐即触发赠送</div>
-        </n-form-item>
-        
-        <!-- 生日时显示生日设置 -->
-        <n-form-item v-if="formData.condition === 'birthday'" label="生日范围" path="birthdayRange" required>
-          <n-select v-model:value="formData.birthdayRange" :options="birthdayRangeOptions" style="width: 100%;" />
-          <template #feedback>
-            <span class="form-hint">会员生日当月/当周/当天可享受此优惠</span>
-          </template>
-        </n-form-item>
-        
-        <!-- 赠送预存款 -->
-        <n-form-item label="赠送预存款" path="giftDeposit">
-          <n-input-number v-model:value="formData.giftDeposit" :min="0" placeholder="0.00" style="width: 100%;">
-            <template #suffix>元</template>
-          </n-input-number>
-        </n-form-item>
-        
         <!-- 赠送游戏币 -->
         <n-form-item label="赠送游戏币" path="giftPoints">
           <n-input-number v-model:value="formData.giftPoints" :min="0" placeholder="0" style="width: 100%;">
@@ -236,7 +207,7 @@ import {
 import type { DataTableColumns } from 'naive-ui'
 import {
   SearchOutline, GiftOutline, PeopleOutline, CardOutline,
-  EllipsisHorizontalOutline, WalletOutline
+  EllipsisHorizontalOutline
 } from '@vicons/ionicons5'
 
 const message = useMessage()
@@ -294,8 +265,6 @@ function getDefaultFormData() {
     name: '',
     condition: 'consume',
     threshold: 0,
-    birthdayRange: 'birthday',
-    giftDeposit: 0,
     giftPoints: 0,
     pointsValidType: 'forever',
     pointsValidDays: 365,
@@ -315,16 +284,8 @@ const formRules = {
 }
 
 const conditionOptions = [
-  { label: '消费满额', value: 'consume' },
-  { label: '充值金额', value: 'recharge' },
-  { label: '办理套餐', value: 'package' },
-  { label: '生日', value: 'birthday' }
-]
-
-const birthdayRangeOptions = [
-  { label: '生日当天', value: 'birthday' },
-  { label: '生日当周', value: 'week' },
-  { label: '生日当月', value: 'month' }
+  { label: '单笔消费满额', value: 'consume' },
+  { label: '充值金额', value: 'recharge' }
 ]
 
 const shopOptions = [
@@ -345,25 +306,16 @@ const pagination = { pageSize: 10 }
 const activeCount = computed(() => tableData.value.filter(item => item.status).length)
 const totalCount = computed(() => tableData.value.reduce((sum, item) => sum + (item.count || 0), 0))
 const totalPoints = computed(() => tableData.value.reduce((sum, item) => sum + item.giftPoints, 0))
-const totalDeposit = computed(() => tableData.value.reduce((sum, item) => sum + item.giftDeposit, 0))
-
 const columns: DataTableColumns = [
   { title: '所属店铺', key: 'shopName', width: 150 },
   { title: '活动名称', key: 'name', width: 150 },
-  { title: '触发条件', key: 'condition', width: 100, render: (row) => {
-    const map: Record<string, string> = { consume: '消费满额', recharge: '充值金额', package: '办理套餐', birthday: '生日' }
+  { title: '触发条件', key: 'condition', width: 120, render: (row) => {
+    const map: Record<string, string> = { consume: '单笔消费满额', recharge: '充值金额' }
     return map[row.condition] || row.condition
   }},
   { title: '门槛', key: 'threshold', width: 90, render: (row) => {
-    if (row.condition === 'consume' || row.condition === 'recharge') {
-      return `满${row.threshold}元`
-    } else if (row.condition === 'birthday') {
-      const map: Record<string, string> = { birthday: '当天', week: '当周', month: '当月' }
-      return map[row.birthdayRange] || '当天'
-    }
-    return '-'
+    return row.threshold > 0 ? `满${row.threshold}元` : '无门槛'
   }},
-  { title: '赠送预存款', key: 'giftDeposit', width: 110, render: (row) => row.giftDeposit > 0 ? `¥${row.giftDeposit}` : '-' },
   { title: '赠送游戏币', key: 'giftPoints', width: 100, render: (row) => row.giftPoints > 0 ? `${row.giftPoints}` : '-' },
   { title: '游戏币有效期', key: 'pointsValidText', width: 120 },
   { title: '状态', key: 'status', width: 80, render: (row) =>
@@ -392,10 +344,8 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '消费满100赠10元+100币', condition: 'consume', threshold: 100, birthdayRange: 'birthday', giftDeposit: 10, giftPoints: 100, pointsValidText: '永久有效', count: 256, status: true },
-  { id: 2, shopName: '卓远天河路店', name: '充值满500赠50元+500币', condition: 'recharge', threshold: 500, birthdayRange: 'birthday', giftDeposit: 50, giftPoints: 500, pointsValidText: '365天', count: 128, status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '办理套餐赠200币', condition: 'package', threshold: 0, birthdayRange: 'birthday', giftDeposit: 0, giftPoints: 200, pointsValidText: '30天', count: 86, status: false },
-  { id: 4, shopName: '卓远北京路店', name: '生日当月赠20元+500币', condition: 'birthday', threshold: 0, birthdayRange: 'month', giftDeposit: 20, giftPoints: 500, pointsValidText: '永久有效', count: 45, status: true },
+  { id: 1, shopName: '卓远亚运城店', name: '消费满100赠100币', condition: 'consume', threshold: 100, giftPoints: 100, pointsValidText: '永久有效', count: 256, status: true },
+  { id: 2, shopName: '卓远天河路店', name: '充值满500赠500币', condition: 'recharge', threshold: 500, giftPoints: 500, pointsValidText: '365天', count: 128, status: true },
 ])
 
 function handleAdd() {
@@ -414,8 +364,6 @@ function handleEdit(row: any) {
     name: row.name,
     condition: row.condition,
     threshold: row.threshold || 0,
-    birthdayRange: row.birthdayRange || 'birthday',
-    giftDeposit: row.giftDeposit,
     giftPoints: row.giftPoints,
     pointsValidType: 'forever',
     pointsValidDays: 365,
@@ -451,7 +399,7 @@ function handleSubmit() {
 .page-container { padding: 24px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-header h1 { font-size: 20px; font-weight: 600; color: #333; margin: 0; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
 .stat-card { background: #fff; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 .stat-card.highlight { border: 1px solid #10B981; }
 .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

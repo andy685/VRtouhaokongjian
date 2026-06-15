@@ -502,14 +502,6 @@ const handleConfirm = () => {
   letter-spacing: 0.3px;
 }
 
-/* 特价券 — 橙色 */
-.csm-card-tag[data-tag="特价"],
-.csm-card-tag[data-tag="特价券"] {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-  color: #e65100;
-  border: 1px solid rgba(230, 81, 0, 0.15);
-}
-
 /* 特享券 — 蓝色 */
 .csm-card-tag[data-tag="特享"],
 .csm-card-tag[data-tag="特享券"] {

@@ -17,7 +17,7 @@
     <div class="section-block">
       <div class="section-title-bar">
         <span class="section-badge platform">平台营收</span>
-        <span class="section-desc">游戏豆销售（收入）− 代理商分润（成本）= 平台毛利</span>
+        <span class="section-desc">游戏豆销售（收入）− 供应商成本 − 代理商分润（扣除供应商成本后）= 平台毛利</span>
       </div>
 
       <!-- 收入漏斗 -->
@@ -36,12 +36,24 @@
 
         <div class="funnel-card">
           <div class="funnel-label">
-            <n-icon :component="PeopleOutline" size="16" color="#F59E0B" />
+            <n-icon :component="PeopleOutline" size="16" color="#EF4444" />
+            成本 — 供应商成本
+          </div>
+          <div class="funnel-value" style="color:#EF4444;">¥1,177,594</div>
+          <div class="funnel-sub">游戏供应商结算成本（占销售收入 55%）</div>
+          <div class="funnel-trend up">↑ 10.1% 环比上月</div>
+        </div>
+
+        <div class="funnel-operator">−</div>
+
+        <div class="funnel-card">
+          <div class="funnel-label">
+            <n-icon :component="WalletOutline" size="16" color="#F59E0B" />
             成本 — 代理商分润
           </div>
-          <div class="funnel-value cost">¥892,450</div>
-          <div class="funnel-sub">本月应发分润（占销售收入 41.7%）</div>
-          <div class="funnel-trend up">↑ 8.3% 环比上月</div>
+          <div class="funnel-value cost">¥144,523</div>
+          <div class="funnel-sub">（采购额 − 供应商成本）× 分润比例</div>
+          <div class="funnel-trend down">↓ 52.3% 环比上月</div>
         </div>
 
         <div class="funnel-operator">=</div>
@@ -51,8 +63,8 @@
             <n-icon :component="WalletOutline" size="16" color="#10B981" />
             回报 — 平台毛利
           </div>
-          <div class="funnel-value profit">¥1,248,630</div>
-          <div class="funnel-sub">游戏豆销售 − 代理商分润 = 平台毛利</div>
+          <div class="funnel-value profit">¥818,963</div>
+          <div class="funnel-sub">销售收入 − 供应商成本 − 代理商分润</div>
           <div class="funnel-trend up">↑ 15.2% 环比上月</div>
         </div>
       </div>
@@ -61,8 +73,8 @@
       <div class="sub-metrics-row">
         <div class="sub-metric-card">
           <span class="sub-label">平台毛利率</span>
-          <span class="sub-value accent">58.3%</span>
-          <span class="sub-detail">较上月提升 2.4 个百分点</span>
+          <span class="sub-value accent">38.3%</span>
+          <span class="sub-detail">（销售收入 − 供应商成本 − 代理商分润）/ 销售收入</span>
         </div>
         <div class="sub-metric-card">
           <span class="sub-label">累计销售游戏豆</span>
@@ -242,11 +254,11 @@ const agentRankColumns = [
 ]
 
 const agentRankData = [
-  { rank: 1, agentName: '广东省级总代-A', level: '省级总代', monthlyFlow: 1850000, commission: 277500, effectiveRate: 15.0 },
-  { rank: 2, agentName: '华东区域代理-B', level: '区域代理', monthlyFlow: 680000, commission: 57120, effectiveRate: 8.4 },
-  { rank: 3, agentName: '深圳城市代理-C', level: '城市代理', monthlyFlow: 120000, commission: 5700, effectiveRate: 4.75 },
-  { rank: 4, agentName: '成都城市代理-E', level: '城市代理', monthlyFlow: 88000, commission: 3960, effectiveRate: 4.5 },
-  { rank: 5, agentName: '武汉创新体验-F', level: '城市代理', monthlyFlow: 65000, commission: 2925, effectiveRate: 4.5 },
+  { rank: 1, agentName: '广东省级总代-A', level: '省级总代', monthlyFlow: 1850000, commission: 111000, effectiveRate: 6.0 },
+  { rank: 2, agentName: '华东区域代理-B', level: '区域代理', monthlyFlow: 680000, commission: 21420, effectiveRate: 3.15 },
+  { rank: 3, agentName: '深圳城市代理-C', level: '城市代理', monthlyFlow: 120000, commission: 3000, effectiveRate: 2.5 },
+  { rank: 4, agentName: '成都城市代理-E', level: '城市代理', monthlyFlow: 88000, commission: 1730, effectiveRate: 1.97 },
+  { rank: 5, agentName: '武汉创新体验-F', level: '城市代理', monthlyFlow: 65000, commission: 1300, effectiveRate: 2.0 },
 ]
 
 // ---- CP 供应商结算流水表（按分账与对账说明 第7章） ----
@@ -292,14 +304,15 @@ function initCharts() {
         revenueChart = echarts.init(revenueChartRef.value)
         revenueChart.setOption({
           tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee' },
-          legend: { data: ['游戏豆销售', '代理商分润', '平台毛利'], bottom: 0, textStyle: { fontSize: 11 } },
+          legend: { data: ['游戏豆销售', '供应商成本', '代理商分润', '平台毛利'], bottom: 0, textStyle: { fontSize: 11 } },
           grid: { left: 52, right: 16, top: 16, bottom: 36 },
           xAxis: { type: 'category', data: ['11月','12月','1月','2月','3月','4月'], axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
           yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: (val: number) => val >= 10000 ? `${val/10000}万` : val } },
           series: [
             { name: '游戏豆销售', type: 'bar', barWidth: 24, data: [145, 162, 180, 196, 207, 214], itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#3B82F6'},{offset:1,color:'#93C5FD'}]) } },
-            { name: '代理商分润', type: 'bar', barWidth: 24, data: [58, 64, 72, 79, 83, 89], itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#F59E0B'},{offset:1,color:'#FDE68A'}]) } },
-            { name: '平台毛利', type: 'line', smooth: true, data: [87, 98, 108, 117, 124, 125], lineStyle: { width: 3, color: '#10B981' }, itemStyle: { color: '#10B981' }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(16,185,129,0.12)'},{offset:1,color:'rgba(16,185,129,0)'}]) } },
+            { name: '供应商成本', type: 'bar', barWidth: 24, data: [80, 89, 99, 108, 114, 118], itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#EF4444'},{offset:1,color:'#FCA5A5'}]) } },
+            { name: '代理商分润', type: 'bar', barWidth: 24, data: [10, 11, 12, 13, 14, 15], itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#F59E0B'},{offset:1,color:'#FDE68A'}]) } },
+            { name: '平台毛利', type: 'line', smooth: true, data: [55, 62, 69, 75, 79, 81], lineStyle: { width: 3, color: '#10B981' }, itemStyle: { color: '#10B981' }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(16,185,129,0.12)'},{offset:1,color:'rgba(16,185,129,0)'}]) } },
           ]
         })
       }

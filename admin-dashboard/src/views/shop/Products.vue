@@ -507,11 +507,11 @@ function createCover(text: string, from: string, to: string) {
 
 function createDefaultPhysicalData() {
   return [
-    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), icon: '😷', category: '消耗品', cost: '0.8', price: '3.0', stock: '200', sales: 1256, status: 'on' },
-    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), icon: '🧤', category: '配件', cost: '12', price: '29.0', stock: '15', sales: 328, status: 'on' },
-    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), icon: '🧸', category: '周边', cost: '35', price: '68.0', stock: '52', sales: 156, status: 'on' },
-    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), icon: '🔑', category: '周边', cost: '8', price: '18.0', stock: '3', sales: 289, status: 'off' },
-    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), icon: '🥤', category: '饮品', cost: '2', price: '5.0', stock: '30', sales: 856, status: 'on' },
+    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), icon: '😷', category: '消耗品', price: '3.0', stock: '200', sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), icon: '🧤', category: '配件', price: '29.0', stock: '15', sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), icon: '🧸', category: '周边', price: '68.0', stock: '52', sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), icon: '🔑', category: '周边', price: '18.0', stock: '3', sales: 289, status: 'off' },
+    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), icon: '🥤', category: '饮品', price: '5.0', stock: '30', sales: 856, status: 'on' },
   ]
 }
 
@@ -539,8 +539,7 @@ const physicalColumns = [
     return h('div', { style: 'display:flex;align-items:center;gap:10px;' }, [
       h('div', { style: 'width:40px;height:40px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;' }, row.icon),
       h('div', {}, [
-        h('div', { style: 'font-weight:500' }, row.name),
-        h('div', { style: 'font-size:11px;color:#94a3b8' }, `成本: ¥${row.cost}`)
+        h('div', { style: 'font-weight:500' }, row.name)
       ])
     ])
   }},

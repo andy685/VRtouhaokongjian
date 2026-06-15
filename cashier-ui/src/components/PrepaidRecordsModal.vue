@@ -58,13 +58,6 @@
                 </div>
                 <div class="prm-filter-divider"></div>
               </template>
-              <!-- 预存次数：汇总与筛选项同行 -->
-              <template v-if="activeTab === 'times'">
-                <div class="prm-filter-group">
-                  <span>当前预存次数：<strong>{{ timesSummary.total }}</strong></span>
-                </div>
-                <div class="prm-filter-divider"></div>
-              </template>
               <div class="prm-filter-group">
                 <label>变动时间：</label>
                 <div class="prm-date-range">
@@ -117,17 +110,6 @@
                   <th>操作人</th>
                   <th>更改时间</th>
                 </tr>
-                <tr v-else-if="activeTab === 'times'">
-                  <th>变更原因</th>
-                  <th>发生门店</th>
-                  <th>变更预存次数</th>
-                  <th>变更后预存次数</th>
-                  <th>状态</th>
-                  <th>过期日期</th>
-                  <th>备注</th>
-                  <th>操作人</th>
-                  <th>更改时间</th>
-                </tr>
                 <tr v-else>
                   <th>变更原因</th>
                   <th>门店</th>
@@ -167,19 +149,6 @@
                       {{ row.changeQty }}
                     </td>
                     <td class="prm-amount">{{ row.remainQty }}</td>
-                    <td>{{ row.operator }}</td>
-                    <td>{{ row.changedAt }}</td>
-                  </template>
-                  <template v-else-if="activeTab === 'times'">
-                    <td>{{ row.reason }}</td>
-                    <td>{{ row.store }}</td>
-                    <td class="prm-amount" :class="{ income: String(row.changeQty).startsWith('+'), expense: String(row.changeQty).startsWith('-') }">
-                      {{ row.changeQty }}
-                    </td>
-                    <td class="prm-amount">{{ row.afterQty }}</td>
-                    <td>{{ row.statusLabel }}</td>
-                    <td>{{ row.expireDate }}</td>
-                    <td class="prm-note-cell">{{ row.note || '--' }}</td>
                     <td>{{ row.operator }}</td>
                     <td>{{ row.changedAt }}</td>
                   </template>
@@ -234,10 +203,6 @@ const props = defineProps({
     type: Object,
     default: () => ({ total: 0 })
   },
-  timesSummary: {
-    type: Object,
-    default: () => ({ total: 0 })
-  },
   records: { type: Array, default: () => [] }
 })
 
@@ -247,16 +212,15 @@ const tabs = [
   { key: 'games', label: '游戏记录' },
   { key: 'prepaid', label: '预存款记录' },
   { key: 'coins', label: '游戏币记录' },
-  { key: 'tickets', label: '套票记录' },
-  { key: 'times', label: '预存次数记录' }
+  // 套票暂不启用
+  // { key: 'tickets', label: '套票记录' },
 ]
 
 const tabTypeMap = {
   games: ['单次消费', '购买商品'],
   prepaid: ['收银台充值', '充值活动', '单次消费', '购买商品', '退款返还', '手动调整'],
   coins: ['收银台充值', '单次消费'],
-  tickets: ['购买套票', '套票消费', '退款退还', '手动调整', '过期作废'],
-  times: ['收银台购买', '单次消费']
+  tickets: ['购买套票', '套票消费', '退款退还', '手动调整', '过期作废']
 }
 
 const activeTab = ref('prepaid')
@@ -800,64 +764,6 @@ watch(
 .prm-table-tickets th:nth-child(9),
 .prm-table-tickets td:nth-child(9) {
   width: 16%;
-}
-
-/* ---- 预存次数记录：9 列专属宽度 ---- */
-.prm-table-times {
-  min-width: 1100px;
-}
-
-.prm-table-times thead th {
-  padding: 14px 12px;
-}
-
-.prm-table-times tbody td {
-  padding: 13px 12px;
-}
-
-.prm-table-times th:nth-child(1),
-.prm-table-times td:nth-child(1) {
-  width: 10%;
-}
-
-.prm-table-times th:nth-child(2),
-.prm-table-times td:nth-child(2) {
-  width: 11%;
-}
-
-.prm-table-times th:nth-child(3),
-.prm-table-times td:nth-child(3) {
-  width: 11%;
-}
-
-.prm-table-times th:nth-child(4),
-.prm-table-times td:nth-child(4) {
-  width: 13%;
-}
-
-.prm-table-times th:nth-child(5),
-.prm-table-times td:nth-child(5) {
-  width: 8%;
-}
-
-.prm-table-times th:nth-child(6),
-.prm-table-times td:nth-child(6) {
-  width: 10%;
-}
-
-.prm-table-times th:nth-child(7),
-.prm-table-times td:nth-child(7) {
-  width: 20%;
-}
-
-.prm-table-times th:nth-child(8),
-.prm-table-times td:nth-child(8) {
-  width: 7%;
-}
-
-.prm-table-times th:nth-child(9),
-.prm-table-times td:nth-child(9) {
-  width: 10%;
 }
 
 .prm-amount {

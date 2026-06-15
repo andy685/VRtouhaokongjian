@@ -48,13 +48,14 @@
               {{ selectedMember.expireHint }}
             </span>
           </div>
-          <div class="mc-stat-item">
+          <!-- 套票暂不启用 -->
+          <!-- <div class="mc-stat-item">
             <strong>{{ selectedMember.tickets ?? 0 }}</strong>
             <em>套票</em>
-          </div>
+          </div> -->
           <div class="mc-stat-item">
-            <strong>{{ selectedMember.times ?? 0 }}</strong>
-            <em>预存次数</em>
+            <strong>{{ userCoupons.length }}</strong>
+            <em>优惠券</em>
           </div>
         </div>
       </div>
@@ -64,10 +65,20 @@
         <header class="catalog-header">
           <strong class="catalog-title">扣费项目</strong>
           <span class="catalog-subtitle">选择需扣费的项目，确认后从会员账户扣除</span>
-          <label class="search-box">
-            <el-icon><Search /></el-icon>
-            <input v-model="searchQuery" type="search" placeholder="搜索项目" />
-          </label>
+          <div class="filter-row">
+            <el-select v-model="deviceFilter" placeholder="全部设备" clearable class="filter-select">
+              <template #prefix><el-icon :size="16"><Monitor /></el-icon></template>
+              <el-option v-for="d in allDevices" :key="d.id" :label="d.name" :value="d.id" />
+            </el-select>
+            <el-select v-model="sortBy" placeholder="默认排序" class="filter-select">
+              <template #prefix><el-icon :size="16"><Sort /></el-icon></template>
+              <el-option v-for="s in sortOptions" :key="s.value" :label="s.label" :value="s.value" />
+            </el-select>
+            <label class="search-box">
+              <el-icon><Search /></el-icon>
+              <input v-model="searchQuery" type="search" placeholder="搜索" />
+            </label>
+          </div>
         </header>
 
         <div class="product-grid" role="list">
@@ -76,8 +87,10 @@
             :key="item.id"
             type="button"
             class="product-card"
-            :class="{ active: isItemActive(item) }"
+            :class="{ active: isItemActive(item), 'has-detail': !!item.detail }"
             role="listitem"
+            @mouseenter="handleItemHover(item, $event)"
+            @mouseleave="handleItemLeave()"
             @click="addToCart(item)"
           >
             <span class="product-thumb">
@@ -86,9 +99,31 @@
             <span class="product-copy">
               <strong>{{ item.name }}</strong>
               <em><span class="currency-symbol">¥</span>{{ item.price.toFixed(2) }}</em>
+              <span v-if="item.devices && item.devices.length && !deviceFilter" class="product-device-tags">
+                <span v-for="did in item.devices.slice(0, 3)" :key="did" class="device-tag">{{ allDevices.find(d => d.id === did)?.name?.split('（')[0] }}</span>
+                <span v-if="item.devices.length > 3" class="device-tag device-tag-more">+{{ item.devices.length - 3 }}</span>
+              </span>
             </span>
-            <span v-if="isItemActive(item)" class="product-badge">已选</span>
           </button>
+
+          <!-- 悬浮详情面板 -->
+          <transition name="detail-fade">
+            <div
+              v-if="hoveredDetail && hoveredDetail.detail"
+              class="product-detail-panel"
+              :style="{ top: hoveredPos.y + 'px', left: hoveredPos.x + 'px' }"
+            >
+              <header class="detail-panel-head">
+                <span class="detail-panel-title">{{ hoveredDetail.panelTitle || '项目详情' }}</span>
+              </header>
+              <dl class="detail-panel-list">
+                <div v-for="row in hoveredDetail.detail" :key="row.label" class="detail-row">
+                  <dt>{{ row.label }}</dt>
+                  <dd :class="{ highlight: row.highlight }">{{ row.value }}</dd>
+                </div>
+              </dl>
+            </div>
+          </transition>
         </div>
       </div>
     </section>
@@ -240,7 +275,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { CircleCloseFilled, Minus, Plus, Search, WarningFilled } from '@element-plus/icons-vue'
+import { CircleCloseFilled, Minus, Monitor, Plus, Search, Sort, WarningFilled } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
 import DeductionSuccessModal from '../../components/DeductionSuccessModal.vue'
@@ -270,6 +305,24 @@ const createCover = (accentA, accentB, glyph) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
+// 游戏专用封面生成（竖屏 3:4，匹配上传规格 300×400）
+const createGameCover = (accentA, accentB, text) => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+      <defs>
+        <linearGradient id="gc" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${accentA}" />
+          <stop offset="100%" stop-color="${accentB}" />
+        </linearGradient>
+      </defs>
+      <rect width="300" height="400" rx="24" fill="url(#gc)" />
+      <rect x="20" y="20" width="260" height="360" rx="16" fill="rgba(255,255,255,0.12)" />
+      <text x="150" y="232" text-anchor="middle" font-size="90" font-weight="700" fill="white" font-family="Arial, sans-serif">${text}</text>
+    </svg>
+  `
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
 const histAvatar = (bg1, bg2) => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><defs><linearGradient id="h" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${bg1}"/><stop offset="100%" stop-color="${bg2}"/></linearGradient></defs><rect width="40" height="40" rx="20" fill="url(#h)"/><circle cx="20" cy="15" r="7" fill="rgba(255,255,255,0.9)"/><ellipse cx="20" cy="33" rx="12" ry="10" fill="rgba(255,255,255,0.85)"/></svg>`
   return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
@@ -285,11 +338,24 @@ const showDeductionSuccess = ref(false)
 const showCouponModal = ref(false)
 const showConfirmModal = ref(false)
 const searchQuery = ref('')
+const deviceFilter = ref('')
+const sortBy = ref('default')
+const sortOptions = [
+  { label: '默认排序', value: 'default' },
+  { label: '价格从低到高', value: 'price-asc' },
+  { label: '价格从高到低', value: 'price-desc' },
+  { label: '名称 A-Z', value: 'name-asc' },
+  { label: '名称 Z-A', value: 'name-desc' },
+]
 const avatarError = ref(false)
 const deductionSuccessCount = ref(0)
 const deductionSuccessDetails = ref([])
 const deductionPaymentLines = ref([])
 const deductionAssetChanges = ref([])
+
+// 悬浮详情面板
+const hoveredDetail = ref(null)
+const hoveredPos = ref({ x: 0, y: 0 })
 
 // ===== 优惠券系统 =====
 const COUPON_POOL = [
@@ -315,18 +381,68 @@ const pickRandomCoupons = (count) => {
   return result
 }
 
-// ===== 扣费项目 =====
+// ===== 扣费项目（与单次消费内容一致，暖橙封面） =====
 const deductionItems = ref([
-  { id: 1, name: 'VR体验 30分钟', price: 9.90, desc: '单人设备', cover: createCover('#FF7A1A', '#FF6B00', 'VR') },
-  { id: 2, name: 'VR体验 双人', price: 18.00, desc: '双人设备', cover: createCover('#FF8C33', '#FF7A1A', 'VR') },
-  { id: 3, name: '赛车模拟 15分钟', price: 20.00, desc: '单人竞速', cover: createCover('#FFAB66', '#FF8C33', 'R') },
-  { id: 4, name: '亲子互动区', price: 25.00, desc: '亲子娱乐', cover: createCover('#FFCC99', '#FFAB66', 'K') },
-  { id: 5, name: '多人派对包厢', price: 80.00, desc: '四人起订', cover: createCover('#FF8C33', '#E85D00', 'P') },
-  { id: 6, name: '游戏币 10枚', price: 10.00, desc: '即买即用', cover: createCover('#FFB3B3', '#FF8080', '10') },
-  { id: 7, name: '游戏币 20枚', price: 20.00, desc: '即买即用', cover: createCover('#B3D4FF', '#80B0FF', '20') },
-  { id: 8, name: '游戏币 50枚', price: 50.00, desc: '即买即用', cover: createCover('#B3E6B3', '#80D980', '50') },
-  { id: 9, name: '套票扣次', price: 30.00, desc: '观影/体验', cover: createCover('#FFE0B3', '#FFB84D', 'T') },
-  { id: 10, name: '观影体验', price: 35.00, desc: '影院场次', cover: createCover('#FFD9BF', '#F97316', 'M') },
+  { id: 1, name: '过山车VR', price: 38, desc: '极境互动科技', cover: createGameCover('#FF7A1A', '#FF6B00', '过山车'), devices: ['dev1', 'dev3', 'dev5'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '过山车VR' },
+    { label: '单价', value: '¥38.00/次', highlight: true },
+    { label: '游戏时长', value: '约10分钟' },
+    { label: '适用设备', value: '动感平台、万向跑步机、赛车支架' },
+    { label: '标签', value: '刺激 · 热门 · 全年龄' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 2, name: '恐怖医院', price: 48, desc: '闪耀游戏工作室', cover: createGameCover('#7B2D00', '#4A1C00', '恐怖'), devices: ['dev2', 'dev3', 'dev5'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '恐怖医院' },
+    { label: '单价', value: '¥48.00/次', highlight: true },
+    { label: '游戏时长', value: '约15分钟' },
+    { label: '适用设备', value: '4D座舱、万向跑步机、赛车支架' },
+    { label: '标签', value: '恐怖 · 成人 · 沉浸' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 3, name: '极速赛车', price: 30, desc: '乐游网络', cover: createGameCover('#FF9800', '#E67E22', '赛车'), devices: ['dev1', 'dev4', 'dev5'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '极速赛车' },
+    { label: '单价', value: '¥30.00/次', highlight: true },
+    { label: '游戏时长', value: '约8分钟' },
+    { label: '适用设备', value: '动感平台、飞行模拟器、赛车支架' },
+    { label: '标签', value: '竞速 · 热门 · 全年龄' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 4, name: '海洋世界', price: 25, desc: '星际科技', cover: createGameCover('#FFA940', '#FF8C00', '海洋'), devices: ['dev2', 'dev4', 'dev6'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '海洋世界' },
+    { label: '单价', value: '¥25.00/次', highlight: true },
+    { label: '游戏时长', value: '约20分钟' },
+    { label: '适用设备', value: '4D座舱、飞行模拟器、VR蛋椅' },
+    { label: '标签', value: '科普 · 亲子 · 放松' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 6, name: 'CS对战', price: 58, desc: '幻视科技', cover: createGameCover('#FF5722', '#BF360C', 'CS'), devices: ['dev1', 'dev2', 'dev6'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: 'CS对战' },
+    { label: '单价', value: '¥58.00/次', highlight: true },
+    { label: '游戏时长', value: '约30分钟' },
+    { label: '适用设备', value: '动感平台、4D座舱、VR蛋椅' },
+    { label: '标签', value: '射击 · 多人 · 竞技' },
+    { label: '游戏类型', value: '联机 · 多人付费' }
+  ]},
+  { id: 8, name: '太空漫步', price: 35, desc: '闪耀游戏工作室', cover: createGameCover('#FFB74D', '#F57C00', '太空'), devices: ['dev6', 'dev7', 'dev8'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '太空漫步' },
+    { label: '单价', value: '¥35.00/次', highlight: true },
+    { label: '游戏时长', value: '约18分钟' },
+    { label: '适用设备', value: 'VR蛋椅、体感座椅、360旋转舱' },
+    { label: '标签', value: '科幻 · 探索 · 沉浸' },
+    { label: '游戏类型', value: '联机 · 多人付费' }
+  ]},
+])
+
+// ===== 设备列表 =====
+const allDevices = ref([
+  { id: 'dev1', name: '动感平台（A01）' },
+  { id: 'dev2', name: '4D座舱（A02）' },
+  { id: 'dev3', name: '万向跑步机（A03）' },
+  { id: 'dev4', name: '飞行模拟器（B01）' },
+  { id: 'dev5', name: '赛车支架（B02）' },
+  { id: 'dev6', name: 'VR蛋椅（C01）' },
+  { id: 'dev7', name: '体感座椅（C02）' },
+  { id: 'dev8', name: '360旋转舱（D01）' },
 ])
 
 const cartItems = ref([])
@@ -342,11 +458,36 @@ const memberHistory = ref([
 // ===== 计算属性 =====
 const filteredItems = computed(() => {
   const keyword = searchQuery.value.trim()
-  if (!keyword) return deductionItems.value
-  const kw = keyword.toLowerCase()
-  return deductionItems.value.filter(item =>
-    item.name.toLowerCase().includes(kw) || item.desc.toLowerCase().includes(kw)
-  )
+  let list = deductionItems.value
+  // 设备筛选
+  if (deviceFilter.value) {
+    list = list.filter(item => item.devices && item.devices.includes(deviceFilter.value))
+  }
+  // 关键词搜索
+  if (keyword) {
+    const kw = keyword.toLowerCase()
+    list = list.filter(item =>
+      item.name.toLowerCase().includes(kw) || item.desc.toLowerCase().includes(kw)
+    )
+  }
+  // 排序
+  switch (sortBy.value) {
+    case 'price-asc':
+      list = [...list].sort((a, b) => a.price - b.price)
+      break
+    case 'price-desc':
+      list = [...list].sort((a, b) => b.price - a.price)
+      break
+    case 'name-asc':
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name))
+      break
+    case 'name-desc':
+      list = [...list].sort((a, b) => b.name.localeCompare(a.name))
+      break
+    default:
+      break
+  }
+  return list
 })
 
 const totalAmount = computed(() =>
@@ -490,7 +631,6 @@ const handleMemberSelected = (member) => {
     balance: member.balance,
     coins: member.coins,
     tickets: member.tickets,
-    times: member.times,
     expireHint: member.expireHint
   })
   const count = Math.floor(Math.random() * 5)
@@ -527,6 +667,25 @@ const handleLogout = () => {
 
 const handleAvatarError = () => {
   avatarError.value = true
+}
+
+// ===== 悬浮详情面板 =====
+const handleItemHover = (item, event) => {
+  if (!item.detail) return
+  const cardRect = event.currentTarget.getBoundingClientRect()
+  const gridEl = event.currentTarget.closest('.product-grid')
+  if (!gridEl) return
+  const gridRect = gridEl.getBoundingClientRect()
+  hoveredDetail.value = item
+  const offsetY = cardRect.top - gridRect.top + cardRect.height * 0.55
+  hoveredPos.value = {
+    x: cardRect.right - gridRect.left + 14,
+    y: Math.max(0, offsetY)
+  }
+}
+
+const handleItemLeave = () => {
+  hoveredDetail.value = null
 }
 
 const handleCouponSelect = (coupon) => {
@@ -822,10 +981,10 @@ const executeDeduct = () => {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
-/* 四列统计数据 */
+/* 三列统计数据 */
 .mc-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   margin-top: 14px;
   padding: 12px 4px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
@@ -882,11 +1041,11 @@ const executeDeduct = () => {
 }
 
 .catalog-header {
-  min-height: 58px;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 0 4px 12px;
+  flex-wrap: wrap;
 }
 
 .catalog-title {
@@ -904,6 +1063,57 @@ const executeDeduct = () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+}
+
+.filter-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.filter-select {
+  width: 140px;
+  height: 40px;
+}
+.filter-select :deep(.el-input__wrapper) {
+  --el-input-border-color: var(--border);
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  box-shadow: none;
+  padding: 0 8px;
+}
+.filter-select :deep(.el-input__wrapper:hover) {
+  --el-input-border-color: var(--border-active);
+  border-color: var(--border-active);
+}
+.filter-select :deep(.el-input__wrapper.is-focus) {
+  --el-input-border-color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.filter-select :deep(.el-input__inner) {
+  font-size: 11px;
+  color: #334155;
+  height: 38px;
+  line-height: 38px;
+}
+.filter-select :deep(.el-input__inner::placeholder) {
+  font-size: 11px;
+  color: #a2a3a6;
+}
+.filter-select :deep(.el-input__prefix) {
+  color: #a2a3a6;
+}
+.filter-select :deep(.el-input__suffix) {
+  color: #c0c4cc;
+}
+.filter-select :deep(.el-input__clear) {
+  color: #c0c4cc;
 }
 
 .search-box {
@@ -919,6 +1129,14 @@ const executeDeduct = () => {
   background: var(--bg-card);
   color: var(--text-secondary);
   font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-box:hover {
+  border-color: var(--border-active);
+}
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .search-box input {
@@ -943,11 +1161,11 @@ const executeDeduct = () => {
 }
 
 .product-card {
-  min-height: 112px;
+  min-height: 130px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
   border: 1px solid var(--border);
   border-radius: var(--card-radius);
   background: var(--bg-card);
@@ -972,9 +1190,9 @@ const executeDeduct = () => {
 }
 
 .product-thumb {
-  width: 76px;
-  height: 76px;
-  flex: 0 0 76px;
+  width: 72px;
+  height: 96px;
+  flex: 0 0 72px;
   display: block;
   overflow: hidden;
   border-radius: var(--card-radius);
@@ -989,6 +1207,7 @@ const executeDeduct = () => {
 }
 
 .product-copy {
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -996,11 +1215,15 @@ const executeDeduct = () => {
   justify-content: center;
   gap: 8px;
   margin-top: 2px;
+  overflow: hidden;
 }
 
 .product-copy strong {
   font-size: 14px;
   font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-copy em {
@@ -1011,17 +1234,86 @@ const executeDeduct = () => {
   font-variant-numeric: tabular-nums;
 }
 
-.product-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+/* 设备标签 */
+.product-device-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+.device-tag {
   font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 107, 0, 0.08);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.device-tag-more {
+  background: rgba(255, 107, 0, 0.15);
+  color: var(--accent);
+}
+
+/* 悬浮详情面板 */
+.product-detail-panel {
+  position: absolute;
+  z-index: 9999;
+  width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-active);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(255, 107, 0, 0.12);
+  overflow: hidden;
+  pointer-events: none;
+}
+.detail-panel-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-panel-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.detail-panel-list {
+  padding: 8px 14px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+.detail-row:last-child {
+  border-bottom: none;
+}
+.detail-row dt {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.detail-row dd {
+  color: var(--text-primary);
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
-  letter-spacing: 0.3px;
+}
+.detail-row dd.highlight {
+  color: var(--price-color);
+  font-size: 13px;
+}
+
+/* 详情面板过渡动画 */
+.detail-fade-enter-active,
+.detail-fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.detail-fade-enter-from,
+.detail-fade-leave-to {
+  opacity: 0;
+  transform: translateX(6px);
 }
 
 /* ---- 右侧结算面板 ---- */
@@ -1468,18 +1760,23 @@ const executeDeduct = () => {
 <!-- 覆盖 element-plus 下拉样式 -->
 <style>
 .deduct-view .el-select .el-input__wrapper {
-  border-color: #EEE8E2;
+  --el-input-border-color: var(--border);
+  border-color: var(--border);
   box-shadow: none;
 }
 
 .deduct-view .el-select .el-input__wrapper:hover {
-  border-color: #F5A623;
+  --el-input-border-color: var(--border-active);
+  border-color: var(--border-active);
 }
 
 .deduct-view .el-select .el-input__wrapper.is-focus {
-  border-color: #F5A623;
-  box-shadow: 0 0 0 1px #F5A623;
+  --el-input-border-color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
+
+
 
 /* 统一滚动条：黑色半透明 15% */
 .deduct-view ::-webkit-scrollbar {

@@ -78,7 +78,7 @@
             </n-form-item>
             <n-form-item label="分润比例">
               <n-input-number v-model:value="addForm.commissionRate" :min="0" :max="50" style="width: 200px;" />
-              <span style="margin-left: 8px; color: var(--text-muted);">（%，基础比例，支持阶梯分润策略）</span>
+              <span style="margin-left: 8px; color: var(--text-muted);">（%，按扣除供应商成本后的采购额计算分润）</span>
             </n-form-item>
             <n-form-item label="提现手续费率">
               <n-input-number v-model:value="addForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
@@ -148,7 +148,7 @@
             </n-form-item>
             <n-form-item label="分润比例">
               <n-input-number v-model:value="editForm.commissionRate" :min="0" :max="50" style="width: 200px;" />
-              <span style="margin-left: 8px; color: var(--text-muted);">（%，基础比例，支持阶梯分润策略）</span>
+              <span style="margin-left: 8px; color: var(--text-muted);">（%，按扣除供应商成本后的采购额计算分润）</span>
             </n-form-item>
             <n-form-item label="提现手续费率">
               <n-input-number v-model:value="editForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />

@@ -206,7 +206,8 @@ const shiftData = reactive({
 
   businessIncome: [
     { label: '预存充值', value: 1300.00 },
-    { label: '开套票', value: 0.00 },
+    // 套票暂不启用
+    // { label: '开套票', value: 0.00 },
     { label: '购买项目', value: 100.00 },
     { label: '购买商品', value: 0.00 },
     { label: '其他收入', value: 0.00 }
@@ -214,7 +215,8 @@ const shiftData = reactive({
 
   businessExpense: [
     { label: '预存充值退款', value: 0.00 },
-    { label: '套票退款', value: 0.00 },
+    // 套票暂不启用
+    // { label: '套票退款', value: 0.00 },
     { label: '项目退款', value: 0.00 },
     { label: '商品退款', value: 0.00 },
     { label: '其他支出', value: 0.00 }

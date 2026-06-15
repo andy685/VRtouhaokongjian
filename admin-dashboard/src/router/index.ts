@@ -58,6 +58,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'order-flow/balance', name: 'PlatformOrderFlowBalance', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '修改储值订单' } },
       { path: 'order-flow/gamebean', name: 'PlatformOrderFlowGamebean', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '游戏币兑换订单' } },
       { path: 'order-flow/promo', name: 'PlatformOrderFlowPromo', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '活动赠送订单' } },
+
       // 数据中心扩展
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: () => import('../views/platform/ContentConsumption.vue'), meta: { title: '内容消费大盘' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: () => import('../views/platform/DeviceOverview.vue'), meta: { title: '设备运行总览' } },
@@ -69,7 +70,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: () => import('../views/platform/Reconciliation.vue'), meta: { title: '对账中心' } },
       { path: 'finance/payouts', name: 'PlatformPayoutManager', component: () => import('../views/platform/PayoutManager.vue'), meta: { title: '代理商分账管理' } },
       { path: 'finance/agent-settlement-config', name: 'PlatformAgentSettlementConfig', component: () => import('../views/platform/AgentSettlementConfig.vue'), meta: { title: '代理商结算配置' } },
-      { path: 'finance/tier-config', name: 'PlatformTierConfig', component: () => import('../views/platform/TierStrategyConfig.vue'), meta: { title: '阶梯策略配置' } },
+      // 阶梯策略配置暂不启用
+      // { path: 'finance/tier-config', name: 'PlatformTierConfig', component: () => import('../views/platform/TierStrategyConfig.vue'), meta: { title: '阶梯策略配置' } },
       { path: 'finance/cp-settlement', name: 'PlatformCPSettlement', component: () => import('../views/platform/CPSettlement.vue'), meta: { title: '游戏供应商结算' } },
       { path: 'finance/cp-settlement-config', name: 'PlatformCPSettlementConfig', component: () => import('../views/platform/CPSettlementConfig.vue'), meta: { title: 'CP结算配置' } },
       { path: 'finance/cp-reconciliation', name: 'PlatformCPReconciliation', component: () => import('../views/platform/CPReconciliation.vue'), meta: { title: 'CP对账中心' } },
@@ -114,7 +116,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'recharge', name: 'ShopRecharge', component: () => import('../views/shop/Recharge.vue'), meta: { title: '充值套餐' } },
       { path: 'packages', name: 'ShopPackages', component: () => import('../views/shop/Packages.vue'), meta: { title: '套票' } },
       { path: 'coupons', name: 'ShopCoupons', component: () => import('../views/shop/ShopCoupons.vue'), meta: { title: '优惠券' } },
-      { path: 'promotions', name: 'ShopPromotions', component: () => import('../views/shop/Promotions.vue'), meta: { title: '促销' } },
       { path: 'gifts', name: 'ShopGifts', component: () => import('../views/shop/Gifts.vue'), meta: { title: '活动赠送' } },
       { path: 'sms-templates', name: 'ShopSmsTemplates', component: () => import('../views/shop/SmsTemplates.vue'), meta: { title: '短信模板' } },
       { path: 'sms', name: 'ShopSms', component: () => import('../views/shop/Sms.vue'), meta: { title: '短信服务' } },

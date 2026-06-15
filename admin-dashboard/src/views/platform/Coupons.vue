@@ -101,9 +101,9 @@ const couponColumns = [
 
 const coupons = ref([
   { id: 1, name: '新年立减券', type: '满减券', value: '满100减20', total: 5000, used: 3280, condition: '无门槛', validity: '2026-01-01 ~ 2026-04-30', status: 'active', statusText: '进行中' },
-  { id: 2, name: '新人体验券', type: '体验券', value: '免费体验10分钟', total: 10000, used: 4521, condition: '新用户', validity: '长期有效', status: 'active', statusText: '进行中' },
+  { id: 2, name: '新人体验券', type: '满减券', value: '减¥20', total: 10000, used: 4521, condition: '新人自动发放', validity: '长期有效', status: 'active', statusText: '进行中' },
   { id: 3, name: '会员专享8折', type: '折扣券', value: '8折', total: 2000, used: 890, condition: '银卡及以上', validity: '2026-01-01 ~ 2026-06-30', status: 'active', statusText: '进行中' },
-  { id: 4, name: '周末畅玩券', type: '体验券', value: '减¥15', total: 3000, used: 1560, condition: '周末使用', validity: '2026-04-01 ~ 2026-04-30', status: 'active', statusText: '进行中' },
+  { id: 4, name: '周末畅玩券', type: '满减券', value: '减¥15', total: 3000, used: 1560, condition: '周末使用', validity: '2026-04-01 ~ 2026-04-30', status: 'active', statusText: '进行中' },
   { id: 5, name: '五一促销券', type: '满减券', value: '满200减50', total: 8000, used: 0, condition: '无门槛', validity: '2026-05-01 ~ 2026-05-07', status: 'pending', statusText: '未开始' },
 ])
 
@@ -120,14 +120,12 @@ const shopCouponColumns = [
 const shopCoupons = ref([
   { store: '深圳福田旗舰店', name: '店铺专属8折券', type: '折扣券', value: '8折', used: 156, total: 500, validity: '长期有效', status: 'active' },
   { store: '南山科技园店', name: '周末优惠券', type: '满减券', value: '满50减10', used: 89, total: 200, validity: '长期有效', status: 'active' },
-  { store: '广州天河店', name: '会员日专享', type: '体验券', value: '免费续时10分钟', used: 45, total: 100, validity: '每月8号', status: 'active' },
+  { store: '广州天河店', name: '会员日专享', type: '满减券', value: '满100减15', used: 45, total: 100, validity: '每月8号', status: 'active' },
 ])
 
 const templates = ref([
   { id: 1, name: '新人注册券', type: 'cash', typeText: '满减券', value: '¥20', desc: '适用于新用户注册奖励', gradient: 'linear-gradient(135deg, #3B82F6, #2563EB)' },
   { id: 2, name: '会员专享券', type: 'discount', typeText: '折扣券', value: '8折', desc: '会员等级专享折扣', gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' },
-  { id: 3, name: '限时体验券', type: 'experience', typeText: '体验券', value: '免费', desc: '限时免费体验活动', gradient: 'linear-gradient(135deg, #10B981, #059669)' },
-  { id: 4, name: '满额赠券', type: 'gift', typeText: '赠品券', value: '周边礼品', desc: '消费满额赠送礼品', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)' },
 ])
 
 function createFromTemplate(tpl: any) { console.log('使用模板创建', tpl) }
@@ -146,7 +144,7 @@ function createFromTemplate(tpl: any) { console.log('使用模板创建', tpl) }
 
 .tab-content { padding-top: 16px; }
 
-.template-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.template-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .template-card { background: white; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); }
 .tpl-preview { height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .tpl-value { font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 700; }

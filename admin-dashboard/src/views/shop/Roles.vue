@@ -285,7 +285,6 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
             { key: 'recharge', label: '充值套餐', checked: false, expanded: false },
             { key: 'packages', label: '套票', checked: false, expanded: false },
             { key: 'coupons', label: '优惠券', checked: false, expanded: false },
-            { key: 'promotions', label: '促销', checked: false, expanded: false },
             { key: 'gifts', label: '活动赠送', checked: false, expanded: false },
             { key: 'sms-templates', label: '短信模板', checked: false, expanded: false },
             { key: 'sms', label: '短信服务', checked: false, expanded: false },

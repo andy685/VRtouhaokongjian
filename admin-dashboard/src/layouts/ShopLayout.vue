@@ -210,19 +210,21 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(GiftOutline),
     children: [
       { label: '充值套餐', key: '/shop/recharge' },
-      { label: '套票', key: '/shop/packages' },
+      // 套票暂不启用
+      // { label: '套票', key: '/shop/packages' },
       { label: '优惠券', key: '/shop/coupons' },
-      { label: '促销', key: '/shop/promotions' },
       { label: '活动赠送', key: '/shop/gifts' },
-      {
-        label: '短信管理',
-        key: 'sms-group',
-        children: [
-          { label: '短信模板', key: '/shop/sms-templates' },
-          { label: '短信服务', key: '/shop/sms' },
-        ]
-      },
-      { label: '反馈管理', key: '/shop/feedback' },
+      // 短信管理暂不启用（与运营账户关联）
+      // {
+      //   label: '短信管理',
+      //   key: 'sms-group',
+      //   children: [
+      //     { label: '短信模板', key: '/shop/sms-templates' },
+      //     { label: '短信服务', key: '/shop/sms' },
+      //   ]
+      // },
+      // 反馈管理暂不启用
+      // { label: '反馈管理', key: '/shop/feedback' },
     ]
   },
   {

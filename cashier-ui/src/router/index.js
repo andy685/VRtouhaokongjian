@@ -25,12 +25,13 @@ const routes = [
         component: () => import('../views/sale/NewMemberView.vue'),
         meta: { title: '新增会员', parent: '销售' }
       },
-      {
-        path: '/sale/package',
-        name: 'SalePackage',
-        component: () => import('../views/sale/PackageView.vue'),
-        meta: { title: '套票', parent: '销售' }
-      },
+      // 套票暂不启用
+      // {
+      //   path: '/sale/package',
+      //   name: 'SalePackage',
+      //   component: () => import('../views/sale/PackageView.vue'),
+      //   meta: { title: '套票', parent: '销售' }
+      // },
       {
         path: '/sale/product',
         name: 'SaleProduct',
@@ -117,6 +118,7 @@ const routes = [
         component: () => import('../views/order/OrderListView.vue'),
         meta: { title: '活动赠送订单', parent: '订单' }
       },
+
       // 营收模块
       {
         path: '/revenue',

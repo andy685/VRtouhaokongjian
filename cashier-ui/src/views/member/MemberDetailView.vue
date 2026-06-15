@@ -88,21 +88,8 @@
             </button>
           </article>
 
-          <!-- 预存次数 -->
-          <article class="mdv-asset-card card-times">
-            <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/times.svg`" alt="" /></div>
-            <div class="card-body">
-              <h3>预存次数（次）</h3>
-              <p class="card-value">{{ assets.times }}</p>
-              <p class="card-sub">(可用：{{ assets.timesAvail }}；未生效：{{ assets.timesPending }})</p>
-            </div>
-            <button class="card-copy-btn" aria-label="查看预存次数日志" @click="openPrepaidRecords('times')">
-              <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
-            </button>
-          </article>
-
-          <!-- 套票 -->
-          <article class="mdv-asset-card card-ticket">
+          <!-- 套票暂不启用 -->
+          <!-- <article class="mdv-asset-card card-ticket">
             <div class="card-icon card-icon-image"><img :src="`${BASE_URL}member-icons/ticket.svg`" alt="" /></div>
             <div class="card-body">
               <h3>套票（张）</h3>
@@ -112,7 +99,7 @@
             <button class="card-copy-btn" aria-label="查看套票日志" @click="openPrepaidRecords('tickets')">
               <svg class="card-copy-icon" viewBox="0 0 33 33" fill="none" aria-hidden="true"><path d="M16.5 12.375L10.3125 12.375C9.74209 12.375 9.28125 11.9142 9.28125 11.3438C9.28125 10.7733 9.74209 10.3125 10.3125 10.3125L16.5 10.3125C17.0704 10.3125 17.5312 10.7733 17.5312 11.3438C17.5312 11.9142 17.0704 12.375 16.5 12.375ZM22.6875 17.5312L10.3125 17.5312C9.74209 17.5312 9.28125 17.0704 9.28125 16.5C9.28125 15.9296 9.74209 15.4688 10.3125 15.4688L22.6875 15.4688C23.2579 15.4688 23.7188 15.9296 23.7188 16.5C23.7188 17.0704 23.2579 17.5312 22.6875 17.5312ZM22.6875 22.6875L10.3125 22.6875C9.74209 22.6875 9.28125 22.2267 9.28125 21.6562C9.28125 21.0858 9.74209 20.625 10.3125 20.625L22.6875 20.625C23.2579 20.625 23.7188 21.0858 23.7188 21.6562C23.7188 22.2267 23.2579 22.6875 22.6875 22.6875Z" fill="currentColor"/><path d="M25.0304 30.9375L7.96963 30.9375C4.71152 30.9375 2.0625 28.2885 2.0625 25.0304L2.0625 7.96963C2.0625 4.71152 4.71152 2.0625 7.96963 2.0625L25.0336 2.0625C28.2885 2.0625 30.9407 4.71152 30.9407 7.96963L30.9407 25.0304C30.9375 28.2885 28.2885 30.9375 25.0304 30.9375ZM7.96963 4.125C5.84912 4.125 4.125 5.84912 4.125 7.96963L4.125 25.0304C4.125 27.1509 5.84912 28.875 7.96963 28.875L25.0336 28.875C27.1541 28.875 28.8782 27.1509 28.8782 25.0304L28.8782 7.96963C28.8782 5.84912 27.1541 4.125 25.0336 4.125L7.96963 4.125Z" fill="currentColor"/></svg>
             </button>
-          </article>
+          </article> -->
 
           <!-- 优惠券 -->
           <article class="mdv-asset-card card-coupon">
@@ -230,7 +217,6 @@
       :initial-tab="prepaidInitialTab"
       :coin-summary="{ total: 2704, available: 2704, pending: 0 }"
       :ticket-summary="{ total: 3 }"
-      :times-summary="{ total: 3 }"
       :records="prepaidRecords"
       @close="showPrepaidRecords = false"
     />
@@ -309,9 +295,6 @@ const assets = ref({
   coinsAvail: 2703,
   coinsPending: 0,
   coinsExpireHint: '2024/12/13有1.00游戏币过期',
-  times: 4,
-  timesAvail: 4,
-  timesPending: 0,
   tickets: 0,
   ticketsAvail: 0,
   ticketsPending: 0,
@@ -322,7 +305,7 @@ const memberCoupons = ref([
   {
     id: 'mc-1',
     name: '9.9元体验1次',
-    tag: '特价券',
+    tag: '优惠券',
     type: 'discount',
     value: '1.50',
     originalPrice: '58.00',
@@ -386,7 +369,7 @@ const memberCoupons = ref([
   {
     id: 'mc-4',
     name: '储值满300减30',
-    tag: '特价券',
+    tag: '储值券',
     type: 'discount',
     value: '30.00',
     originalPrice: null,
@@ -406,14 +389,11 @@ const memberGifts = ref([
   {
     id: 1,
     shopName: '卓远亚运城店',
-    name: '消费满100赠10元+100币',
+    name: '消费满100赠100币',
     condition: 'consume',
     threshold: 100,
-    giftDeposit: 10,
     giftPoints: 100,
     pointsValidText: '永久有效',
-    giftTimes: 0,
-    timesValidText: '-',
     count: 256,
     status: true,
     memberTypes: ['normal', 'bronze', 'silver', 'gold', 'diamond']
@@ -421,45 +401,24 @@ const memberGifts = ref([
   {
     id: 2,
     shopName: '卓远天河路店',
-    name: '充值满500赠50元+500币',
+    name: '充值满500赠500币',
     condition: 'recharge',
     threshold: 500,
-    giftDeposit: 50,
     giftPoints: 500,
     pointsValidText: '365天',
-    giftTimes: 0,
-    timesValidText: '-',
     count: 128,
     status: true,
     memberTypes: ['normal', 'bronze', 'silver', 'gold', 'diamond']
   },
   {
-    id: 3,
-    shopName: '卓远亚运城店',
-    name: '办理套餐赠200币+1次体验',
-    condition: 'package',
-    threshold: 0,
-    giftDeposit: 0,
-    giftPoints: 200,
-    pointsValidText: '30天',
-    giftTimes: 1,
-    timesValidText: '30天',
-    count: 86,
-    status: false,
-    memberTypes: ['normal', 'bronze', 'silver', 'gold', 'diamond']
-  },
-  {
     id: 4,
     shopName: '卓远北京路店',
-    name: '生日当月赠20元+500币+2次',
+    name: '生日当月赠500币',
     condition: 'birthday',
     threshold: 0,
     birthdayRange: 'month',
-    giftDeposit: 20,
     giftPoints: 500,
     pointsValidText: '永久有效',
-    giftTimes: 2,
-    timesValidText: '30天',
     count: 45,
     status: true,
     memberTypes: ['diamond']
@@ -676,51 +635,6 @@ const prepaidRecords = ref([
     changedAt: '2024-12-16 13:49',
     dateKey: '2024-11-17'
   },
-  {
-    id: 'times-01',
-    tab: 'times',
-    type: '收银台购买',
-    reason: '收银台购买',
-    store: '北京头号空间',
-    changeQty: '+4',
-    afterQty: '5',
-    statusLabel: '生效中',
-    expireDate: '2024-12-17',
-    note: '有套餐的显示套餐名称和具体权益，没有的不显示',
-    operator: '小范',
-    changedAt: '20241216 13:49',
-    dateKey: '2024-11-17'
-  },
-  {
-    id: 'times-02',
-    tab: 'times',
-    type: '单次消费',
-    reason: '单次消费',
-    store: '北京头号空间',
-    changeQty: '-1',
-    afterQty: '1',
-    statusLabel: '生效中',
-    expireDate: '2024-12-17',
-    note: '',
-    operator: '玩家自助',
-    changedAt: '20241216 13:49',
-    dateKey: '2024-11-17'
-  },
-  {
-    id: 'times-03',
-    tab: 'times',
-    type: '单次消费',
-    reason: '单次消费',
-    store: '北京头号空间',
-    changeQty: '-1',
-    afterQty: '2',
-    statusLabel: '生效中',
-    expireDate: '2024-12-17',
-    note: '',
-    operator: '小范',
-    changedAt: '20241216 13:49',
-    dateKey: '2024-11-17'
-  }
 ])
 
 const consumeRecords = ref([
@@ -760,7 +674,6 @@ const persistSaleMemberSession = () => {
     balance: assets.value.balance,
     coins: assets.value.coins,
     tickets: assets.value.tickets,
-    times: assets.value.times,
     cardNo: member.value.cardNo || '',
     expireHint: assets.value.coinsExpireHint || ''
   }
@@ -1262,7 +1175,6 @@ const handleDeductionConfirm = (payload) => {
 }
 
 .card-coins .card-icon { background: #ff8b2f; }
-.card-times .card-icon { background: #df56f5; }
 .card-ticket .card-icon { background: #7b7bef; }
 .card-points .card-icon,
 .card-coupon .card-icon { background: #ff686d; }

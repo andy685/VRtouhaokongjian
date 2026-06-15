@@ -2,38 +2,29 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <div>
-        <h1>结算配置</h1>
-        <p class="header-desc">设置自动结算周期、提现手续费率和打款规则</p>
+        <h1>商家结算配置</h1>
+        <p class="header-desc">统一设置商家的结算周期、提现手续费和打款通知规则</p>
       </div>
     </div>
 
-    <!-- 自动结算配置 -->
+    <!-- 结算配置 -->
     <div class="config-section">
-      <h3 class="section-title">自动结算配置</h3>
+      <h3 class="section-title">结算规则</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="140">
-          <n-form-item label="自动结算">
-            <n-switch v-model:value="autoSettlement.enabled" />
-            <span class="form-hint">开启后，系统将按设定周期自动生成结算单</span>
-          </n-form-item>
-
-          <n-form-item label="结算周期" v-if="autoSettlement.enabled">
+          <n-form-item label="结算周期">
             <n-select v-model:value="autoSettlement.period" :options="periodOptions" style="width: 200px;" />
+            <span class="form-hint">系统将按此周期自动生成结算单</span>
           </n-form-item>
 
-          <n-form-item label="结算日" v-if="autoSettlement.enabled">
+          <n-form-item label="结算日">
             <n-select v-model:value="autoSettlement.settlementDay" :options="dayOptions" style="width: 200px;" />
-            <span class="form-hint">根据结算周期类型显示对应选项（按周/按月）</span>
+            <span class="form-hint">每周周几/每月几号执行结算</span>
           </n-form-item>
 
           <n-form-item label="最低结算门槛">
             <n-input-number v-model:value="autoSettlement.minAmount" :min="0" :step="100" style="width: 200px;" />
             <span style="margin-left: 8px;">元（结算金额低于此值不生成结算单，累积至下期）</span>
-          </n-form-item>
-
-          <n-form-item label="自动打款">
-            <n-switch v-model:value="autoSettlement.autoTransfer" />
-            <span class="form-hint">开启后，审核通过的结算单将自动打款到商家银行卡</span>
           </n-form-item>
         </n-form>
       </n-card>
@@ -41,28 +32,12 @@
 
     <!-- 提现手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title">提现手续费配置</h3>
+      <h3 class="section-title">提现手续费</h3>
       <n-card class="config-card">
+        <n-alert type="info" :bordered="false" style="margin-bottom: 16px;">
+          商家提现手续费率在<strong>创建/编辑商家时单独设置</strong>（商家管理 → 提现手续费率）。此处配置的是全局手续费上下限和说明文案。
+        </n-alert>
         <n-form label-placement="left" label-width="140">
-          <n-form-item label="提现手续费模式">
-            <n-radio-group v-model:value="feeConfig.mode">
-              <n-radio value="global">全局统一费率</n-radio>
-              <n-radio value="custom">按商家自定义</n-radio>
-            </n-radio-group>
-          </n-form-item>
-
-          <n-form-item label="全局提现手续费率" v-if="feeConfig.mode === 'global'">
-            <n-input-number
-              v-model:value="feeConfig.globalRate"
-              :min="0"
-              :max="1"
-              :step="0.001"
-              :precision="3"
-              style="width: 200px;"
-            />
-            <span style="margin-left: 8px;">（例：0.005 = 0.5%）</span>
-          </n-form-item>
-
           <n-form-item label="提现手续费说明">
             <n-input
               v-model:value="feeConfig.description"
@@ -95,23 +70,20 @@
       </n-card>
     </div>
 
-    <!-- 打款配置 -->
+    <!-- 打款通知配置 -->
     <div class="config-section">
-      <h3 class="section-title">打款配置</h3>
+      <h3 class="section-title">打款通知</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="140">
-          <n-form-item label="打款备注">
+          <n-form-item label="通知模版">
             <n-input
               v-model:value="transferConfig.remark"
-              placeholder="打款时的备注信息"
-              style="width: 400px;"
+              type="textarea"
+              placeholder="打款成功后的通知内容"
+              :autosize="{ minRows: 3, maxRows: 5 }"
+              style="width: 500px;"
             />
-            <span class="form-hint">支持变量：{merchantName} - 商家名称，{period} - 结算周期</span>
-          </n-form-item>
-
-          <n-form-item label="打款通知">
-            <n-switch v-model:value="transferConfig.notifyEnabled" />
-            <span class="form-hint">开启后，打款成功将通知商家</span>
+            <span class="form-hint">支持变量：{merchantName} - 商家名称，{period} - 结算周期，{amount} - 到账金额</span>
           </n-form-item>
         </n-form>
       </n-card>
@@ -127,24 +99,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
-  NCard, NForm, NFormItem, NSwitch, NSelect, NInputNumber,
-  NInput, NRadioGroup, NRadio, useMessage
+  NCard, NForm, NFormItem, NSelect, NInputNumber,
+  NInput, NAlert, useMessage
 } from 'naive-ui'
 
 const message = useMessage()
 
-// 自动结算配置
+// 结算配置
 const autoSettlement = ref({
-  enabled: true,
   period: 'monthly',
   settlementDay: 5,
-  autoTransfer: true,
   minAmount: 100,
 })
 
 const periodOptions = [
   { label: '每周', value: 'weekly' },
-  { label: '每两周', value: 'biweekly' },
   { label: '每月', value: 'monthly' },
 ]
 
@@ -161,7 +130,7 @@ const dayOptions = computed(() => {
       { label: '每月月末', value: 0 },
     ]
   }
-  // weekly / biweekly
+  // weekly
   return [
     { label: '每周一', value: 1 },
     { label: '每周二', value: 2 },
@@ -173,22 +142,18 @@ const dayOptions = computed(() => {
 
 // 提现手续费配置
 const feeConfig = ref({
-  mode: 'global',
-  globalRate: 0.005,
   description: '结算金额将扣除提现手续费后打款',
   minFee: 1,
   maxFee: 0
 })
 
-// 打款配置
+// 打款通知配置
 const transferConfig = ref({
-  remark: '结算打款 - {merchantName} - {period}',
-  notifyEnabled: true
+  remark: '【头号空间】结算打款通知\n商家：{merchantName}\n结算周期：{period}\n到账金额：¥{amount}\n如有疑问请联系平台客服。',
 })
 
 function handleSave() {
-  // 这里应该调用API保存配置
-  message.success('配置保存成功')
+  message.success('商家结算配置保存成功')
   console.log('保存配置：', {
     autoSettlement: autoSettlement.value,
     feeConfig: feeConfig.value,

@@ -49,13 +49,14 @@
               {{ selectedMember.expireHint }}
             </span>
           </div>
-          <div class="mc-stat-item">
+          <!-- 套票暂不启用 -->
+          <!-- <div class="mc-stat-item">
             <strong>{{ selectedMember.tickets ?? 0 }}</strong>
             <em>套票</em>
-          </div>
+          </div> -->
           <div class="mc-stat-item">
-            <strong>{{ selectedMember.times ?? 0 }}</strong>
-            <em>预存次数</em>
+            <strong>{{ userCoupons.length }}</strong>
+            <em>优惠券</em>
           </div>
         </div>
       </div>
@@ -74,6 +75,17 @@
               {{ tab.name }}
             </button>
           </nav>
+
+          <div v-if="activeTab === 'single'" class="device-filter">
+            <el-select v-model="deviceFilter" placeholder="全部设备" clearable class="filter-select">
+              <template #prefix><el-icon :size="16"><Monitor /></el-icon></template>
+              <el-option v-for="d in allDevices" :key="d.id" :label="d.name" :value="d.id" />
+            </el-select>
+            <el-select v-model="sortBy" placeholder="默认排序" class="filter-select">
+              <template #prefix><el-icon :size="16"><Sort /></el-icon></template>
+              <el-option v-for="s in sortOptions" :key="s.value" :label="s.label" :value="s.value" />
+            </el-select>
+          </div>
 
           <label class="search-box">
             <el-icon><Search /></el-icon>
@@ -121,6 +133,10 @@
             <span class="product-copy">
               <strong>{{ product.name }}</strong>
               <em><span class="currency-symbol">¥</span>{{ product.price.toFixed(2) }}</em>
+              <span v-if="product.devices && product.devices.length && !deviceFilter" class="product-device-tags">
+                <span v-for="did in product.devices.slice(0, 3)" :key="did" class="device-tag">{{ allDevices.find(d => d.id === did)?.name?.split('（')[0] }}</span>
+                <span v-if="product.devices.length > 3" class="device-tag device-tag-more">+{{ product.devices.length - 3 }}</span>
+              </span>
             </span>
           </button>
 
@@ -307,6 +323,10 @@
               <span>实付</span>
               <strong><span class="currency-symbol">¥</span>{{ payableAmount.toFixed(2) }}</strong>
             </div>
+            <!-- 套票暂不启用 -->
+            <!-- <div v-if="isPackageOnly && selectedMember" class="package-cash-notice">
+              <span>套票仅支持现金/扫码支付，不可使用预存款或游戏币抵扣</span>
+            </div> -->
             <div v-if="showAssetSettlementStatus" class="asset-status-card" :class="`asset-status-card--${assetSettlementTone}`">
               <div class="asset-status-head">
                 <div class="asset-status-copy">
@@ -438,7 +458,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { CircleCloseFilled, Close, Minus, Plus, Search, WarningFilled } from '@element-plus/icons-vue'
+import { CircleCloseFilled, Close, Minus, Monitor, Plus, Search, Sort, WarningFilled } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
 import CouponSelectModal from '../../components/CouponSelectModal.vue'
@@ -469,10 +489,29 @@ const createCover = (accentA, accentB, glyph) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
+// 游戏专用封面生成（竖屏 3:4，匹配上传规格 300×400）
+const createGameCover = (accentA, accentB, text) => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+      <defs>
+        <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${accentA}" />
+          <stop offset="100%" stop-color="${accentB}" />
+        </linearGradient>
+      </defs>
+      <rect width="300" height="400" rx="24" fill="url(#bg2)" />
+      <rect x="20" y="20" width="260" height="360" rx="16" fill="rgba(255,255,255,0.12)" />
+      <text x="150" y="232" text-anchor="middle" font-size="90" font-weight="700" fill="white" font-family="Arial, sans-serif">${text}</text>
+    </svg>
+  `
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
 const tabs = [
   { id: 'single', name: '单次消费' },
   { id: 'recharge', name: '充值活动' },
-  { id: 'package', name: '套票' },
+  // 套票暂不启用
+  // { id: 'package', name: '套票' },
   { id: 'product', name: '商品' }
 ]
 
@@ -517,7 +556,7 @@ const COUPON_POOL = [
   {
     id: 1,
     name: '9.9元体验1次',
-    tag: '特价券',
+    tag: '优惠券',
     type: 'discount',
     value: '1.50',
     originalPrice: '58.00',
@@ -601,7 +640,7 @@ const COUPON_POOL = [
   {
     id: 6,
     name: '储值满300减30',
-    tag: '特价券',
+    tag: '储值券',
     type: 'discount',
     value: '30.00',
     originalPrice: null,
@@ -697,6 +736,15 @@ const memberHistory = ref([
 ])
 const activeTab = ref('single')
 const searchQuery = ref('')
+const deviceFilter = ref('')
+const sortBy = ref('default')
+const sortOptions = [
+  { label: '默认排序', value: 'default' },
+  { label: '价格从低到高', value: 'price-asc' },
+  { label: '价格从高到低', value: 'price-desc' },
+  { label: '名称 A-Z', value: 'name-asc' },
+  { label: '名称 Z-A', value: 'name-desc' },
+]
 const selectedRechargeProduct = ref(null)
 const customRechargeAmount = ref('')
 const paymentItems = ref([])
@@ -740,11 +788,66 @@ const syncSaleEntryContext = () => {
 
 watch(() => route.query, syncSaleEntryContext, { immediate: true })
 
+// 设备列表
+const allDevices = ref([
+  { id: 'dev1', name: '动感平台（A01）' },
+  { id: 'dev2', name: '4D座舱（A02）' },
+  { id: 'dev3', name: '万向跑步机（A03）' },
+  { id: 'dev4', name: '飞行模拟器（B01）' },
+  { id: 'dev5', name: '赛车支架（B02）' },
+  { id: 'dev6', name: 'VR蛋椅（C01）' },
+  { id: 'dev7', name: '体感座椅（D01）' },
+])
+
 const products = ref([
-  { id: 1, name: 'VR 体验 30分钟', price: 20, category: 'single', desc: '单人设备体验', cover: createCover('#42b3ff', '#235dff', 'VR') },
-  { id: 2, name: '赛车模拟 30分钟', price: 35, category: 'single', desc: '热门设备', cover: createCover('#47c4ff', '#1677c8', 'R') },
-  { id: 3, name: '亲子互动区', price: 25, category: 'single', desc: '亲子娱乐', cover: createCover('#ffb648', '#ff7a18', 'K') },
-  { id: 4, name: '多人派对包厢', price: 80, category: 'single', desc: '四人起订', cover: createCover('#9b7bff', '#5f55f7', 'P') },
+  { id: 1, name: '过山车VR', price: 38, category: 'single', desc: '极境互动科技', consumptionSortOrder: 1, cover: createGameCover('#0ea5e9', '#2563eb', '过山车'), devices: ['dev1', 'dev3', 'dev5'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '过山车VR' },
+    { label: '单价', value: '¥38.00/次', highlight: true },
+    { label: '游戏时长', value: '约10分钟' },
+    { label: '适用设备', value: '动感平台、万向跑步机、赛车支架' },
+    { label: '标签', value: '刺激 · 热门 · 全年龄' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 2, name: '恐怖医院', price: 48, category: 'single', desc: '闪耀游戏工作室', consumptionSortOrder: 2, cover: createGameCover('#111827', '#374151', '恐怖'), devices: ['dev2', 'dev3', 'dev5'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '恐怖医院' },
+    { label: '单价', value: '¥48.00/次', highlight: true },
+    { label: '游戏时长', value: '约15分钟' },
+    { label: '适用设备', value: '4D座舱、万向跑步机、赛车支架' },
+    { label: '标签', value: '恐怖 · 成人 · 沉浸' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 3, name: '极速赛车', price: 30, category: 'single', desc: '乐游网络', consumptionSortOrder: 3, cover: createGameCover('#7c3aed', '#4f46e5', '赛车'), devices: ['dev1', 'dev4', 'dev5'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '极速赛车' },
+    { label: '单价', value: '¥30.00/次', highlight: true },
+    { label: '游戏时长', value: '约8分钟' },
+    { label: '适用设备', value: '动感平台、飞行模拟器、赛车支架' },
+    { label: '标签', value: '竞速 · 热门 · 全年龄' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 4, name: '海洋世界', price: 25, category: 'single', desc: '星际科技', consumptionSortOrder: 4, cover: createGameCover('#06b6d4', '#0891b2', '海洋'), devices: ['dev2', 'dev4', 'dev6'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '海洋世界' },
+    { label: '单价', value: '¥25.00/次', highlight: true },
+    { label: '游戏时长', value: '约20分钟' },
+    { label: '适用设备', value: '4D座舱、飞行模拟器、VR蛋椅' },
+    { label: '标签', value: '科普 · 亲子 · 放松' },
+    { label: '游戏类型', value: '单机 · 单人付费' }
+  ]},
+  { id: 6, name: 'CS对战', price: 58, category: 'single', desc: '幻视科技', consumptionSortOrder: 5, cover: createGameCover('#f97316', '#ea580c', 'CS'), devices: ['dev1', 'dev2', 'dev6'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: 'CS对战' },
+    { label: '单价', value: '¥58.00/次', highlight: true },
+    { label: '游戏时长', value: '约30分钟' },
+    { label: '适用设备', value: '动感平台、4D座舱、VR蛋椅' },
+    { label: '标签', value: '射击 · 多人 · 竞技' },
+    { label: '游戏类型', value: '联机 · 多人付费' }
+  ]},
+  { id: 8, name: '太空漫步', price: 35, category: 'single', desc: '闪耀游戏工作室', consumptionSortOrder: 6, cover: createGameCover('#0c3483', '#a2b6df', '太空'), devices: ['dev6', 'dev7', 'dev8'], panelTitle: '游戏详情', detail: [
+    { label: '游戏名称', value: '太空漫步' },
+    { label: '单价', value: '¥35.00/次', highlight: true },
+    { label: '游戏时长', value: '约18分钟' },
+    { label: '适用设备', value: 'VR蛋椅、体感座椅、360旋转舱' },
+    { label: '标签', value: '科幻 · 探索 · 沉浸' },
+    { label: '游戏类型', value: '联机 · 多人付费' }
+  ]},
   { id: 5, name: '储值 300 送 30', price: 300, category: 'recharge', desc: '会员储值活动', cover: createCover('#2bc6c8', '#149d9f', 'C'), panelTitle: '充值详情', detail: [
     { label: '套餐名称', value: '储值300送30元（一年有效）' },
     { label: '单价', value: '¥300.00', highlight: true },
@@ -763,23 +866,20 @@ const products = ref([
     { label: '到账次数', value: '0' },
     { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
   ]},
-  { id: 7, name: '畅玩 5 次套票', price: 88, category: 'package', desc: '有效期 30 天', cover: createCover('#7a87ff', '#4f5ef2', '5') },
-  { id: 8, name: '畅玩 10 次套票', price: 168, category: 'package', desc: '有效期 90 天', cover: createCover('#6eb9ff', '#3f7dff', '10') },
+  // 套票暂不启用
+  // { id: 7, name: '畅玩 5 次套票', price: 88, category: 'package', desc: '有效期 30 天', cover: createCover('#7a87ff', '#4f5ef2', '5') },
+  // { id: 8, name: '畅玩 10 次套票', price: 168, category: 'package', desc: '有效期 90 天', cover: createCover('#6eb9ff', '#3f7dff', '10') },
   { id: 9, name: 'VR眼罩卫生包', price: 20, category: 'product', desc: '一次性用品', cover: createCover('#ff8e56', '#f25f43', 'H'), panelTitle: '商品详情', detail: [
     { label: '商品名称', value: 'VR眼罩卫生包' },
-    { label: '单价', value: '¥20.00', highlight: true },
-    { label: '规格', value: '一次性眼罩 + 清洁湿巾' },
-    { label: '适用范围', value: '全场VR设备通用' },
-    { label: '取用说明', value: '吧台领取，当日使用' },
-    { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
+    { label: '售价', value: '¥20.00', highlight: true },
+    { label: '商品分类', value: '消耗品' },
+    { label: '商品描述', value: '一次性VR眼罩+清洁湿巾，卫生安全，即拆即用' }
   ]},
   { id: 10, name: '饮品套餐', price: 18, category: 'product', desc: '吧台商品', cover: createCover('#ff9dc2', '#ff5f9d', 'D'), panelTitle: '商品详情', detail: [
     { label: '商品名称', value: '饮品套餐（可乐+爆米花）' },
-    { label: '单价', value: '¥18.00', highlight: true },
-    { label: '规格', value: '1 份（含中杯可乐 + 小份爆米花）' },
-    { label: '取餐地点', value: '吧台自取' },
-    { label: '保质期', value: '现制饮品，当日饮用最佳' },
-    { label: '可购会员', value: '钻石、黄金、白银、青铜、普通会员' }
+    { label: '售价', value: '¥18.00', highlight: true },
+    { label: '商品分类', value: '饮品' },
+    { label: '商品描述', value: '休闲饮品搭配，观影游戏两不误' }
   ]}
 ])
 
@@ -788,11 +888,32 @@ const isRechargeTab = computed(() => activeTab.value === 'recharge')
 
 const filteredProducts = computed(() => {
   const keyword = searchQuery.value.trim()
-  return products.value.filter((product) => {
+  let list = products.value.filter((product) => {
     const inTab = product.category === activeTab.value
     const inSearch = !keyword || product.name.includes(keyword) || product.desc.includes(keyword)
-    return inTab && inSearch
+    const inDevice = !deviceFilter.value || (product.devices && product.devices.includes(deviceFilter.value))
+    return inTab && inSearch && inDevice
   })
+
+  // 排序
+  switch (sortBy.value) {
+    case 'price-asc':
+      list = [...list].sort((a, b) => a.price - b.price)
+      break
+    case 'price-desc':
+      list = [...list].sort((a, b) => b.price - a.price)
+      break
+    case 'name-asc':
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+      break
+    case 'name-desc':
+      list = [...list].sort((a, b) => b.name.localeCompare(a.name, 'zh'))
+      break
+    default:
+      list = [...list].sort((a, b) => (a.consumptionSortOrder ?? 999) - (b.consumptionSortOrder ?? 999))
+      break
+  }
+  return list
 })
 
 const totalAmount = computed(() => cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0))
@@ -870,7 +991,11 @@ const canCoverWithMemberAssets = computed(() =>
 const showAssetSettlementStatus = computed(() =>
   !!selectedMember.value &&
   cartItems.value.length > 0 &&
-  !isRechargeTab.value
+  !isRechargeTab.value &&
+  !isPackageOnly.value
+)
+const isPackageOnly = computed(() =>
+  cartItems.value.length > 0 && cartItems.value.every(item => item.category === 'package')
 )
 const assetSettlementTone = computed(() => canCoverWithMemberAssets.value ? 'ready' : 'warning')
 const assetSettlementTitle = computed(() => canCoverWithMemberAssets.value ? '会员资产可覆盖' : '会员资产不足，可补差')
@@ -997,23 +1122,23 @@ const syncSelectedMemberSnapshot = () => {
       ...memberHistory.value[historyIndex],
       balance: selectedMember.value.balance,
       coins: selectedMember.value.coins,
-      tickets: selectedMember.value.tickets,
-      times: selectedMember.value.times
+      tickets: selectedMember.value.tickets
     }
   }
 }
 
 const checkout = () => {
   if (cartItems.value.length === 0) return
+  // 套票只能现金支付，不支持会员资产（预存款/游戏币）抵扣
   paymentMode.value = 'sale'
   paymentItems.value = cartItems.value.map((item) => ({ ...item }))
   paymentTotalAmount.value = totalAmount.value
   paymentCoupon.value = selectedCoupon.value
   paymentDiscountAmount.value = couponDiscount.value
   paymentPayableAmount.value = payableAmount.value
-  paymentAssetDeduction.value = selectedMember.value ? { ...assetDeductionPreview.value } : null
+  paymentAssetDeduction.value = isPackageOnly.value ? null : (selectedMember.value ? { ...assetDeductionPreview.value } : null)
   paymentAllowedMethodIds.value = SALE_OTHER_METHOD_IDS
-  paymentDefaultMethodId.value = paymentAssetDeduction.value?.external <= 0 ? '' : SALE_OTHER_METHOD_IDS[0]
+  paymentDefaultMethodId.value = isPackageOnly.value ? SALE_OTHER_METHOD_IDS[0] : (paymentAssetDeduction.value?.external <= 0 ? '' : SALE_OTHER_METHOD_IDS[0])
   showPaymentModal.value = true
 }
 
@@ -1145,7 +1270,7 @@ const handlePaymentConfirm = (payload) => {
     shouldShowRechargeSuccess = true
   }
 
-  // 消费结算成功（单次消费 / 套票 / 商品购买）
+  // 消费结算成功（单次消费 / 商品购买）
   if (paymentMode.value === 'sale') {
     const saleItems = paymentItems.value
     const categories = [...new Set(saleItems.map(item => item.category))]
@@ -1165,8 +1290,9 @@ const handlePaymentConfirm = (payload) => {
     lastSaleTitle.value = usedMemberAssets ? '会员资产结算成功' : '支付成功'
     if (isAllSingle) {
       lastSaleSubtitle.value = '本次消费如下'
-    } else if (isAllPackage) {
-      lastSaleSubtitle.value = '套票购买详情'
+    // 套票暂不启用
+    // } else if (isAllPackage) {
+    //   lastSaleSubtitle.value = '套票购买详情'
     } else if (isAllProduct) {
       lastSaleSubtitle.value = '商品购买详情'
     } else {
@@ -1515,7 +1641,7 @@ const handleDeductionConfirm = (payload) => {
 /* 四列统计数据 */
 .mc-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   margin-top: 14px;
   padding: 12px 4px 0;
   border-top: 1px solid rgba(255,255,255,0.15);
@@ -1660,6 +1786,70 @@ const handleDeductionConfirm = (payload) => {
   color: #171b24;
 }
 
+/* 筛选下拉框 — 与搜索框等高、同圆角 */
+.device-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.filter-select {
+  width: 140px;
+  height: 40px;
+}
+.filter-select :deep(.el-input__wrapper) {
+  height: 40px;
+  border: 1px solid #d5eaf9;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: none;
+  padding: 0 6px;
+}
+.filter-select :deep(.el-input__inner) {
+  font-size: 11px;
+  color: #334155;
+  height: 38px;
+  line-height: 38px;
+}
+.filter-select :deep(.el-input__inner::placeholder) {
+  font-size: 11px;
+  color: #a2a3a6;
+}
+.filter-select :deep(.el-input__prefix) {
+  color: #a2a3a6;
+}
+.filter-select :deep(.el-input__suffix) {
+  color: #c0c4cc;
+}
+.filter-select :deep(.el-input__clear) {
+  color: #c0c4cc;
+}
+
+/* 产品卡片设备标签 */
+.product-device-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.device-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #3b82f6;
+  font-size: 10px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.device-tag-more {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
 .custom-recharge-card {
   flex-shrink: 0;
   min-height: 76px;
@@ -1783,11 +1973,11 @@ const handleDeductionConfirm = (payload) => {
 }
 
 .product-card {
-  min-height: 112px;
+  min-height: 130px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
   border: 1px solid #d8efff;
   border-radius: var(--product-card-radius);
   background: #fff;
@@ -1811,9 +2001,9 @@ const handleDeductionConfirm = (payload) => {
 }
 
 .product-thumb {
-  width: 76px;
-  height: 76px;
-  flex: 0 0 76px;
+  width: 72px;
+  height: 96px;
+  flex: 0 0 72px;
   display: block;
   overflow: hidden;
   border-radius: var(--product-card-radius);
@@ -2284,6 +2474,17 @@ const handleDeductionConfirm = (payload) => {
   border: 1px solid transparent;
 }
 
+.package-cash-notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  font-size: 13px;
+  color: #e65100;
+  text-align: center;
+}
+
 .asset-status-card--ready {
   background: #effbf4;
   border-color: #b7ebc6;
@@ -2561,6 +2762,16 @@ const handleDeductionConfirm = (payload) => {
 .detail-panel-list {
   margin: 0;
   padding: 14px 22px 20px;
+  max-height: 520px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+.detail-panel-list::-webkit-scrollbar {
+  width: 4px;
+}
+.detail-panel-list::-webkit-scrollbar-thumb {
+  background: #d5e5f5;
+  border-radius: 2px;
 }
 
 .detail-row {
@@ -2612,3 +2823,4 @@ const handleDeductionConfirm = (payload) => {
   transform: translateX(-8px) scale(0.98);
 }
 </style>
+

@@ -129,7 +129,6 @@ const allData = ref([
   { id: 11, orderNo: 'GB202309160011', merchant: '华东展厅', store: '华东展厅', type: '游戏币兑换订单', amount: 100, paymentContent: '支付宝:100.00', time: '2023-09-16 15:10:00', status: '已完成', beanAmount: 1000 },
   // 活动赠送订单
   { id: 12, orderNo: 'PR202309160012', merchant: '恒然集团', store: '恒然分部展厅', type: '活动赠送订单', amount: 0, paymentContent: '赠送:0.00', time: '2023-09-16 14:00:00', status: '已完成', promoName: '新用户注册送', giftContent: '游戏币×100' },
-  { id: 13, orderNo: 'PR202309160013', merchant: '党建馆集团', store: '党建馆', type: '活动赠送订单', amount: 0, paymentContent: '赠送:0.00', time: '2023-09-16 13:45:00', status: '已完成', promoName: '生日礼遇', giftContent: '免费体验券×1' },
 ])
 
 // ===== 表格列定义 =====

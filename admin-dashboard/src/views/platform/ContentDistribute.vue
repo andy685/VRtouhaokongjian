@@ -173,7 +173,7 @@ const gameList = ref([
   {
     id: 1,
     gameName: '过山车VR',
-    cover: 'https://picsum.photos/seed/coaster/80/80',
+    cover: 'https://picsum.photos/seed/coaster/90/120',
     currentVersion: 'v2.3.2',
     distributedVersion: 'v2.3.1',
     distributeStatus: '有更新' as DistributeStatus,
@@ -184,7 +184,7 @@ const gameList = ref([
   {
     id: 2,
     gameName: '恐怖医院',
-    cover: 'https://picsum.photos/seed/hospital/80/80',
+    cover: 'https://picsum.photos/seed/hospital/90/120',
     currentVersion: 'v1.8.5',
     distributedVersion: 'v1.8.5',
     distributeStatus: '已分发' as DistributeStatus,
@@ -195,7 +195,7 @@ const gameList = ref([
   {
     id: 3,
     gameName: '极速赛车',
-    cover: 'https://picsum.photos/seed/racing/80/80',
+    cover: 'https://picsum.photos/seed/racing/90/120',
     currentVersion: 'v3.1.0',
     distributedVersion: 'v3.1.0',
     distributeStatus: '分发中' as any,
@@ -206,7 +206,7 @@ const gameList = ref([
   {
     id: 4,
     gameName: '海洋世界',
-    cover: 'https://picsum.photos/seed/ocean/80/80',
+    cover: 'https://picsum.photos/seed/ocean/90/120',
     currentVersion: 'v2.0.2',
     distributedVersion: '',
     distributeStatus: '失败' as any,
@@ -217,7 +217,7 @@ const gameList = ref([
   {
     id: 5,
     gameName: '恐龙王国',
-    cover: 'https://picsum.photos/seed/dino/80/80',
+    cover: 'https://picsum.photos/seed/dino/90/120',
     currentVersion: 'v1.5.0',
     distributedVersion: 'v1.5.0',
     distributeStatus: '已撤回' as DistributeStatus,
@@ -228,7 +228,7 @@ const gameList = ref([
   {
     id: 6,
     gameName: '太空探险',
-    cover: 'https://picsum.photos/seed/space/80/80',
+    cover: 'https://picsum.photos/seed/space/90/120',
     currentVersion: 'v2.1.0',
     distributedVersion: '',
     distributeStatus: '未分发' as DistributeStatus,
@@ -249,7 +249,7 @@ const gameColumns = [
       return h('div', { style: 'display:flex;align-items:center;gap:10px;' }, [
         h('img', {
           src: row.cover,
-          style: 'width:40px;height:40px;border-radius:6px;object-fit:cover;',
+          style: 'width:36px;height:48px;border-radius:6px;object-fit:cover;',
         }),
         h('span', { style: 'font-weight:500;' }, row.gameName),
       ])
