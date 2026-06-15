@@ -124,7 +124,7 @@ const displayDetails = computed(() => {
   if (props.details.length > 0) {
     return props.details
   }
-  return [{ label: '预存次数：', value: props.count }]
+  return []
 })
 </script>
 

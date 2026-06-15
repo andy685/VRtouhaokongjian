@@ -45,7 +45,6 @@
             <th>手机号</th>
             <th>等级</th>
             <th>余额</th>
-            <th>剩余次数</th>
             <th>最近消费</th>
           </tr>
         </thead>
@@ -67,7 +66,6 @@
             <td class="member-balance-col">
               <span class="currency-symbol">¥</span>{{ row.balance }}
             </td>
-            <td>{{ row.times }}</td>
             <td>{{ row.lastVisit }}</td>
           </tr>
         </tbody>
