@@ -142,7 +142,7 @@ function viewReason(game: any) { message.warning(`「${game.name}」审核不通
 .game-card.dimmed { opacity: 0.6; }
 
 .game-cover {
-  height: 120px; display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center;
   position: relative;
 }
 .game-icon { font-size: 48px; }

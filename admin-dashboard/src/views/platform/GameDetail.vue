@@ -110,10 +110,6 @@
               <label>游戏名称</label>
               <n-input v-model:value="gameData.name" placeholder="请输入游戏名称" size="large" />
             </div>
-            <div class="form-group">
-              <label>归属供应商</label>
-              <n-select v-model:value="gameData.cpName" :options="cpOptions" placeholder="选择供应商（可选）" clearable filterable />
-            </div>
             <div class="form-row-2">
               <div class="form-group">
                 <label>游戏题材 <n-text depth="3">（多选，由总运营后台统一管理）</n-text></label>
@@ -412,6 +408,16 @@
             <n-tag size="small" type="info" bordered>v1.5</n-tag>
           </div>
           <div class="form-body">
+            <!-- 预设销售金额 -->
+            <div class="form-group">
+              <label>
+                <span class="required-mark">*</span> 预设销售金额
+                <n-text depth="3">（建议零售价）</n-text>
+              </label>
+              <n-input-number v-model:value="gameData.presetPrice" :min="0.01" :max="9999" :precision="2" placeholder="请输入建议售价" style="width:100%">
+                <template #suffix>元/次</template>
+              </n-input-number>
+            </div>
             <!-- 游戏豆消耗 -->
             <div class="form-group">
               <label>游戏豆消耗 <n-text depth="3">（玩家每玩一次消耗的游戏豆数）</n-text></label>
@@ -935,6 +941,7 @@ const gameData = ref({
   sortOrder: 10,
   recommended: false,
   cpName: '' as string,
+  presetPrice: null as number | null,
 
   // ===== 运营配置（v1.5 新增） =====
   runtimeArchitecture: 'pcvr' as RuntimeArchitecture,
@@ -1215,6 +1222,10 @@ function addTagFromSelect(value: string) {
 
 // 保存
 async function handleSave() {
+  if (!gameData.value.presetPrice || gameData.value.presetPrice <= 0) {
+    message.warning('请填写预设销售金额')
+    return
+  }
   const missingResources = gameData.value.resourceComponents.filter(item => item.required && !item.fileName)
   if (missingResources.length) {
     message.warning(`请上传必填资源：${missingResources.map(item => resourceMeta(item.role).label).join('、')}`)
