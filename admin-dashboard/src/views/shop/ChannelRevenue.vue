@@ -17,7 +17,7 @@
 
     <!-- 提示信息 -->
     <n-alert type="warning" :show-icon="false" class="notice-bar">
-      注意:该报表只统计收入数据，不会减去退款数据。退款冲正影响请查看「历史营收统计」页面的退款金额列，或月度结算页。
+      注意：退款按实际退款日统计，跨日退款可能导致当日净营收为负数（如1号充值、2号退款，1号营收正常，2号退款列显示冲正金额）。
     </n-alert>
 
     <!-- 数据说明 -->
@@ -26,8 +26,8 @@
         <p style="font-weight:600;margin-bottom:4px;">两种收银方式（按结算方式区分，非按游戏区分）：</p>
         <p>🖥️ <b>收银系统</b> — 店员通过柜员 POS 操作：预存款充值、设备项目开台、商品销售</p>
         <p>📱 <b>点播系统</b> — 顾客自助扫码点播，结算时可在小程序中使用优惠券抵扣</p>
-        <p style="margin-top:4px;">营收总额 = 线下营收（线下-预存款 + 线下-设备项目 + 线下-商品 + 线下-直接点播）+ 小程序营收（小程序-预存款 + 小程序-设备项目）</p>
-        <p style="color:#3B82F6;font-weight:500;">净营收 = 营收总额 − 优惠券抵扣额（本表暂不含退款，退款见结算页）</p>
+        <p style="margin-top:4px;">营收总额 = 收银系统（预存款 + 设备项目 + 商品）+ 点播系统</p>
+        <p style="color:#999;font-size:12px;">收银系统和点播系统均为优惠后金额。净营收 = 营收总额 − 退款金额（退款按退款日统计，可能为负值）</p>
       </div>
     </n-alert>
 
@@ -60,7 +60,7 @@
           :pagination="pagination"
           striped
           size="small"
-          :scroll-x="1500"
+          :scroll-x="1320"
           :row-class-name="(row: any) => row.isTotal ? 'total-row' : ''"
         />
       </div>
@@ -178,11 +178,10 @@ function handleResetFilter() {
 
 /**
  * 数据生成说明：
- * 当前各字段（营收总额、线下营收、小程序营收、各细分渠道）均为独立随机生成，
- * 它们之间没有真实的加总关系。即：
- *   revenueTotal ≠ offlineRevenue + wechatRevenue
- *   offlineRevenue ≠ 线下各细分渠道之和
- * 这是模拟数据的简化处理，实际业务中应从底层渠道往上汇总。
+ * 营收总额 = 收银系统 + 点播系统 = 订单原价 − 优惠抵扣
+ * 收银系统和点播系统均为优惠后净营收（已扣减优惠券）
+ * 收银系统 = 预存款 + 设备项目 + 商品（从子项汇总）
+ * 净营收 = 营收总额 − 退款金额（退款按退款日统计，可正可负）
  */
 
 // 模拟数据：生成最近7天、6个店铺的数据
@@ -215,23 +214,43 @@ function seedRandom(storeId: number, index: number, dateStr: string): number {
 function getStoreData(store: typeof allStores[0]) {
   const s = seedRandom(store.id, 1, store.date)
   const s2 = seedRandom(store.id, 2, store.date)
+
+  // 订单原价和优惠（基于同一种子，保持一致）
+  const grossAmount = Math.round(s * 13800) / 100             // 订单原价
+  const couponAmount = Math.round(s * 940) / 100               // 优惠抵扣
+  const revenueTotal = grossAmount - couponAmount              // 营收总额 = 原价 − 优惠
+
+  // 点播系统（顾客扫码，占比较小），约 5%~15% 的营收总额
+  const selfServiceRatio = 0.05 + (s2 % 10) / 100             // 5%~15%
+  const selfServiceRevenue = Math.round(revenueTotal * selfServiceRatio * 100) / 100
+
+  // 收银系统 = 营收总额 − 点播系统（确保加总一致）
+  const cashierRevenue = Math.round((revenueTotal - selfServiceRevenue) * 100) / 100
+
+  // 收银系统子项拆分（按比例：预存款~55%，设备项目~32%，商品~13%）
+  const cashierPrepaid = Math.round(cashierRevenue * 0.55 * 100) / 100
+  const cashierDevice = Math.round(cashierRevenue * 0.32 * 100) / 100
+  const cashierGoods = Math.round((cashierRevenue - cashierPrepaid - cashierDevice) * 100) / 100
+
+  // 退款金额（按退款日统计，部分行退款 > 营收以体现跨日退款场景）
+  const refundRatio = 0.05 + (s2 % 30) / 100                 // 5%~35%
+  const refundAmount = Math.round(revenueTotal * refundRatio * 100) / 100
+
+  // 净营收 = 营收总额 − 退款金额（可为负值）
+  const netRevenue = Math.round((revenueTotal - refundAmount) * 100) / 100
+
   return {
     ...store,
-    revenueTotal: Math.round(s * 12860) / 100,
-    grossAmount: Math.round(s * 13800) / 100,
-    couponAmount: Math.round(s * 940) / 100,
-    offlineRevenue: Math.round(s * 8560) / 100,
-    wechatRevenue: Math.round(s2 * 2860) / 100,
-    // 收银系统 = 店员操作渠道（预存款+套票+设备项目+商品）
-    cashierRevenue: Math.round(s * 8220) / 100,
-    // 点播系统 = 顾客自助（直接点播）
-    selfServiceRevenue: Math.round(s2 * 340) / 100,
-    offlinePrepaid: Math.round(s * 3560) / 100,
-    offlineDevice: Math.round(s * 2120) / 100,
-    offlineGoods: Math.round(s * 860) / 100,
-    offlineLive: Math.round(s2 * 340) / 100,
-    wechatPrepaid: Math.round(s2 * 1260) / 100,
-    wechatDevice: Math.round(s2 * 860) / 100,
+    revenueTotal,
+    grossAmount,
+    couponAmount,
+    refundAmount,
+    netRevenue,
+    cashierRevenue,
+    cashierPrepaid,
+    cashierDevice,
+    cashierGoods,
+    selfServiceRevenue,
   }
 }
 
@@ -263,32 +282,26 @@ const tableData = computed(() => {
     revenueTotal: 0,
     grossAmount: 0,
     couponAmount: 0,
-    offlineRevenue: 0,
-    wechatRevenue: 0,
+    refundAmount: 0,
+    netRevenue: 0,
     cashierRevenue: 0,
     selfServiceRevenue: 0,
-    offlinePrepaid: 0,
-    offlineDevice: 0,
-    offlineGoods: 0,
-    offlineLive: 0,
-    wechatPrepaid: 0,
-    wechatDevice: 0,
+    cashierPrepaid: 0,
+    cashierDevice: 0,
+    cashierGoods: 0,
     isTotal: true,
   }
   for (const d of data) {
     total.revenueTotal += d.revenueTotal
     total.grossAmount += d.grossAmount
     total.couponAmount += d.couponAmount
-    total.offlineRevenue += d.offlineRevenue
-    total.wechatRevenue += d.wechatRevenue
+    total.refundAmount += d.refundAmount
+    total.netRevenue += d.netRevenue
     total.cashierRevenue += d.cashierRevenue
     total.selfServiceRevenue += d.selfServiceRevenue
-    total.offlinePrepaid += d.offlinePrepaid
-    total.offlineDevice += d.offlineDevice
-    total.offlineGoods += d.offlineGoods
-    total.offlineLive += d.offlineLive
-    total.wechatPrepaid += d.wechatPrepaid
-    total.wechatDevice += d.wechatDevice
+    total.cashierPrepaid += d.cashierPrepaid
+    total.cashierDevice += d.cashierDevice
+    total.cashierGoods += d.cashierGoods
   }
 
   return [...data, total]
@@ -312,35 +325,26 @@ const columns = [
   { title: '优惠抵扣', key: 'couponAmount', width: 95, align: 'center' as const,
     render(row: any) { return h('span', { style: 'color:#EF4444;font-weight:600;' }, `-${fmtMoney(row.couponAmount)}`) }
   },
-  { title: '线下营收', key: 'offlineRevenue', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlineRevenue) }
+  { title: '退款金额', key: 'refundAmount', width: 100, align: 'center' as const,
+    render(row: any) { return h('span', { style: 'color:#EF4444;font-weight:600;' }, `-${fmtMoney(row.refundAmount)}`) }
   },
-  { title: '小程序营收', key: 'wechatRevenue', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.wechatRevenue) }
+  { title: '净营收', key: 'netRevenue', width: 110, align: 'center' as const,
+    render(row: any) { return h('span', { style: row.netRevenue < 0 ? 'color:#EF4444;font-weight:700;' : 'color:#059669;font-weight:700;' }, fmtMoney(row.netRevenue)) }
   },
-  { title: '收银系统', key: 'cashierRevenue', width: 100, align: 'center' as const,
+  { title: '收银系统', key: 'cashierRevenue', width: 110, align: 'center' as const,
     render(row: any) { return h('span', { style: 'color:#3B82F6;font-weight:500;' }, fmtMoney(row.cashierRevenue)) }
   },
-  { title: '点播系统', key: 'selfServiceRevenue', width: 100, align: 'center' as const,
+  { title: '点播系统', key: 'selfServiceRevenue', width: 110, align: 'center' as const,
     render(row: any) { return h('span', { style: 'color:#8B5CF6;font-weight:500;' }, fmtMoney(row.selfServiceRevenue)) }
   },
-  { title: '线下-预存款', key: 'offlinePrepaid', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlinePrepaid) }
+  { title: '收银系统-预存款', key: 'cashierPrepaid', width: 130, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.cashierPrepaid) }
   },
-  { title: '线下-设备项目', key: 'offlineDevice', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlineDevice) }
+  { title: '收银系统-设备项目', key: 'cashierDevice', width: 140, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.cashierDevice) }
   },
-  { title: '线下-商品', key: 'offlineGoods', width: 100, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlineGoods) }
-  },
-  { title: '线下-直接点播', key: 'offlineLive', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlineLive) }
-  },
-  { title: '小程序-预存款', key: 'wechatPrepaid', width: 120, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.wechatPrepaid) }
-  },
-  { title: '小程序-设备项目', key: 'wechatDevice', width: 120, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.wechatDevice) }
+  { title: '收银系统-商品', key: 'cashierGoods', width: 120, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.cashierGoods) }
   },
 ]
 

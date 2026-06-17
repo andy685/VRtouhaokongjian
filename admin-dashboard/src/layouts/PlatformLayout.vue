@@ -262,7 +262,7 @@ async function resolveCashierOrigin(path = cashierLoginPath) {
 
   const currentPort = Number(window.location.port || 5175)
   const candidatePorts = Array.from(
-    new Set([currentPort - 1, 5174, 5173].filter((port) => Number.isFinite(port) && port > 0))
+    new Set([9529, currentPort - 1, 5174, 5173].filter((port) => Number.isFinite(port) && port > 0))
   )
 
   for (const port of candidatePorts) {
