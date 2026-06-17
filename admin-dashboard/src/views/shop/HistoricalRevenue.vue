@@ -16,6 +16,15 @@
       </n-tag>
     </div>
 
+    <!-- 口径说明 -->
+    <n-alert type="info" :show-icon="false" class="notice-bar">
+      <div class="data-explain-content">
+        <p style="font-weight:600;margin-bottom:2px;">两种收银方式（按结算方式区分）：</p>
+        <p>🖥️ <b>收银系统</b> — 店员柜员 POS 操作（预存款充值、设备项目开台、商品销售）</p>
+        <p>📱 <b>点播系统</b> — 顾客自助扫码点播，结算时可在小程序中使用优惠券抵扣</p>
+      </div>
+    </n-alert>
+
     <!-- 操作栏：视图切换 + 筛选 + 导出 -->
     <div class="view-mode-bar">
       <n-radio-group v-model:value="viewMode" size="small">
@@ -298,12 +307,15 @@ function generateDailyData(days: number) {
         displayDate: dateStr,
         store,
         revenueTotal: revenue,
+        grossAmount: Math.round(revenue * 1.07),
+        couponAmount: Math.round(revenue * 0.07),
+        netRevenue: revenue,
+        cashierRatio: seed % 3 !== 0 ? 'cashier' : 'self_service',
         orderCount,
         refundAmount: refund,
         offlineRevenue: Math.round(revenue * 0.65),
         wechatRevenue: Math.round(revenue * 0.35),
         offlinePrepaid: Math.round(revenue * 0.25),
-        offlinePackage: Math.round(revenue * 0.15),
         offlineDevice: Math.round(revenue * 0.12),
         offlineGoods: Math.round(revenue * 0.08),
         offlineLive: Math.round(revenue * 0.05),
@@ -406,14 +418,12 @@ const trendData = computed(() => {
 const channelData = computed(() => {
   const data = filteredData.value
   const prepaid = data.reduce((s, d) => s + d.offlinePrepaid, 0)
-  const pkg = data.reduce((s, d) => s + d.offlinePackage, 0)
   const device = data.reduce((s, d) => s + d.offlineDevice, 0)
   const goods = data.reduce((s, d) => s + d.offlineGoods, 0)
-  const total = prepaid + pkg + device + goods
+  const total = prepaid + device + goods
   if (total === 0) return []
   return [
     { key: 'prepaid', name: '会员充值', percent: Math.round(prepaid / total * 100), color: '#3B82F6' },
-    { key: 'package', name: '项目套餐', percent: Math.round(pkg / total * 100), color: '#10B981' },
     { key: 'device', name: '游戏点播', percent: Math.round(device / total * 100), color: '#F59E0B' },
     { key: 'goods', name: '商品销售', percent: Math.round(goods / total * 100), color: '#8B5CF6' },
   ]
@@ -432,12 +442,14 @@ const tableData = computed(() => {
         sortKey: viewMode.value === 'month' ? d.date.slice(0, 7) : d.date,
         store: d.store,
         revenueTotal: 0,
+        grossAmount: 0,
+        couponAmount: 0,
+        netRevenue: 0,
         orderCount: 0,
         refundAmount: 0,
         offlineRevenue: 0,
         wechatRevenue: 0,
         offlinePrepaid: 0,
-        offlinePackage: 0,
         offlineDevice: 0,
         offlineGoods: 0,
         offlineLive: 0,
@@ -445,12 +457,14 @@ const tableData = computed(() => {
     }
     const item = map.get(key)
     item.revenueTotal += d.revenueTotal
+    item.grossAmount += d.grossAmount
+    item.couponAmount += d.couponAmount
+    item.netRevenue += d.netRevenue
     item.orderCount += d.orderCount
     item.refundAmount += d.refundAmount
     item.offlineRevenue += d.offlineRevenue
     item.wechatRevenue += d.wechatRevenue
     item.offlinePrepaid += d.offlinePrepaid
-    item.offlinePackage += d.offlinePackage
     item.offlineDevice += d.offlineDevice
     item.offlineGoods += d.offlineGoods
     item.offlineLive += d.offlineLive
@@ -463,12 +477,14 @@ const tableData = computed(() => {
     date: '',
     store: '合计',
     revenueTotal: 0,
+    grossAmount: 0,
+    couponAmount: 0,
+    netRevenue: 0,
     orderCount: 0,
     refundAmount: 0,
     offlineRevenue: 0,
     wechatRevenue: 0,
     offlinePrepaid: 0,
-    offlinePackage: 0,
     offlineDevice: 0,
     offlineGoods: 0,
     offlineLive: 0,
@@ -476,12 +492,14 @@ const tableData = computed(() => {
   }
   for (const r of rows) {
     total.revenueTotal += r.revenueTotal
+    total.grossAmount += r.grossAmount
+    total.couponAmount += r.couponAmount
+    total.netRevenue += r.netRevenue
     total.orderCount += r.orderCount
     total.refundAmount += r.refundAmount
     total.offlineRevenue += r.offlineRevenue
     total.wechatRevenue += r.wechatRevenue
     total.offlinePrepaid += r.offlinePrepaid
-    total.offlinePackage += r.offlinePackage
     total.offlineDevice += r.offlineDevice
     total.offlineGoods += r.offlineGoods
     total.offlineLive += r.offlineLive
@@ -495,8 +513,23 @@ const columns = computed(() => [
   { title: '店铺', key: 'store', width: 130, fixed: 'left' as const,
     render(row: any) { return row.isTotal ? h('b', {}, row.store) : row.store }
   },
-  { title: '营收总额', key: 'revenueTotal', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.revenueTotal) }
+  { title: '订单原价', key: 'grossAmount', width: 100, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.grossAmount) }
+  },
+  { title: '优惠抵扣', key: 'couponAmount', width: 95, align: 'center' as const,
+    render(row: any) { return h('span', { style: 'color:#EF4444;font-weight:600;' }, `-${fmtMoney(row.couponAmount)}`) }
+  },
+  { title: '净营收', key: 'netRevenue', width: 100, align: 'center' as const,
+    render(row: any) { return h('span', { style: 'color:#10B981;font-weight:600;' }, fmtMoney(row.netRevenue)) }
+  },
+  { title: '主要来源', key: 'cashierRatio', width: 90, align: 'center' as const,
+    render(row: any) {
+      if (row.isTotal) return '-'
+      const tag = row.cashierRatio === 'cashier'
+        ? h(NTag, { type: 'info', size: 'small', bordered: false }, () => '收银系统')
+        : h(NTag, { type: 'success', size: 'small', bordered: false }, () => '点播系统')
+      return tag
+    }
   },
   { title: '订单数', key: 'orderCount', width: 80, align: 'center' as const },
   { title: '退款金额', key: 'refundAmount', width: 100, align: 'center' as const,
@@ -510,9 +543,6 @@ const columns = computed(() => [
   },
   { title: '线下-预存款', key: 'offlinePrepaid', width: 100, align: 'center' as const,
     render(row: any) { return fmtMoney(row.offlinePrepaid) }
-  },
-  { title: '线下-套票', key: 'offlinePackage', width: 90, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlinePackage) }
   },
   { title: '线下-设备项目', key: 'offlineDevice', width: 110, align: 'center' as const,
     render(row: any) { return fmtMoney(row.offlineDevice) }
@@ -566,6 +596,21 @@ const pagination = { pageSize: 10 }
   font-size: 13px;
   color: #666;
   white-space: nowrap;
+}
+
+.notice-bar {
+  margin-bottom: 16px;
+}
+
+.data-explain-content {
+  padding: 0 4px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.8;
+}
+
+.data-explain-content p {
+  margin: 0;
 }
 
 /* ===== 数据展示方式 ===== */

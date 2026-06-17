@@ -28,6 +28,18 @@
         <n-icon :component="TrendingUpOutline" size="24" color="#8B5CF6" />
         <div><span class="num">57.2%</span><span class="label">使用率</span></div>
       </div>
+      <div class="stat-card">
+        <n-icon :component="CashOutline" size="24" color="#EF4444" />
+        <div><span class="num">¥89,450</span><span class="label">优惠总额</span></div>
+      </div>
+      <div class="stat-card">
+        <n-icon :component="BarChartOutline" size="24" color="#06B6D4" />
+        <div>
+          <span class="num">¥586,200</span>
+          <span class="label">带动GMV</span>
+          <span class="hint">使用优惠券的订单成交总额</span>
+        </div>
+      </div>
     </div>
 
     <n-card class="main-card">
@@ -75,7 +87,7 @@ import {
 } from 'naive-ui'
 import {
   TicketOutline, AddOutline, CheckmarkCircleOutline,
-  TimeOutline, TrendingUpOutline
+  TimeOutline, TrendingUpOutline, CashOutline, BarChartOutline
 } from '@vicons/ionicons5'
 
 const activeTab = ref('platform')
@@ -135,10 +147,11 @@ function createFromTemplate(tpl: any) { console.log('使用模板创建', tpl) }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
 
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
 .stat-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; }
 .stat-card .num { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-primary); display: block; }
 .stat-card .label { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
+.stat-card .hint { display: block; font-size: 11px; color: #999; margin-top: 2px; }
 
 .main-card { border-radius: 16px; border: 1px solid var(--border-color); }
 

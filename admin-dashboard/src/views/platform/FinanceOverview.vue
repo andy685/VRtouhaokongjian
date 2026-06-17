@@ -40,7 +40,7 @@
             成本 — 供应商成本
           </div>
           <div class="funnel-value" style="color:#EF4444;">¥1,177,594</div>
-          <div class="funnel-sub">游戏供应商结算成本（占销售收入 55%）</div>
+          <div class="funnel-sub">Σ(各CP有效体验次数 × 各CP单次成本价)，非固定比例</div>
           <div class="funnel-trend up">↑ 10.1% 环比上月</div>
         </div>
 

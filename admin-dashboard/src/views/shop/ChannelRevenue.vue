@@ -17,15 +17,17 @@
 
     <!-- 提示信息 -->
     <n-alert type="warning" :show-icon="false" class="notice-bar">
-      注意:该报表只统计收入数据，不会减去退款数据
+      注意:该报表只统计收入数据，不会减去退款数据。退款冲正影响请查看「历史营收统计」页面的退款金额列，或月度结算页。
     </n-alert>
 
     <!-- 数据说明 -->
     <n-alert v-if="showDataExplain" type="info" :show-icon="false" class="notice-bar">
       <div class="data-explain-content">
-        <p>营收总额 = 线下营收 + 小程序营收</p>
-        <p>线下营收 = 线下-预存款 + 线下-套票 + 线下-设备项目 + 线下-商品 + 线下-直接点播</p>
-        <p>小程序营收 = 小程序-预存款 + 小程序-套票 + 小程序-设备项目</p>
+        <p style="font-weight:600;margin-bottom:4px;">两种收银方式（按结算方式区分，非按游戏区分）：</p>
+        <p>🖥️ <b>收银系统</b> — 店员通过柜员 POS 操作：预存款充值、设备项目开台、商品销售</p>
+        <p>📱 <b>点播系统</b> — 顾客自助扫码点播，结算时可在小程序中使用优惠券抵扣</p>
+        <p style="margin-top:4px;">营收总额 = 线下营收（线下-预存款 + 线下-设备项目 + 线下-商品 + 线下-直接点播）+ 小程序营收（小程序-预存款 + 小程序-设备项目）</p>
+        <p style="color:#3B82F6;font-weight:500;">净营收 = 营收总额 − 优惠券抵扣额（本表暂不含退款，退款见结算页）</p>
       </div>
     </n-alert>
 
@@ -216,16 +218,20 @@ function getStoreData(store: typeof allStores[0]) {
   return {
     ...store,
     revenueTotal: Math.round(s * 12860) / 100,
+    grossAmount: Math.round(s * 13800) / 100,
+    couponAmount: Math.round(s * 940) / 100,
     offlineRevenue: Math.round(s * 8560) / 100,
     wechatRevenue: Math.round(s2 * 2860) / 100,
+    // 收银系统 = 店员操作渠道（预存款+套票+设备项目+商品）
+    cashierRevenue: Math.round(s * 8220) / 100,
+    // 点播系统 = 顾客自助（直接点播）
+    selfServiceRevenue: Math.round(s2 * 340) / 100,
     offlinePrepaid: Math.round(s * 3560) / 100,
-    offlinePackage: Math.round(s * 2120) / 100,
-    offlineDevice: Math.round(s * 1680) / 100,
+    offlineDevice: Math.round(s * 2120) / 100,
     offlineGoods: Math.round(s * 860) / 100,
     offlineLive: Math.round(s2 * 340) / 100,
     wechatPrepaid: Math.round(s2 * 1260) / 100,
-    wechatPackage: Math.round(s2 * 860) / 100,
-    wechatDevice: Math.round(s2 * 560) / 100,
+    wechatDevice: Math.round(s2 * 860) / 100,
   }
 }
 
@@ -255,29 +261,33 @@ const tableData = computed(() => {
     store: '合计',
     date: '',
     revenueTotal: 0,
+    grossAmount: 0,
+    couponAmount: 0,
     offlineRevenue: 0,
     wechatRevenue: 0,
+    cashierRevenue: 0,
+    selfServiceRevenue: 0,
     offlinePrepaid: 0,
-    offlinePackage: 0,
     offlineDevice: 0,
     offlineGoods: 0,
     offlineLive: 0,
     wechatPrepaid: 0,
-    wechatPackage: 0,
     wechatDevice: 0,
     isTotal: true,
   }
   for (const d of data) {
     total.revenueTotal += d.revenueTotal
+    total.grossAmount += d.grossAmount
+    total.couponAmount += d.couponAmount
     total.offlineRevenue += d.offlineRevenue
     total.wechatRevenue += d.wechatRevenue
+    total.cashierRevenue += d.cashierRevenue
+    total.selfServiceRevenue += d.selfServiceRevenue
     total.offlinePrepaid += d.offlinePrepaid
-    total.offlinePackage += d.offlinePackage
     total.offlineDevice += d.offlineDevice
     total.offlineGoods += d.offlineGoods
     total.offlineLive += d.offlineLive
     total.wechatPrepaid += d.wechatPrepaid
-    total.wechatPackage += d.wechatPackage
     total.wechatDevice += d.wechatDevice
   }
 
@@ -296,17 +306,26 @@ const columns = [
   { title: '营收总额', key: 'revenueTotal', width: 110, align: 'center' as const,
     render(row: any) { return fmtMoney(row.revenueTotal) }
   },
+  { title: '订单原价', key: 'grossAmount', width: 100, align: 'center' as const,
+    render(row: any) { return fmtMoney(row.grossAmount) }
+  },
+  { title: '优惠抵扣', key: 'couponAmount', width: 95, align: 'center' as const,
+    render(row: any) { return h('span', { style: 'color:#EF4444;font-weight:600;' }, `-${fmtMoney(row.couponAmount)}`) }
+  },
   { title: '线下营收', key: 'offlineRevenue', width: 110, align: 'center' as const,
     render(row: any) { return fmtMoney(row.offlineRevenue) }
   },
   { title: '小程序营收', key: 'wechatRevenue', width: 110, align: 'center' as const,
     render(row: any) { return fmtMoney(row.wechatRevenue) }
   },
+  { title: '收银系统', key: 'cashierRevenue', width: 100, align: 'center' as const,
+    render(row: any) { return h('span', { style: 'color:#3B82F6;font-weight:500;' }, fmtMoney(row.cashierRevenue)) }
+  },
+  { title: '点播系统', key: 'selfServiceRevenue', width: 100, align: 'center' as const,
+    render(row: any) { return h('span', { style: 'color:#8B5CF6;font-weight:500;' }, fmtMoney(row.selfServiceRevenue)) }
+  },
   { title: '线下-预存款', key: 'offlinePrepaid', width: 110, align: 'center' as const,
     render(row: any) { return fmtMoney(row.offlinePrepaid) }
-  },
-  { title: '线下-套票', key: 'offlinePackage', width: 100, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.offlinePackage) }
   },
   { title: '线下-设备项目', key: 'offlineDevice', width: 110, align: 'center' as const,
     render(row: any) { return fmtMoney(row.offlineDevice) }
@@ -319,9 +338,6 @@ const columns = [
   },
   { title: '小程序-预存款', key: 'wechatPrepaid', width: 120, align: 'center' as const,
     render(row: any) { return fmtMoney(row.wechatPrepaid) }
-  },
-  { title: '小程序-套票', key: 'wechatPackage', width: 110, align: 'center' as const,
-    render(row: any) { return fmtMoney(row.wechatPackage) }
   },
   { title: '小程序-设备项目', key: 'wechatDevice', width: 120, align: 'center' as const,
     render(row: any) { return fmtMoney(row.wechatDevice) }

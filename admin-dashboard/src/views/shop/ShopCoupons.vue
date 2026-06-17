@@ -49,6 +49,26 @@
           <span class="value">¥{{ totalDiscount }}</span>
         </div>
       </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
+          <n-icon :component="TrendingUpOutline" size="22" color="#fff" />
+        </div>
+        <div class="stat-content">
+          <span class="label">带动GMV</span>
+          <span class="kpi-hint">使用该券的订单成交总额</span>
+          <span class="value">¥{{ totalGMV }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #06B6D4, #0891B2);">
+          <n-icon :component="BarChartOutline" size="22" color="#fff" />
+        </div>
+        <div class="stat-content">
+          <span class="label">投入产出比</span>
+          <span class="kpi-hint">GMV ÷ 优惠总额</span>
+          <span class="value">{{ roiRatio }}</span>
+        </div>
+      </div>
     </div>
 
     <!-- 优惠券列表 -->
@@ -333,7 +353,7 @@ import {
 import type { DataTableColumns } from 'naive-ui'
 import {
   SearchOutline, TicketOutline, DownloadOutline, CheckmarkCircleOutline,
-  PricetagsOutline, EllipsisHorizontalOutline
+  PricetagsOutline, EllipsisHorizontalOutline, TrendingUpOutline, BarChartOutline
 } from '@vicons/ionicons5'
 
 const message = useMessage()
@@ -515,6 +535,17 @@ const totalDiscount = computed(() => {
   }, 0)
 })
 
+const totalGMV = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + (item.gmv || 0), 0)
+})
+
+const roiRatio = computed(() => {
+  const discount = totalDiscount.value
+  const gmv = totalGMV.value
+  if (discount === 0) return '—'
+  return `${(gmv / discount).toFixed(1)} : 1`
+})
+
 const columns: DataTableColumns = [
   { title: '所属店铺', key: 'shopName', width: 140 },
   { title: '优惠券名称', key: 'name', width: 150 },
@@ -540,6 +571,10 @@ const columns: DataTableColumns = [
   }},
   { title: '已领/总量', key: 'claimed', width: 110, render: (row) => `${row.claimed}/${row.total || '∞'}` },
   { title: '已使用', key: 'used', width: 90 },
+  { title: '带动GMV', key: 'gmv', width: 140, render: (row) => {
+    const amount = (row.gmv || 0).toLocaleString()
+    return h('span', { title: '使用该券的订单成交总额' }, `¥${amount}`)
+  }},
   { title: '有效期', key: 'validText', width: 140, render: (row) => {
     if (row.validType === 'days') return `领取后${row.validDays}天`
     if (row.validType === 'date') return `截止${row.validEndDate}`
@@ -572,11 +607,11 @@ const columns: DataTableColumns = [
 ]
 
 const tableData = ref([
-  { id: 1, shopName: '卓远亚运城店', name: '新人注册欢迎券', type: 'discount', value: 20, threshold: 50, claimed: 520, total: 0, used: 186, validType: 'days', validDays: 30, validEndDate: null, status: true, autoDistribute: true },
-  { id: 2, shopName: '卓远天河路店', name: '周末畅玩券', type: 'rate', value: 85, threshold: 80, claimed: 320, total: 500, used: 245, validType: 'date', validDays: null, validEndDate: '2026-12-31', status: true },
-  { id: 3, shopName: '卓远亚运城店', name: '会员专享券', type: 'discount', value: 15, threshold: 0, claimed: 180, total: 300, used: 120, validType: 'days', validDays: 7, validEndDate: null, status: false },
-  { id: 4, shopName: '卓远北京路店', name: '节日特惠券', type: 'discount', value: 50, threshold: 200, claimed: 266, total: 200, used: 266, validType: 'forever', validDays: null, validEndDate: null, status: false },
-  { id: 5, shopName: '卓远亚运城店', name: '9.9元体验券', type: 'discount', value: 10, threshold: 0, claimed: 350, total: 500, used: 128, validType: 'days', validDays: 30, validEndDate: null, status: true },
+  { id: 1, shopName: '卓远亚运城店', name: '新人注册欢迎券', type: 'discount', value: 20, threshold: 50, claimed: 520, total: 0, used: 186, gmv: 12600, validType: 'days', validDays: 30, validEndDate: null, status: true, autoDistribute: true },
+  { id: 2, shopName: '卓远天河路店', name: '周末畅玩券', type: 'rate', value: 85, threshold: 80, claimed: 320, total: 500, used: 245, gmv: 21800, validType: 'date', validDays: null, validEndDate: '2026-12-31', status: true },
+  { id: 3, shopName: '卓远亚运城店', name: '会员专享券', type: 'discount', value: 15, threshold: 0, claimed: 180, total: 300, used: 120, gmv: 5800, validType: 'days', validDays: 7, validEndDate: null, status: false },
+  { id: 4, shopName: '卓远北京路店', name: '节日特惠券', type: 'discount', value: 50, threshold: 200, claimed: 266, total: 200, used: 266, gmv: 58600, validType: 'forever', validDays: null, validEndDate: null, status: false },
+  { id: 5, shopName: '卓远亚运城店', name: '9.9元体验券', type: 'discount', value: 10, threshold: 0, claimed: 350, total: 500, used: 128, gmv: 4500, validType: 'days', validDays: 30, validEndDate: null, status: true },
 ])
 
 // 根据tab筛选数据
@@ -651,13 +686,14 @@ function handleSubmit() {
 .page-container { padding: 24px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-header h1 { font-size: 20px; font-weight: 600; color: #333; margin: 0; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
 .stat-card { background: #fff; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 .stat-card.highlight { border: 1px solid #3B82F6; }
 .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .stat-content { display: flex; flex-direction: column; gap: 4px; }
 .stat-content .label { font-size: 13px; color: #666; }
 .stat-content .value { font-size: 24px; font-weight: 600; color: #333; }
+.stat-content .kpi-hint { font-size: 11px; color: #999; margin-top: -2px; line-height: 1.4; }
 .table-card { border-radius: 12px; }
 .form-hint { font-size: 12px; color: #999; }
 .filter-preview { display: flex; align-items: baseline; gap: 4px; }

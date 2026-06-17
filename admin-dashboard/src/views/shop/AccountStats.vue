@@ -41,6 +41,7 @@
         <div class="stat-content">
           <span class="label">期间收款总额</span>
           <span class="value">¥{{ kpiData.receiptTotal.toLocaleString() }}</span>
+          <span class="kpi-hint">含充值收款 + 直接消费</span>
         </div>
       </div>
       <div class="stat-card">
@@ -50,6 +51,7 @@
         <div class="stat-content">
           <span class="label">期间充值总额</span>
           <span class="value">¥{{ kpiData.rechargeTotal.toLocaleString() }}</span>
+          <span class="kpi-hint">顾客向会员账户储值</span>
         </div>
       </div>
       <div class="stat-card">
@@ -59,6 +61,7 @@
         <div class="stat-content">
           <span class="label">期间消费总额</span>
           <span class="value" style="color: #EF4444;">¥{{ kpiData.consumeTotal.toLocaleString() }}</span>
+          <span class="kpi-hint">含直接消费 + 预存款消费</span>
         </div>
       </div>
       <div class="stat-card">
@@ -70,9 +73,13 @@
           <span class="value" :style="{ color: kpiData.netChange >= 0 ? '#10B981' : '#EF4444' }">
             {{ kpiData.netChange >= 0 ? '+' : '-' }}¥{{ Math.abs(kpiData.netChange).toLocaleString() }}
           </span>
+          <span class="kpi-hint">充值 + 赠送 − 消费 ± 调整</span>
         </div>
       </div>
     </div>
+    <n-alert type="info" :bordered="false" class="kpi-explanation">
+      <strong>口径说明：</strong>充值总额为顾客向会员账户储值的原始金额（此金额已通过拉卡拉进入商家总账）；消费总额为顾客用账户余额/直接支付消费的金额（含预存款消费和直接消费），消费不产生新的拉卡拉收款。充值总额与消费总额不可直接相加，否则会造成重复计算。
+    </n-alert>
 
     <!-- 二、收款与充值消费趋势 -->
     <div class="section-card">
@@ -208,7 +215,7 @@ import { ref, computed, h } from 'vue'
 import {
   NButton, NIcon, NDataTable, NDrawer, NDrawerContent,
   NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag,
-  NRadioGroup, NRadioButton,
+  NRadioGroup, NRadioButton, NAlert,
 } from 'naive-ui'
 import {
   FilterOutline, DownloadOutline,
@@ -522,6 +529,9 @@ const pagination = { pageSize: 15 }
 .stat-content { display: flex; flex-direction: column; gap: 4px; }
 .stat-content .label { font-size: 13px; color: #666; }
 .stat-content .value { font-size: 22px; font-weight: 700; color: #333; }
+.stat-content .kpi-hint { font-size: 11px; color: #999; margin-top: 2px; line-height: 1.4; }
+
+.kpi-explanation { margin-bottom: 20px; font-size: 13px; line-height: 1.7; }
 
 /* 区块 */
 .section-card { background: white; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; overflow: hidden; }

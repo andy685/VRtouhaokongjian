@@ -5,4 +5,5 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/cashier/' : '/',
   plugins: [vue()],
+  server: { port: 9529 },
 }))

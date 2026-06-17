@@ -133,10 +133,6 @@
               </div>
             </div>
             <div class="form-group">
-              <label>发布时间</label>
-              <n-date-picker v-model:value="formattedDate" type="datetime" clearable style="width:100%" />
-            </div>
-            <div class="form-group">
               <label>评分</label>
               <div class="inline-items">
                 <n-rate v-model:value="gameData.rating" size="medium" allow-half />
@@ -899,7 +895,6 @@ const gameData = ref({
   duration: 10,
   size: '',
   version: '',
-  publishTime: null as number | null,
 
   // 游戏封面
   iconUrl: '' as string,
@@ -1049,12 +1044,6 @@ function clearResourceFile(role: ResourceRole) {
 
 
 
-// 格式化日期
-const formattedDate = computed({
-  get: () => gameData.value.publishTime ? new Date(gameData.value.publishTime * 1000).getTime() : Date.now(),
-  set: (val: number) => { if (val) gameData.value.publishTime = Math.floor(val / 1000) }
-})
-
 // 模拟加载已有游戏数据
 function loadGameData(id: string) {
   const mockData: Record<string, any> = {
@@ -1063,7 +1052,7 @@ function loadGameData(id: string) {
       tags: ['热门', '全年龄', '刺激'],
       categories: ['scifi', 'rhythm'],
       description: '体验身临其境的VR过山车之旅！穿越壮观的虚拟世界，感受失重与速度的极致刺激。',
-      duration: 10, size: '256M', version: 'v2.3.1', publishTime: 1713576800,
+      duration: 10, size: '256M', version: 'v2.3.1',
       supportShooting: false, supportWalking: true, supportSeated: true,
       multiPlayer: false, hasVoiceChat: false, hasLeaderboard: true,
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',
@@ -1082,7 +1071,7 @@ function loadGameData(id: string) {
       tags: ['惊悚恐怖', '竞技射击', '最新VR'],
       categories: ['horror', 'extreme'],
       description: '面对日益强悍的僵尸浪潮围困，人类与僵尸迎来最终对决。',
-      duration: 15, size: '500M', version: 'v1.8.5', publishTime: 1713490400,
+      duration: 15, size: '500M', version: 'v1.8.5',
       supportShooting: true, supportWalking: true, supportSeated: false,
       multiPlayer: true, hasVoiceChat: true, hasLeaderboard: true,
       uiLanguage: 'zh-CN', voiceLanguage: 'zh-CN',

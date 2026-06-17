@@ -17,8 +17,12 @@
           <n-icon :component="CashOutline" size="22" color="#fff" />
         </div>
         <div class="metric-content">
-          <span class="label">今日营收</span>
+          <span class="label">今日净营收（已扣优惠）</span>
           <span class="value primary">¥15,680</span>
+          <div class="metric-breakdown">
+            <span>原价 ¥17,200</span>
+            <span class="breakdown-minus">−¥1,520 优惠</span>
+          </div>
           <span class="trend up">↑ 12.3%</span>
         </div>
       </div>
@@ -225,6 +229,9 @@ onMounted(() => {
 .metric-content .trend.up { color: #10B981; }
 .metric-content .trend.down { color: #EF4444; }
 .metric-content .trend.good { color: #10B981; }
+
+.metric-breakdown { display: flex; gap: 8px; font-size: 11px; color: #64748b; margin-top: 2px; }
+.breakdown-minus { color: #EF4444; font-weight: 500; }
 
 .charts-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
 .chart-card { background: white; border-radius: 16px; padding: 22px; border: 1px solid var(--border-color); }
