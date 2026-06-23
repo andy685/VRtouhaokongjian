@@ -118,14 +118,48 @@
         </n-space>
       </template>
     </n-modal>
+
+    <!-- 续费确认弹窗 -->
+    <n-modal v-model:show="showRenewModal" preset="card" title="续费确认" style="width: 480px;">
+      <div class="renew-body">
+        <div class="renew-game-info">
+          <span class="renew-game-name">{{ renewTarget?.game }}</span>
+          <n-tag type="info" size="small">续费追加时长</n-tag>
+        </div>
+        <n-descriptions :column="1" bordered>
+          <n-descriptions-item label="设备">{{ renewTarget?.device }}</n-descriptions-item>
+          <n-descriptions-item label="店铺">{{ renewTarget?.shop }}</n-descriptions-item>
+          <n-descriptions-item label="已玩时长">
+            <span style="font-weight:600;color:#10B981;">{{ renewTarget?.duration || 10 }} 分钟</span>
+          </n-descriptions-item>
+          <n-descriptions-item label="续费追加时长">
+            <span style="font-weight:600;color:#3B82F6;">+{{ renewTarget?.duration || 10 }} 分钟</span>
+          </n-descriptions-item>
+          <n-descriptions-item label="续费后总时长">
+            <span style="font-weight:700;color:#8B5CF6;font-size:15px;">{{ (renewTarget?.duration || 10) * 2 }} 分钟</span>
+          </n-descriptions-item>
+        </n-descriptions>
+        <n-text depth="3" style="display:block;margin-top:12px;font-size:12px;text-align:center;">
+          💡 续费从当前进度追加时长，游戏不会从头开始
+        </n-text>
+      </div>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showRenewModal = false">取消</n-button>
+          <n-button type="warning" @click="confirmRenew">确认续费</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NModal, NSelect, NInput, NDatePicker, NSpace, NTabs, NTabPane, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
+import { NDataTable, NButton, NIcon, NModal, NSelect, NInput, NDatePicker, NSpace, NTabs, NTabPane, NTag, NDescriptions, NDescriptionsItem, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { DownloadOutline, PlayOutline, TimeOutline, CashOutline, PeopleOutline } from '@vicons/ionicons5'
+import { DownloadOutline, PlayOutline, TimeOutline, CashOutline, PeopleOutline, RefreshOutline } from '@vicons/ionicons5'
+
+const message = useMessage()
 
 const activeTab = ref('film-record')
 
@@ -148,21 +182,27 @@ const filmColumns: DataTableColumns = [
   { title: '游戏', key: 'game', minWidth: 180 },
   { title: '人数', key: 'people', width: 70, align: 'center' },
   { title: '消费时间', key: 'time', width: 160, align: 'center' },
+  { title: '操作', key: 'actions', width: 90, align: 'center', render: (row: any) =>
+    row.allowRenewal
+      ? h(NButton, { size: 'small', type: 'warning', secondary: true, onClick: () => handleRenew(row) },
+          { icon: () => h(NIcon, null, () => h(RefreshOutline)), default: () => '续费' })
+      : h('span', { style: { color: '#bbb', fontSize: '12px' } }, '—')
+  },
 ]
 
 const filmRawData = ref([
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 12:54' },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '勇闯恐龙谷(飞碟)', people: 1, time: '2023-07-25 12:50' },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '荒岛逃生(飞碟)', people: 1, time: '2023-07-25 12:45' },
-  { shop: '利民街小展厅', device: '暗黑机甲22版', game: '幻影突袭', people: 1, time: '2023-07-25 11:30' },
-  { shop: '利民街小展厅', device: '暗黑战场[主控端]', game: '幻影突袭', people: 1, time: '2023-07-25 10:47' },
-  { shop: '利民街小展厅', device: '暗黑战场[主控端]', game: '破甲风暴', people: 2, time: '2023-07-25 10:38' },
-  { shop: '利民街小展厅', device: '悬浮骑兵', game: '节奏光剑', people: 1, time: '2023-07-25 10:33' },
-  { shop: '利民街小展厅', device: '悬浮骑兵', game: '节奏光剑', people: 1, time: '2023-07-25 10:30' },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '急速森林(飞碟)', people: 5, time: '2023-07-25 11:39' },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '恐怖森林(飞碟)', people: 1, time: '2023-07-25 11:23' },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 11:17' },
-  { shop: '利民街小展厅', device: '暗黑机甲22版', game: '幻影突袭', people: 1, time: '2023-07-25 11:05' },
+  { shop: '利民街小展厅', device: '幻影飞碟', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 12:54', allowRenewal: true },
+  { shop: '利民街小展厅', device: '幻影飞碟', game: '勇闯恐龙谷(飞碟)', people: 1, time: '2023-07-25 12:50', allowRenewal: false },
+  { shop: '利民街小展厅', device: '幻影飞碟', game: '荒岛逃生(飞碟)', people: 1, time: '2023-07-25 12:45', allowRenewal: false },
+  { shop: '利民街小展厅', device: '暗黑机甲22版', game: '幻影突袭', people: 1, time: '2023-07-25 11:30', allowRenewal: true },
+  { shop: '利民街小展厅', device: '暗黑战场[主控端]', game: '幻影突袭', people: 1, time: '2023-07-25 10:47', allowRenewal: true },
+  { shop: '利民街小展厅', device: '暗黑战场[主控端]', game: '破甲风暴', people: 2, time: '2023-07-25 10:38', allowRenewal: false },
+  { shop: '利民街小展厅', device: '悬浮骑兵', game: '节奏光剑', people: 1, time: '2023-07-25 10:33', allowRenewal: true },
+  { shop: '利民街小展厅', device: '悬浮骑兵', game: '节奏光剑', people: 1, time: '2023-07-25 10:30', allowRenewal: true },
+  { shop: '利民街小展厅', device: '幻影飞碟', game: '急速森林(飞碟)', people: 5, time: '2023-07-25 11:39', allowRenewal: false },
+  { shop: '利民街小展厅', device: '幻影飞碟', game: '恐怖森林(飞碟)', people: 1, time: '2023-07-25 11:23', allowRenewal: false },
+  { shop: '利民街小展厅', device: '幻影飞碟', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 11:17', allowRenewal: true },
+  { shop: '利民街小展厅', device: '暗黑机甲22版', game: '幻影突袭', people: 1, time: '2023-07-25 11:05', allowRenewal: true },
 ])
 
 const filterFilmGame = ref('')
@@ -190,18 +230,24 @@ const gameSummaryColumns: DataTableColumns = [
   { title: '游戏人数', key: 'people', width: 100, align: 'center' },
   { title: '点播次数占比(%)', key: 'playPercent', width: 140, align: 'center', render: (row: any) => row.playPercent.toFixed(2) },
   { title: '游戏人数占比(%)', key: 'peoplePercent', width: 140, align: 'center', render: (row: any) => row.peoplePercent.toFixed(2) },
+  { title: '操作', key: 'actions', width: 90, align: 'center', render: (row: any) =>
+    row.game && row.allowRenewal
+      ? h(NButton, { size: 'small', type: 'warning', secondary: true, onClick: () => handleRenew(row) },
+          { icon: () => h(NIcon, null, () => h(RefreshOutline)), default: () => '续费' })
+      : row.game ? h('span', { style: { color: '#bbb', fontSize: '12px' } }, '—') : null
+  },
 ]
 
 const gameSummaryRawData = ref([
-  { shop: '利民街小展厅', game: '勇闯恐龙谷(飞碟)', plays: 1, people: 5, playPercent: 3.70, peoplePercent: 9.80 },
-  { shop: '利民街小展厅', game: '匿者', plays: 1, people: 1, playPercent: 3.70, peoplePercent: 1.96 },
-  { shop: '利民街小展厅', game: '阿拉丁历险记4K高清版(飞碟)', plays: 2, people: 10, playPercent: 7.41, peoplePercent: 19.61 },
-  { shop: '利民街小展厅', game: '荒岛逃生(飞碟)', plays: 1, people: 5, playPercent: 3.70, peoplePercent: 9.80 },
-  { shop: '利民街小展厅', game: '恐怖森林(飞碟)', plays: 2, people: 6, playPercent: 7.41, peoplePercent: 11.76 },
-  { shop: '利民街小展厅', game: '急速森林(飞碟)', plays: 5, people: 9, playPercent: 18.52, peoplePercent: 17.65 },
-  { shop: '利民街小展厅', game: '幻影突袭', plays: 11, people: 11, playPercent: 40.74, peoplePercent: 21.57 },
-  { shop: '利民街小展厅', game: '节奏光剑', plays: 3, people: 3, playPercent: 11.11, peoplePercent: 5.88 },
-  { shop: '利民街小展厅', game: '破甲风暴', plays: 1, people: 1, playPercent: 3.70, peoplePercent: 1.96 },
+  { shop: '利民街小展厅', game: '勇闯恐龙谷(飞碟)', plays: 1, people: 5, playPercent: 3.70, peoplePercent: 9.80, allowRenewal: false },
+  { shop: '利民街小展厅', game: '匿者', plays: 1, people: 1, playPercent: 3.70, peoplePercent: 1.96, allowRenewal: false },
+  { shop: '利民街小展厅', game: '阿拉丁历险记4K高清版(飞碟)', plays: 2, people: 10, playPercent: 7.41, peoplePercent: 19.61, allowRenewal: true },
+  { shop: '利民街小展厅', game: '荒岛逃生(飞碟)', plays: 1, people: 5, playPercent: 3.70, peoplePercent: 9.80, allowRenewal: false },
+  { shop: '利民街小展厅', game: '恐怖森林(飞碟)', plays: 2, people: 6, playPercent: 7.41, peoplePercent: 11.76, allowRenewal: false },
+  { shop: '利民街小展厅', game: '急速森林(飞碟)', plays: 5, people: 9, playPercent: 18.52, peoplePercent: 17.65, allowRenewal: false },
+  { shop: '利民街小展厅', game: '幻影突袭', plays: 11, people: 11, playPercent: 40.74, peoplePercent: 21.57, allowRenewal: true },
+  { shop: '利民街小展厅', game: '节奏光剑', plays: 3, people: 3, playPercent: 11.11, peoplePercent: 5.88, allowRenewal: true },
+  { shop: '利民街小展厅', game: '破甲风暴', plays: 1, people: 1, playPercent: 3.70, peoplePercent: 1.96, allowRenewal: false },
 ])
 
 const filteredGameSummaryData = computed(() => {
@@ -327,7 +373,28 @@ function resetStaffFilter() {
   staffDateRange.value = getTodayRange()
 }
 
+// ==================== 续费 ====================
+const showRenewModal = ref(false)
+const renewTarget = ref<any>(null)
+
+function handleRenew(row: any) {
+  // 确保有 duration 字段，默认 10 分钟
+  if (!row.duration) row.duration = 10
+  renewTarget.value = row
+  showRenewModal.value = true
+}
+
+function confirmRenew() {
+  const row = renewTarget.value
+  if (!row) return
+  showRenewModal.value = false
+  // 续费后时长翻倍（追加同等时长）
+  row.duration = (row.duration || 10) * 2
+  message.success(`「${row.game}」续费成功，游戏时长已延长至 ${row.duration} 分钟`)
+}
+
 // ==================== 公共导出 ====================
+
 function exportData() {
   const tabNames: Record<string, string> = { 'film-record': '消费记录', 'game-summary': '游戏汇总', 'staff': '员工点播' }
   console.log('导出点播数据: ' + tabNames[activeTab.value])
@@ -424,6 +491,20 @@ function exportData() {
 
 /* ===== Tabs ===== */
 ::deep(.n-tabs-nav) { margin-bottom: 16px; }
+
+/* ===== 续费弹窗 ===== */
+.renew-body { padding: 4px 0; }
+.renew-game-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.renew-game-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
 
 /* ===== 响应式 ===== */
 @media (max-width: 1200px) {

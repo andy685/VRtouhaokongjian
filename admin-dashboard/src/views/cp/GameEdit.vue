@@ -449,13 +449,36 @@
                 单人付费：一名玩家付费后运行游戏；多人付费：多名玩家分摊费用后共同进入游戏
               </n-text>
             </div>
+
+            <!-- 是否允许续费 -->
+            <div class="form-group">
+              <label>续费设置</label>
+              <div class="time-limit-card">
+                <div class="time-limit-header">
+                  <div class="time-limit-info">
+                    <span class="time-limit-icon">🔄</span>
+                    <div>
+                      <div class="time-limit-title">是否允许续费</div>
+                      <div class="time-limit-desc">开启后，用户可在点播系统中追加游戏时长（从当前进度继续，不会从头开始）</div>
+                    </div>
+                  </div>
+                  <n-switch v-model:value="form.allowRenewal" size="medium" />
+                </div>
+                <div class="time-limit-unlimited" style="border-top: 1px solid #e0e7f0;">
+                  <span v-if="form.allowRenewal">✅ 已开启 — 用户可追加游戏时长，从当前进度继续</span>
+                  <span v-else>❌ 未开启 — 点播系统将隐藏续费按钮</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         <!-- 开发者备注 -->
         <section class="card form-card">
           <div class="card-head"><h4>开发者备注</h4></div>
-          <n-input v-model:value="form.devNote" type="textarea" :rows="3" placeholder="给审核人员的备注说明（选填）" />
+          <div class="form-body">
+            <n-input v-model:value="form.devNote" type="textarea" :rows="3" placeholder="给审核人员的备注说明（选填）" />
+          </div>
         </section>
       </div>
     </div>
@@ -651,6 +674,7 @@ const form = ref({
   runPlatform: 'host' as string,
   gameMode: 'standalone' as string,
   payMode: 'multi' as string,
+  allowRenewal: false,
   timeLimitEnabled: false,
   timeLimitMinutes: 10,
   gameBeanCost: 0,
