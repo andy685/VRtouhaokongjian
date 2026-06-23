@@ -253,17 +253,7 @@ const menuOptions: MenuOption[] = [
       { label: '售品销售报表', key: '/shop/product-sales' },
       { label: '账户金额统计', key: '/shop/account-stats' },
       { label: '交接班记录', key: '/shop/shifts' },
-      { label: '员工点播', key: '/shop/staff-orders' },
-      {
-        label: '点播数据',
-        key: 'on-demand-group',
-        children: [
-          { label: '点播游戏记录', key: '/shop/on-demand-game-record' },
-          { label: '点播消费记录', key: '/shop/on-demand-film-record' },
-          { label: '点播设备汇总', key: '/shop/on-demand-device-summary' },
-          { label: '点播游戏汇总', key: '/shop/on-demand-game-summary' },
-        ]
-      },
+      { label: '点播数据', key: '/shop/on-demand-records' },
       {
         label: '订单查询',
         key: 'order-group',
