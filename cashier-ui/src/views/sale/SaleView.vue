@@ -301,6 +301,10 @@
               <span>合计：</span>
               <strong><span class="currency-symbol">¥</span>{{ totalAmount.toFixed(2) }}</strong>
             </div>
+            <div v-if="showMemberDiscount" class="summary-line member-discount-line">
+              <span>会员折扣（{{ memberDiscountLabel }}）：</span>
+              <strong class="member-discount-amount">-<span class="currency-symbol">¥</span>{{ memberDiscountAmount.toFixed(2) }}</strong>
+            </div>
             <div class="summary-line coupon-line">
               <div v-if="!selectedCoupon" class="coupon-trigger-wrap" @click="showCouponModal = true">
                 <span>优惠券：</span>
@@ -729,10 +733,10 @@ const histAvatar = (bg1, bg2, initial) => {
 }
 
 const memberHistory = ref([
-  { id: 101, name: '会员名', phone: '17600110765', avatar: histAvatar('#74b9ff', '#0984e3', '会') },
-  { id: 102, name: '会员名', phone: '17600110765', avatar: histAvatar('#fd79a8', '#e84393', '会') },
-  { id: 103, name: '会员名', phone: '17600110765', avatar: histAvatar('#55efc4', '#00b894', '会') },
-  { id: 104, name: '会员名', phone: '17600110765', avatar: histAvatar('#ffeaa7', '#fdcb6e', '会') }
+  { id: 101, name: '李明', phone: '17600110765', level: '钻石', avatar: histAvatar('#74b9ff', '#0984e3', '李') },
+  { id: 102, name: '王芳', phone: '139****5678', level: '铂金', avatar: histAvatar('#fd79a8', '#e84393', '王') },
+  { id: 103, name: '张伟', phone: '13790123456', level: '黄金', avatar: histAvatar('#55efc4', '#00b894', '张') },
+  { id: 104, name: '周磊', phone: '15987654321', level: '白银', avatar: histAvatar('#fab1a0', '#e17055', '周') }
 ])
 const activeTab = ref('single')
 const searchQuery = ref('')
@@ -928,8 +932,8 @@ const couponDiscount = computed(() => {
   return parseFloat(v)
 })
 
-// 实付金额（合计 - 折扣）
-const payableAmount = computed(() => Math.max(0, (totalAmount.value - couponDiscount.value)))
+// 实付金额（合计 - 会员折扣 - 优惠券折扣）
+const payableAmount = computed(() => Math.max(0, (totalAmount.value - memberDiscountAmount.value - couponDiscount.value)))
 const customRechargeValue = computed(() => {
   const value = Number(customRechargeAmount.value)
   return Number.isFinite(value) && value > 0 ? value : 0
@@ -967,6 +971,29 @@ const rechargeBonusCoins = computed(() => {
 const memberBalance = computed(() => Number(selectedMember.value?.balance ?? 0))
 const memberCoins = computed(() => Number(selectedMember.value?.coins ?? 0))
 const projectedBalance = computed(() => memberBalance.value + rechargeAmount.value)
+
+// ===== 会员等级折扣体系 =====
+const LEVEL_DISCOUNT_MAP = {
+  '钻石': { rate: 0.80, label: '钻石会员8折' },
+  '铂金': { rate: 0.85, label: '铂金会员8.5折' },
+  '黄金': { rate: 0.90, label: '黄金会员9折' },
+  '白银': { rate: 0.95, label: '白银会员9.5折' },
+}
+const LEVEL_DISCOUNT_DEFAULT = { rate: 1.00, label: '' }
+
+const memberDiscountInfo = computed(() => {
+  if (!selectedMember.value?.level) return LEVEL_DISCOUNT_DEFAULT
+  return LEVEL_DISCOUNT_MAP[selectedMember.value.level] || LEVEL_DISCOUNT_DEFAULT
+})
+const memberDiscountRate = computed(() => memberDiscountInfo.value.rate)
+const memberDiscountLabel = computed(() => memberDiscountInfo.value.label)
+const memberDiscountAmount = computed(() => {
+  if (memberDiscountRate.value >= 1) return 0
+  return Math.round((totalAmount.value * (1 - memberDiscountRate.value)) * 100) / 100
+})
+const showMemberDiscount = computed(() =>
+  !!selectedMember.value && memberDiscountRate.value < 1 && cartItems.value.length > 0 && !isRechargeTab.value
+)
 const buildAssetDeduction = () => {
   if (!selectedMember.value) {
     return { prepaid: 0, coins: 0, external: payableAmount.value }
@@ -1134,7 +1161,8 @@ const checkout = () => {
   paymentItems.value = cartItems.value.map((item) => ({ ...item }))
   paymentTotalAmount.value = totalAmount.value
   paymentCoupon.value = selectedCoupon.value
-  paymentDiscountAmount.value = couponDiscount.value
+  // 合并会员折扣+优惠券折扣传递给付款弹窗
+  paymentDiscountAmount.value = memberDiscountAmount.value + couponDiscount.value
   paymentPayableAmount.value = payableAmount.value
   paymentAssetDeduction.value = isPackageOnly.value ? null : (selectedMember.value ? { ...assetDeductionPreview.value } : null)
   paymentAllowedMethodIds.value = SALE_OTHER_METHOD_IDS
@@ -1178,10 +1206,10 @@ const handleMemberSelected = (member) => {
   selectedMember.value = { ...member }
   syncSelectedMemberSnapshot()
   showMemberSelect.value = false
-  // 更新历史记录（去重后置顶）
+  // 更新历史记录（去重后置顶，保留等级信息）
   const idx = memberHistory.value.findIndex((m) => m.id === member.id)
   if (idx > -1) memberHistory.value.splice(idx, 1)
-  memberHistory.value.unshift({ id: member.id, name: member.name, phone: member.phone, avatar: member.avatar })
+  memberHistory.value.unshift({ id: member.id, name: member.name, phone: member.phone, avatar: member.avatar, level: member.level })
   // 随机分配 0-4 张优惠券
   const count = Math.floor(Math.random() * 5) // 0-4
   userCoupons.value = pickRandomCoupons(count)
@@ -1330,8 +1358,11 @@ const handlePaymentConfirm = (payload) => {
 
     // §10 结构化支付拆分行（展示在成功弹窗中）
     const paymentDisplayLines = []
+    if (memberDiscountAmount.value > 0) {
+      paymentDisplayLines.push({ label: `会员折扣（${memberDiscountLabel.value}）`, value: `-¥${memberDiscountAmount.value.toFixed(2)}`, isDiscount: true })
+    }
     if (paymentCoupon.value) {
-      paymentDisplayLines.push({ label: '优惠券', value: `-¥${(paymentTotalAmount.value - paymentDiscountAmount.value - paymentPayableAmount.value).toFixed(2)}`, isDiscount: true })
+      paymentDisplayLines.push({ label: '优惠券', value: `-¥${couponDiscount.value.toFixed(2)}`, isDiscount: true })
     }
     if (assetDeduction.prepaid > 0) {
       paymentDisplayLines.push({ label: '预存款抵扣', value: `¥${assetDeduction.prepaid.toFixed(2)}`, isPayment: true })
@@ -1350,8 +1381,9 @@ const handlePaymentConfirm = (payload) => {
 
     const saleSummaryDetails = [
       { label: '商品合计', value: `¥${paymentTotalAmount.value.toFixed(2)}`, isSummary: true },
+      ...(memberDiscountAmount.value > 0 ? [{ label: `会员折扣（${memberDiscountLabel.value}）`, value: `-¥${memberDiscountAmount.value.toFixed(2)}`, isSummary: true }] : []),
       ...(paymentCoupon.value ? [{ label: '优惠券', value: paymentCoupon.value.name, isSummary: true }] : []),
-      ...(paymentDiscountAmount.value > 0 ? [{ label: '优惠合计', value: `-¥${paymentDiscountAmount.value.toFixed(2)}`, isSummary: true }] : []),
+      ...(couponDiscount.value > 0 ? [{ label: '优惠券抵扣', value: `-¥${couponDiscount.value.toFixed(2)}`, isSummary: true }] : []),
       { label: '应付总计', value: `¥${paymentPayableAmount.value.toFixed(2)}`, isSummary: true },
       ...(assetDeduction.prepaid > 0 ? [{ label: '预存款抵扣', value: `-¥${assetDeduction.prepaid.toFixed(2)}`, isSummary: true }] : []),
       ...(assetDeduction.coins > 0 ? [{ label: '游戏币抵扣', value: `-${assetDeduction.coins.toFixed(2)}`, isSummary: true }] : []),
@@ -1452,7 +1484,8 @@ const handleDeductionConfirm = (payload) => {
     balance: Number(selectedMember.value.balance ?? 0),
     coins: Number(selectedMember.value.coins ?? 0)
   } : null
-  const totalAmount = payload.totalAmount || 0
+  // 使用折扣后实际扣费金额
+  const totalAmount = payload.actualAmount || payload.totalAmount || 0
 
   // 防御性校验：余额不足则阻止扣费
   if (assetBefore) {
@@ -1466,12 +1499,17 @@ const handleDeductionConfirm = (payload) => {
   const deviceName = payload.device?.name || '未知设备'
 
   lastDeductionCount.value = payload.count || 1
-  lastDeductionDetails.value = [
+  const deductionDetailLines = [
     { label: '设备', value: deviceName },
     { label: '单价', value: `¥${(payload.price || 0).toFixed(2)}` },
     { label: '人数', value: `${payload.count || 1}` },
-    { label: '扣费金额', value: `¥${totalAmount.toFixed(2)}` }
+    { label: '原价', value: `¥${((payload.price || 0) * (payload.count || 1)).toFixed(2)}` }
   ]
+  if (payload.memberDiscountLabel) {
+    deductionDetailLines.push({ label: `会员折扣（${payload.memberDiscountLabel}）`, value: `-¥${(((payload.price || 0) * (payload.count || 1)) - totalAmount).toFixed(2)}` })
+  }
+  deductionDetailLines.push({ label: '实扣金额', value: `¥${totalAmount.toFixed(2)}` })
+  lastDeductionDetails.value = deductionDetailLines
 
   // 扣费后更新资产并记录变化
   if (selectedMember.value && assetBefore) {
@@ -2632,6 +2670,26 @@ const handleDeductionConfirm = (payload) => {
 .checkout-secondary-btn--accent:hover {
   border-color: #fb923c;
   background: #ffedd5;
+}
+
+/* ===== 会员折扣行 ===== */
+.member-discount-line {
+  padding: 8px 0;
+  border-bottom: 1px dashed #e8d5f5;
+}
+.member-discount-line span {
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 700;
+}
+.member-discount-amount {
+  color: #7c3aed !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  font-variant-numeric: tabular-nums;
+}
+.member-discount-amount .currency-symbol {
+  color: #7c3aed !important;
 }
 
 /* ===== 购物车优惠券区域 ===== */

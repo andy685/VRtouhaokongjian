@@ -67,7 +67,10 @@
                   >
                     <img :src="m.avatar" class="msm-avatar-img" :alt="m.name" />
                     <span class="msm-result-info">
-                      <strong>{{ m.name }}</strong>
+                      <strong>
+                        {{ m.name }}
+                        <span v-if="m.level" class="msm-level-badge" :class="'msm-level-badge--' + getLevelClass(m.level)">{{ m.level }}</span>
+                      </strong>
                       <em>{{ m.phone }}</em>
                     </span>
                   </button>
@@ -114,7 +117,10 @@
                 >
                   <img :src="m.avatar" class="msm-avatar-img small" :alt="m.name" />
                   <span class="msm-history-info">
-                    <strong>{{ m.name }}</strong>
+                    <strong>
+                      {{ m.name }}
+                      <span v-if="m.level" class="msm-level-badge msm-level-badge--sm" :class="'msm-level-badge--' + getLevelClass(m.level)">{{ m.level }}</span>
+                    </strong>
                     <em>{{ m.phone }}</em>
                   </span>
                 </button>
@@ -150,6 +156,12 @@ const tabs = [
 const activeTab = ref('search')
 const keyword = ref('')
 const hasSearched = ref(false)
+
+// 会员等级样式映射
+const getLevelClass = (level) => {
+  const map = { '钻石': 'diamond', '铂金': 'platinum', '黄金': 'gold', '白银': 'silver', '普通会员': 'normal' }
+  return map[level] || 'normal'
+}
 
 // 生成头像 SVG
 const createAvatar = (bg1, bg2, initial) => {
@@ -494,6 +506,49 @@ const handleSearch = () => {
   color: #6f7785;
   font-style: normal;
   font-size: 12px;
+}
+
+/* ===== 会员等级徽章 ===== */
+.msm-level-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  vertical-align: middle;
+  margin-left: 6px;
+  letter-spacing: 0.5px;
+}
+.msm-level-badge--sm {
+  padding: 0 6px;
+  font-size: 9px;
+}
+/* 钻石 - 尊贵紫 */
+.msm-level-badge--diamond {
+  background: linear-gradient(135deg, #c084fc, #9333ea);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(147, 51, 234, 0.35);
+}
+/* 铂金 - 典雅银白 */
+.msm-level-badge--platinum {
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  color: #1e293b;
+}
+/* 黄金 - 耀眼金 */
+.msm-level-badge--gold {
+  background: linear-gradient(135deg, #fcd34d, #f59e0b);
+  color: #78350f;
+}
+/* 白银 - 质朴素银 */
+.msm-level-badge--silver {
+  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+  color: #475569;
+}
+/* 普通会员 */
+.msm-level-badge--normal {
+  background: #e2e8f0;
+  color: #64748b;
 }
 
 /* 空状态 */

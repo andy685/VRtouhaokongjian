@@ -19,7 +19,7 @@
         :row-key="(row: any) => row.id"
         striped
         size="small"
-        :scroll-x="900"
+        :scroll-x="700"
       />
     </div>
 
@@ -37,11 +37,6 @@
             <template #suffix>%</template>
           </n-input-number>
           <span class="form-hint">如 85 表示 8.5 折</span>
-        </n-form-item>
-        <n-form-item label="游戏币兑换折扣" path="pointsDiscount">
-          <n-input-number v-model:value="formData.pointsDiscount" :min="0" :max="100" style="flex:1;">
-            <template #suffix>%</template>
-          </n-input-number>
         </n-form-item>
         <n-form-item label="状态">
           <n-radio-group v-model:value="formData.status">
@@ -85,22 +80,20 @@ const PRESET_LEVELS = [
 const formData = ref({
   consumeAmount: 0,
   consumeDiscount: 100,
-  pointsDiscount: 100,
   status: 'enabled',
 })
 
 const formRules = {
   consumeAmount: { required: true, type: 'number' as const, message: '请输入累计消费金额', trigger: 'blur' },
   consumeDiscount: { required: true, type: 'number' as const, message: '请输入消费折扣', trigger: 'blur' },
-  pointsDiscount: { required: true, type: 'number' as const, message: '请输入游戏币兑换折扣', trigger: 'blur' },
 }
 
 const tableData = ref([
-  { id: 1, name: 'regular',  consumeAmount: 0,    consumeDiscount: 100, pointsDiscount: 100, createTime: '2021-11-27 17:27', status: 'enabled' },
-  { id: 2, name: 'bronze',   consumeAmount: 500,  consumeDiscount: 95,  pointsDiscount: 95,  createTime: '2021-11-27 17:27', status: 'enabled' },
-  { id: 3, name: 'silver',   consumeAmount: 1000, consumeDiscount: 90,  pointsDiscount: 90,  createTime: '2021-11-27 17:26', status: 'enabled' },
-  { id: 4, name: 'gold',     consumeAmount: 3000, consumeDiscount: 85,  pointsDiscount: 85,  createTime: '2021-11-27 17:25', status: 'enabled' },
-  { id: 5, name: 'diamond',  consumeAmount: 8000, consumeDiscount: 80,  pointsDiscount: 80,  createTime: '2021-11-27 17:24', status: 'enabled' },
+  { id: 1, name: 'regular',  consumeAmount: 0,    consumeDiscount: 100, createTime: '2021-11-27 17:27', status: 'enabled' },
+  { id: 2, name: 'bronze',   consumeAmount: 500,  consumeDiscount: 95,  createTime: '2021-11-27 17:27', status: 'enabled' },
+  { id: 3, name: 'silver',   consumeAmount: 1000, consumeDiscount: 90,  createTime: '2021-11-27 17:26', status: 'enabled' },
+  { id: 4, name: 'gold',     consumeAmount: 3000, consumeDiscount: 85,  createTime: '2021-11-27 17:25', status: 'enabled' },
+  { id: 5, name: 'diamond',  consumeAmount: 8000, consumeDiscount: 80,  createTime: '2021-11-27 17:24', status: 'enabled' },
 ])
 
 function getPreset(name: string) {
@@ -133,11 +126,6 @@ const columns = [
     render(row: any) {
       return row.consumeDiscount !== null ? `${row.consumeDiscount}%` : '100%'
     },
-  },
-  {
-    title: '游戏币兑换折扣（%）',
-    key: 'pointsDiscount',
-    width: 160,
   },
   {
     title: '创建时间',
@@ -174,7 +162,6 @@ function handleEdit(row: any) {
   formData.value = {
     consumeAmount: row.consumeAmount,
     consumeDiscount: row.consumeDiscount,
-    pointsDiscount: row.pointsDiscount,
     status: row.status || 'enabled',
   }
   showModal.value = true

@@ -57,7 +57,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'order-flow/manual', name: 'PlatformOrderFlowManual', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '手动扣费订单' } },
       { path: 'order-flow/balance', name: 'PlatformOrderFlowBalance', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '修改储值订单' } },
       { path: 'order-flow/gamebean', name: 'PlatformOrderFlowGamebean', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '游戏币兑换订单' } },
-      { path: 'order-flow/promo', name: 'PlatformOrderFlowPromo', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '活动赠送订单' } },
+      { path: 'order-flow/promo', name: 'PlatformOrderFlowPromo', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '活动赠送记录' } },
 
       // 数据中心扩展
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: () => import('../views/platform/ContentConsumption.vue'), meta: { title: '内容消费大盘' } },

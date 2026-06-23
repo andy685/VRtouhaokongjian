@@ -91,6 +91,10 @@
                 <strong>{{ assetSourceLabel }}</strong>
               </div>
             </div>
+            <div v-if="showDeductMemberDiscount" class="md-member-discount-tip">
+              <span>🎫 {{ memberDiscountLabel }} · 实扣 </span>
+              <strong>¥{{ discountedDeductAmount.toFixed(2) }}</strong>
+            </div>
             <p v-if="!assetInsufficient" class="md-asset-note">
               扣费后预存款余额 <em>¥{{ afterDeductionBalance.toFixed(2) }}</em>
             </p>
@@ -168,6 +172,29 @@ const devicePrice = computed(() => {
 
 const totalDeductAmount = computed(() => devicePrice.value * deductCount.value)
 
+// ===== 会员等级扣费折扣 =====
+const DEDUCT_LEVEL_DISCOUNT_MAP = {
+  '钻石': { rate: 0.80, label: '钻石会员8折' },
+  '铂金': { rate: 0.85, label: '铂金会员8.5折' },
+  '黄金': { rate: 0.90, label: '黄金会员9折' },
+  '白银': { rate: 0.95, label: '白银会员9.5折' },
+}
+const DEDUCT_LEVEL_DEFAULT = { rate: 1.00, label: '' }
+
+const deductMemberDiscountInfo = computed(() => {
+  if (!props.member?.level) return DEDUCT_LEVEL_DEFAULT
+  return DEDUCT_LEVEL_DISCOUNT_MAP[props.member.level] || DEDUCT_LEVEL_DEFAULT
+})
+const memberDiscountLabel = computed(() => deductMemberDiscountInfo.value.label)
+const showDeductMemberDiscount = computed(() =>
+  !!props.member?.level && deductMemberDiscountInfo.value.rate < 1 && !!selectedDeviceId.value
+)
+const discountedDeductAmount = computed(() => {
+  const rate = deductMemberDiscountInfo.value.rate
+  const raw = totalDeductAmount.value * rate
+  return Math.round(raw * 100) / 100
+})
+
 // §5.2 资产消耗预览
 const showAssetPreview = computed(() => !!selectedDeviceId.value && !!props.memberAssets)
 
@@ -177,28 +204,27 @@ const totalMemberAssets = computed(() => {
   return Number((balance + coins).toFixed(2))
 })
 
-// 是否余额不足
+// 是否余额不足（使用折扣后金额判断）
 const assetInsufficient = computed(() =>
-  !!props.memberAssets && totalDeductAmount.value > totalMemberAssets.value
+  !!props.memberAssets && discountedDeductAmount.value > totalMemberAssets.value
 )
 
 // 差额
 const shortageAmount = computed(() =>
-  Math.max(0, Number((totalDeductAmount.value - totalMemberAssets.value).toFixed(2)))
+  Math.max(0, Number((discountedDeductAmount.value - totalMemberAssets.value).toFixed(2)))
 )
 
 const assetSourceLabel = computed(() => {
   const balance = Number(props.memberAssets?.balance ?? 0)
-  if (balance >= totalDeductAmount.value) return '预存款'
+  if (balance >= discountedDeductAmount.value) return '预存款'
   if (balance > 0) return '预存款 + 游戏币'
   return '游戏币'
 })
 
 const afterDeductionBalance = computed(() => {
   const balance = Number(props.memberAssets?.balance ?? 0)
-  const coins = Number(props.memberAssets?.coins ?? 0)
   let remainingBalance = balance
-  let remainingAmount = totalDeductAmount.value
+  let remainingAmount = discountedDeductAmount.value
   const fromBalance = Math.min(remainingAmount, remainingBalance)
   remainingAmount -= fromBalance
   remainingBalance -= fromBalance
@@ -237,7 +263,9 @@ const handleSubmit = () => {
     deviceId: selectedDeviceId.value,
     price: devicePrice.value,
     count: deductCount.value,
-    totalAmount: devicePrice.value * deductCount.value
+    totalAmount: devicePrice.value * deductCount.value,
+    actualAmount: discountedDeductAmount.value,
+    memberDiscountLabel: memberDiscountLabel.value
   })
 }
 </script>
@@ -596,6 +624,29 @@ const handleSubmit = () => {
   font-style: normal;
   font-weight: 800;
   color: #ea580c;
+}
+
+/* 会员折扣提示 */
+.md-member-discount-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1px solid #ddd6fe;
+}
+.md-member-discount-tip span {
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 700;
+}
+.md-member-discount-tip strong {
+  color: #6d28d9;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 余额不足警告 */

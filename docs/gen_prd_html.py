@@ -9,6 +9,14 @@ HTML_OUT = os.path.join(os.path.dirname(__file__), 'PRD-完整版.html')
 with open(MD_FILE, 'r', encoding='utf-8') as f:
     lines = f.readlines()
 
+# 动态解析版本号（如 "v2.4 统一版"）
+prd_version = 'v2.4'
+for line in lines[:30]:
+    m = re.match(r'^>\s*\*\*版本\*\*:\s*(.+)$', line.strip())
+    if m:
+        prd_version = m.group(1).strip()
+        break
+
 # 构建侧边栏目录
 sections = []
 for i, line in enumerate(lines):
@@ -29,7 +37,7 @@ html.append('<html lang="zh-CN">')
 html.append('<head>')
 html.append('<meta charset="UTF-8">')
 html.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
-html.append('<title>头号空间 PRD v2.1 — 产品需求文档</title>')
+html.append(f'<title>头号空间 PRD {prd_version} — 产品需求文档</title>')
 html.append('<style>')
 html.append('  :root {')
 html.append('    --bg: #0f172a; --card: #1e293b; --border: #334155;')
@@ -86,7 +94,7 @@ html.append('</head><body>')
 
 # 生成侧边栏
 html.append('<div class="sidebar">')
-html.append('<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v2.1</div></div>')
+html.append(f'<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD {prd_version}</div></div>')
 html.append('<a href="#top" class="s1">📋 文档目录</a>')
 for idx, (line_num, level, title) in enumerate(sections):
     anchor = re.sub(r'[^\w\u4e00-\u9fff]+', '-', title).strip('-').lower()
@@ -114,6 +122,7 @@ while i < len(lines):
     raw_line = lines[i]
     # 去掉行号前缀
     line = raw_line.rstrip('\n')
+    i += 1  # 立即推进，避免各分支 continue 时陷入死循环
 
     # 代码块
     if line.startswith('```'):
@@ -178,11 +187,9 @@ while i < len(lines):
     if line.strip().startswith('<svg '):
         html.append(line)
         # 读取到 </svg> 为止
-        while True:
-            i += 1
-            if i >= len(lines):
-                break
+        while i < len(lines):
             line = lines[i].rstrip('\n')
+            i += 1
             html.append(line)
             if '</svg>' in line:
                 break
@@ -262,8 +269,6 @@ while i < len(lines):
         # 链接 [text](url)
         p = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" style="color:var(--accent)">\1</a>', p)
         html.append(f'<p>{p}</p>')
-
-    i += 1
 
 # 关闭可能打开的标签
 if in_table:

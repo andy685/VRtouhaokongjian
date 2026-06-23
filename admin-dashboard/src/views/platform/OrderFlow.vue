@@ -51,7 +51,7 @@ const routeTypeMap: Record<string, string | null> = {
   'PlatformOrderFlowManual': '手动扣费订单',
   'PlatformOrderFlowBalance': '修改储值订单',
   'PlatformOrderFlowGamebean': '游戏币兑换订单',
-  'PlatformOrderFlowPromo': '活动赠送订单',
+  'PlatformOrderFlowPromo': '活动赠送记录',
 }
 
 const currentType = computed(() => routeTypeMap[route.name as string] ?? null)
@@ -59,6 +59,7 @@ const currentType = computed(() => routeTypeMap[route.name as string] ?? null)
 const pageTitle = computed(() => currentType.value ? currentType.value : '全部订单')
 const pageDesc = computed(() => {
   if (!currentType.value) return '查看全平台所有订单记录，支持按商家、店铺筛选'
+  if (currentType.value === '活动赠送记录') return '查看活动赠送游戏币的记录，支持按商家、店铺、活动名称筛选'
   return `查看${currentType.value}记录`
 })
 
@@ -127,8 +128,10 @@ const allData = ref([
   // 游戏币兑换订单
   { id: 10, orderNo: 'GB202309160007', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '游戏币兑换订单', amount: 50, paymentContent: '微信支付:50.00', time: '2023-09-16 15:48:12', status: '已完成', beanAmount: 500 },
   { id: 11, orderNo: 'GB202309160011', merchant: '华东展厅', store: '华东展厅', type: '游戏币兑换订单', amount: 100, paymentContent: '支付宝:100.00', time: '2023-09-16 15:10:00', status: '已完成', beanAmount: 1000 },
-  // 活动赠送订单
-  { id: 12, orderNo: 'PR202309160012', merchant: '恒然集团', store: '恒然分部展厅', type: '活动赠送订单', amount: 0, paymentContent: '赠送:0.00', time: '2023-09-16 14:00:00', status: '已完成', promoName: '新用户注册送', giftContent: '游戏币×100' },
+  // 活动赠送记录
+  { id: 12, orderNo: 'PR202309160012', merchant: '恒然集团', store: '恒然分部展厅', type: '活动赠送记录', amount: 0, paymentContent: '', time: '2023-09-16 14:00:00', status: '已完成', promoName: '新用户注册送', giftContent: '游戏币×100' },
+  { id: 13, orderNo: 'PR202309170001', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '活动赠送记录', amount: 0, paymentContent: '', time: '2023-09-17 09:30:00', status: '已完成', promoName: '中秋签到活动', giftContent: '游戏币×50' },
+  { id: 15, orderNo: 'PR202309180002', merchant: '利民街商家', store: '利民街大展厅', type: '活动赠送记录', amount: 0, paymentContent: '', time: '2023-09-18 16:00:00', status: '已完成', promoName: '会员日特惠', giftContent: '游戏币×200' },
 ])
 
 // ===== 表格列定义 =====
@@ -184,8 +187,8 @@ const typeExtraColumns: Record<string, any[]> = {
   '游戏币兑换订单': [
     { title: '兑换游戏币', key: 'beanAmount', width: 110, render: (row: any) => `${row.beanAmount} 币` },
   ],
-  '活动赠送订单': [
-    { title: '活动名称', key: 'promoName', width: 140 },
+  '活动赠送记录': [
+    { title: '活动名称', key: 'promoName', width: 150 },
     { title: '赠送内容', key: 'giftContent', minWidth: 160 },
   ],
 }
@@ -195,6 +198,16 @@ const currentColumns = computed(() => {
   const type = currentType.value
   if (!type) return baseColumns
   const extra = typeExtraColumns[type] || []
+  // 活动赠送记录不显示金额和支付方式
+  if (type === '活动赠送记录') {
+    const promoColumns = baseColumns.filter(c => c.key !== 'amount' && c.key !== 'paymentContent')
+    const timeColIdx = promoColumns.findIndex(c => c.key === 'time')
+    return [
+      ...promoColumns.slice(0, timeColIdx),
+      ...extra,
+      ...promoColumns.slice(timeColIdx),
+    ]
+  }
   const timeColIdx = baseColumns.findIndex(c => c.key === 'time')
   return [
     ...baseColumns.slice(0, timeColIdx),
