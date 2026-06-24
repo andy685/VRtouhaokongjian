@@ -6,13 +6,11 @@
       <div class="stat-card"><span class="stat-num">{{ todayCount }}</span><span class="stat-lbl">今日新增</span></div>
     </div>
     <div class="filter-bar">
-      <n-input v-model:value="filterKeyword" placeholder="搜索店铺/用户/内容" style="width:220px;" clearable size="small" />
+      <n-input v-model:value="filterKeyword" placeholder="搜索用户/内容" style="width:220px;" clearable size="small" />
     </div>
     <n-data-table :columns="columns" :data="filteredData" :bordered="false" striped size="small" :pagination="{ pageSize: 15 }" />
     <n-modal v-model:show="showDetailModal" preset="card" title="反馈详情" style="width:600px;" :bordered="false">
       <n-descriptions v-if="detailItem" :column="1" bordered size="small">
-        <n-descriptions-item label="所属商家">{{ detailItem.merchant }}</n-descriptions-item>
-        <n-descriptions-item label="所属店铺">{{ detailItem.shop }}</n-descriptions-item>
         <n-descriptions-item label="用户">{{ detailItem.user }}</n-descriptions-item>
         <n-descriptions-item label="反馈内容">{{ detailItem.content }}</n-descriptions-item>
         <n-descriptions-item label="提交时间">{{ detailItem.time }}</n-descriptions-item>
@@ -34,7 +32,7 @@ const data = ref<FeedbackItem[]>([
 ])
 const filteredData = computed(() => {
   let list = data.value
-  if (filterKeyword.value) { const kw = filterKeyword.value.toLowerCase(); list = list.filter(i => i.shop.includes(kw) || i.user.includes(kw) || i.content.includes(kw)) }
+  if (filterKeyword.value) { const kw = filterKeyword.value.toLowerCase(); list = list.filter(i => i.user.includes(kw) || i.content.includes(kw)) }
   return list
 })
 const totalCount = computed(() => data.value.length)
@@ -42,7 +40,7 @@ const todayCount = computed(() => data.value.filter(i => i.time.startsWith('2026
 const showDetailModal = ref(false)
 const detailItem = ref<FeedbackItem | null>(null)
 const columns: DataTableColumns<FeedbackItem> = [
-  { title:'商家', key:'merchant', minWidth:100 }, { title:'店铺', key:'shop', minWidth:120 }, { title:'用户', key:'user', width:70 },
+  { title:'用户', key:'user', width:80 },
   { title:'内容', key:'content', minWidth:260, ellipsis:{ tooltip:true } },
   { title:'提交时间', key:'time', width:140 },
   { title:'操作', key:'actions', width:80, align:'center' as const, render:(r:FeedbackItem) => h(NButton, { size:'tiny', text:true, type:'info', onClick:()=>{ detailItem.value=r; showDetailModal.value=true } }, { default:()=>'查看' }) },
