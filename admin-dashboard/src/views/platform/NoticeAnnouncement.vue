@@ -65,8 +65,8 @@
       <template #footer>
         <n-space justify="end">
           <n-button @click="showEditor = false">取消</n-button>
-          <n-button v-if="!editId" secondary @click="saveDraft">存为草稿</n-button>
-          <n-button type="primary" @click="publish">{{ editId ? '保存修改' : '立即发布' }}</n-button>
+          <n-button secondary @click="saveDraft">存为草稿</n-button>
+          <n-button type="primary" @click="publish">{{ editId ? '发布' : '立即发布' }}</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -176,30 +176,118 @@ const columns: DataTableColumns<NoticeItem> = [
   { title: '阅读量', key: 'reads', width: 80, sorter: (a, b) => a.reads - b.reads },
   { title: '发布时间', key: 'createdAt', width: 120 },
   {
-    title: '操作', key: 'actions', width: 200,
+    title: '操作', key: 'actions', width: 240,
     render(row) {
-      return h(NSpace, null, () => [
-        h(NButton, { text: '', size: 'small', type: 'primary', onClick: () => { previewData.value = row; showPreview.value = true } }, () => [h(NIcon, { component: EyeOutline }), ' 预览']),
-        h(NButton, { text: '', size: 'small', type: 'warning', onClick: () => openEditor(row) }, () => [h(NIcon, { component: PencilOutline })]),
-        h(NButton, { text: '', size: 'small', type: 'error' }, () => [h(NIcon, { component: TrashOutline })]),
-      ])
+      const btns: any[] = []
+      // 预览 - 所有状态都有
+      btns.push(h(NButton, { text: '', size: 'small', type: 'primary', onClick: () => { previewData.value = row; showPreview.value = true } }, () => [h(NIcon, { component: EyeOutline }), ' 预览']))
+      if (row.status === 'draft') {
+        // 草稿：编辑 + 发布 + 删除
+        btns.push(h(NButton, { text: '', size: 'small', type: 'warning', onClick: () => openEditor(row) }, () => [h(NIcon, { component: PencilOutline })]))
+        btns.push(h(NButton, { text: '', size: 'small', type: 'success', onClick: () => publishDraft(row) }, () => '发布'))
+        btns.push(h(NButton, { text: '', size: 'small', type: 'error', onClick: () => deleteNotice(row) }, () => [h(NIcon, { component: TrashOutline })]))
+      } else {
+        // 已发布：仅删除
+        btns.push(h(NButton, { text: '', size: 'small', type: 'error', onClick: () => deleteNotice(row) }, () => [h(NIcon, { component: TrashOutline })]))
+      }
+      return h(NSpace, null, () => btns)
     }
   },
 ]
 
+let nextId = 100
+
 function openEditor(data?: NoticeItem) {
   if (data) {
     editId.value = data.id
-    form.value = { title: data.title, type: data.type, targets: data.targets, pinned: data.pinned, content: data.content }
+    form.value = { title: data.title, type: data.type, targets: [...data.targets], pinned: data.pinned, content: data.content }
   } else {
     editId.value = null
     form.value = { title: '', type: 'normal', targets: ['all'], pinned: false, content: '' }
   }
   showEditor.value = true
 }
+
 function handleFilter() {}
-function saveDraft() { showEditor.value = false; message.success('已存为草稿') }
-function publish() { showEditor.value = false; message.success(editId.value ? '修改成功' : '发布成功') }
+
+function saveDraft() {
+  if (!form.value.title.trim()) { message.warning('请输入公告标题'); return }
+
+  if (editId.value) {
+    // 更新已有草稿
+    const item = noticeList.value.find(n => n.id === editId.value)
+    if (item) {
+      item.title = form.value.title
+      item.type = form.value.type
+      item.targets = [...form.value.targets]
+      item.pinned = form.value.pinned
+      item.content = form.value.content
+    }
+    message.success('草稿已更新')
+  } else {
+    // 新建草稿
+    noticeList.value.unshift({
+      id: nextId++,
+      title: form.value.title,
+      type: form.value.type,
+      targets: [...form.value.targets],
+      pinned: false,
+      author: '当前用户',
+      createdAt: new Date().toISOString().slice(0, 10),
+      status: 'draft',
+      content: form.value.content,
+      reads: 0,
+    })
+    message.success('已存为草稿')
+  }
+  showEditor.value = false
+}
+
+function publish() {
+  if (!form.value.title.trim()) { message.warning('请输入公告标题'); return }
+  if (!form.value.content.trim()) { message.warning('请输入正文内容'); return }
+
+  if (editId.value) {
+    const item = noticeList.value.find(n => n.id === editId.value)
+    if (item) {
+      item.title = form.value.title
+      item.type = form.value.type
+      item.targets = [...form.value.targets]
+      item.pinned = form.value.pinned
+      item.content = form.value.content
+      item.status = 'published'
+      item.createdAt = new Date().toISOString().slice(0, 10)
+    }
+    message.success('发布成功')
+  } else {
+    noticeList.value.unshift({
+      id: nextId++,
+      title: form.value.title,
+      type: form.value.type,
+      targets: [...form.value.targets],
+      pinned: form.value.pinned,
+      author: '当前用户',
+      createdAt: new Date().toISOString().slice(0, 10),
+      status: 'published',
+      content: form.value.content,
+      reads: 0,
+    })
+    message.success('发布成功')
+  }
+  showEditor.value = false
+}
+
+function publishDraft(row: NoticeItem) {
+  row.status = 'published'
+  row.createdAt = new Date().toISOString().slice(0, 10)
+  message.success('草稿已发布')
+}
+
+function deleteNotice(row: NoticeItem) {
+  noticeList.value = noticeList.value.filter(n => n.id !== row.id)
+  message.success('已删除')
+}
+
 const noticeRowKey = (row: any) => row.id
 </script>
 
