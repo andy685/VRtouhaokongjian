@@ -208,6 +208,32 @@
         </n-space>
       </template>
     </n-modal>
+
+    <!-- ===== 消息详情弹窗 ===== -->
+    <n-modal v-model:show="showMsgDetailModal" preset="card" title="消息详情" style="width: 640px; max-width: 90vw;" :bordered="false">
+      <div class="msg-detail" v-if="msgDetail">
+        <n-descriptions :column="1" bordered size="small">
+          <n-descriptions-item label="标题">
+            <span class="wrap-text">{{ msgDetail.title }}</span>
+          </n-descriptions-item>
+          <n-descriptions-item label="推送渠道">{{ msgDetail.channels?.join('、') }}</n-descriptions-item>
+          <n-descriptions-item label="目标对象">{{ targetLabel(msgDetail.targetType) }}{{ msgDetail.targetDetail ? ' · ' + msgDetail.targetDetail : '' }}</n-descriptions-item>
+          <n-descriptions-item label="状态">
+            <n-tag :type="statusMap[msgDetail.status]?.type || 'default'" size="small">{{ statusMap[msgDetail.status]?.label || msgDetail.status }}</n-tag>
+          </n-descriptions-item>
+          <n-descriptions-item label="阅读率">{{ msgDetail.readRate }}%</n-descriptions-item>
+          <n-descriptions-item label="发送时间">{{ msgDetail.sentAt }}</n-descriptions-item>
+          <n-descriptions-item v-if="msgDetail.failReason" label="失败原因">
+            <span class="wrap-text">{{ msgDetail.failReason }}</span>
+          </n-descriptions-item>
+        </n-descriptions>
+        <!-- 内容区域独立展示，支持多行 -->
+        <div class="msg-content-section">
+          <div class="msg-content-label">消息内容</div>
+          <div class="msg-content-box">{{ msgDetail.content }}</div>
+        </div>
+      </div>
+    </n-modal>
   </div>
 </template>
 
@@ -399,7 +425,33 @@ const msgList = ref<MsgItem[]>([
   { id: 4, title: '五一活动预热', content: '五一假期即将来临，请提前做好门店活动准备', channels: ['site','sms'], targetType: 'merchant_staff', status: 'pending', sentAt: '-', readRate: 0 },
   { id: 5, title: '结算到账通知', content: '深圳福田旗舰店您好，您2026年4月的结算金额 ¥52,380.00 已到账', channels: ['site'], targetType: 'custom', targetDetail: '深圳福田旗舰店', status: 'sent', sentAt: '2026-04-26 08:30', readRate: 95.1 },
   { id: 6, title: '设备离线告警', content: '设备「VR-03号机」(SN:HKB23001)已离线超过30分钟', channels: ['site','sms'], targetType: 'custom', targetDetail: '深圳福田旗舰店-王小丫', status: 'sent', sentAt: '2026-04-25 14:20', readRate: 100 },
+  { id: 7, title: '端午节运营指南公告', content: `各位商家朋友：
+
+端午佳节即将到来，为帮助大家做好节日运营，现将相关注意事项通知如下：
+
+一、活动时间安排
+2026年6月7日 — 2026年6月10日
+建议提前3天完成活动配置与物料准备。
+
+二、推荐玩法
+1. 限时折扣 + 满减叠加：设置「端午特惠专区」，提升客单价
+2. 会员专属券：针对老用户发放节日专属优惠券，激活沉默用户
+3. 到店打卡活动：结合VR设备体验，增加门店客流
+
+三、注意事项
+• 活动期间请确保设备正常运行，提前做好检修
+• 节日期间客服响应时效调整为30分钟内
+• 如遇突发问题，请拨打应急热线 400-XXX-XXXX
+
+祝各位商家端午安康，生意兴隆！`, channels: ['site','sms'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-06-05 10:00', readRate: 78.4 },
 ])
+
+const showMsgDetailModal = ref(false)
+const msgDetail = ref<MsgItem | null>(null)
+function showMsgDetail(row: MsgItem) {
+  msgDetail.value = row
+  showMsgDetailModal.value = true
+}
 
 const filteredMessages = computed(() => {
   let list = msgList.value
@@ -434,7 +486,7 @@ const columns: DataTableColumns<MsgItem> = [
     title: '操作', key: 'actions', width: 170,
     render(row) {
       return h(NSpace, null, () => [
-        h(NButton, { text: '', size: 'small', type: 'primary' }, () => [h(NIcon, { component: EyeOutline }), ' 详情']),
+        h(NButton, { text: '', size: 'small', type: 'primary', onClick: () => showMsgDetail(row) }, () => [h(NIcon, { component: EyeOutline }), ' 详情']),
         row.status === 'failed' ? h(NButton, { text: '', size: 'small', type: 'warning' }, () => [h(NIcon, { component: RefreshOutline }), ' 重试']) : null,
         h(NButton, { text: '', size: 'small', type: 'error' }, () => [h(NIcon, { component: TrashOutline })]),
       ])
@@ -552,4 +604,22 @@ const rowKey = (row: any) => row.id
 .tpl-preview strong { font-size: 13px; color: #2563EB; }
 .tpl-preview p { margin: 4px 0 0; font-size: 12px; color: var(--text-secondary); }
 .evt-desc { font-size: 12px; color: #6B7280; background: rgba(59,130,246,0.06); padding: 6px 10px; border-radius: 6px; margin-top: 4px; line-height: 1.5; }
+
+/* ===== 消息详情 ===== */
+.wrap-text { white-space: pre-wrap; word-break: break-word; }
+.msg-content-section { margin-top: 16px; }
+.msg-content-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.msg-content-box {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--color-bg-card, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  max-height: 320px;
+  overflow-y: auto;
+}
 </style>

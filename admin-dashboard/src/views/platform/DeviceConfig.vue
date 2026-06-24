@@ -277,6 +277,24 @@ import {
 } from 'naive-ui'
 import { AddOutline, CloudUploadOutline, ArrowForwardOutline, CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5'
 
+// 安全复制文本（兼容非 HTTPS 环境）
+function copyText(text: string) {
+  try {
+    navigator.clipboard.writeText(text).then(() => $message.success('已复制'))
+      .catch(() => fallbackCopy(text))
+  } catch {
+    fallbackCopy(text)
+  }
+}
+function fallbackCopy(text: string) {
+  const el = document.createElement('textarea')
+  el.value = text; el.style.position = 'fixed'; el.style.left = '-9999px'
+  document.body.appendChild(el); el.select()
+  document.execCommand('copy'); document.body.removeChild(el)
+  $message.success('已复制')
+}
+const $message = (window as any).$message
+
 // ─── 设备类型 ──────────────────────────────────────
 interface DeviceType { id: number; name: string; desc: string; params: string; deviceCount: number; createdAt: string }
 const deviceTypes = ref<DeviceType[]>([
@@ -397,7 +415,7 @@ const hostColumns = [
       // 用 div 替代 NSpace，避免循环引用
       return h('div', { style: 'display:flex;align-items:center;gap:4px;' }, [
         h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;max-width:100px;overflow:hidden;text-overflow:ellipsis;' }, `${row.token.slice(0, 12)}...`),
-        h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => navigator.clipboard.writeText(row.token).then(() => (window as any).$message?.success('已复制')) }, { default: () => '复制' }),
+        h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => copyText(row.token) }, { default: () => '复制' }),
       ])
     }
   },
