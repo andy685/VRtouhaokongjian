@@ -68,6 +68,7 @@
         </n-descriptions-item>
         <n-descriptions-item label="兑换前游戏币">{{ detailData.pointsBefore }}</n-descriptions-item>
         <n-descriptions-item label="兑换后游戏币">{{ detailData.pointsAfter }}</n-descriptions-item>
+        <n-descriptions-item label="备注" :span="2">{{ detailData.remark || '-' }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="statusMap[detailData.status]?.type || 'default'" size="small">{{ statusMap[detailData.status]?.label || detailData.status }}</n-tag>
         </n-descriptions-item>
@@ -75,7 +76,7 @@
       </n-descriptions>
       <div v-if="detailData" class="detail-items-section">
         <h3 class="section-title">兑换明细</h3>
-        <n-data-table :columns="itemColumns" :data="[{ product: detailData.product, exchangeType: exchangeTypeMap[detailData.exchangeType]?.label || detailData.exchangeType, pointsUsed: detailData.pointsUsed }]" :bordered="true" :single-line="false" size="small" />
+        <n-data-table :columns="itemColumns" :data="[{ product: detailData.product, _exchangeType: detailData.exchangeType, exchangeType: exchangeTypeMap[detailData.exchangeType]?.label || detailData.exchangeType, pointsUsed: detailData.pointsUsed }]" :bordered="true" :single-line="false" size="small" />
       </div>
       <template #footer>
         <n-space justify="center">
@@ -115,6 +116,8 @@ const exchangeTypeFilterOptions = [
   { label: '商品兑换', value: 'product' },
   { label: '单次消费兑换', value: 'singleConsumption' },
   { label: '套票兑换', value: 'package' },
+  { label: '手动增加', value: 'manualAdd' },
+  { label: '手动减少', value: 'manualDeduct' },
 ]
 
 const statusFilterOptions = [
@@ -135,12 +138,23 @@ const exchangeTypeMap: Record<string, { label: string; color: string }> = {
   product: { label: '商品兑换', color: '#1890ff' },
   singleConsumption: { label: '单次消费兑换', color: '#52c41a' },
   package: { label: '套票兑换', color: '#faad14' },
+  manualAdd: { label: '手动增加', color: '#07c160' },
+  manualDeduct: { label: '手动减少', color: '#ff4d4f' },
 }
 
 const itemColumns: DataTableColumns = [
-  { title: '兑换商品', key: 'product', minWidth: 160, align: 'center' },
+  {
+    title: '兑换商品',
+    key: 'product',
+    minWidth: 160,
+    align: 'center',
+    render(row: any) {
+      if (row._exchangeType === 'manualAdd' || row._exchangeType === 'manualDeduct') return '-'
+      return row.product
+    },
+  },
   { title: '兑换类型', key: 'exchangeType', width: 120, align: 'center' },
-  { title: '消耗游戏币', key: 'pointsUsed', width: 100, align: 'center' },
+  { title: '变动游戏币', key: 'pointsUsed', width: 100, align: 'center' },
 ]
 
 const columns: DataTableColumns = [
@@ -157,10 +171,22 @@ const columns: DataTableColumns = [
       return h(NTag, { color: { color: cfg?.color || '#999', textColor: '#fff' }, size: 'small' }, { default: () => cfg?.label || row.exchangeType })
     },
   },
-  { title: '兑换商品', key: 'product', width: 160, align: 'center' },
-  { title: '消耗游戏币', key: 'pointsUsed', width: 100, align: 'center' },
+  {
+    title: '兑换商品',
+    key: 'product',
+    width: 160,
+    align: 'center',
+    render(row: any) {
+      if (row.exchangeType === 'manualAdd' || row.exchangeType === 'manualDeduct') {
+        return '-'
+      }
+      return row.product
+    },
+  },
+  { title: '变动游戏币', key: 'pointsUsed', width: 100, align: 'center' },
   { title: '兑换前游戏币', key: 'pointsBefore', width: 100, align: 'center' },
   { title: '兑换后游戏币', key: 'pointsAfter', width: 100, align: 'center' },
+  { title: '备注', key: 'remark', minWidth: 140, align: 'center', ellipsis: { tooltip: true } },
   { title: '创建时间', key: 'createTime', width: 160, align: 'center' },
   {
     title: '状态',
@@ -184,12 +210,14 @@ const columns: DataTableColumns = [
 ]
 
 const rawData = ref([
-  { orderNo: 'EX202307250001', shop: '利民街小展厅', member: '138****1234', exchangeType: 'singleConsumption', product: 'VR游戏单次体验', pointsUsed: 500, pointsBefore: 1200, pointsAfter: 700, createTime: '2023-07-25 14:32', status: 'success' },
-  { orderNo: 'EX202307250002', shop: '利民街小展厅', member: '139****5678', exchangeType: 'product', product: '精美周边钥匙扣', pointsUsed: 300, pointsBefore: 800, pointsAfter: 500, createTime: '2023-07-25 13:15', status: 'success' },
-  { orderNo: 'EX202307250003', shop: '利民街小展厅', member: '137****9012', exchangeType: 'package', product: '双人体验套票', pointsUsed: 1000, pointsBefore: 2500, pointsAfter: 1500, createTime: '2023-07-25 11:48', status: 'pending' },
-  { orderNo: 'EX202307250004', shop: '利民街小展厅', member: '136****3456', exchangeType: 'singleConsumption', product: 'VR赛车单次体验', pointsUsed: 500, pointsBefore: 600, pointsAfter: 100, createTime: '2023-07-25 10:22', status: 'success' },
-  { orderNo: 'EX202307250005', shop: '利民街小展厅', member: '138****1234', exchangeType: 'product', product: '限量手办模型', pointsUsed: 2000, pointsBefore: 2700, pointsAfter: 700, createTime: '2023-07-25 09:55', status: 'failed' },
-  { orderNo: 'EX202307250006', shop: '利民街小展厅', member: '135****7890', exchangeType: 'package', product: '家庭欢乐套票', pointsUsed: 200, pointsBefore: 450, pointsAfter: 250, createTime: '2023-07-25 08:30', status: 'success' },
+  { orderNo: 'EX202307250001', shop: '利民街小展厅', member: '138****1234', exchangeType: 'singleConsumption', product: 'VR游戏单次体验', remark: '', pointsUsed: 500, pointsBefore: 1200, pointsAfter: 700, createTime: '2023-07-25 14:32', status: 'success' },
+  { orderNo: 'EX202307250002', shop: '利民街小展厅', member: '139****5678', exchangeType: 'product', product: '精美周边钥匙扣', remark: '', pointsUsed: 300, pointsBefore: 800, pointsAfter: 500, createTime: '2023-07-25 13:15', status: 'success' },
+  { orderNo: 'EX202307250003', shop: '利民街小展厅', member: '137****9012', exchangeType: 'package', product: '双人体验套票', remark: '', pointsUsed: 1000, pointsBefore: 2500, pointsAfter: 1500, createTime: '2023-07-25 11:48', status: 'pending' },
+  { orderNo: 'EX202307250004', shop: '利民街小展厅', member: '136****3456', exchangeType: 'singleConsumption', product: 'VR赛车单次体验', remark: '', pointsUsed: 500, pointsBefore: 600, pointsAfter: 100, createTime: '2023-07-25 10:22', status: 'success' },
+  { orderNo: 'EX202307250005', shop: '利民街小展厅', member: '138****1234', exchangeType: 'product', product: '限量手办模型', remark: '', pointsUsed: 2000, pointsBefore: 2700, pointsAfter: 700, createTime: '2023-07-25 09:55', status: 'failed' },
+  { orderNo: 'EX202307250006', shop: '利民街小展厅', member: '135****7890', exchangeType: 'package', product: '家庭欢乐套票', remark: '', pointsUsed: 200, pointsBefore: 450, pointsAfter: 250, createTime: '2023-07-25 08:30', status: 'success' },
+  { orderNo: 'EX202307260001', shop: '利民街小展厅', member: '138****1234', exchangeType: 'manualAdd', product: '', remark: '活动奖励补偿', pointsUsed: 0, pointsBefore: 700, pointsAfter: 1200, createTime: '2023-07-26 10:15', status: 'success' },
+  { orderNo: 'EX202307260002', shop: '利民街小展厅', member: '136****3456', exchangeType: 'manualDeduct', product: '', remark: '违规扣除游戏币', pointsUsed: 80, pointsBefore: 100, pointsAfter: 20, createTime: '2023-07-26 09:30', status: 'success' },
 ])
 
 const filteredData = computed(() => {
