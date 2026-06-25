@@ -195,7 +195,8 @@
         </n-alert>
 
         <n-form-item label="售卖店铺" path="shop" required>
-          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
+          <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" :disabled="isEdit" />
+          <span v-if="isEdit" style="margin-left: 8px; font-size: 12px; color: #999;">创建后不可更改</span>
         </n-form-item>
         <n-form-item label="优惠券名称" path="name" required>
           <n-input v-model:value="formData.name" placeholder="如：新人专享券" />
@@ -312,6 +313,15 @@
         </n-form-item>
         <n-form-item v-if="formData.validType === 'date'" label="截止日期" path="validEndDate" required>
           <n-date-picker v-model:value="formData.validEndDate" type="date" style="width: 100%;" placeholder="选择截止日期" :disabled="isEdit && editingClaimed > 0" />
+        </n-form-item>
+
+        <n-form-item v-if="isEdit" label="活动状态" path="status" required>
+          <n-radio-group v-model:value="formData.status">
+            <n-space>
+              <n-radio :value="true">启用</n-radio>
+              <n-radio :value="false">禁用</n-radio>
+            </n-space>
+          </n-radio-group>
         </n-form-item>
 
         <n-form-item label="可购会员">
@@ -659,6 +669,9 @@ function handleEdit(row: any) {
     autoDistributeLevels: row.autoDistributeLevels || ['normal', 'bronze', 'silver', 'gold', 'diamond'],
     autoDistributeStatuses: row.autoDistributeStatuses || ['active', 'dormant', 'lost', 'inactive'],
     autoDistributeTiming: row.autoDistributeTiming || 'onMeet',
+    status: row.status ?? true,
+    terminal: row.terminal || 'all',
+    originalPrice: row.originalPrice || 48,
   }
   showModal.value = true
 }
