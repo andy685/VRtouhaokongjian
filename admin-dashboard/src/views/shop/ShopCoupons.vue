@@ -189,6 +189,11 @@
     <!-- 新增/编辑优惠券弹窗 -->
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 650px;">
       <n-form :model="formData" label-placement="left" label-width="100px" :rules="formRules">
+        <!-- 编辑已发放券的警告 -->
+        <n-alert v-if="isEdit && editingClaimed > 0" type="warning" :bordered="false" style="margin-bottom: 16px;">
+          该券已发放 <strong>{{ editingClaimed }}</strong> 张，优惠类型、金额、门槛、有效期不可修改，以免影响已领取用户。
+        </n-alert>
+
         <n-form-item label="售卖店铺" path="shop" required>
           <n-select v-model:value="formData.shop" :options="shopOptions" placeholder="选择售卖的店铺" />
         </n-form-item>
@@ -200,19 +205,19 @@
         <n-grid :cols="2" :x-gap="16">
           <n-gi>
             <n-form-item label="优惠类型" path="type" required>
-              <n-select v-model:value="formData.type" :options="typeOptions" />
+              <n-select v-model:value="formData.type" :options="typeOptions" :disabled="isEdit && editingClaimed > 0" />
             </n-form-item>
           </n-gi>
           <n-gi>
             <!-- 满减券：优惠金额 -->
             <n-form-item v-if="formData.type === 'discount'" label="优惠金额" path="value" required>
-              <n-input-number v-model:value="formData.value" :min="1" style="width: 100%;">
+              <n-input-number v-model:value="formData.value" :min="1" style="width: 100%;" :disabled="isEdit && editingClaimed > 0">
                 <template #suffix>元</template>
               </n-input-number>
             </n-form-item>
             <!-- 折扣券：折扣比例 -->
             <n-form-item v-if="formData.type === 'rate'" label="折扣比例" path="value" required>
-              <n-input-number v-model:value="formData.value" :min="1" :max="99" style="width: 100%;">
+              <n-input-number v-model:value="formData.value" :min="1" :max="99" style="width: 100%;" :disabled="isEdit && editingClaimed > 0">
                 <template #suffix>折</template>
               </n-input-number>
             </n-form-item>
@@ -269,7 +274,7 @@
 
         <!-- 使用门槛 -->
         <n-form-item label="使用门槛" path="threshold">
-          <n-input-number v-model:value="formData.threshold" :min="0" placeholder="满X元可用" style="width: 100%;">
+          <n-input-number v-model:value="formData.threshold" :min="0" placeholder="满X元可用" style="width: 100%;" :disabled="isEdit && editingClaimed > 0">
             <template #prefix>满</template>
             <template #suffix>元</template>
           </n-input-number>
@@ -279,7 +284,7 @@
         <n-grid :cols="2" :x-gap="16">
           <n-gi>
             <n-form-item label="发放数量">
-              <n-input-number v-model:value="formData.total" :min="0" style="width: 100%;" placeholder="0表示不限量" />
+              <n-input-number v-model:value="formData.total" :min="editingClaimed" style="width: 100%;" placeholder="0表示不限量" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -291,7 +296,7 @@
 
         <!-- 使用有效期 -->
         <n-form-item label="使用有效期" path="validType" required>
-          <n-radio-group v-model:value="formData.validType">
+          <n-radio-group v-model:value="formData.validType" :disabled="isEdit && editingClaimed > 0">
             <n-space>
               <n-radio value="days">领取后X天有效</n-radio>
               <n-radio value="date">截止到指定日期</n-radio>
@@ -300,13 +305,13 @@
           </n-radio-group>
         </n-form-item>
         <n-form-item v-if="formData.validType === 'days'" label="有效时长" path="validDays" required>
-          <n-input-number v-model:value="formData.validDays" :min="1" style="width: 200px;" placeholder="30">
+          <n-input-number v-model:value="formData.validDays" :min="1" style="width: 200px;" placeholder="30" :disabled="isEdit && editingClaimed > 0">
             <template #suffix>天</template>
           </n-input-number>
           <span class="form-hint" style="margin-left: 8px;">* 自领取之日起算</span>
         </n-form-item>
         <n-form-item v-if="formData.validType === 'date'" label="截止日期" path="validEndDate" required>
-          <n-date-picker v-model:value="formData.validEndDate" type="date" style="width: 100%;" placeholder="选择截止日期" />
+          <n-date-picker v-model:value="formData.validEndDate" type="date" style="width: 100%;" placeholder="选择截止日期" :disabled="isEdit && editingClaimed > 0" />
         </n-form-item>
 
         <n-form-item label="可购会员">
@@ -321,14 +326,6 @@
         </n-form-item>
         <n-form-item label="可售终端">
           <n-select v-model:value="formData.terminal" :options="terminalOptions" style="width: 200px;" />
-        </n-form-item>
-        <n-form-item label="活动状态">
-          <n-radio-group v-model:value="formData.status">
-            <n-space>
-              <n-radio :value="true">启用</n-radio>
-              <n-radio :value="false">禁用</n-radio>
-            </n-space>
-          </n-radio-group>
         </n-form-item>
       </n-form>
       <template #footer>
@@ -361,6 +358,7 @@ const message = useMessage()
 const activeTab = ref('active')
 const showModal = ref(false)
 const isEdit = ref(false)
+const editingClaimed = ref(0)
 const modalTitle = ref('创建优惠券')
 const filterShop = ref(null)
 const filterKeyword = ref('')
@@ -634,6 +632,7 @@ const filteredData = computed(() => {
 
 function handleAdd() {
   isEdit.value = false
+  editingClaimed.value = 0
   modalTitle.value = '创建优惠券'
   formData.value = getDefaultFormData()
   showModal.value = true
@@ -641,6 +640,7 @@ function handleAdd() {
 
 function handleEdit(row: any) {
   isEdit.value = true
+  editingClaimed.value = row.claimed || 0
   modalTitle.value = '编辑优惠券'
   formData.value = {
     id: row.id,

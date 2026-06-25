@@ -2,13 +2,9 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <h1>消息中心</h1>
-      <p class="header-desc">查看系统通知、分润提醒等消息</p>
       <div class="header-actions">
         <n-button type="primary" size="small" @click="markAllRead">
           全部已读
-        </n-button>
-        <n-button size="small" secondary @click="clearAll">
-          清空消息
         </n-button>
       </div>
     </div>
@@ -25,12 +21,12 @@
                   <h4>{{ msg.title }}</h4>
                   <span class="msg-time">{{ msg.time }}</span>
                 </div>
-                <p>{{ msg.content }}</p>
+                <p :class="{ 'content-collapsed': msg.content.length > 80 && !expandedIds.includes(msg.id) }">{{ msg.content }}</p>
+                <n-button v-if="msg.content.length > 80" text size="tiny" type="primary" @click.stop="toggleExpand(msg.id)" class="expand-btn">
+                  {{ expandedIds.includes(msg.id) ? '收起' : '展开全文' }}
+                </n-button>
                 <div class="msg-tags">
-                  <n-tag v-if="msg.type === 'system'" type="info" size="small" bordered>系统通知</n-tag>
-                  <n-tag v-else-if="msg.type === 'commission'" type="success" size="small" bordered>分润提醒</n-tag>
-                  <n-tag v-else-if="msg.type === 'settlement'" type="warning" size="small" bordered>结算通知</n-tag>
-                  <n-tag v-else-if="msg.type === 'alert'" type="error" size="small" bordered>告警</n-tag>
+                  <n-tag :type="msgTagType(msg.type)" size="small" bordered>{{ msgTagLabel(msg.type) }}</n-tag>
                 </div>
               </div>
               <div class="msg-actions">
@@ -51,12 +47,12 @@
                   <h4>{{ msg.title }}</h4>
                   <span class="msg-time">{{ msg.time }}</span>
                 </div>
-                <p>{{ msg.content }}</p>
+                <p :class="{ 'content-collapsed': msg.content.length > 80 && !expandedIds.includes(msg.id) }">{{ msg.content }}</p>
+                <n-button v-if="msg.content.length > 80" text size="tiny" type="primary" @click.stop="toggleExpand(msg.id)" class="expand-btn">
+                  {{ expandedIds.includes(msg.id) ? '收起' : '展开全文' }}
+                </n-button>
                 <div class="msg-tags">
-                  <n-tag v-if="msg.type === 'system'" type="info" size="small" bordered>系统通知</n-tag>
-                  <n-tag v-else-if="msg.type === 'commission'" type="success" size="small" bordered>分润提醒</n-tag>
-                  <n-tag v-else-if="msg.type === 'settlement'" type="warning" size="small" bordered>结算通知</n-tag>
-                  <n-tag v-else-if="msg.type === 'alert'" type="error" size="small" bordered>告警</n-tag>
+                  <n-tag :type="msgTagType(msg.type)" size="small" bordered>{{ msgTagLabel(msg.type) }}</n-tag>
                 </div>
               </div>
               <div class="msg-actions">
@@ -68,43 +64,29 @@
           </div>
         </n-tab-pane>
 
-        <!-- 分润提醒 -->
-        <n-tab-pane name="commission" tab="分润提醒">
+        <!-- 已读 -->
+        <n-tab-pane name="read" tab="已读">
           <div class="message-list">
-            <div v-for="msg in commissionMessages" :key="msg.id" class="message-item" :class="{ unread: !msg.read }">
-              <div class="msg-dot" :class="msg.read ? '' : 'dot-unread'"></div>
+            <div v-for="msg in readMessages" :key="msg.id" class="message-item">
+              <div class="msg-dot"></div>
               <div class="message-content">
                 <div class="message-header">
                   <h4>{{ msg.title }}</h4>
                   <span class="msg-time">{{ msg.time }}</span>
                 </div>
-                <p>{{ msg.content }}</p>
-              </div>
-              <div class="msg-actions">
-                <n-button size="tiny" quaternary @click="deleteMsg(msg.id)">删除</n-button>
-              </div>
-            </div>
-            <n-empty v-if="commissionMessages.length === 0" description="暂无分润提醒" />
-          </div>
-        </n-tab-pane>
-
-        <!-- 结算通知 -->
-        <n-tab-pane name="settlement" tab="结算通知">
-          <div class="message-list">
-            <div v-for="msg in settlementMessages" :key="msg.id" class="message-item" :class="{ unread: !msg.read }">
-              <div class="msg-dot" :class="msg.read ? '' : 'dot-unread'"></div>
-              <div class="message-content">
-                <div class="message-header">
-                  <h4>{{ msg.title }}</h4>
-                  <span class="msg-time">{{ msg.time }}</span>
+                <p :class="{ 'content-collapsed': msg.content.length > 80 && !expandedIds.includes(msg.id) }">{{ msg.content }}</p>
+                <n-button v-if="msg.content.length > 80" text size="tiny" type="primary" @click.stop="toggleExpand(msg.id)" class="expand-btn">
+                  {{ expandedIds.includes(msg.id) ? '收起' : '展开全文' }}
+                </n-button>
+                <div class="msg-tags">
+                  <n-tag :type="msgTagType(msg.type)" size="small" bordered>{{ msgTagLabel(msg.type) }}</n-tag>
                 </div>
-                <p>{{ msg.content }}</p>
               </div>
               <div class="msg-actions">
                 <n-button size="tiny" quaternary @click="deleteMsg(msg.id)">删除</n-button>
               </div>
             </div>
-            <n-empty v-if="settlementMessages.length === 0" description="暂无结算通知" />
+            <n-empty v-if="readMessages.length === 0" description="暂无已读消息" />
           </div>
         </n-tab-pane>
       </n-tabs>
@@ -115,9 +97,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NButton, NTabs, NTabPane, NTag, NEmpty, useMessage } from 'naive-ui'
+import { msgTagType, msgTagLabel } from '@/constants/noticeTypes'
 
 const message = useMessage()
 const activeTab = ref('all')
+const expandedIds = ref<number[]>([])
+
+function toggleExpand(id: number) {
+  const idx = expandedIds.value.indexOf(id)
+  if (idx >= 0) expandedIds.value.splice(idx, 1)
+  else expandedIds.value.push(id)
+}
 
 // 代理商视角的示例消息数据
 const messages = ref([
@@ -126,7 +116,7 @@ const messages = ref([
     title: '4月份分润已到账',
     content: '您2026年4月的分润金额 ¥23,520.00 已到账，请注意查收。本月共产生分润记录 156 笔，涉及商家 8 家。',
     time: '2026-04-30 10:00:00',
-    type: 'settlement',
+    type: 'financial',
     read: false,
   },
   {
@@ -134,7 +124,7 @@ const messages = ref([
     title: '新商家待审核',
     content: '您名下新增一家待审核商家「广州白云体验店」，请及时处理。',
     time: '2026-04-29 16:30:00',
-    type: 'system',
+    type: 'announcement',
     read: false,
   },
   {
@@ -142,7 +132,7 @@ const messages = ref([
     title: '设备离线告警',
     content: '龙岗欢乐时光店 3台设备离线超过24小时，请联系店铺排查。',
     time: '2026-04-28 22:15:00',
-    type: 'alert',
+    type: 'security',
     read: true,
   },
   {
@@ -158,15 +148,14 @@ const messages = ref([
     title: '系统维护通知',
     content: '平台将于2026年5月1日 02:00-06:00 进行系统升级维护，期间部分功能可能不可用。',
     time: '2026-04-27 14:00:00',
-    type: 'system',
+    type: 'announcement',
     read: true,
   },
 ])
 
 const allMessages = computed(() => messages.value)
 const unreadMessages = computed(() => messages.value.filter(m => !m.read))
-const commissionMessages = computed(() => messages.value.filter(m => m.type === 'commission'))
-const settlementMessages = computed(() => messages.value.filter(m => m.type === 'settlement'))
+const readMessages = computed(() => messages.value.filter(m => m.read))
 
 function markAsRead(id: number) {
   const m = messages.value.find(x => x.id === id)
@@ -179,10 +168,6 @@ function deleteMsg(id: number) {
 function markAllRead() {
   messages.value.forEach(m => (m.read = true))
   message.success('全部标记为已读')
-}
-function clearAll() {
-  messages.value = []
-  message.success('已清空所有消息')
 }
 </script>
 
@@ -217,7 +202,9 @@ function clearAll() {
 .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .message-header h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
 .msg-time { font-size: 12px; color: var(--text-muted); flex-shrink: 0; margin-left: 12px; }
-.message-content p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 4px 0 8px; }
+.message-content p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 4px 0 4px; white-space: pre-line; word-break: break-word; }
+.message-content p.content-collapsed { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.expand-btn { margin-bottom: 4px; }
 .msg-tags { display: flex; gap: 6px; }
 
 .msg-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }

@@ -37,18 +37,16 @@
         <n-form-item label="公告标题">
           <n-input v-model:value="form.title" placeholder="请输入公告标题" maxlength="100" show-count />
         </n-form-item>
-        <n-form-item label="公告类型">
-          <n-radio-group v-model:value="form.type">
-            <n-radio-button value="normal">普通公告</n-radio-button>
-            <n-radio-button value="urgent">紧急通知</n-radio-button>
-            <n-radio-button value="maintain">维护公告</n-radio-button>
+        <n-form-item label="公告子类型">
+          <n-radio-group v-model:value="form.subType">
+            <n-radio-button v-for="st in ANNOUNCEMENT_SUB_TYPES" :key="st.value" :value="st.value">{{ st.label }}</n-radio-button>
           </n-radio-group>
         </n-form-item>
         <n-form-item label="目标对象">
           <n-checkbox-group v-model:value="form.targets">
-            <n-checkbox value="all">全部用户</n-checkbox>
             <n-checkbox value="merchant">商家</n-checkbox>
             <n-checkbox value="agent">代理商</n-checkbox>
+            <n-checkbox value="supplier">供应商</n-checkbox>
             <n-checkbox value="shop">店员</n-checkbox>
           </n-checkbox-group>
         </n-form-item>
@@ -76,7 +74,7 @@
       <div class="preview-body">
         <h2>{{ previewData?.title }}</h2>
         <div class="preview-meta">
-          <n-tag :type="getTypeColor(previewData?.type)" size="small">{{ getTypeLabel(previewData?.type) }}</n-tag>
+          <n-tag :type="subTypeTagType(previewData?.subType)" size="small">{{ subTypeLabel(previewData?.subType) }}</n-tag>
           <span>{{ previewData?.author }} · {{ previewData?.createdAt }}</span>
         </div>
         <n-divider />
@@ -91,6 +89,7 @@ import { ref, computed, h } from 'vue'
 import { NButton, NIcon, NTag, NSpace, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { CreateOutline, EyeOutline, TrashOutline, PencilOutline, PinOutline } from '@vicons/ionicons5'
+import { ANNOUNCEMENT_SUB_TYPES, subTypeLabel, subTypeTagType, categoryLabel, categoryTagType } from '../../constants/noticeTypes'
 
 const message = useMessage()
 const searchKey = ref('')
@@ -101,16 +100,16 @@ const showPreview = ref(false)
 const editId = ref<number | null>(null)
 
 const targetOptions = [
-  { label: '全部用户', value: 'all' },
   { label: '商家', value: 'merchant' },
   { label: '代理商', value: 'agent' },
+  { label: '供应商', value: 'supplier' },
   { label: '店员', value: 'shop' },
 ]
 
 const form = ref({
   title: '',
-  type: 'normal',
-  targets: ['all'] as string[],
+  subType: 'normal' as string,
+  targets: ['merchant'] as string[],
   pinned: false,
   content: '',
 })
@@ -118,7 +117,8 @@ const form = ref({
 interface NoticeItem {
   id: number
   title: string
-  type: string
+  category: string    // 消息中心一级分类，公告统一为 'announcement'
+  subType: string     // 公告子类型：normal / urgent / maintain
   targets: string[]
   pinned: boolean
   author: string
@@ -129,10 +129,10 @@ interface NoticeItem {
 }
 
 const noticeList = ref<NoticeItem[]>([
-  { id: 1, title: '关于系统升级维护的通知', type: 'maintain', targets: ['all'], pinned: true, author: '运维团队', createdAt: '2026-04-29', status: 'published', content: '计划于2026年5月2日02:00-06:00进行系统升级维护，期间部分功能将不可用，请提前做好准备。', reads: 3420 },
-  { id: 2, title: '新版结算规则上线说明', type: 'normal', targets: ['merchant', 'agent'], pinned: false, author: '产品组', createdAt: '2026-04-25', status: 'published', content: '自2026年5月1日起，新的结算规则正式生效：T+7改为T+5，分润比例调整详见附件。', reads: 1890 },
-  { id: 3, title: '紧急：支付通道临时故障排查中', type: 'urgent', targets: ['merchant'], pinned: true, author: '技术支持', createdAt: '2026-04-23', status: 'published', content: '支付宝渠道出现偶发性支付失败，正在紧急排查修复，预计30分钟内恢复。', reads: 5670 },
-  { id: 4, title: '五一假期活动安排公告', type: 'normal', targets: ['all'], pinned: false, author: '运营组', createdAt: '2026-04-20', status: 'draft', content: '五一期间各门店活动安排及促销方案...', reads: 0 },
+  { id: 1, title: '关于系统升级维护的通知', category: 'announcement', subType: 'maintain', targets: ['all'], pinned: true, author: '运维团队', createdAt: '2026-04-29', status: 'published', content: '计划于2026年5月2日02:00-06:00进行系统升级维护，期间部分功能将不可用，请提前做好准备。', reads: 3420 },
+  { id: 2, title: '新版结算规则上线说明', category: 'announcement', subType: 'normal', targets: ['merchant', 'agent'], pinned: false, author: '产品组', createdAt: '2026-04-25', status: 'published', content: '自2026年5月1日起，新的结算规则正式生效：T+7改为T+5，分润比例调整详见附件。', reads: 1890 },
+  { id: 3, title: '紧急：支付通道临时故障排查中', category: 'announcement', subType: 'urgent', targets: ['merchant'], pinned: true, author: '技术支持', createdAt: '2026-04-23', status: 'published', content: '支付宝渠道出现偶发性支付失败，正在紧急排查修复，预计30分钟内恢复。', reads: 5670 },
+  { id: 4, title: '五一假期活动安排公告', category: 'announcement', subType: 'normal', targets: ['all'], pinned: false, author: '运营组', createdAt: '2026-04-20', status: 'draft', content: '五一期间各门店活动安排及促销方案...', reads: 0 },
 ])
 
 const previewData = ref<NoticeItem | null>(null)
@@ -148,9 +148,6 @@ const filteredData = computed(() => {
   return list
 })
 
-function getTypeLabel(type?: string) { return { normal: '普通', urgent: '紧急', maintain: '维护' }[type || 'normal'] || '普通' }
-function getTypeColor(type?: string) { return { normal: 'default', urgent: 'error', maintain: 'warning' }[type || 'normal'] || 'default' }
-
 const columns: DataTableColumns<NoticeItem> = [
   { title: 'ID', key: 'id', width: 50 },
   {
@@ -165,8 +162,12 @@ const columns: DataTableColumns<NoticeItem> = [
     }
   },
   {
-    title: '类型', key: 'type', width: 90,
-    render(row) { return h(NTag, { size: 'small', type: getTypeColor(row.type), bordered: false }, () => getTypeLabel(row.type)) }
+    title: '消息分类', key: 'category', width: 100,
+    render(row) { return h(NTag, { size: 'small', type: categoryTagType(row.category), bordered: false }, () => categoryLabel(row.category)) }
+  },
+  {
+    title: '公告子类型', key: 'subType', width: 100,
+    render(row) { return h(NTag, { size: 'small', type: subTypeTagType(row.subType), bordered: false }, () => subTypeLabel(row.subType)) }
   },
   { title: '目标', key: 'targets', width: 120, ellipsis: true },
   {
@@ -187,7 +188,10 @@ const columns: DataTableColumns<NoticeItem> = [
         btns.push(h(NButton, { text: '', size: 'small', type: 'success', onClick: () => publishDraft(row) }, () => '发布'))
         btns.push(h(NButton, { text: '', size: 'small', type: 'error', onClick: () => deleteNotice(row) }, () => [h(NIcon, { component: TrashOutline })]))
       } else {
-        // 已发布：仅删除
+        // 已发布：取消置顶 + 删除
+        if (row.pinned) {
+          btns.push(h(NButton, { text: '', size: 'small', type: 'warning', onClick: () => unpinNotice(row) }, () => '取消置顶'))
+        }
         btns.push(h(NButton, { text: '', size: 'small', type: 'error', onClick: () => deleteNotice(row) }, () => [h(NIcon, { component: TrashOutline })]))
       }
       return h(NSpace, null, () => btns)
@@ -200,10 +204,10 @@ let nextId = 100
 function openEditor(data?: NoticeItem) {
   if (data) {
     editId.value = data.id
-    form.value = { title: data.title, type: data.type, targets: [...data.targets], pinned: data.pinned, content: data.content }
+    form.value = { title: data.title, subType: data.subType, targets: [...data.targets], pinned: data.pinned, content: data.content }
   } else {
     editId.value = null
-    form.value = { title: '', type: 'normal', targets: ['all'], pinned: false, content: '' }
+    form.value = { title: '', subType: 'normal', targets: ['merchant'], pinned: false, content: '' }
   }
   showEditor.value = true
 }
@@ -218,7 +222,7 @@ function saveDraft() {
     const item = noticeList.value.find(n => n.id === editId.value)
     if (item) {
       item.title = form.value.title
-      item.type = form.value.type
+      item.subType = form.value.subType
       item.targets = [...form.value.targets]
       item.pinned = form.value.pinned
       item.content = form.value.content
@@ -229,7 +233,8 @@ function saveDraft() {
     noticeList.value.unshift({
       id: nextId++,
       title: form.value.title,
-      type: form.value.type,
+      category: 'announcement',
+      subType: form.value.subType,
       targets: [...form.value.targets],
       pinned: false,
       author: '当前用户',
@@ -251,7 +256,7 @@ function publish() {
     const item = noticeList.value.find(n => n.id === editId.value)
     if (item) {
       item.title = form.value.title
-      item.type = form.value.type
+      item.subType = form.value.subType
       item.targets = [...form.value.targets]
       item.pinned = form.value.pinned
       item.content = form.value.content
@@ -263,7 +268,8 @@ function publish() {
     noticeList.value.unshift({
       id: nextId++,
       title: form.value.title,
-      type: form.value.type,
+      category: 'announcement',
+      subType: form.value.subType,
       targets: [...form.value.targets],
       pinned: form.value.pinned,
       author: '当前用户',
@@ -281,6 +287,11 @@ function publishDraft(row: NoticeItem) {
   row.status = 'published'
   row.createdAt = new Date().toISOString().slice(0, 10)
   message.success('草稿已发布')
+}
+
+function unpinNotice(row: NoticeItem) {
+  row.pinned = false
+  message.success('已取消置顶')
 }
 
 function deleteNotice(row: NoticeItem) {

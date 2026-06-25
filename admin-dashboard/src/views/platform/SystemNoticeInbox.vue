@@ -3,10 +3,9 @@
     <div class="page-header">
       <div>
         <h1>系统通知</h1>
-        <p class="header-desc">平台级系统事件自动推送的通知消息</p>
       </div>
       <n-space>
-        <n-button size="small" @click="markAllRead">全部已读</n-button>
+        <n-button type="primary" size="small" @click="markAllRead">全部已读</n-button>
       </n-space>
     </div>
 
@@ -22,20 +21,9 @@
           <div v-if="!unreadNotices.length" class="empty-hint">暂无未读通知</div>
         </n-tab-pane>
 
-        <n-tab-pane name="settlement" tab="财务结算">
-          <NoticeList :items="settlementNotices" :highlight-id="highlightId" @read="markAsRead" @delete="removeNotice" />
-        </n-tab-pane>
-
-        <n-tab-pane name="order" tab="订单监控">
-          <NoticeList :items="orderNotices" :highlight-id="highlightId" @read="markAsRead" @delete="removeNotice" />
-        </n-tab-pane>
-
-        <n-tab-pane name="security" tab="安全风控">
-          <NoticeList :items="securityNotices" :highlight-id="highlightId" @read="markAsRead" @delete="removeNotice" />
-        </n-tab-pane>
-
-        <n-tab-pane name="system" tab="系统公告">
-          <NoticeList :items="systemNotices" :highlight-id="highlightId" @read="markAsRead" @delete="removeNotice" />
+        <n-tab-pane name="read" tab="已读">
+          <NoticeList :items="readNotices" :highlight-id="highlightId" @read="markAsRead" @delete="removeNotice" />
+          <div v-if="!readNotices.length" class="empty-hint">暂无已读通知</div>
         </n-tab-pane>
       </n-tabs>
     </div>
@@ -59,7 +47,7 @@ interface SysNotice {
   content: string
   time: string
   read: boolean
-  type: 'settlement' | 'order' | 'security' | 'system'
+  type: 'financial' | 'order' | 'security' | 'announcement'
   severity: 'info' | 'warning' | 'error' | 'success'
   sourceEvent?: string
   meta?: Record<string, any>
@@ -74,7 +62,7 @@ const noticeList = ref<SysNotice[]>([
     content: '系统已按 T+5 周期完成4月份商家结算单的批量生成。本次共生成结算单 1,286 笔，涉及商家 892 家，总金额 ¥8,234,560.00。当前状态：待审核打款。请登录「对账中心」核对后提交打款申请。',
     time: '2026-04-29 02:00',
     read: false,
-    type: 'settlement',
+    type: 'financial',
     severity: 'info',
     sourceEvent: 'evt_settlement_create',
     meta: { count: 1286, merchantCount: 892, totalAmount: 8234560 },
@@ -86,7 +74,7 @@ const noticeList = ref<SysNotice[]>([
     content: '3月份结算跑批完成后发现 3 笔异常订单需要人工介入：\n1. 深圳福田旗舰店 #ORD-2026032890 — 退款与扣款时间重叠\n2. 南山科技园店 #ORD-2026033012 — 金额 ¥-12.30 负数订单\n3. 广州天河店 #ORD-2026033156 — 渠道分润比例超出配置范围\n请前往结算管理页面处理。',
     time: '2026-04-26 02:15',
     read: true,
-    type: 'settlement',
+    type: 'financial',
     severity: 'warning',
     detailId: 'n-settlement-err-mar',
   },
@@ -161,7 +149,7 @@ const noticeList = ref<SysNotice[]>([
     content: '五一假期（5月1日-5月5日）运维安排如下：\n\n• 5月2日 02:00-06:00 计划性系统升级维护\n• 假期期间客服热线：400-xxx-xxxx（09:00-18:00）\n• 紧急技术支持：值班手机 138****0001\n• 结算打款顺延至 5月6日\n\n请各运营人员提前做好相关工作安排。',
     time: '2026-04-29 09:00',
     read: true,
-    type: 'system',
+    type: 'announcement',
     severity: 'success',
     detailId: 'n-announce-may1',
   },
@@ -171,7 +159,7 @@ const noticeList = ref<SysNotice[]>([
     content: '新版本更新内容：\n✅ 新增：对账中心模块\n✅ 新增：帮助中心 & 平台通知系统\n✅ 优化：结算规则从 T+7 调整为 T+5\n🐛 修复：设备在线状态显示延迟问题\n\n详细变更日志请查看公告管理页面。',
     time: '2026-04-27 10:00',
     read: true,
-    type: 'system',
+    type: 'announcement',
     severity: 'info',
     detailId: 'n-announce-v240',
   },
@@ -180,10 +168,7 @@ const noticeList = ref<SysNotice[]>([
 // ====== Tab 过滤 ======
 const allNotices = computed(() => noticeList.value)
 const unreadNotices = computed(() => noticeList.value.filter(n => !n.read))
-const settlementNotices = computed(() => noticeList.value.filter(n => n.type === 'settlement'))
-const orderNotices = computed(() => noticeList.value.filter(n => n.type === 'order'))
-const securityNotices = computed(() => noticeList.value.filter(n => n.type === 'security'))
-const systemNotices = computed(() => noticeList.value.filter(n => n.type === 'system'))
+const readNotices = computed(() => noticeList.value.filter(n => n.read))
 
 function markAsRead(id: number) {
   const item = noticeList.value.find(n => n.id === id)
@@ -200,19 +185,14 @@ function removeNotice(id: number) {
 }
 
 // ====== 从铃铛面板跳转时自动定位 ======
-const typeToTab: Record<string, string> = {
-  settlement: 'settlement', order: 'order', security: 'security', system: 'system',
-}
-
 onMounted(() => {
   const queryId = route.query.id as string | undefined
   if (!queryId) return
   highlightId.value = queryId
   const target = noticeList.value.find(n => n.detailId === queryId)
   if (target) {
-    // 切换到对应分类 tab
-    const tab = typeToTab[target.type] || 'all'
-    activeTab.value = tab
+    // 统一跳转到「全部」tab，通过标签区分分类
+    activeTab.value = 'all'
     // 标记为已读
     target.read = true
     // 等 DOM 渲染后滚动到高亮项
@@ -227,17 +207,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-container { padding: 24px; background: var(--color-bg-base); min-height: calc(100vh - 64px); }
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
-.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0; }
-.header-desc { font-size: 14px; color: var(--text-muted); margin: 0; }
+.page-container { padding: 24px; min-height: calc(100vh - 64px); }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
 
 .notice-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  padding: 20px 24px;
+  padding: 24px;
 }
 
 .empty-hint {

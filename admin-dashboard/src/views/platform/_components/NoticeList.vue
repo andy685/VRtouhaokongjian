@@ -66,6 +66,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { NButton, NTag } from 'naive-ui'
+import { categoryLabel } from '../../../constants/noticeTypes'
 
 interface SysNotice {
   id: number; title: string; content: string; time: string
@@ -109,10 +110,10 @@ function severityLabel(s: string): string {
   return { info: '信息', success: '正常', warning: '警告', error: '异常' }[s] || s
 }
 function typeLabel(t: string): string {
-  return { settlement: '财务结算', order: '订单监控', security: '安全风控', system: '系统公告' }[t] || t
+  return categoryLabel(t)
 }
 function eventLabel(e: string): string {
-  return { evt_settlement_create: '结算单生成', evt_order_large: '大额订单', evt_login_anomaly: '异常登录' }[e] || e
+  return { evt_settlement_create: '结算单生成', evt_order_large: '大额订单', evt_login_anomaly: '异常登录', evt_system_upgrade: '版本更新' }[e] || e
 }
 </script>
 
@@ -120,33 +121,31 @@ function eventLabel(e: string): string {
 .notice-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .notice-item {
   display: flex;
-  align-items: stretch;
-  background: var(--color-bg-base, #fafbfc);
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--color-bg-elevated);
   border-radius: 10px;
-  border: 1px solid var(--border-color, #eee);
-  overflow: hidden;
   transition: all 0.2s;
 }
 
 .notice-item:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  border-color: rgba(59,130,246,0.2);
+  background: var(--color-bg-elevated-hover);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .notice-item.unread {
-  background: rgba(59,130,246,0.03);
+  background: rgba(59,130,246,0.04);
   border-left: 3px solid #3B82F6;
 }
 
 .notice-item.highlighted {
-  background: rgba(59,130,246,0.06);
-  border-color: #3B82F6;
+  background: rgba(59,130,246,0.08);
   box-shadow: 0 0 0 2px rgba(59,130,246,0.15), 0 4px 16px rgba(59,130,246,0.12);
   animation: highlight-pulse 3s ease-out;
 }
@@ -159,7 +158,9 @@ function eventLabel(e: string): string {
 /* 左侧色条 */
 .notice-color-bar {
   width: 4px;
+  border-radius: 4px 0 0 4px;
   flex-shrink: 0;
+  align-self: stretch;
 }
 .notice-color-bar.info     { background: #3B82F6; }
 .notice-color-bar.success  { background: #10B981; }
@@ -169,19 +170,20 @@ function eventLabel(e: string): string {
 /* 主体 */
 .notice-body {
   flex: 1;
-  padding: 14px 16px;
+  padding: 16px 0;
   min-width: 0;
 }
 
 .notice-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 4px;
 }
 
 .notice-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -191,17 +193,11 @@ function eventLabel(e: string): string {
 }
 
 .unread-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #3B82F6;
   flex-shrink: 0;
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
 }
 
 .notice-time {
@@ -209,13 +205,14 @@ function eventLabel(e: string): string {
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
+  margin-left: 12px;
 }
 
 .notice-content {
-  margin: 8px 0 0;
+  margin: 4px 0 4px;
   font-size: 13px;
-  color: var(--text-secondary, #666);
-  line-height: 1.7;
+  color: var(--text-secondary);
+  line-height: 1.5;
   white-space: pre-line;
   word-break: break-word;
 }
@@ -231,7 +228,7 @@ function eventLabel(e: string): string {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
@@ -244,10 +241,8 @@ function eventLabel(e: string): string {
 .notice-actions {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 4px;
-  padding: 14px 12px;
-  border-left: 1px solid rgba(0,0,0,0.04);
+  padding: 16px 0 16px 16px;
   flex-shrink: 0;
 }
 

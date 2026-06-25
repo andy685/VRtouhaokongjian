@@ -3,11 +3,8 @@
     <div class="page-header">
       <h1 class="page-title">消息中心</h1>
       <div class="header-actions">
-        <n-button type="primary" size="small">
+        <n-button type="primary" size="small" @click="markAllRead">
           全部已读
-        </n-button>
-        <n-button size="small" secondary>
-          清空消息
         </n-button>
       </div>
     </div>
@@ -23,12 +20,12 @@
                     <h4 class="message-title">{{ message.title }}</h4>
                     <span class="message-time">{{ message.time }}</span>
                   </div>
-                  <p class="message-body">{{ message.content }}</p>
+                  <p class="message-body" :class="{ 'content-collapsed': message.content.length > 80 && !expandedIds.includes(message.id) }">{{ message.content }}</p>
+                  <n-button v-if="message.content.length > 80" text size="tiny" type="primary" @click.stop="toggleExpand(message.id)" class="expand-btn">
+                    {{ expandedIds.includes(message.id) ? '收起' : '展开全文' }}
+                  </n-button>
                   <div class="message-tags">
-                    <n-tag v-if="message.type === 'system'" type="info" size="small">系统通知</n-tag>
-                    <n-tag v-else-if="message.type === 'order'" type="success" size="small">订单通知</n-tag>
-                    <n-tag v-else-if="message.type === 'activity'" type="warning" size="small">活动通知</n-tag>
-                    <n-tag v-else-if="message.type === 'security'" type="error" size="small">安全通知</n-tag>
+                    <n-tag :type="msgTagType(message.type)" size="small">{{ msgTagLabel(message.type) }}</n-tag>
                   </div>
                 </div>
                 <div class="message-actions">
@@ -50,12 +47,12 @@
                     <h4 class="message-title">{{ message.title }}</h4>
                     <span class="message-time">{{ message.time }}</span>
                   </div>
-                  <p class="message-body">{{ message.content }}</p>
+                  <p class="message-body" :class="{ 'content-collapsed': message.content.length > 80 && !expandedIds.includes(message.id) }">{{ message.content }}</p>
+                  <n-button v-if="message.content.length > 80" text size="tiny" type="primary" @click.stop="toggleExpand(message.id)" class="expand-btn">
+                    {{ expandedIds.includes(message.id) ? '收起' : '展开全文' }}
+                  </n-button>
                   <div class="message-tags">
-                    <n-tag v-if="message.type === 'system'" type="info" size="small">系统通知</n-tag>
-                    <n-tag v-else-if="message.type === 'order'" type="success" size="small">订单通知</n-tag>
-                    <n-tag v-else-if="message.type === 'activity'" type="warning" size="small">活动通知</n-tag>
-                    <n-tag v-else-if="message.type === 'security'" type="error" size="small">安全通知</n-tag>
+                    <n-tag :type="msgTagType(message.type)" size="small">{{ msgTagLabel(message.type) }}</n-tag>
                   </div>
                 </div>
                 <div class="message-actions">
@@ -69,41 +66,23 @@
               </div>
             </div>
           </n-tab-pane>
-          <n-tab-pane name="system" tab="系统通知">
+          <n-tab-pane name="read" tab="已读">
             <div class="message-list">
-              <div v-for="message in systemMessages" :key="message.id" class="message-item" :class="{ 'unread': !message.read }">
+              <div v-for="message in readMessages" :key="message.id" class="message-item">
                 <div class="message-content">
                   <div class="message-header">
                     <h4 class="message-title">{{ message.title }}</h4>
                     <span class="message-time">{{ message.time }}</span>
                   </div>
-                  <p class="message-body">{{ message.content }}</p>
-                </div>
-                <div class="message-actions">
-                  <n-button size="small" quaternary @click="markAsRead(message.id)">
-                    {{ message.read ? '已读' : '标记已读' }}
+                  <p class="message-body" :class="{ 'content-collapsed': message.content.length > 80 && !expandedIds.includes(message.id) }">{{ message.content }}</p>
+                  <n-button v-if="message.content.length > 80" text size="tiny" type="primary" @click.stop="toggleExpand(message.id)" class="expand-btn">
+                    {{ expandedIds.includes(message.id) ? '收起' : '展开全文' }}
                   </n-button>
-                  <n-button size="small" quaternary @click="deleteMessage(message.id)">
-                    删除
-                  </n-button>
-                </div>
-              </div>
-            </div>
-          </n-tab-pane>
-          <n-tab-pane name="order" tab="订单通知">
-            <div class="message-list">
-              <div v-for="message in orderMessages" :key="message.id" class="message-item" :class="{ 'unread': !message.read }">
-                <div class="message-content">
-                  <div class="message-header">
-                    <h4 class="message-title">{{ message.title }}</h4>
-                    <span class="message-time">{{ message.time }}</span>
+                  <div class="message-tags">
+                    <n-tag :type="msgTagType(message.type)" size="small">{{ msgTagLabel(message.type) }}</n-tag>
                   </div>
-                  <p class="message-body">{{ message.content }}</p>
                 </div>
                 <div class="message-actions">
-                  <n-button size="small" quaternary @click="markAsRead(message.id)">
-                    {{ message.read ? '已读' : '标记已读' }}
-                  </n-button>
                   <n-button size="small" quaternary @click="deleteMessage(message.id)">
                     删除
                   </n-button>
@@ -120,24 +99,31 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NButton, NTabs, NTabPane, NTag } from 'naive-ui'
+import { msgTagType, msgTagLabel } from '@/constants/noticeTypes'
 
 const activeTab = ref('all')
+const expandedIds = ref<number[]>([])
+
+function toggleExpand(id: number) {
+  const idx = expandedIds.value.indexOf(id)
+  if (idx >= 0) expandedIds.value.splice(idx, 1)
+  else expandedIds.value.push(id)
+}
 
 const messages = ref([
-  { id: 1, title: '系统更新通知', content: '系统将于2023-09-18 00:00-02:00进行维护更新，期间系统可能暂时无法访问，请提前做好准备。', time: '2023-09-16 10:00:00', type: 'system', read: false },
+  { id: 1, title: '系统更新通知', content: '系统将于2023-09-18 00:00-02:00进行维护更新，期间系统可能暂时无法访问，请提前做好准备。', time: '2023-09-16 10:00:00', type: 'announcement', read: false },
   { id: 2, title: '订单支付成功', content: '您的订单 #20230916001 已支付成功，感谢您的购买！', time: '2023-09-16 09:30:00', type: 'order', read: true },
   { id: 3, title: '活动开始通知', content: '国庆节活动已开始，全场商品8折优惠，快来抢购吧！', time: '2023-09-15 18:00:00', type: 'activity', read: false },
   { id: 4, title: '安全提醒', content: '您的账号于2023-09-15 10:15:33在新设备上登录，如非本人操作，请及时修改密码。', time: '2023-09-15 10:16:00', type: 'security', read: true },
-  { id: 5, title: '库存预警', content: '商品 "VR眼镜" 库存不足，当前库存仅剩余5件，请及时补货。', time: '2023-09-14 15:00:00', type: 'system', read: true },
+  { id: 5, title: '库存预警', content: '商品 "VR眼镜" 库存不足，当前库存仅剩余5件，请及时补货。', time: '2023-09-14 15:00:00', type: 'announcement', read: true },
   { id: 6, title: '订单发货通知', content: '您的订单 #20230914001 已发货，物流单号：SF1234567890。', time: '2023-09-14 10:00:00', type: 'order', read: true },
   { id: 7, title: '会员等级提升', content: '恭喜您的会员等级已提升至VIP3，享受更多专属优惠！', time: '2023-09-13 20:00:00', type: 'activity', read: false },
-  { id: 8, title: '系统公告', content: '新版后台管理系统已上线，新增了多项功能，欢迎体验！', time: '2023-09-13 09:00:00', type: 'system', read: true },
+  { id: 8, title: '系统公告', content: '新版后台管理系统已上线，新增了多项功能，欢迎体验！', time: '2023-09-13 09:00:00', type: 'announcement', read: true },
 ])
 
 const allMessages = computed(() => messages.value)
 const unreadMessages = computed(() => messages.value.filter(msg => !msg.read))
-const systemMessages = computed(() => messages.value.filter(msg => msg.type === 'system'))
-const orderMessages = computed(() => messages.value.filter(msg => msg.type === 'order'))
+const readMessages = computed(() => messages.value.filter(msg => msg.read))
 
 function markAsRead(id: number) {
   const message = messages.value.find(msg => msg.id === id)
@@ -151,6 +137,10 @@ function deleteMessage(id: number) {
   if (index !== -1) {
     messages.value.splice(index, 1)
   }
+}
+
+function markAllRead() {
+  messages.value.forEach(m => (m.read = true))
 }
 </script>
 
@@ -247,7 +237,16 @@ function deleteMessage(id: number) {
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
+  white-space: pre-line;
+  word-break: break-word;
 }
+.message-body.content-collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.expand-btn { margin-bottom: 4px; }
 
 .message-tags {
   display: flex;

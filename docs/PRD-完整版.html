@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>头号空间 PRD v2.4 统一版 — 产品需求文档</title>
+<title>头号空间 PRD v2.7 — 产品需求文档</title>
 <style>
   :root {
     --bg: #0f172a; --card: #1e293b; --border: #334155;
@@ -58,7 +58,7 @@
 </style>
 </head><body>
 <div class="sidebar">
-<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v2.4 统一版</div></div>
+<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v2.7</div></div>
 <a href="#top" class="s1">📋 文档目录</a>
 <a href="#头号空间-产品需求文档-prd" class="s1">头号空间 - 产品需求文档（PRD）</a>
 <a href="#文档目录" class="s2">📑 文档目录</a>
@@ -126,9 +126,9 @@
 <blockquote>
 <p>**文档状态**：本文是头号空间唯一产品需求文档。支付、对账、分账、结算、退款、游戏豆/游戏币/预存款账务规则均以内文第 10 章为准；旧的专题文档仅作为归档材料，不再作为开发依据。</p>
 
-<p>**版本**: v2.4 统一版</p>
-<p>**日期**: 2026年6月18日</p>
-<p>**状态**: 对齐版（结算单状态对齐拉卡拉5态体系；代理商分润公式对齐参考文档口径；手续费率规范修正；补充订单/支付/履约/退款/结算状态枚举及拉卡拉配置参数）</p>
+<p>**版本**: v2.7</p>
+<p>**日期**: 2026年6月25日</p>
+<p>**状态**: 消息类型统一收敛 — `review`纳入一级分类，新增`MESSAGE_TAG_MAP`统一映射表，各终端`Message.vue`统一调用工具函数消除硬编码</p>
 <p>**密级**: 内部公开</p>
 <p>**作者**: 产品团队</p>
 <p>**面向读者**: 技术开发团队、测试团队、运营团队、管理层、游戏CP开发者</p>
@@ -2027,9 +2027,227 @@ CP应发
 
 <hr>
 
-<h3 id="4-9-cp供应商终端-v1-6-新增">4.9 CP供应商终端（v1.6 新增）</h3>
+<h4 id="4-8-11-平台消息管理系统-v2-5-新增">4.8.11 平台消息管理系统（v2.5 新增）</h4>
 
 <blockquote>
+<p>**定位**：平台运营人员统一管理公告发布、消息推送和消息查阅的三模块体系。覆盖消息生产端（公告管理 + 消息推送）和消息消费端（消息中心收件箱）。</p>
+</blockquote>
+<p>></p>
+<blockquote>
+<p>**设计原则**：消息推送仅支持**手动推送**，不在系统内配置自动触发规则；消息模板功能已移除，运营人员直接填写推送内容。</p>
+
+</blockquote>
+<p>##### 消息分类体系</p>
+
+<p>系统采用两级分类体系，定义文件：<code>admin-dashboard/src/constants/noticeTypes.ts</code>。</p>
+
+<p><strong>一级分类（消息中心分类）</strong>— 贯穿公告管理、消息推送和消息中心三个模块，共 5 类：</p>
+
+<table>
+<tr><th>分类值</th><th>显示名称</th><th>标识色</th><th>说明</th></tr>
+<tr><td>`review`</td><td>审核通知</td><td>🟡 橙色</td><td>CP游戏审核结果通知（通过/不通过/下线）</td></tr>
+<tr><td>`financial`</td><td>财务核算</td><td>🟢 绿色</td><td>结算单生成、打款到账、对账提醒等财务类消息</td></tr>
+<tr><td>`order`</td><td>订单监控</td><td>🔵 蓝色</td><td>大额订单、异常订单、退款通知等订单类消息</td></tr>
+<tr><td>`security`</td><td>安全风控</td><td>🔴 红色</td><td>异常登录、密码修改、权限变更等安全类消息</td></tr>
+<tr><td>`announcement`</td><td>系统公告</td><td>🟡 黄色</td><td>平台公告、维护通知、版本更新等公告类消息</td></tr>
+</table>
+
+<p><strong>各端特有子类型（<code>MESSAGE_SUB_TYPES</code>）</strong>— 补充终端独有消息，不进入公告管理/消息推送发送端：</p>
+
+<table>
+<tr><th>子类型值</th><th>显示名称</th><th>标识色</th><th>归属终端</th></tr>
+<tr><td>`review`</td><td>审核通知</td><td>🟡 橙色</td><td>CP端（与一级分类共用同一 value）</td></tr>
+<tr><td>`commission`</td><td>分润提醒</td><td>🟢 绿色</td><td>代理商端</td></tr>
+<tr><td>`activity`</td><td>活动通知</td><td>🟡 橙色</td><td>店铺端</td></tr>
+</table>
+
+<p><strong>统一标签映射表（<code>MESSAGE_TAG_MAP</code>）</strong>— <code>type → { label, tagType }</code> 的一站式映射，7 项全覆盖：</p>
+
+<table>
+<tr><th>映射 key</th><th>label</th><th>tagType</th></tr>
+<tr><td>`review`</td><td>审核通知</td><td>`warning`</td></tr>
+<tr><td>`commission`</td><td>分润提醒</td><td>`success`</td></tr>
+<tr><td>`activity`</td><td>活动通知</td><td>`warning`</td></tr>
+<tr><td>`financial`</td><td>财务核算</td><td>`success`</td></tr>
+<tr><td>`order`</td><td>订单监控</td><td>`info`</td></tr>
+<tr><td>`security`</td><td>安全风控</td><td>`error`</td></tr>
+<tr><td>`announcement`</td><td>系统公告</td><td>`warning`</td></tr>
+</table>
+
+<p><strong>统一工具函数</strong>（各终端 <code>Message.vue</code> 统一调用）：</p>
+
+<table>
+<tr><th>函数</th><th>用途</th></tr>
+<tr><td>`categoryLabel(v)`</td><td>一级分类 value → 中文显示名</td></tr>
+<tr><td>`categoryTagType(v)`</td><td>一级分类 value → NTag 颜色类型</td></tr>
+<tr><td>`subTypeLabel(v)`</td><td>公告子类型 value → 中文显示名</td></tr>
+<tr><td>`subTypeTagType(v)`</td><td>公告子类型 value → NTag 颜色类型</td></tr>
+<tr><td>`msgTagLabel(v)`</td><td>任意消息 type → 中文显示名（查 `MESSAGE_TAG_MAP`）</td></tr>
+<tr><td>`msgTagType(v)`</td><td>任意消息 type → NTag 颜色类型（查 `MESSAGE_TAG_MAP`）</td></tr>
+</table>
+
+<blockquote>
+<p>**设计原则**：所有消息类型定义收敛在 `noticeTypes.ts` 单一数据源。CP端/代理商端/店铺端的 `Message.vue` 组件统一 `import { msgTagType, msgTagLabel } from '@/constants/noticeTypes'`，消除各处硬编码的 v-if/else-if 映射链。</p>
+
+</blockquote>
+<p><strong>二级分类（公告子类型）</strong>— 仅用于 <code>category='announcement'</code> 的公告管理：</p>
+
+<table>
+<tr><th>子类型值</th><th>显示名称</th><th>标识色</th><th>说明</th></tr>
+<tr><td>`normal`</td><td>普通公告</td><td>默认灰色</td><td>一般性平台通知、活动公告</td></tr>
+<tr><td>`urgent`</td><td>紧急通知</td><td>🔴 红色</td><td>需要立即关注的紧急事项</td></tr>
+<tr><td>`maintain`</td><td>维护公告</td><td>🟡 黄色</td><td>系统维护、升级、停机公告</td></tr>
+</table>
+
+<p>##### 模块一：公告管理 (<code>NoticeAnnouncement.vue</code>)</p>
+
+<blockquote>
+<p>对应路由：`/platform/notice-announcement`</p>
+
+</blockquote>
+<p>公告管理用于平台运营人员发布面向全平台的系统公告（<code>category='announcement'</code>），不涉及财务、订单、安全等分类。</p>
+
+<p><strong>功能清单</strong>：</p>
+
+<table>
+<tr><th>功能</th><th>说明</th></tr>
+<tr><td>公告列表</td><td>展示已发布的公告，支持按子类型（普通/紧急/维护）和状态（已发布/草稿）筛选</td></tr>
+<tr><td>新建公告</td><td>选择子类型 → 填写标题/正文 → 选择目标范围 → 发布或保存草稿</td></tr>
+<tr><td>编辑公告</td><td>草稿可编辑后发布；已发布公告不可直接修改，需撤销后重新发布</td></tr>
+<tr><td>删除公告</td><td>支持删除草稿和已发布公告，二次确认</td></tr>
+<tr><td>发布/撤销</td><td>草稿可发布；已发布公告可撤销（变为草稿状态）</td></tr>
+</table>
+
+<p><strong>公告发布范围</strong>：</p>
+<li>公告默认面向全平台（所有商家、代理商、CP），无需选择具体目标对象</li>
+<li>发布后自动推送至各角色终端的消息中心</li>
+
+<p>##### 模块二：消息推送 (<code>NoticePush.vue</code>)</p>
+
+<blockquote>
+<p>对应路由：`/platform/notice-push`</p>
+</blockquote>
+<p>></p>
+<blockquote>
+<p>⚠️ **v2.5 变更**：移除「自动通知」Tab 和「消息模板」功能，仅保留手动推送模式。</p>
+
+</blockquote>
+<p>消息推送用于平台运营人员向指定目标群体手动发送消息。支持四个一级分类，可指定推送渠道和目标对象。</p>
+
+<p><strong>功能清单</strong>：</p>
+
+<table>
+<tr><th>功能</th><th>说明</th></tr>
+<tr><td>推送列表</td><td>展示所有手动推送记录，支持按分类、渠道、状态筛选和关键词搜索</td></tr>
+<tr><td>新建推送</td><td>选渠道（站内消息/短信）→ 选分类 → 选目标 → 填标题/正文 → 立即发送或定时发送</td></tr>
+<tr><td>推送详情</td><td>查看推送消息的完整内容、推送渠道、目标对象、发送时间和状态</td></tr>
+<tr><td>删除推送</td><td>支持删除推送记录，二次确认</td></tr>
+</table>
+
+<p><strong>推送渠道</strong>：</p>
+
+<table>
+<tr><th>渠道</th><th>说明</th></tr>
+<tr><td>站内消息</td><td>推送至目标角色的消息中心收件箱</td></tr>
+<tr><td>短信</td><td>发送短信至目标用户手机号（依赖短信通道集成）</td></tr>
+</table>
+
+<p><strong>推送目标类型</strong>：</p>
+
+<table>
+<tr><th>目标类型</th><th>说明</th></tr>
+<tr><td>全部</td><td>面向全平台所有角色用户</td></tr>
+<tr><td>按角色</td><td>按用户角色筛选（商家管理员、商家员工、代理商管理员、平台运营）</td></tr>
+<tr><td>自定义</td><td>精确选择目标商家/代理商/店铺/个人</td></tr>
+</table>
+
+<p><strong>定时发送</strong>：</p>
+<li>支持指定发送时间，到时间自动发送</li>
+<li>未到发送时间的消息标记为「待发送」状态</li>
+
+<p>##### 模块三：消息中心 (<code>SystemNoticeInbox.vue</code>)</p>
+
+<blockquote>
+<p>对应路由：`/platform/system-notice-inbox`</p>
+
+</blockquote>
+<p>消息中心是消息的<strong>消费端</strong>，汇聚所有模块产生的消息（公告管理发布的公告 + 消息推送发送的消息），供各角色用户查阅。</p>
+
+<p><strong>功能清单</strong>：</p>
+
+<table>
+<tr><th>功能</th><th>说明</th></tr>
+<tr><td>消息列表</td><td>按时间倒序展示所有收到的消息，支持按分类筛选</td></tr>
+<tr><td>已读/未读</td><td>支持标记已读/未读状态切换，未读消息高亮显示</td></tr>
+<tr><td>消息详情</td><td>点击查看消息完整内容，自动标记为已读</td></tr>
+<tr><td>删除消息</td><td>支持删除单条消息</td></tr>
+</table>
+
+<p><strong>消息来源标识</strong>：</p>
+<li>`announcement`：来自公告管理模块的公告</li>
+<li>`push`：来自消息推送模块的手动推送</li>
+<li>消息详情中展示来源模块和发送时间</li>
+
+<p>##### 三模块数据流关系</p>
+
+<pre><code>┌─────────────────┐     ┌─────────────────┐
+│   公告管理模块    │     │   消息推送模块    │
+│ (Announcement)  │     │  (NoticePush)   │
+│                 │     │                 │
+│ category=       │     │ 手动推送 ────────┤
+│   announcement  │     │ 4分类 + 渠道     │
+│ subType=        │     │ + 目标 + 定时    │
+│   normal/urgent/│     └────────┬────────┘
+│   maintain      │              │
+└────────┬────────┘              │
+         │                       │
+         ▼                       ▼
+┌─────────────────────────────────────┐
+│          消息中心收件箱              │
+│      (SystemNoticeInbox)           │
+│                                     │
+│  汇聚全平台消息，按分类筛选查阅       │
+│  type = financial/order/            │
+│         security/announcement       │
+└─────────────────────────────────────┘
+
+公告管理 + 消息推送 = 消息生产端
+消息中心 = 消息消费端（收件箱）</code></pre>
+
+<p>##### 各分类在各模块的覆盖</p>
+
+<table>
+<tr><th>一级分类</th><th>公告管理</th><th>消息推送</th><th>消息中心</th></tr>
+<tr><td>`review` 审核通知</td><td>❌</td><td>❌</td><td>✅（CP端接收）</td></tr>
+<tr><td>`financial` 财务核算</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>`order` 订单监控</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>`security` 安全风控</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>`announcement` 系统公告</td><td>✅ (带子类型)</td><td>✅</td><td>✅</td></tr>
+</table>
+
+<blockquote>
+<p>**说明**：公告管理仅处理 `category='announcement'` 的消息（细分靠 `subType`）；消息推送覆盖 `financial`/`order`/`security`/`announcement` 四个分类；消息中心接收全部五个一级分类。`review`（审核通知）由平台审核流程自动产生，仅推送至 CP端消息中心。</p>
+
+</blockquote>
+<p>##### 各端消息中心分类对照</p>
+
+<p>所有消息接收端均使用统一的 <code>msgTagType()</code>/<code>msgTagLabel()</code> 工具函数查 <code>MESSAGE_TAG_MAP</code> 获取标签颜色和显示名，不再硬编码映射。各端覆盖如下：</p>
+
+<table>
+<tr><th>端</th><th>消息页面</th><th>覆盖分类</th><th>筛选Tab</th></tr>
+<tr><td>**平台端**</td><td>`SystemNoticeInbox.vue`</td><td>`financial`/`order`/`security`/`announcement`</td><td>全部/未读/财务核算/订单监控/安全风控/系统公告</td></tr>
+<tr><td>**CP端**</td><td>`cp/Message.vue`</td><td>`review`/`financial`/`announcement`</td><td>全部/未读/审核通知/结算通知/系统公告</td></tr>
+<tr><td>**代理商端**</td><td>`agent/Message.vue`</td><td>`financial`/`security`/`announcement`/`commission`</td><td>全部/未读/结算通知/安全告警/系统公告/分润提醒</td></tr>
+<tr><td>**店铺端**</td><td>`shop/account/Message.vue`</td><td>`order`/`security`/`announcement`/`activity`</td><td>全部/未读/订单通知/安全通知/系统公告/活动通知</td></tr>
+</table>
+
+<blockquote>
+<p>**统一原则**：4 个 `Message.vue` 均 `import { msgTagType, msgTagLabel } from '@/constants/noticeTypes'`，模板中使用 `<n-tag :type="msgTagType(msg.type)">{{ msgTagLabel(msg.type) }}</n-tag>` 一行替代原来的 v-if/else-if 硬编码链。</p>
+
+<hr>
+
+<h3 id="4-9-cp供应商终端-v1-6-新增">4.9 CP供应商终端（v1.6 新增）</h3>
+
 <p>**定位**: 游戏内容提供商（CP）自助管理游戏的Web后台。CP可提交游戏、查看数据和收益、申请提现  </p>
 <p>**形态**: Web后台，路由前缀 `/cp`，独立布局CPLayout  </p>
 <p>**核心价值**: 去中心化内容供给、数据透明化、按次结算闭环、CP自主定价</p>
@@ -3008,7 +3226,7 @@ VR终端重新上电
 <li>数据报表：营收趋势/门店排行/游戏排行/会员增长</li>
 <li>内容分发中心：游戏/活动定向分发到指定门店</li>
 <li>设备远程管控：远程开机/关机/重启/OTA固件升级</li>
-<li>消息推送：公告/系统通知/活动推送到各终端</li>
+<li>消息推送：公告管理 + 手动消息推送 + 消息中心（三模块体系，详见 §4.8.11）</li>
 <li>系统运维：操作日志/参数配置/帮助中心</li>
 
 <p><strong>里程碑验收标准</strong>：</p>
@@ -3912,6 +4130,9 @@ CP成本 8.00
 <p>📎 v2.3 更新: 预设销售金额设为CP端必填项（§4.9.3，min=0.01）；全端游戏封面统一为 3:4 竖屏展示比例（收银台72×96 / 游戏库3:4 / 内容分发36×48）；会员扣费页筛选下拉框边框色与搜索框统一（CSS变量驱动）；新增会员活跃度状态定义（§4.6，活跃/沉睡/流失/未激活）；收银系统去掉预存次数（会员列表移除剩余次数列、扣费弹窗移除降级逻辑）</p>
 <blockquote>
 <p>📎 v2.4 更新: 结算单状态由9态简化为5态对齐拉卡拉打款生命周期（§4.8.8）；代理商分润公式改为（消耗 − 退还）× 分润比例，不再扣除供应商成本（§2.3/§4.8.6/§5.3/§10.8）；新增提现/打款手续费率规范含min/max限制（§10.8.4）；新增订单/支付/履约/退款/支付流水状态枚举（§10.13.1~§10.13.6）；新增支付通道编码定义（§10.14）；新增退款路由规则（§10.15）；新增拉卡拉配置参数清单（§A.2）</p>
+<p>📎 v2.5 更新: 新增平台消息管理系统章节（§4.8.11），统一描述公告管理、消息推送、消息中心三模块体系；移除消息推送中的「自动通知」Tab 和「消息模板」功能，仅保留手动推送模式；定义4类一级消息分类（financial/order/security/announcement）和3类公告子类型（normal/urgent/maintain）；更新 M4 里程碑中消息推送描述</p>
+<p>📎 v2.6 更新: 消息分类全端统一 — 移除旧版命名（`settlement`→`financial`、`system`→`announcement`、`alert`→`security`），所有端（平台/CP/代理商/店铺）的 `type` 字段直接使用一级分类值，不再需要兼容映射；新增「供应商」角色至公告和推送的目标对象；新建消息移除「全部用户」选项；公告新增取消置顶功能</p>
+<p>📎 v2.7 更新: 消息类型统一收敛 — `review`（审核通知）正式纳入 `MESSAGE_CATEGORIES` 一级分类（5类）；新增 `MESSAGE_SUB_TYPES` 各端特有子类型常量、`MESSAGE_TAG_MAP` 统一映射表（7项全覆盖）及 `msgTagType()`/`msgTagLabel()` 工具函数；CP端/代理商端/店铺端 `Message.vue` 删除硬编码 v-if/else-if 映射，统一 `import { msgTagType, msgTagLabel } from '@/constants/noticeTypes'`，一行 `<n-tag>` 替代</p>
 <p>© 2026 头号空间 All Rights Reserved</p>
 </blockquote>
 </div>

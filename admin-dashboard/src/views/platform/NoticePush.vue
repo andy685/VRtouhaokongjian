@@ -12,38 +12,22 @@
       </n-space>
     </div>
 
-    <!-- Tab: 手动推送 / 自动通知 -->
+    <!-- 消息列表 -->
     <div class="content-card">
-      <n-tabs v-model:value="activeTab" type="line">
-        <!-- ===== Tab1: 手动推送 ===== -->
-        <n-tab-pane name="manual" tab="手动推送">
-          <div class="filter-bar">
-            <n-input v-model:value="searchKey" placeholder="搜索消息内容..." clearable style="width: 240px;" />
-            <n-select v-model:value="channelFilter" :options="channelOptions" placeholder="渠道" clearable style="width: 120px;" />
-            <n-select v-model:value="statusFlt" :options="statusOpts" placeholder="状态" clearable style="width: 110px;" />
-            <n-button @click="handleFilter">查询</n-button>
-          </div>
-          <n-data-table
-            :columns="columns"
-            :data="filteredMessages"
-            :pagination="{ pageSize: 10 }"
-            striped
-            :row-key="rowKey"
-          />
-        </n-tab-pane>
-
-        <!-- ===== Tab2: 自动通知 ===== -->
-        <n-tab-pane name="auto" tab="自动通知">
-          <p class="section-desc">配置<strong>系统完全自主感知</strong>的事件触发规则，无需人工操作即可自动发送通知。<span class="hint">注：依赖外部渠道的操作（如银行打款成功）不在本列表中，因为系统无法主动获知该结果。</span></p>
-          <n-data-table
-            :columns="autoColumns"
-            :data="autoRules"
-            :pagination="{ pageSize: 8 }"
-            striped
-            :row-key="rowKey"
-          />
-        </n-tab-pane>
-      </n-tabs>
+      <div class="filter-bar">
+        <n-input v-model:value="searchKey" placeholder="搜索消息内容..." clearable style="width: 240px;" />
+        <n-select v-model:value="categoryFilter" :options="[{label:'全部分类',value:null},...MESSAGE_CATEGORIES]" placeholder="消息分类" clearable style="width: 140px;" />
+        <n-select v-model:value="channelFilter" :options="channelOptions" placeholder="渠道" clearable style="width: 120px;" />
+        <n-select v-model:value="statusFlt" :options="statusOpts" placeholder="状态" clearable style="width: 110px;" />
+        <n-button @click="handleFilter">查询</n-button>
+      </div>
+      <n-data-table
+        :columns="columns"
+        :data="filteredMessages"
+        :pagination="{ pageSize: 10 }"
+        striped
+        :row-key="rowKey"
+      />
     </div>
 
     <!-- ===== 发送消息弹窗 ===== -->
@@ -57,10 +41,14 @@
           </n-checkbox-group>
         </n-form-item>
 
+        <!-- 消息分类 -->
+        <n-form-item label="消息分类" required>
+          <n-select v-model:value="form.category" :options="MESSAGE_CATEGORIES" placeholder="选择消息分类" />
+        </n-form-item>
+
         <!-- 目标对象 -->
         <n-form-item label="目标对象">
           <n-radio-group v-model:value="form.targetType" @update-value="onTargetTypeChange">
-            <n-radio value="all">全部用户</n-radio>
             <n-radio value="role">按角色筛选</n-radio>
             <n-radio value="custom">指定对象</n-radio>
           </n-radio-group>
@@ -139,17 +127,6 @@
           </n-form-item>
         </template>
 
-        <!-- 消息模板 -->
-        <n-form-item label="消息模板（可选）">
-          <n-select v-model:value="form.template" :options="templateOptions" placeholder="选择模板后自动填充内容" clearable @update:value="onTemplateSelect" />
-        </n-form-item>
-        <n-form-item v-if="form.template && templatePreview.title" label="模板预览">
-          <div class="tpl-preview">
-            <strong>{{ templatePreview.title }}</strong>
-            <p>{{ templatePreview.content }}</p>
-          </div>
-        </n-form-item>
-
         <!-- 标题 & 内容 -->
         <n-form-item label="消息标题">
           <n-input v-model:value="form.title" placeholder="请输入消息标题" maxlength="60" show-count />
@@ -175,46 +152,15 @@
       </template>
     </n-modal>
 
-    <!-- ===== 自动规则编辑弹窗 ===== -->
-    <n-modal v-model:show="showRuleModal" preset="card" :title="editRuleId ? '编辑通知规则' : '新增通知规则'" style="width: 600px;" :bordered="false">
-      <n-form label-placement="top" style="margin-top: 16px;">
-        <n-form-item label="触发事件">
-          <n-select v-model:value="ruleForm.event" :options="eventOptions" placeholder="选择触发的事件类型" @update:value="onRuleEventSelect" />
-          <div v-if="selectedEventDesc" class="evt-desc">{{ selectedEventDesc }}</div>
-        </n-form-item>
-        <n-form-item label="通知标题模板">
-          <n-input v-model:value="ruleForm.titleTpl" placeholder="支持变量：{shopName} {amount} {date} 等" />
-        </n-form-item>
-        <n-form-item label="通知内容模板">
-          <n-input v-model:value="ruleForm.contentTpl" type="textarea" :rows="4" placeholder="支持变量：{shopName} {amount} {date} {orderNo}" />
-        </n-form-item>
-        <n-form-item label="推送渠道">
-          <n-checkbox-group v-model:value="ruleForm.channels">
-            <n-checkbox value="site">站内消息</n-checkbox>
-            <n-checkbox value="sms">短信</n-checkbox>
-          </n-checkbox-group>
-        </n-form-item>
-        <n-form-item label="目标角色">
-          <n-select v-model:value="ruleForm.targets" multiple :options="ruleRoleOptions" placeholder="选择接收角色" />
-        </n-form-item>
-        <n-form-item label="启用状态">
-          <n-switch v-model:value="ruleForm.enabled" />
-        </n-form-item>
-      </n-form>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showRuleModal = false">取消</n-button>
-          <n-button type="primary" @click="saveRule">保存</n-button>
-        </n-space>
-      </template>
-    </n-modal>
-
     <!-- ===== 消息详情弹窗 ===== -->
     <n-modal v-model:show="showMsgDetailModal" preset="card" title="消息详情" style="width: 640px; max-width: 90vw;" :bordered="false">
       <div class="msg-detail" v-if="msgDetail">
         <n-descriptions :column="1" bordered size="small">
           <n-descriptions-item label="标题">
             <span class="wrap-text">{{ msgDetail.title }}</span>
+          </n-descriptions-item>
+          <n-descriptions-item label="消息分类">
+            <n-tag :type="categoryTagType(msgDetail.category)" size="small">{{ categoryLabel(msgDetail.category) }}</n-tag>
           </n-descriptions-item>
           <n-descriptions-item label="推送渠道">{{ msgDetail.channels?.join('、') }}</n-descriptions-item>
           <n-descriptions-item label="目标对象">{{ targetLabel(msgDetail.targetType) }}{{ msgDetail.targetDetail ? ' · ' + msgDetail.targetDetail : '' }}</n-descriptions-item>
@@ -239,26 +185,18 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NButton, NIcon, NTag, NSpace, NSwitch, useMessage } from 'naive-ui'
+import { NButton, NIcon, NTag, NSpace, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import {
-  PaperPlaneOutline, EyeOutline, RefreshOutline, TrashOutline,
-  PencilOutline, AddOutline,
-} from '@vicons/ionicons5'
+import { PaperPlaneOutline, EyeOutline, RefreshOutline, TrashOutline } from '@vicons/ionicons5'
+import { MESSAGE_CATEGORIES, categoryLabel, categoryTagType } from '../../constants/noticeTypes'
 
 const message = useMessage()
-const activeTab = ref('manual')
 
 // ========== 筛选 ==========
 const searchKey = ref('')
+const categoryFilter = ref<string | null>(null)
 const channelFilter = ref<string | null>(null)
 const statusFlt = ref<string | null>(null)
-
-// ========== 统计 ==========
-const todaySent = ref(128)
-const totalSent = ref(15680)
-const pendingCount = ref(3)
-const failedCount = ref(2)
 
 const channelOptions = [
   { label: '站内消息', value: 'site' },
@@ -275,14 +213,14 @@ const statusOpts = [
 const showSendModal = ref(false)
 const form = ref({
   channels: ['site'] as string[],
-  targetType: 'all',
+  category: null as string | null,
+  targetType: 'role',
   roles: [] as string[],
   customType: 'merchant',
   selectedMerchants: [] as number[],
   selectedAgents: [] as number[],
   selectedShops: [] as number[],
   selectedPersons: [] as number[],
-  template: null as string | null,
   title: '',
   content: '',
   scheduled: false,
@@ -294,33 +232,9 @@ const roleOptions = [
   { label: '商家管理员', value: 'merchant_admin' },
   { label: '商家员工（店长/店员）', value: 'merchant_staff' },
   { label: '代理商管理员', value: 'agent_admin' },
+  { label: '供应商', value: 'supplier' },
   { label: '平台运营', value: 'platform_ops' },
 ]
-
-// 模板
-const templateOptions = [
-  // 财务结算（1个）
-  { label: '💰 结算单生成通知', value: 'tpl_settlement_create' },
-  // 订单监控（1个）
-  { label: '📋 大额订单提醒', value: 'tpl_order_large' },
-  // ── 安全风控 ──
-  { label: '🔒 异常登录告警', value: 'tpl_login_anomaly' },
-]
-const tplData: Record<string, { title: string; content: string }> = {
-  // ── 财务结算 ──
-  tpl_settlement_create:   { title: '结算单生成通知', content: '{shopName}您好，{period}结算单已生成：总金额 ¥{totalAmount}，笔数 {count} 笔，预计 {payDate} 打款。请登录对账中心核对。' },
-  // ── 订单监控 ──
-  tpl_order_large:         { title: '大额订单提醒', content: '检测到大额消费订单：订单号 {orderNo}，金额 ¥{amount}，时间 {time}，店铺 {shopName}，请关注核实。' },
-  // ── 安全风控 ──
-  tpl_login_anomaly:       { title: '异常登录告警', content: '检测到账号 {accountName} 在 {loginTime} 从非常用地（IP：{ip}，地区：{location}）尝试登录，若非本人操作请立即修改密码。' },
-}
-const templatePreview = computed(() => (form.value.template ? tplData[form.value.template] || {} : {}))
-
-function onTemplateSelect(val: string | null) {
-  if (!val || !tplData[val]) return
-  form.value.title = tplData[val].title
-  form.value.content = tplData[val].content
-}
 
 // ---------- 对象选择数据 ----------
 interface OptionItem {
@@ -408,23 +322,24 @@ function onCustomTypeChange() {
   form.value.selectedPersons = []
 }
 function openEditor() {
-  form.value = { channels: ['site'], targetType: 'all', roles: [], customType: 'merchant', selectedMerchants: [], selectedAgents: [], selectedShops: [], selectedPersons: [], template: null, title: '', content: '', scheduled: false, sendAt: null }
+  form.value = { channels: ['site'], category: null, targetType: 'role', roles: [], customType: 'merchant', selectedMerchants: [], selectedAgents: [], selectedShops: [], selectedPersons: [], title: '', content: '', scheduled: false, sendAt: null }
   showSendModal.value = true
 }
 
 // ========== 消息列表 ==========
 interface MsgItem {
-  id: number; title: string; content: string; channels: string[]
+  id: number; title: string; content: string; category: string; channels: string[]
   targetType: string; targetDetail?: string
   status: string; sentAt: string; readRate: number; failReason?: string
 }
 const msgList = ref<MsgItem[]>([
-  { id: 1, title: '系统升级维护通知', content: '计划于5月2日02:00-06:00进行系统升级维护', channels: ['site','sms'], targetType: 'all', status: 'sent', sentAt: '2026-04-29 09:00', readRate: 87.5 },
-  { id: 2, title: '对账中心上线通知', content: '对账中心模块已正式上线，欢迎使用', channels: ['site'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-04-28 15:00', readRate: 62.3 },
-  { id: 3, title: '结算周期变更提醒', content: '结算周期从T+7调整为T+5', channels: ['sms'], targetType: 'merchant_admin', status: 'failed', sentAt: '2026-04-27 11:00', readRate: 0, failReason: '短信服务商接口超时' },
-  { id: 4, title: '五一活动预热', content: '五一假期即将来临，请提前做好门店活动准备', channels: ['site','sms'], targetType: 'merchant_staff', status: 'pending', sentAt: '-', readRate: 0 },
-  { id: 5, title: '结算到账通知', content: '深圳福田旗舰店您好，您2026年4月的结算金额 ¥52,380.00 已到账', channels: ['site'], targetType: 'custom', targetDetail: '深圳福田旗舰店', status: 'sent', sentAt: '2026-04-26 08:30', readRate: 95.1 },
-  { id: 6, title: '设备离线告警', content: '设备「VR-03号机」(SN:HKB23001)已离线超过30分钟', channels: ['site','sms'], targetType: 'custom', targetDetail: '深圳福田旗舰店-王小丫', status: 'sent', sentAt: '2026-04-25 14:20', readRate: 100 },
+  { id: 1, title: '系统升级维护通知', content: '计划于5月2日02:00-06:00进行系统升级维护', category: 'announcement', channels: ['site','sms'], targetType: 'all', status: 'sent', sentAt: '2026-04-29 09:00', readRate: 87.5 },
+  { id: 2, title: '对账中心上线通知', content: '对账中心模块已正式上线，欢迎使用', category: 'announcement', channels: ['site'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-04-28 15:00', readRate: 62.3 },
+  { id: 3, title: '结算周期变更提醒', content: '结算周期从T+7调整为T+5', category: 'financial', channels: ['sms'], targetType: 'merchant_admin', status: 'failed', sentAt: '2026-04-27 11:00', readRate: 0, failReason: '短信服务商接口超时' },
+  { id: 4, title: '五一活动预热', content: '五一假期即将来临，请提前做好门店活动准备', category: 'announcement', channels: ['site','sms'], targetType: 'merchant_staff', status: 'pending', sentAt: '-', readRate: 0 },
+  { id: 5, title: '结算到账通知', content: '深圳福田旗舰店您好，您2026年4月的结算金额 ¥52,380.00 已到账', category: 'financial', channels: ['site'], targetType: 'custom', targetDetail: '深圳福田旗舰店', status: 'sent', sentAt: '2026-04-26 08:30', readRate: 95.1 },
+  { id: 6, title: '设备离线告警', content: '设备「VR-03号机」(SN:HKB23001)已离线超过30分钟', category: 'security', channels: ['site','sms'], targetType: 'custom', targetDetail: '深圳福田旗舰店-王小丫', status: 'sent', sentAt: '2026-04-25 14:20', readRate: 100 },
+  { id: 8, title: '异常大额订单提醒 — ¥3,500', content: '订单 ORD-202604290088 金额 ¥3,500.00 超过监控阈值，请关注核实', category: 'order', channels: ['site','sms'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-04-29 16:22', readRate: 92.0 },
   { id: 7, title: '端午节运营指南公告', content: `各位商家朋友：
 
 端午佳节即将到来，为帮助大家做好节日运营，现将相关注意事项通知如下：
@@ -443,7 +358,7 @@ const msgList = ref<MsgItem[]>([
 • 节日期间客服响应时效调整为30分钟内
 • 如遇突发问题，请拨打应急热线 400-XXX-XXXX
 
-祝各位商家端午安康，生意兴隆！`, channels: ['site','sms'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-06-05 10:00', readRate: 78.4 },
+祝各位商家端午安康，生意兴隆！`, category: 'announcement', channels: ['site','sms'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-06-05 10:00', readRate: 78.4 },
 ])
 
 const showMsgDetailModal = ref(false)
@@ -459,6 +374,7 @@ const filteredMessages = computed(() => {
     const kw = searchKey.value.toLowerCase()
     list = list.filter(m => m.title.toLowerCase().includes(kw) || m.content.toLowerCase().includes(kw))
   }
+  if (categoryFilter.value) list = list.filter(m => m.category === categoryFilter.value)
   if (channelFilter.value) list = list.filter(m => m.channels.includes(channelFilter.value))
   if (statusFlt.value) list = list.filter(m => m.status === statusFlt.value)
   return list
@@ -469,6 +385,10 @@ const columns: DataTableColumns<MsgItem> = [
   { title: '标题', key: 'title', ellipsis: { tooltip: true }, render(row) {
     return h('span', {}, [row.title])
   }},
+  {
+    title: '消息分类', key: 'category', width: 100,
+    render(row) { return h(NTag, { size: 'small', type: categoryTagType(row.category), bordered: false }, () => categoryLabel(row.category)) }
+  },
   {
     title: '渠道', key: 'channels', width: 110,
     render(row) { return h(NSpace, { wrap: false }, () => row.channels.map(c => h(NTag, { size: 'small', bordered: false, type: c === 'sms' ? 'warning' : 'info' }, () => c === 'sms' ? '短信' : '站内'))) }
@@ -493,7 +413,7 @@ const columns: DataTableColumns<MsgItem> = [
     }
   },
 ]
-const targetMap: Record<string, string> = { all: '全部', merchant_admin: '商家管理', merchant_staff: '店员', agent_admin: '代理商管理', platform_ops: '平台运营', custom: '指定' }
+const targetMap: Record<string, string> = { all: '全部', merchant_admin: '商家管理', merchant_staff: '店员', agent_admin: '代理商管理', supplier: '供应商', platform_ops: '平台运营', custom: '指定' }
 function targetLabel(v: string) { return targetMap[v] || v }
 const statusMap: Record<string, {label: string; type: 'success'|'error'|'warning'}> = {
   sent: { label: '已发送', type: 'success' },
@@ -501,81 +421,13 @@ const statusMap: Record<string, {label: string; type: 'success'|'error'|'warning
   pending: { label: '待发送', type: 'warning' },
 }
 
-// ========== 自动通知规则 ==========
-const showRuleModal = ref(false)
-const editRuleId = ref<number | null>(null)
-const ruleForm = ref({ event: '', titleTpl: '', contentTpl: '', channels: ['site'] as string[], targets: [] as string[], enabled: true })
-
-const eventOptions = [
-  // ── 纯自动（低频重要，系统自主触发） ──
-  { label: '【财务结算】结算单生成', value: 'evt_settlement_create', desc: '系统按周期跑批生成结算单时自动触发，无需人工干预' },
-  { label: '【订单监控】大额订单', value: 'evt_order_large', desc: '收银订单金额 ≥ 阈值（如¥500）时即时触发' },
-  { label: '【安全风控】异常登录', value: 'evt_login_anomaly', desc: '检测到异地/IP异常/频繁失败等可疑登录行为时自动触发' },
-]
-const ruleRoleOptions = [
-  { label: '商家管理员', value: 'merchant_admin' },
-  { label: '商家员工（含店长）', value: 'merchant_staff' },
-  { label: '代理商管理员', value: 'agent_admin' },
-  { label: '平台运营', value: 'platform_ops' },
-]
-
-const selectedEventDesc = computed(() => {
-  const opt = eventOptions.find(o => o.value === ruleForm.value.event)
-  return (opt as any)?.desc || ''
-})
-function onRuleEventSelect() { /* desc由computed自动更新 */ }
-
-interface AutoRule { id: number; event: string; eventLabel: string; targets: string[]; channels: string[]; enabled: boolean; lastTriggered: string; triggerCount: number }
-
-const autoRules = ref<AutoRule[]>([
-  { id: 1, event: 'evt_settlement_create', eventLabel: '结算单生成', targets: ['merchant_admin'], channels: ['site','sms'], enabled: true, lastTriggered: '2026-04-26 02:00', triggerCount: 156 },
-  { id: 5, event: 'evt_order_large', eventLabel: '大额订单', targets: ['merchant_admin','platform_ops'], channels: ['site'], enabled: true, lastTriggered: '2026-04-24 18:45', triggerCount: 34 },
-  { id: 8, event: 'evt_login_anomaly', eventLabel: '异常登录', targets: ['merchant_admin'], channels: ['sms'], enabled: true, lastTriggered: '2026-04-20 03:12', triggerCount: 5 },
-])
-
-const autoColumns: DataTableColumns<AutoRule> = [
-  { title: 'ID', key: 'id', width: 50 },
-  { title: '触发事件', key: 'eventLabel', ellipsis: { tooltip: true }},
-  {
-    title: '接收角色', key: 'targets', width: 200,
-    render(row) { return h(NSpace, { wrap: true }, () => row.targets.map(t => h(NTag, { size: 'small', bordered: false, type: 'info' }, () => ({ merchant_admin:'商家管理', merchant_staff:'店员', agent_admin:'代理商', platform_ops:'运营' }[t] || t)))) }
-  },
-  {
-    title: '渠道', key: 'channels', width: 110,
-    render(row) { return h(NSpace, { wrap: false }, () => row.channels.map(c => h(NTag, { size: 'small', bordered: false, type: c === 'sms' ? 'warning' : 'info' }, () => c === 'sms' ? '短信' : '站内'))) }
-  },
-  {
-    title: '状态', key: 'enabled', width: 75,
-    render(row) { return h(NSwitch, { size: 'small', value: row.enabled }) }
-  },
-  { title: '最近触发', key: 'lastTriggered', width: 140 },
-  { title: '累计次数', key: 'triggerCount', width: 85 },
-  {
-    title: '操作', key: 'actions', width: 140,
-    render(row) {
-      return h(NSpace, null, () => [
-        h(NButton, { text: '', size: 'small', type: 'warning', onClick: () => editRule(row) }, () => [h(NIcon, { component: PencilOutline }), ' 编辑']),
-        h(NButton, { text: '', size: 'small', type: 'error' }, () => [h(NIcon, { component: TrashOutline })]),
-      ])
-    }
-  },
-]
-
-function editRule(rule?: AutoRule) {
-  if (rule) {
-    editRuleId.value = rule.id
-    ruleForm.value = { ...rule, targets: [...rule.targets], channels: [...rule.channels] } as any
-  } else {
-    editRuleId.value = null
-    ruleForm.value = { event: '', titleTpl: '', contentTpl: '', channels: ['site'], targets: [], enabled: true }
-  }
-  showRuleModal.value = true
-}
-function saveRule() { showRuleModal.value = false; message.success(editRuleId.value ? '规则修改成功' : '规则创建成功') }
-
 // ========== 通用 ==========
 function handleFilter() {}
-function handleSend() { showSendModal.value = false; message.success('消息发送任务已创建') }
+function handleSend() {
+  if (!form.value.category) { message.warning('请选择消息分类'); return }
+  if (!form.value.title.trim()) { message.warning('请输入消息标题'); return }
+  showSendModal.value = false; message.success('消息发送任务已创建')
+}
 const rowKey = (row: any) => row.id
 </script>
 
@@ -585,26 +437,8 @@ const rowKey = (row: any) => row.id
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0; }
 .header-desc { font-size: 14px; color: var(--text-muted); margin: 0; }
 
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
-.stat-box { background: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; text-align: center; box-shadow: var(--shadow-sm); }
-.stat-num { font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 700; }
-.stat-num.success { color: #10B981; }
-.stat-num.primary { color: #3B82F6; }
-.stat-num.warning { color: #F59E0B; }
-.stat-num.error { color: #EF4444; }
-.stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-
 .content-card { background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); padding: 20px; }
 .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.6; }
-.section-desc strong { color: var(--text-primary); }
-.section-desc .hint { display: block; margin-top: 4px; font-size: 12px; color: #F59E0B; background: rgba(245,158,11,0.08); padding: 4px 8px; border-radius: 6px; }
-
-.tpl-preview { background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.15); border-radius: 8px; padding: 10px 14px; }
-.tpl-preview strong { font-size: 13px; color: #2563EB; }
-.tpl-preview p { margin: 4px 0 0; font-size: 12px; color: var(--text-secondary); }
-.evt-desc { font-size: 12px; color: #6B7280; background: rgba(59,130,246,0.06); padding: 6px 10px; border-radius: 6px; margin-top: 4px; line-height: 1.5; }
-
 /* ===== 消息详情 ===== */
 .wrap-text { white-space: pre-wrap; word-break: break-word; }
 .msg-content-section { margin-top: 16px; }

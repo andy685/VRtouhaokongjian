@@ -29,6 +29,46 @@
 
       <!-- ===== Tab 2: 游戏汇总 ===== -->
       <n-tab-pane name="game-summary" tab="游戏汇总" style="overflow:visible;">
+        <!-- KPI 卡片 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+              <n-icon :component="GridOutline" size="22" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">游戏数量</span>
+              <span class="stat-value">{{ gameSummaryKpi.gameCount }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #10B981, #059669);">
+              <n-icon :component="PlayOutline" size="22" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">总点播次数</span>
+              <span class="stat-value">{{ gameSummaryKpi.totalPlays }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+              <n-icon :component="PeopleOutline" size="22" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">总人次</span>
+              <span class="stat-value">{{ gameSummaryKpi.totalPeople }}</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
+              <n-icon :component="TrendingUpOutline" size="22" color="#fff" />
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">场均人次</span>
+              <span class="stat-value">{{ gameSummaryKpi.avgPerPlay }}</span>
+            </div>
+          </div>
+        </div>
+
         <div class="filter-bar">
           <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width:150px" clearable placeholder="全部店铺" />
           <n-input v-model:value="filterGameSummary" size="small" style="width:160px" clearable placeholder="搜索游戏" />
@@ -37,7 +77,7 @@
         <n-data-table
           :columns="gameSummaryColumns"
           :data="filteredGameSummaryData"
-          :pagination="false"
+          :pagination="pagination"
           :bordered="true"
           :single-line="false"
           size="small"
@@ -119,47 +159,14 @@
       </template>
     </n-modal>
 
-    <!-- 续费确认弹窗 -->
-    <n-modal v-model:show="showRenewModal" preset="card" title="续费确认" style="width: 480px;">
-      <div class="renew-body">
-        <div class="renew-game-info">
-          <span class="renew-game-name">{{ renewTarget?.game }}</span>
-          <n-tag type="info" size="small">续费追加时长</n-tag>
-        </div>
-        <n-descriptions :column="1" bordered>
-          <n-descriptions-item label="设备">{{ renewTarget?.device }}</n-descriptions-item>
-          <n-descriptions-item label="店铺">{{ renewTarget?.shop }}</n-descriptions-item>
-          <n-descriptions-item label="已玩时长">
-            <span style="font-weight:600;color:#10B981;">{{ renewTarget?.duration || 10 }} 分钟</span>
-          </n-descriptions-item>
-          <n-descriptions-item label="续费追加时长">
-            <span style="font-weight:600;color:#3B82F6;">+{{ renewTarget?.duration || 10 }} 分钟</span>
-          </n-descriptions-item>
-          <n-descriptions-item label="续费后总时长">
-            <span style="font-weight:700;color:#8B5CF6;font-size:15px;">{{ (renewTarget?.duration || 10) * 2 }} 分钟</span>
-          </n-descriptions-item>
-        </n-descriptions>
-        <n-text depth="3" style="display:block;margin-top:12px;font-size:12px;text-align:center;">
-          💡 续费从当前进度追加时长，游戏不会从头开始
-        </n-text>
-      </div>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showRenewModal = false">取消</n-button>
-          <n-button type="warning" @click="confirmRenew">确认续费</n-button>
-        </n-space>
-      </template>
-    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NModal, NSelect, NInput, NDatePicker, NSpace, NTabs, NTabPane, NTag, NDescriptions, NDescriptionsItem, useMessage } from 'naive-ui'
+import { NDataTable, NButton, NIcon, NModal, NSelect, NInput, NDatePicker, NSpace, NTabs, NTabPane, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { DownloadOutline, PlayOutline, TimeOutline, CashOutline, PeopleOutline, RefreshOutline } from '@vicons/ionicons5'
-
-const message = useMessage()
+import { DownloadOutline, PlayOutline, TimeOutline, CashOutline, PeopleOutline, GridOutline, TrendingUpOutline } from '@vicons/ionicons5'
 
 const activeTab = ref('film-record')
 
@@ -182,12 +189,6 @@ const filmColumns: DataTableColumns = [
   { title: '游戏', key: 'game', minWidth: 180 },
   { title: '人数', key: 'people', width: 70, align: 'center' },
   { title: '消费时间', key: 'time', width: 160, align: 'center' },
-  { title: '操作', key: 'actions', width: 90, align: 'center', render: (row: any) =>
-    row.allowRenewal
-      ? h(NButton, { size: 'small', type: 'warning', secondary: true, onClick: () => handleRenew(row) },
-          { icon: () => h(NIcon, null, () => h(RefreshOutline)), default: () => '续费' })
-      : h('span', { style: { color: '#bbb', fontSize: '12px' } }, '—')
-  },
 ]
 
 const filmRawData = ref([
@@ -230,12 +231,6 @@ const gameSummaryColumns: DataTableColumns = [
   { title: '游戏人数', key: 'people', width: 100, align: 'center' },
   { title: '点播次数占比(%)', key: 'playPercent', width: 140, align: 'center', render: (row: any) => row.playPercent.toFixed(2) },
   { title: '游戏人数占比(%)', key: 'peoplePercent', width: 140, align: 'center', render: (row: any) => row.peoplePercent.toFixed(2) },
-  { title: '操作', key: 'actions', width: 90, align: 'center', render: (row: any) =>
-    row.game && row.allowRenewal
-      ? h(NButton, { size: 'small', type: 'warning', secondary: true, onClick: () => handleRenew(row) },
-          { icon: () => h(NIcon, null, () => h(RefreshOutline)), default: () => '续费' })
-      : row.game ? h('span', { style: { color: '#bbb', fontSize: '12px' } }, '—') : null
-  },
 ]
 
 const gameSummaryRawData = ref([
@@ -253,18 +248,19 @@ const gameSummaryRawData = ref([
 const filteredGameSummaryData = computed(() => {
   let list = filterShop.value ? gameSummaryRawData.value.filter(d => d.shop === filterShop.value) : [...gameSummaryRawData.value]
   if (filterGameSummary.value) list = list.filter(d => d.game.includes(filterGameSummary.value))
-  const totalPlays = list.reduce((sum, d) => sum + d.plays, 0)
-  const totalPeople = list.reduce((sum, d) => sum + d.people, 0)
-  list.push({
-    shop: '合计', game: '', plays: totalPlays, people: totalPeople,
-    playPercent: list.reduce((sum, d) => sum + d.playPercent, 0),
-    peoplePercent: list.reduce((sum, d) => sum + d.peoplePercent, 0),
-  } as any)
   return list
 })
 
-const gameResultCount = computed(() => {
-  return filteredGameSummaryData.value.length - 1 // exclude 合计 row
+const gameSummaryKpi = computed(() => {
+  const data = filteredGameSummaryData.value
+  const totalPlays = data.reduce((s, d) => s + d.plays, 0)
+  const totalPeople = data.reduce((s, d) => s + d.people, 0)
+  return {
+    gameCount: data.length,
+    totalPlays,
+    totalPeople,
+    avgPerPlay: totalPlays > 0 ? (totalPeople / totalPlays).toFixed(1) : '0',
+  }
 })
 
 function resetGameFilter() {
@@ -373,26 +369,6 @@ function resetStaffFilter() {
   staffDateRange.value = getTodayRange()
 }
 
-// ==================== 续费 ====================
-const showRenewModal = ref(false)
-const renewTarget = ref<any>(null)
-
-function handleRenew(row: any) {
-  // 确保有 duration 字段，默认 10 分钟
-  if (!row.duration) row.duration = 10
-  renewTarget.value = row
-  showRenewModal.value = true
-}
-
-function confirmRenew() {
-  const row = renewTarget.value
-  if (!row) return
-  showRenewModal.value = false
-  // 续费后时长翻倍（追加同等时长）
-  row.duration = (row.duration || 10) * 2
-  message.success(`「${row.game}」续费成功，游戏时长已延长至 ${row.duration} 分钟`)
-}
-
 // ==================== 公共导出 ====================
 
 function exportData() {
@@ -491,20 +467,6 @@ function exportData() {
 
 /* ===== Tabs ===== */
 ::deep(.n-tabs-nav) { margin-bottom: 16px; }
-
-/* ===== 续费弹窗 ===== */
-.renew-body { padding: 4px 0; }
-.renew-game-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.renew-game-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
 
 /* ===== 响应式 ===== */
 @media (max-width: 1200px) {
