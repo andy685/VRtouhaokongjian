@@ -260,7 +260,6 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: '收银订单', key: '/shop/cashier-order' },
           { label: '点播系统订单', key: '/shop/ondemand-order' },
-          { label: '手动扣费订单', key: '/shop/manual-deduct-order' },
           { label: '修改储值订单', key: '/shop/edit-balance-order' },
           { label: '游戏币兑换订单', key: '/shop/points-exchange-order' },
           { label: '活动赠送订单', key: '/shop/gift-order' },

@@ -30,7 +30,7 @@
             </div>
           </div>
           <div class="mc-btns">
-            <button type="button" class="mc-btn" @click="showDeductionModal = true">去扣费</button>
+            <button type="button" class="mc-btn" @click="goToDeduct">去扣费</button>
             <button type="button" class="mc-btn" @click="showMemberSelect = true">切换会员</button>
             <button type="button" class="mc-btn" @click="handleLogout">退出登录</button>
           </div>
@@ -461,7 +461,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { CircleCloseFilled, Close, Minus, Monitor, Plus, Search, Sort, WarningFilled } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
@@ -473,6 +473,7 @@ import DeductionSuccessModal from '../../components/DeductionSuccessModal.vue'
 const BASE_URL = import.meta.env.BASE_URL
 
 const route = useRoute()
+const router = useRouter()
 
 const createCover = (accentA, accentB, glyph) => {
   const svg = `
@@ -769,6 +770,12 @@ const persistSaleMemberSession = (member) => {
 
 const clearSaleMemberSession = () => {
   sessionStorage.removeItem('sale:selected-member')
+}
+
+const goToDeduct = () => {
+  if (!selectedMember.value) return
+  persistSaleMemberSession(selectedMember.value)
+  router.push({ path: '/member/deduct', query: { member: '1' } })
 }
 
 const syncSaleEntryContext = () => {

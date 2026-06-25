@@ -714,7 +714,8 @@ const handleEditSave = (data) => {
 
 const handleFunc = (action) => {
   if (action === 'deduct') {
-    showDeductionModal.value = true
+    persistSaleMemberSession()
+    router.push({ path: '/member/deduct', query: { member: '1' } })
     return
   }
   if (action === 'gift') {

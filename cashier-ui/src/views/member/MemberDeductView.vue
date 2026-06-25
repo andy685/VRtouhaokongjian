@@ -273,8 +273,8 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { CircleCloseFilled, Minus, Monitor, Plus, Search, Sort, WarningFilled } from '@element-plus/icons-vue'
 import MemberSelectModal from '../../components/MemberSelectModal.vue'
 import NewMemberModal from '../../components/NewMemberModal.vue'
@@ -285,6 +285,20 @@ import PaymentModal from '../../components/PaymentModal.vue'
 const BASE_URL = import.meta.env.BASE_URL
 
 const router = useRouter()
+const route = useRoute()
+
+onMounted(() => {
+  if (route.query.member === '1') {
+    const raw = sessionStorage.getItem('sale:selected-member')
+    if (raw) {
+      try {
+        const member = JSON.parse(raw)
+        selectedMember.value = member
+        sessionStorage.removeItem('sale:selected-member')
+      } catch { /* ignore */ }
+    }
+  }
+})
 
 const createCover = (accentA, accentB, glyph) => {
   const svg = `

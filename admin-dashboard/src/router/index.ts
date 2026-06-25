@@ -145,7 +145,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'order-search', name: 'ShopOrderSearch', component: () => import('../views/shop/OrderSearch.vue'), meta: { title: '订单查询' } },
       { path: 'cashier-order', name: 'ShopCashierOrder', component: () => import('../views/shop/CashierOrder.vue'), meta: { title: '收银订单' } },
       { path: 'ondemand-order', name: 'ShopOnDemandOrder', component: () => import('../views/shop/OnDemandOrder.vue'), meta: { title: '点播系统订单' } },
-      { path: 'manual-deduct-order', name: 'ShopManualDeductOrder', component: () => import('../views/shop/ManualDeductOrder.vue'), meta: { title: '手动扣费订单' } },
       { path: 'edit-balance-order', name: 'ShopEditBalanceOrder', component: () => import('../views/shop/EditBalanceOrder.vue'), meta: { title: '修改储值订单' } },
       { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: () => import('../views/shop/PointsExchangeOrder.vue'), meta: { title: '游戏币兑换订单' } },
       { path: 'gift-order', name: 'ShopGiftOrder', component: () => import('../views/shop/GiftOrder.vue'), meta: { title: '活动赠送订单' } },

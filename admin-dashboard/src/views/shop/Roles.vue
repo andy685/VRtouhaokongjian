@@ -158,7 +158,7 @@ const pagination = { pageSize: 10 }
 
 const roleData = ref<Role[]>([
   { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'] },
-  { id: 2, name: '收银员', desc: '收银、退款、查询订单', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'manual-deduct-order', 'members', 'member-points-query', 'daily-sales'] },
+  { id: 2, name: '收银员', desc: '收银、退款、查询订单', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'] },
   { id: 3, name: '接待员', desc: '会员办理、预约管理', userCount: 3, status: true, permissions: ['members', 'member-levels', 'member-ranking', 'guide-members'] },
   { id: 4, name: '设备维护', desc: '设备巡检、故障上报', userCount: 1, status: false, permissions: ['devices', 'on-demand-settings', 'on-demand-data', 'on-demand-device-summary'] },
   { id: 5, name: '财务', desc: '查看报表、对账', userCount: 1, status: true, permissions: ['daily-sales', 'historical-revenue', 'channel-revenue', 'product-sales', 'account-stats', 'shifts', 'film-revenue'] },
@@ -325,7 +325,6 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
           children: [
             { key: 'cashier-order', label: '收银订单查询', checked: false, expanded: false },
             { key: 'ondemand-order', label: '点播订单', checked: false, expanded: false },
-            { key: 'manual-deduct-order', label: '手动扣费', checked: false, expanded: false },
             { key: 'edit-balance-order', label: '修改储值', checked: false, expanded: false },
             { key: 'points-exchange-order', label: '游戏币兑换', checked: false, expanded: false },
             { key: 'gift-order', label: '赠送订单', checked: false, expanded: false },
