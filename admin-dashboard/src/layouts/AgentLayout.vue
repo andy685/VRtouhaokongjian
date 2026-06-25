@@ -187,7 +187,7 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const agentName = ref('深圳未来科技')
 
-const renderIcon = (IconComp: any) => h(IconComp)
+const renderIcon = (IconComp: any) => () => h(IconComp)
 
 // 代理商菜单配置
 const menuOptions: MenuOption[] = [

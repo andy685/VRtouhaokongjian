@@ -170,7 +170,7 @@ const showRoleModal = ref(false)
 const cpName = ref('极境互动科技')
 const unreadCount = ref(3)
 
-const renderIcon = (IconComp: any) => h(IconComp)
+const renderIcon = (IconComp: any) => () => h(IconComp)
 
 const menuThemeOverrides = {
   itemTextColor: '#e2e8f0',

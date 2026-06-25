@@ -173,7 +173,7 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 const selectedShop = ref('futian')
 
-const renderIcon = (IconComp: any) => h(IconComp)
+const renderIcon = (IconComp: any) => () => h(IconComp)
 
 // 当前店铺信息
 const currentShop = computed(() => ({
