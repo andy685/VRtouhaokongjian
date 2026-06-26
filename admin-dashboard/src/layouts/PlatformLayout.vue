@@ -350,7 +350,6 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '收银订单', key: '/platform/order-flow/cashier' },
       { label: '点播系统订单', key: '/platform/order-flow/vod' },
-      { label: '手动扣费订单', key: '/platform/order-flow/manual' },
       { label: '修改储值订单', key: '/platform/order-flow/balance' },
       { label: '游戏币兑换订单', key: '/platform/order-flow/gamebean' },
       { label: '活动赠送订单', key: '/platform/order-flow/promo' },

@@ -85,6 +85,7 @@
         </n-space>
       </template>
     </n-modal>
+    <MarkExceptionDialog />
   </div>
 </template>
 
@@ -96,6 +97,10 @@ import {
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
+import { useExceptionOrders } from '@/composables/useExceptionOrders'
+import MarkExceptionDialog from '@/components/MarkExceptionDialog.vue'
+
+const { openMarkDialog, isMarked, unmarkOrder } = useExceptionOrders()
 
 const showFilter = ref(false)
 const showDetail = ref(false)
@@ -369,10 +374,15 @@ const columns: DataTableColumns<BalanceOrder> = [
   {
     title: '操作',
     key: 'actions',
-    width: 80,
+    width: 130,
     align: 'center',
     render: (row: BalanceOrder) =>
-      h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' })
+      h(NSpace, { size: 4 }, { default: () => [
+        h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }),
+        isMarked(row.orderNo)
+          ? h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { unmarkOrder(row.orderNo); window.$message?.info('已取消标记') } }, { default: () => '取消标记' })
+          : h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { if (!openMarkDialog({ orderNo: row.orderNo, store: row.shop, amount: `¥${row.amount.toFixed(2)}` })) window.$message?.warning('该订单已在异常列表中') } }, { default: () => '标记异常' }),
+      ] })
   },
 ]
 
