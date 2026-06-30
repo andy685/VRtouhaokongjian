@@ -27,7 +27,7 @@
             <div class="basic-balance-left">
               <div class="balance-amount">¥{{ basicBalance }}</div>
               <n-button text type="primary" class="view-bills" @click="viewBills('basic')">
-                查看账单
+                查看订单
               </n-button>
             </div>
             <div class="basic-balance-right">
@@ -45,33 +45,21 @@
 
       <n-tab-pane name="game-bean" tab="游戏豆账户">
         <div class="balance-card game-bean-card">
-          <!-- 商家游戏豆模式 -->
-          <div class="game-bean-mode">
-            <span class="mode-label">商家游戏豆模式：</span>
-            <n-radio-group v-model:value="gameBeanMode" size="small">
-              <n-radio value="dedicated">游戏豆专用</n-radio>
-              <n-radio value="universal">游戏豆通用</n-radio>
-            </n-radio-group>
-            <span class="mode-hint">
-              说明：游戏豆专用是各店铺游戏豆充值仅用于当前店铺点播，游戏豆通用是各店铺游戏豆充值可用于所有店铺点播
-            </span>
-          </div>
-
-          <!-- 商家游戏豆余额 -->
+          <!-- 全局游戏豆（通用） -->
           <div class="game-bean-total">
-            <span class="total-label">商家游戏豆：</span>
-            <span class="total-value">{{ merchantGameBean }}</span>
-            <n-tag type="warning" size="small" class="total-tip" v-if="gameBeanMode === 'dedicated'">
-              注意：商家游戏豆余额不等于各店铺游戏豆余额之和
-            </n-tag>
-            <n-tag type="info" size="small" class="total-tip" v-else>
-              注意：全局游戏豆可在所有店铺使用
-            </n-tag>
+            <div class="game-bean-total-header">
+              <span class="total-label">商家全局游戏豆（通用）：</span>
+              <span class="total-value">{{ merchantGameBean }}</span>
+            </div>
+            <n-tag type="info" size="small" class="total-tip">可在所有店铺点播使用，统一管理</n-tag>
           </div>
 
-          <!-- 店铺游戏豆表格 -->
-          <div class="game-bean-table-section" v-if="gameBeanMode === 'dedicated'">
-            <div class="table-title">店铺游戏豆：</div>
+          <!-- 各店铺游戏豆（专用） -->
+          <div class="game-bean-table-section">
+            <div class="game-bean-table-header">
+              <span class="table-title">各店铺游戏豆（专用）：</span>
+              <n-tag type="warning" size="small" class="table-tip">仅限当前店铺点播使用，各店铺独立管理</n-tag>
+            </div>
             <n-data-table
               :columns="gameBeanColumns"
               :data="gameBeanStoreList"
@@ -82,17 +70,9 @@
             />
           </div>
 
-          <!-- 全局游戏豆信息 -->
-          <div class="game-bean-universal-info" v-else>
-            <div class="universal-info-content">
-              <p>全局游戏豆可在所有店铺使用，统一管理</p>
-              <p>充值后游戏豆会自动添加到全局余额中</p>
-            </div>
-          </div>
-
           <!-- 操作按钮 -->
           <div class="game-bean-actions">
-            <n-button type="primary" ghost class="game-bean-btn" @click="handleTransfer" v-if="gameBeanMode === 'dedicated'">游戏豆转移</n-button>
+            <n-button type="primary" ghost class="game-bean-btn" @click="handleTransfer">游戏豆转移</n-button>
             <n-button type="primary" class="game-bean-btn" @click="handleRecharge">去充值</n-button>
             <n-button type="primary" ghost class="game-bean-btn" @click="viewBills('game-bean')">查看账单</n-button>
           </div>
@@ -316,7 +296,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
-  NTabs, NTabPane, NButton, NRadioGroup, NRadio, NTag, NDataTable, 
+  NTabs, NTabPane, NButton, NTag, NDataTable, 
   NModal, NSelect, NInput, NForm, NFormItem, NEmpty, NDescriptions, 
   NDescriptionsItem, NInputGroup, NAlert, NResult, NStatistic, NCountdown,
   NTimeline, NTimelineItem, NCollapse, NCollapseItem,
@@ -617,7 +597,6 @@ onUnmounted(() => {
 const operatingBalance = ref('0.69')
 const basicBalance = ref('0')
 const gameBeanBalance = ref('5200')
-const gameBeanMode = ref('dedicated')
 const merchantGameBean = ref('28')
 
 const basicStoreList = [
@@ -826,34 +805,23 @@ function handleFromChange(value: string) {
   max-width: 680px;
 }
 
-.game-bean-mode {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.mode-label {
-  font-size: 14px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.mode-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  background: #f0f9ff;
-  padding: 4px 10px;
-  border-radius: 4px;
-  line-height: 1.5;
-}
-
 .game-bean-total {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.game-bean-total-header {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.total-tip {
+  margin-top: 6px;
 }
 
 .total-label {
@@ -876,11 +844,17 @@ function handleFromChange(value: string) {
   margin-bottom: 24px;
 }
 
+.game-bean-table-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .table-title {
   font-size: 14px;
   color: var(--text-primary);
   font-weight: 500;
-  margin-bottom: 8px;
 }
 
 .game-bean-table :deep(.n-data-table-th) {
@@ -897,23 +871,7 @@ function handleFromChange(value: string) {
   min-width: 120px;
 }
 
-/* 通用游戏豆信息 */
-.game-bean-universal-info {
-  margin: 16px 0;
-  padding: 16px;
-  background: #f0f9ff;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
-}
-
-.universal-info-content p {
-  margin: 8px 0;
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* 游戏豆转移弹窗 */
+/* 操作按钮 */
 .modal-footer {
   display: flex;
   justify-content: flex-end;

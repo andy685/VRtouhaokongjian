@@ -227,7 +227,7 @@ const isCollapsed = ref(false)
 const showRoleModal = ref(false)
 
 // 稳定的 h() 引用，避免每次渲染重建 VNode
-const icon = (IconComp: any) => () => h(IconComp)
+const icon = (IconComp: any) => () => h(NIcon, { size: 18 }, { default: () => h(IconComp) })
 
 const createOrigin = (port: number) => {
   const { protocol, hostname } = window.location
