@@ -61,14 +61,22 @@
             <n-descriptions-item label="商家">{{ detailRow.merchant }}</n-descriptions-item>
             <n-descriptions-item label="店铺">{{ detailRow.store }}</n-descriptions-item>
             <n-descriptions-item label="金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
-            <n-descriptions-item label="支付方式">{{ detailRow.paymentContent }}</n-descriptions-item>
-            <n-descriptions-item label="状态">
-              <n-tag type="success" size="small">{{ detailRow.status }}</n-tag>
+            <n-descriptions-item label="订单状态">
+              <n-tag :type="isRefunded(detailRow) ? 'error' : 'success'" size="small">{{ detailRow.status }}</n-tag>
             </n-descriptions-item>
-            <n-descriptions-item label="商品清单" :span="2">{{ detailRow.items }}</n-descriptions-item>
+            <n-descriptions-item label="交易时间">{{ detailRow.time }}</n-descriptions-item>
             <n-descriptions-item label="操作人">{{ detailRow.operator }}</n-descriptions-item>
-            <n-descriptions-item label="时间">{{ detailRow.time }}</n-descriptions-item>
+            <n-descriptions-item label="来源">{{ detailRow.source || '收银系统' }}</n-descriptions-item>
+            <n-descriptions-item label="备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
           </n-descriptions>
+          <div class="detail-section">
+            <h3 class="section-title">支付方式</h3>
+            <n-data-table :columns="paymentColumns" :data="parseOrderPayments(detailRow)" :bordered="true" :single-line="false" size="small" />
+          </div>
+          <div v-if="detailRow.orderItems?.length" class="detail-section">
+            <h3 class="section-title">售卖详情</h3>
+            <n-data-table :columns="cashierItemColumns" :data="detailRow.orderItems" :bordered="true" :single-line="false" size="small" />
+          </div>
         </template>
         <!-- 点播系统订单详情 -->
         <template v-else-if="detailRow.type === '点播系统订单'">
@@ -76,14 +84,19 @@
             <n-descriptions-item label="订单号">{{ detailRow.orderNo }}</n-descriptions-item>
             <n-descriptions-item label="商家">{{ detailRow.merchant }}</n-descriptions-item>
             <n-descriptions-item label="店铺">{{ detailRow.store }}</n-descriptions-item>
-            <n-descriptions-item label="点播内容">{{ detailRow.vodName }}</n-descriptions-item>
             <n-descriptions-item label="金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
-            <n-descriptions-item label="支付方式">{{ detailRow.paymentContent }}</n-descriptions-item>
-            <n-descriptions-item label="状态">
-              <n-tag type="success" size="small">{{ detailRow.status }}</n-tag>
+            <n-descriptions-item label="订单状态">
+              <n-tag :type="isRefunded(detailRow) ? 'error' : 'success'" size="small">{{ detailRow.status }}</n-tag>
             </n-descriptions-item>
-            <n-descriptions-item label="时间">{{ detailRow.time }}</n-descriptions-item>
+            <n-descriptions-item label="交易时间">{{ detailRow.time }}</n-descriptions-item>
+            <n-descriptions-item label="操作人">{{ detailRow.operator || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="来源">{{ detailRow.source || '点播系统' }}</n-descriptions-item>
+            <n-descriptions-item label="备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
           </n-descriptions>
+          <div class="detail-section">
+            <h3 class="section-title">支付方式</h3>
+            <n-data-table :columns="paymentColumns" :data="parseOrderPayments(detailRow)" :bordered="true" :single-line="false" size="small" />
+          </div>
           <div class="detail-section">
             <h3 class="section-title">点播明细</h3>
             <n-data-table :columns="vodDetailColumns" :data="[{ content: detailRow.vodName, device: detailRow.vodDevice || '-', duration: detailRow.vodDuration || '-', price: '¥' + detailRow.amount.toFixed(2) }]" :bordered="true" :single-line="false" size="small" />
@@ -161,6 +174,7 @@
         </n-space>
       </template>
     </n-modal>
+
     <MarkExceptionDialog />
   </div>
 </template>
@@ -219,6 +233,11 @@ const pageDesc = computed(() => {
 const showFilter = ref(false)
 const showDetail = ref(false)
 const detailRow = ref<any>(null)
+
+function isRefunded(row: any) {
+  return row?.status === '已退款' || row?.status === '退款中'
+}
+
 const filterMerchant = ref<number | null>(null)
 const filterStore = ref<number | null>(null)
 const filterOrderNo = ref('')
@@ -262,17 +281,35 @@ function parsePayments(paymentContent: string) {
   }).filter(Boolean)
 }
 
+function parseOrderPayments(row: any) {
+  return parsePayments(row.paymentContent || '')
+}
+
+// 支付方式表格列
+const paymentColumns: DataTableColumns = [
+  { title: '支付方式', key: 'method', width: 140, align: 'center', render: (row: any) => h('span', { style: `color:${row.color};font-weight:500;` }, row.method) },
+  { title: '金额', key: 'amount', width: 120, align: 'center', render: (row: any) => `¥${row.amount.toFixed(2)}` },
+]
+
+// 售卖详情表格列
+const cashierItemColumns: DataTableColumns = [
+  { title: '商品名称', key: 'name', minWidth: 140 },
+  { title: '单价', key: 'price', width: 90, align: 'center' },
+  { title: '数量', key: 'quantity', width: 70, align: 'center' },
+  { title: '小计', key: 'subtotal', width: 100, align: 'center' },
+]
+
 // ===== Mock 数据 =====
 const allData = ref([
   // === 收银订单 ===
-  { id: 1, orderNo: 'CO202309160001', merchant: '恒然集团', store: '恒然分部展厅', type: '收银订单', amount: 128.00, paymentContent: '微信支付:128.00', time: '2023-09-16 16:25:10', status: '已完成', items: 'VR体验×1, 饮料×2', operator: '王建国' },
-  { id: 3, orderNo: 'CO202309160005', merchant: '华东展厅', store: '华东展厅', type: '收银订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2023-09-16 16:05:18', status: '已完成', items: '单次体验×1', operator: '张运营' },
-  { id: 0, orderNo: 'MX202605070001', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 10:30:00', status: '已完成', items: '过山车VR×1', operator: '李小红' },
-  { id: 20, orderNo: 'CO20260415020', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '收银订单', amount: 298.00, paymentContent: '支付宝:298.00', time: '2026-04-15 14:22:00', status: '已完成', items: '亲子套票×1', operator: '赵前台' },
+  { id: 1, orderNo: 'CO202309160001', merchant: '恒然集团', store: '恒然分部展厅', type: '收银订单', amount: 128.00, paymentContent: '微信支付:128.00', time: '2023-09-16 16:25:10', status: '已完成', operator: '王建国', settled: false, source: '收银系统', remark: '', orderItems: [{ name: 'VR体验', price: '¥98.00', quantity: 1, subtotal: '¥98.00' }, { name: '饮料', price: '¥15.00', quantity: 2, subtotal: '¥30.00' }] },
+  { id: 3, orderNo: 'CO202309160005', merchant: '华东展厅', store: '华东展厅', type: '收银订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2023-09-16 16:05:18', status: '已完成', operator: '张运营', settled: true, source: '收银系统', remark: '', orderItems: [{ name: '单次体验', price: '¥88.00', quantity: 1, subtotal: '¥88.00' }] },
+  { id: 0, orderNo: 'MX202605070001', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 10:30:00', status: '已完成', operator: '李小红', settled: false, source: '小程序', remark: '会员95折', orderItems: [{ name: '过山车VR', price: '¥36.10', quantity: 1, subtotal: '¥36.10' }] },
+  { id: 20, orderNo: 'CO20260415020', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '收银订单', amount: 298.00, paymentContent: '支付宝:298.00', time: '2026-04-15 14:22:00', status: '已完成', operator: '赵前台', settled: true, source: '收银系统', remark: '会员日活动', orderItems: [{ name: '亲子套票', price: '¥298.00', quantity: 1, subtotal: '¥298.00' }] },
   // === 点播系统订单 ===
-  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45.00, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', vodName: '过山车VR', vodDevice: '暗黑机甲22版', vodDuration: '10分钟' },
-  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30.00, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', vodName: '恐怖医院', vodDevice: '幻影飞碟', vodDuration: '15分钟' },
-  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', vodName: '过山车VR', vodDevice: '暗黑战场[主控端]', vodDuration: '12分钟' },
+  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45.00, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑机甲22版', vodDuration: '10分钟' },
+  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30.00, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '', vodName: '恐怖医院', vodDevice: '幻影飞碟', vodDuration: '15分钟' },
+  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑战场[主控端]', vodDuration: '12分钟' },
   // === 手动扣费订单 ===
   { id: 6, orderNo: 'MD202309160006', merchant: '恒然集团', store: '恒然分部展厅', type: '手动扣费订单', amount: 20.00, paymentContent: '现金:20.00', time: '2023-09-16 15:55:30', status: '已完成', operator: '店员A', reason: '设备损耗扣费' },
   { id: 7, orderNo: 'MD202309160008', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '手动扣费订单', amount: 15.00, paymentContent: '余额:15.00', time: '2023-09-16 15:40:12', status: '已完成', operator: '店员B', reason: '超时扣费' },

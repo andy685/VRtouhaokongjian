@@ -74,6 +74,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'finance/cp-settlement', name: 'PlatformCPSettlement', component: () => import('../views/platform/CPSettlement.vue'), meta: { title: '游戏供应商结算' } },
       { path: 'finance/cp-settlement-config', name: 'PlatformCPSettlementConfig', component: () => import('../views/platform/CPSettlementConfig.vue'), meta: { title: 'CP结算配置' } },
       { path: 'finance/cp-reconciliation', name: 'PlatformCPReconciliation', component: () => import('../views/platform/CPReconciliation.vue'), meta: { title: 'CP对账中心' } },
+      { path: 'finance/lakala-config', name: 'PlatformLakalaConfig', component: () => import('../views/platform/LakalaConfig.vue'), meta: { title: '拉卡拉配置' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: () => import('../views/platform/System.vue'), meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: () => import('../views/platform/System.vue'), meta: { title: '告警中心' } },

@@ -135,39 +135,36 @@
     </n-modal>
 
     <!-- 订单详情弹窗 -->
-    <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 560px;" :bordered="false">
+    <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 620px;" :bordered="false">
       <n-descriptions v-if="detailRow" :column="2" bordered label-placement="left" size="small">
         <n-descriptions-item label="订单号">{{ detailRow.orderNo }}</n-descriptions-item>
         <n-descriptions-item label="所属店铺">{{ detailRow.shop }}</n-descriptions-item>
         <n-descriptions-item label="会员">{{ detailRow.member || '散客' }}</n-descriptions-item>
+        <n-descriptions-item label="金额">¥{{ detailRow.paid.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="订单状态">
-          <n-tag type="info" size="small">{{ detailRow.status }}</n-tag>
+          <n-tag :type="detailRow.status === '已退款' ? 'error' : detailRow.status === '退款中' ? 'warning' : 'success'" size="small">{{ detailRow.status }}</n-tag>
         </n-descriptions-item>
+        <n-descriptions-item label="交易时间">{{ detailRow.createTime }}</n-descriptions-item>
         <n-descriptions-item label="结算状态">
           <n-tag :type="detailRow.settled ? 'warning' : 'success'" size="small">
             {{ detailRow.settled ? '已结算' : '未结算' }}
           </n-tag>
         </n-descriptions-item>
-        <n-descriptions-item label="应收金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
-        <n-descriptions-item label="优惠金额">¥{{ detailRow.discount.toFixed(2) }}</n-descriptions-item>
-        <n-descriptions-item label="实收金额">¥{{ detailRow.paid.toFixed(2) }}</n-descriptions-item>
-        <n-descriptions-item label="支付方式">
-          <span v-if="detailRow.paymentContent && detailRow.paymentContent !== '待支付'">
-            <span v-for="(pay, idx) in getPaymentDetail(detailRow.paymentContent)" :key="idx" style="display:block;font-size:12px;line-height:1.8;">
-              <span :style="{color: pay.color}">{{ pay.method }}</span>：¥{{ pay.amount.toFixed(2) }}
-            </span>
-          </span>
-          <span v-else style="color:#999;">{{ detailRow.paymentContent || '--' }}</span>
-        </n-descriptions-item>
-        <n-descriptions-item label="已退金额">¥{{ detailRow.refunded.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="来源">{{ detailRow.source || '收银系统' }}</n-descriptions-item>
-        <n-descriptions-item label="交易时间">{{ detailRow.createTime }}</n-descriptions-item>
-        <n-descriptions-item v-if="detailRow.status === '已退款'" label="退款原因">
-          <span style="color:#EF4444;">{{ detailRow.refundReason || '--' }}</span>
-        </n-descriptions-item>
-        <n-descriptions-item v-if="detailRow.refundOperator" label="退款操作人">{{ detailRow.refundOperator }}</n-descriptions-item>
-        <n-descriptions-item label="订单备注" :span="detailRow.status === '已退款' ? 1 : 2">{{ detailRow.remark || '--' }}</n-descriptions-item>
+        <n-descriptions-item label="操作人">{{ detailRow.operator || '--' }}</n-descriptions-item>
+        <n-descriptions-item label="--"></n-descriptions-item>
+        <n-descriptions-item label="备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
+        <template v-if="detailRow.status === '已退款'">
+          <n-descriptions-item label="退款原因">
+            <span style="color:#EF4444;">{{ detailRow.refundReason || '--' }}</span>
+          </n-descriptions-item>
+          <n-descriptions-item label="退款操作人">{{ detailRow.refundOperator || '--' }}</n-descriptions-item>
+        </template>
       </n-descriptions>
+      <div class="detail-section">
+        <h3 class="section-title">支付方式</h3>
+        <n-data-table :columns="paymentColumns" :data="getPaymentDetail(detailRow?.paymentContent || '')" :bordered="true" :single-line="false" size="small" />
+      </div>
       <div v-if="detailRow?.items?.length" class="detail-section">
         <h3 class="section-title">售卖详情</h3>
         <n-data-table
@@ -178,28 +175,13 @@
           size="small"
         />
       </div>
-      <div v-if="detailRow?.discounts?.length" class="detail-section">
-        <h3 class="section-title">优惠详情</h3>
-        <n-data-table
-          :columns="discountColumns"
-          :data="detailRow.discounts"
-          :bordered="true"
-          :single-line="false"
-          size="small"
-        />
-      </div>
       <template #footer>
-        <div class="detail-footer">
-          <div class="footer-left">
-            <n-button v-if="detailRow?.status === '完成'" size="small" type="warning" @click="openRefund">
-              <template #icon><n-icon :component="RefreshOutline" /></template>
-              退款
-            </n-button>
-          </div>
-          <div class="footer-right">
-            <n-button @click="showDetail = false">关闭</n-button>
-          </div>
-        </div>
+        <n-space justify="center">
+          <n-button v-if="detailRow?.status === '完成'" type="warning" size="small" @click="openRefund">
+            退款
+          </n-button>
+          <n-button @click="showDetail = false">关闭</n-button>
+        </n-space>
       </template>
     </n-modal>
     <MarkExceptionDialog />
@@ -285,6 +267,11 @@ const refundReasonOptions = [
   { label: '设备故障', value: '设备故障' },
   { label: '重复付款', value: '重复付款' },
   { label: '其他', value: '其他' },
+]
+
+const paymentColumns: DataTableColumns = [
+  { title: '支付方式', key: 'method', width: 140, align: 'center', render: (row: any) => h('span', { style: `color:${row.color};font-weight:500;` }, row.method) },
+  { title: '金额', key: 'amount', width: 120, align: 'center', render: (row: any) => `¥${row.amount.toFixed(2)}` },
 ]
 
 const refundColumns: DataTableColumns = [
@@ -403,21 +390,11 @@ const columns: DataTableColumns = [
 ]
 
 const detailColumns: DataTableColumns = [
-  { title: '售卖名称', key: 'name', minWidth: 120 },
-  { title: '原单价', key: 'originalPrice', width: 90, align: 'center', render: (row: any) => `¥${row.originalPrice.toFixed(2)}` },
-  { title: '现单价', key: 'price', width: 90, align: 'center', render: (row: any) => `¥${row.price.toFixed(2)}` },
+  { title: '商品名称', key: 'name', minWidth: 140 },
+  { title: '单价', key: 'price', width: 90, align: 'center', render: (row: any) => `¥${row.price.toFixed(2)}` },
   { title: '数量', key: 'quantity', width: 70, align: 'center' },
-  { title: '小计', key: 'subtotal', width: 90, align: 'center', render: (row: any) => `¥${row.subtotal.toFixed(2)}` },
+  { title: '小计', key: 'subtotal', width: 100, align: 'center', render: (row: any) => `¥${row.subtotal.toFixed(2)}` },
   { title: '备注', key: 'remark', minWidth: 100, render: (row: any) => row.remark || '--' },
-  { title: '已退数量', key: 'refundedQty', width: 90, align: 'center', render: (row: any) => row.refundedQty || 0 },
-  { title: '退款金额', key: 'refundAmount', width: 100, align: 'center', render: (row: any) => `¥${(row.refundAmount || 0).toFixed(2)}` },
-]
-
-const discountColumns: DataTableColumns = [
-  { title: '类型', key: 'type', width: 120, align: 'center' },
-  { title: '名称', key: 'name', minWidth: 150 },
-  { title: '优惠金额', key: 'amount', width: 110, align: 'center', render: (row: any) => `¥${row.amount.toFixed(2)}` },
-  { title: '操作', key: 'action', width: 80, align: 'center' },
 ]
 
 const rawData = ref([
@@ -804,16 +781,6 @@ function confirmRefund() {
   color: #333;
   margin-bottom: 8px;
   font-weight: 500;
-}
-.detail-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.footer-left, .footer-right {
-  display: flex;
-  gap: 8px;
 }
 .refund-detail {
   font-size: 13px;

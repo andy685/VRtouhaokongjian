@@ -397,6 +397,7 @@ const menuOptions: MenuOption[] = [
           { label: 'CP对账中心', key: '/platform/finance/cp-reconciliation' },
         ]
       },
+      { label: '拉卡拉配置', key: '/platform/finance/lakala-config' },
     ],
   },
   {
