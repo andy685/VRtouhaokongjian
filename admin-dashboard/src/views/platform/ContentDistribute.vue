@@ -96,6 +96,25 @@
         <n-form-item label="分发版本">
           <n-input v-model:value="batchForm.version" placeholder="如：v2.3.1" />
         </n-form-item>
+        <n-form-item label="分发方式" required>
+          <n-radio-group v-model:value="batchForm.distributeMode" name="distributeMode">
+            <n-space vertical>
+              <n-radio value="smart">
+                <div class="distribute-mode-option">
+                  <span class="mode-label">智能分发</span>
+                  <n-tag size="tiny" type="warning" :bordered="false">推荐</n-tag>
+                </div>
+                <span class="mode-desc">自动根据变更清单仅分发变更部分（L1），元数据变更不入分发队列（L0）</span>
+              </n-radio>
+              <n-radio value="full">
+                <div class="distribute-mode-option">
+                  <span class="mode-label">全量分发</span>
+                </div>
+                <span class="mode-desc">强制重新分发全部资源构件，用于首次分发或异常修复</span>
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
       </n-form>
       <template #footer>
         <n-space justify="end">
@@ -144,7 +163,7 @@ import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal, NForm, NFormItem,
   NInput, NIcon, NDescriptions, NDescriptionsItem, NTabs, NTabPane,
-  useMessage, useDialog
+  NRadio, NRadioGroup, useMessage, useDialog
 } from 'naive-ui'
 import {
   CloudUploadOutline, CheckmarkCircleOutline, TimeOutline, CloseCircleOutline,
@@ -537,16 +556,17 @@ function refreshData() {
 
 // 批量分发
 const showBatchModal = ref(false)
-const batchForm = ref({ games: [] as string[], stores: [] as string[], version: '' })
+const batchForm = ref({ games: [] as string[], stores: [] as string[], version: '', distributeMode: 'smart' as 'smart' | 'full' })
 
 function confirmBatch() {
   if (batchForm.value.games.length === 0 || batchForm.value.stores.length === 0) {
     message.warning('请选择游戏和目标店铺')
     return
   }
-  message.success(`已成功分发 ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家店铺`)
+  const modeText = batchForm.value.distributeMode === 'smart' ? '智能分发（仅变更部分）' : '全量分发'
+  message.success(`已成功${modeText} ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家店铺`)
   showBatchModal.value = false
-  batchForm.value = { games: [], stores: [], version: '' }
+  batchForm.value = { games: [], stores: [], version: '', distributeMode: 'smart' }
 }
 
 // 详情
@@ -564,6 +584,7 @@ function openDistribute(row: any) {
     games: [row.gameName],
     stores: [],
     version: row.version || '',
+    distributeMode: 'smart',
   }
   showBatchModal.value = true
 }
@@ -579,9 +600,10 @@ function retryDistribute(row: any) {
     games: [row.gameName],
     stores: failedStoreValues,
     version: row.version || '',
+    distributeMode: 'full',
   }
   showBatchModal.value = true
-  message.info(`正在重新分发：${row.gameName}，已预选失败的店铺`)
+  message.info(`正在重新分发：${row.gameName}，已预选失败的店铺（全量分发模式）`)
 }
 
 // 从详情弹窗重试
@@ -649,10 +671,13 @@ function revokeStore(store: any) {
 
 // 打开游戏分发弹窗（从游戏列表）
 function openGameDistribute(row: any) {
+  // 有更新/未分发 → 智能分发；失败/已撤回 → 全量分发
+  const mode = (row.distributeStatus === '有更新' || row.distributeStatus === '未分发') ? 'smart' : 'full'
   batchForm.value = {
     games: [row.gameName],
     stores: [],
     version: row.currentVersion || '',
+    distributeMode: mode,
   }
   showBatchModal.value = true
 }
@@ -700,4 +725,25 @@ function revokeByGame(row: any) {
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .section-header h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0; }
+
+/* 分发方式选项 */
+.distribute-mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mode-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.mode-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 </style>

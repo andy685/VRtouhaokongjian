@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>头号空间 PRD v2.9 — 产品需求文档</title>
+<title>头号空间 PRD v2.10 — 产品需求文档</title>
 <style>
   :root {
     --bg: #0f172a; --card: #1e293b; --border: #334155;
@@ -58,7 +58,7 @@
 </style>
 </head><body>
 <div class="sidebar">
-<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v2.9</div></div>
+<div class="logo"><h2>🎮 头号空间</h2><div class="ver">PRD v2.10</div></div>
 <a href="#top" class="s1">📋 文档目录</a>
 <a href="#头号空间-产品需求文档-prd" class="s1">头号空间 - 产品需求文档（PRD）</a>
 <a href="#文档目录" class="s2">📑 文档目录</a>
@@ -126,9 +126,9 @@
 <blockquote>
 <p>**文档状态**：本文是头号空间唯一产品需求文档。支付、对账、分账、结算、退款、游戏豆/游戏币/预存款账务规则均以内文第 10 章为准；旧的专题文档仅作为归档材料，不再作为开发依据。</p>
 
-<p>**版本**: v2.9</p>
-<p>**日期**: 2026年6月30日</p>
-<p>**状态**: 新增拉卡拉配置管理页面；平台端订单流水移除退款按钮（退款权限归商家端）；异常订单审核简化审核选项为已解决/驳回两项</p>
+<p>**版本**: v2.10</p>
+<p>**日期**: 2026年7月1日</p>
+<p>**状态**: 新增 §4.8.12 游戏内容更新分发策略（三级变更模型 L0/L1/L2，构件级指纹粒度分发，封面更新不入分发队列）</p>
 <p>**密级**: 内部公开</p>
 <p>**作者**: 产品团队</p>
 <p>**面向读者**: 技术开发团队、测试团队、运营团队、管理层、游戏CP开发者</p>
@@ -2366,8 +2366,168 @@ CP应发
 
 <hr>
 
+<h4 id="4-8-12-游戏内容更新分发策略-v2-10-新增">4.8.12 游戏内容更新分发策略（v2.10 新增）</h4>
+
+<p>**定位**：建立构件级变更感知的更新分发机制，解决「仅改封面却全量重传几十 GB 游戏包」的问题。核心原则：**只传输变更的部分，不传输未变的部分。**</p>
+
+<p>**详细设计文档**：`docs/游戏内容更新分发策略.md`</p>
+
+</blockquote>
+<p>##### 背景与问题</p>
+
+<p>当前以<strong>版本号</strong>为唯一更新判断依据：</p>
+
+<pre><code>当前版本号 ≠ 已分发版本号 → 触发「有更新」→ 全量重传</code></pre>
+
+<table>
+<tr><th>场景</th><th>变更量</th><th>当前行为</th><th>合理行为</th></tr>
+<tr><td>仅封面/素材更新</td><td>KB 级</td><td>全量重传（可能几十 GB）</td><td>元数据同步，无二进制下载</td></tr>
+<tr><td>仅头显 APK 更新</td><td>几百 MB</td><td>全量重传所有构件</td><td>仅下载变更的构件</td></tr>
+<tr><td>增量补丁</td><td>数十 MB</td><td>下载完整新包</td><td>下载 patch + 本地合并</td></tr>
+<tr><td>运行架构变化</td><td>全量</td><td>✅ 全量重传</td><td>✅ 全量重传</td></tr>
+</table>
+
+<p>##### 三级变更模型</p>
+
+<pre><code>L0 — 仅元数据变更（Metadata Only）   → 不入分发队列，直接写 DB + CDN
+L1 — 部分构件变更（Artifact Partial） → 仅分发变更构件
+L2 — 全量构件变更（Artifact Full）    → 全量分发</code></pre>
+
+<p>##### 变更判定矩阵</p>
+
+<table>
+<tr><th>变更项</th><th>级别</th><th>触发条件</th><th>分发范围</th></tr>
+<tr><td>封面、展位图、视频</td><td>**L0**</td><td>`coverUrl` / `bannerList` / `videoUrl` 变更</td><td>元数据同步（CDN 刷新），不入分发队列</td></tr>
+<tr><td>游戏名称、简介、标签</td><td>**L0**</td><td>文本字段变更</td><td>元数据同步</td></tr>
+<tr><td>运营配置（豆耗、时长等）</td><td>**L0**</td><td>配置字段变更</td><td>元数据同步</td></tr>
+<tr><td>单个资源构件上传新文件</td><td>**L1**</td><td>该构件 SHA256 变更</td><td>仅分发该构件</td></tr>
+<tr><td>新增可选构件</td><td>**L1**</td><td>新增构件行</td><td>仅分发新构件</td></tr>
+<tr><td>上传 patch 差分包</td><td>**L1**</td><td>`patch` 构件变更</td><td>仅分发 patch</td></tr>
+<tr><td>运行架构改变</td><td>**L2**</td><td>`runtimeArchitecture` 变更</td><td>按新架构全量分发</td></tr>
+<tr><td>版本号升级 + 多个构件变更</td><td>**L1/L2**</td><td>构件指纹比对结果决定</td><td>仅变更的构件</td></tr>
+</table>
+
+<p>##### 判定流程</p>
+
+<pre><code>CP 提交更新审核 (?mode=update)
+        │
+        ▼
+┌─ 平台审核 ──────────────────────────────────────────┐
+│  1. 对比元数据字段 → 有变更？→ 标记 L0              │
+│  2. 对比构件 SHA256 → 有新增/变更/删除？             │
+│     ├─ runtimeArchitecture 变了？→ L2               │
+│     ├─ 仅 patch 变更？→ L1（patch）                  │
+│     ├─ 部分构件变更？→ L1（列出变更构件）             │
+│     └─ 无构件变更 → 维持 L0                          │
+│  3. 生成变更清单 (Change Manifest)                   │
+└─────────────────────────────────────────────────────┘</code></pre>
+
+<p>##### 构件指纹</p>
+
+<p>每个资源构件增加 SHA-256 内容指纹，版本号变更只是信号，<strong>构件指纹</strong>才是精准判断依据：</p>
+
+<pre><code>资源构件 = { 角色 + 文件名 + 文件大小 + SHA256 + 版本标签 }</code></pre>
+
+<p>##### 变更清单（Change Manifest）</p>
+
+<p>每次更新审核通过后，生成一份 JSON 变更清单随分发任务下发：</p>
+
+<table>
+<tr><th>字段</th><th>说明</th></tr>
+<tr><td>`gameId`</td><td>游戏 ID</td></tr>
+<tr><td>`fromVersion` / `toVersion`</td><td>版本范围</td></tr>
+<tr><td>`changeLevel`</td><td>`L0` / `L1` / `L2`</td></tr>
+<tr><td>`metadataChanges[]`</td><td>元数据字段级变更列表</td></tr>
+<tr><td>`artifactChanges[]`</td><td>构件级变更列表（role / action / fileName / size / sha256 / downloadUrl）</td></tr>
+</table>
+
+<p>##### 按级别执行分发</p>
+
+<table>
+<tr><th>级别</th><th>名称</th><th>平台分发行为</th><th>终端行为</th><th>带宽</th></tr>
+<tr><td>**L0**</td><td>仅元数据</td><td>不入分发队列；写 DB + CDN purge</td><td>不做任何下载；下次请求自然拉取</td><td>≤5MB</td></tr>
+<tr><td>**L1**</td><td>部分构件</td><td>仅分发变更构件；记录构件级状态</td><td>仅下载变更构件；patch 触发本地合并</td><td>按构件大小</td></tr>
+<tr><td>**L2**</td><td>全量构件</td><td>按新架构分发全部必传构件</td><td>全量下载安装</td><td>可能数十 GB</td></tr>
+</table>
+
+<p>##### 点播系统（PC 终端 / 头显）消费逻辑</p>
+
+<pre><code>收到 Change Manifest
+  ├─ L0？→ 仅更新本地元数据缓存，跳过所有下载
+  ├─ L1？→ 遍历 artifactChanges
+  │    ├─ add/update → 下载该构件
+  │    ├─ delete → 清理本地构件
+  │    └─ patch → 下载 + 本地合并生成新包
+  └─ L2？→ 全量下载 + 安装</code></pre>
+
+<p>##### 封面更新的特殊处理</p>
+
+<p>封面是<strong>元数据</strong>（<code>coverUrl</code>），不是资源构件。它通过 CDN URL 引用，更新时：</p>
+
+<li>CP 上传新封面 → 平台更新 `coverUrl`</li>
+<li>CDN 对新 URL 缓存预热</li>
+<li>终端下次渲染游戏列表自然拉取新封面</li>
+<li>**不入分发队列，不下载任何二进制，设备不进入更新状态**</li>
+
+<p>封面 URL 采用版本化命名（如 <code>cover_v3_a1b2c3.png</code>），每次变更生成新 URL，彻底避免 CDN 缓存问题。</p>
+
+<p>##### 安全保护</p>
+
+<table>
+<tr><th>规则</th><th>说明</th></tr>
+<tr><td>**仅闲时下载**</td><td>设备参数中开启后，仅在空闲时下载更新，不占营业带宽</td></tr>
+<tr><td>**断点续传**</td><td>所有构件下载支持断点续传</td></tr>
+<tr><td>**原子替换**</td><td>全部构件校验通过后才整体切换；任一失败则保持旧版本</td></tr>
+<tr><td>**回滚能力**</td><td>保留上一版本的构件清单和文件，支持一键回滚</td></tr>
+</table>
+
+<p>##### 与现有系统对接</p>
+
+<p><strong>审核页 <code>/platform/games/review</code> 增强</strong>：</p>
+
+<table>
+<tr><th>新增区域</th><th>内容</th></tr>
+<tr><td>变更摘要区</td><td>版本对比、变更级别、元数据变更项、构件变更项</td></tr>
+<tr><td>构件差异对比</td><td>逐构件新旧 SHA256 对比</td></tr>
+</table>
+
+<p><strong>内容分发页 <code>/platform/distribute</code> 增强</strong>：</p>
+
+<table>
+<tr><th>新增选项</th><th>说明</th></tr>
+<tr><td>**智能分发（推荐）**</td><td>自动根据 Change Manifest 只分发变更部分</td></tr>
+<tr><td>**全量分发**</td><td>强制重新分发全部构件（修复异常用）</td></tr>
+</table>
+
+<p>##### 数据库变更</p>
+
+<pre><code>-- 游戏版本表
+ALTER TABLE game_versions ADD COLUMN change_manifest JSON;
+ALTER TABLE game_versions ADD COLUMN change_level ENUM('L0','L1','L2');
+
+-- 资源构件表
+ALTER TABLE game_artifacts ADD COLUMN sha256 VARCHAR(64);
+ALTER TABLE game_artifacts ADD COLUMN file_size BIGINT;
+
+-- 分发任务表
+ALTER TABLE distribute_tasks ADD COLUMN artifact_status JSON;</code></pre>
+
+<p>##### 实施路线图</p>
+
+<table>
+<tr><th>阶段</th><th>内容</th><th>优先级</th></tr>
+<tr><td>**Phase 1**</td><td>资源构件增加 SHA256 指纹；审核页展示构件 Hash</td><td>P0</td></tr>
+<tr><td>**Phase 2**</td><td>L0 级变更识别（封面/元数据不入分发队列）</td><td>P0</td></tr>
+<tr><td>**Phase 3**</td><td>Change Manifest 生成 + 按构件粒度分发</td><td>P1</td></tr>
+<tr><td>**Phase 4**</td><td>点播系统/头显端 patch 合并能力</td><td>P1</td></tr>
+<tr><td>**Phase 5**</td><td>分发页面智能分发选项；构件级分发进度监控</td><td>P2</td></tr>
+</table>
+
+<hr>
+
 <h3 id="4-9-cp供应商终端-v1-6-新增">4.9 CP供应商终端（v1.6 新增）</h3>
 
+<blockquote>
 <p>**定位**: 游戏内容提供商（CP）自助管理游戏的Web后台。CP可提交游戏、查看数据和收益、申请提现  </p>
 <p>**形态**: Web后台，路由前缀 `/cp`，独立布局CPLayout  </p>
 <p>**核心价值**: 去中心化内容供给、数据透明化、按次结算闭环、CP自主定价</p>

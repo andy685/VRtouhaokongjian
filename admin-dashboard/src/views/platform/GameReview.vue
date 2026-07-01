@@ -73,6 +73,58 @@
       </template>
       <template v-if="currentGame">
         <div class="review-modal-body">
+          <!-- 变更摘要（仅更新审核显示） -->
+          <section v-if="currentGame.reviewType === 'update' && currentGame.changeManifest" class="detail-panel change-summary-panel">
+            <div class="detail-panel-head">
+              <div>
+                <h4>变更摘要 · Change Manifest</h4>
+                <p>本次更新涉及的内容变更一览，分发时将根据变更级别自动选择合适的策略。</p>
+              </div>
+              <n-tag :type="changeLevelTagType(currentGame.changeManifest.changeLevel)" size="small" :bordered="false">
+                {{ currentGame.changeManifest.changeLevel }} · {{ changeLevelLabel(currentGame.changeManifest.changeLevel) }}
+              </n-tag>
+            </div>
+            <div class="change-summary-body">
+              <div class="change-summary-row">
+                <span class="change-summary-label">版本对比</span>
+                <span class="change-summary-value">
+                  <code>{{ currentGame.changeManifest.fromVersion }}</code>
+                  <span class="change-arrow">→</span>
+                  <code>{{ currentGame.changeManifest.toVersion }}</code>
+                </span>
+              </div>
+              <div v-if="currentGame.changeManifest.metadataChanges.length" class="change-summary-row">
+                <span class="change-summary-label">元数据变更</span>
+                <div class="change-summary-tags">
+                  <n-tag v-for="m in currentGame.changeManifest.metadataChanges" :key="m.field"
+                    size="tiny" type="info" :bordered="false">
+                    {{ metadataFieldLabel(m.field) }} {{ m.action === 'update' ? '已更新' : m.action === 'add' ? '新增' : '删除' }}
+                  </n-tag>
+                </div>
+              </div>
+              <div class="change-summary-row">
+                <span class="change-summary-label">构件变更</span>
+                <div class="change-summary-tags">
+                  <n-tag v-for="a in currentGame.changeManifest.artifactChanges" :key="a.role"
+                    size="tiny" :type="a.action === 'update' ? 'warning' : a.action === 'add' ? 'success' : 'error'" :bordered="false">
+                    {{ a.action === 'update' ? '⬆' : a.action === 'add' ? '➕' : '➖' }}
+                    {{ resourceMeta(a.role).label }}
+                    <template v-if="a.fileSize">({{ formatFileSize(a.fileSize) }})</template>
+                  </n-tag>
+                </div>
+              </div>
+              <div class="change-summary-row">
+                <span class="change-summary-label">分发策略</span>
+                <span class="change-summary-value" style="font-weight: 600;">
+                  推荐
+                  <n-tag :type="currentGame.changeManifest.changeLevel === 'L0' ? 'success' : currentGame.changeManifest.changeLevel === 'L1' ? 'warning' : 'error'" size="tiny" :bordered="false">
+                    {{ currentGame.changeManifest.changeLevel === 'L0' ? '不入分发队列' : currentGame.changeManifest.changeLevel === 'L1' ? '仅分发变更构件' : '全量分发' }}
+                  </n-tag>
+                </span>
+              </div>
+            </div>
+          </section>
+
           <section class="detail-panel">
             <div class="detail-panel-head">
               <div>
@@ -209,17 +261,32 @@
                     v-for="component in currentGame.resourceComponents"
                     :key="component.role"
                     class="resource-card"
+                    :class="{ 'has-sha-diff': component.sha256 && component.prevSha256 && component.sha256 !== component.prevSha256 }"
                   >
                     <div class="resource-card-main">
                       <div class="resource-card-title">
                         <span>{{ resourceMeta(component.role).label }}</span>
                         <n-tag v-if="component.required" size="tiny" type="error" :bordered="false">必传</n-tag>
                         <n-tag v-else size="tiny" :bordered="false">可选</n-tag>
+                        <n-tag v-if="component.sha256 && component.prevSha256 && component.sha256 !== component.prevSha256"
+                          size="tiny" type="warning" :bordered="false">已变更</n-tag>
+                        <n-tag v-else-if="component.sha256 && component.prevSha256"
+                          size="tiny" type="success" :bordered="false">未变更</n-tag>
                       </div>
                       <p>{{ resourceMeta(component.role).description }}</p>
                       <div class="resource-file-meta">
                         <span>{{ component.fileName || '未上传资源文件' }}</span>
                         <span>{{ component.fileSize || resourceMeta(component.role).maxSizeText }}</span>
+                      </div>
+                      <div v-if="currentGame.reviewType === 'update' && component.sha256" class="resource-sha-diff">
+                        <div class="sha-row">
+                          <span class="sha-label">SHA256 (新)</span>
+                          <code class="sha-value">{{ component.sha256 }}</code>
+                        </div>
+                        <div v-if="component.prevSha256" class="sha-row">
+                          <span class="sha-label">SHA256 (旧)</span>
+                          <code class="sha-value old">{{ component.prevSha256 }}</code>
+                        </div>
                       </div>
                     </div>
                     <n-button
@@ -373,12 +440,25 @@ type ResourceComponent = {
   required: boolean
   fileName: string
   fileSize: string
+  sha256?: string
+  prevSha256?: string
+}
+
+type ChangeLevel = 'L0' | 'L1' | 'L2'
+
+type ChangeManifest = {
+  changeLevel: ChangeLevel
+  fromVersion: string
+  toVersion: string
+  metadataChanges: { field: string; action: 'add' | 'update' | 'delete'; oldHash?: string; newHash?: string }[]
+  artifactChanges: { role: ResourceRole; action: 'add' | 'update' | 'delete'; fileSize?: number; sha256?: string }[]
 }
 
 type ReviewGame = {
   id: number
   name: string
   cpName: string
+  prevVersion?: string
   version: string
   category: string
   size: string
@@ -412,6 +492,7 @@ type ReviewGame = {
   bannerList: { name: string }[]
   resourceComponents: ResourceComponent[]
   presetPrice: number | null
+  changeManifest?: ChangeManifest
 }
 
 const runtimeArchitectureOptions: Record<RuntimeArchitecture, { title: string; description: string; tags: string[] }> = {
@@ -561,7 +642,7 @@ const pendingData = ref<ReviewGame[]>([
     presetPrice: null,
   },
   {
-    id: 6, name: '过山车VR', cpName: '极境互动科技', version: 'v2.4.0', category: '冒险', size: '280M', duration: 10,
+    id: 6, name: '过山车VR', cpName: '极境互动科技', prevVersion: 'v2.3.2', version: 'v2.4.0', category: '冒险', size: '280M', duration: 10,
     platform: 'PCVR', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
     reviewType: 'update', submitTime: '2026-05-30 09:15', description: '更新版本：新增两条赛道，优化画面渲染性能，修复联机掉线问题。',
     devNote: '根据用户反馈优化了晕动症适配参数。',
@@ -571,10 +652,96 @@ const pendingData = ref<ReviewGame[]>([
     streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
     coverName: 'rollercoaster-cover.png', videoName: 'rollercoaster-v240.mp4', bannerList: [{ name: 'rollercoaster-booth-01.png' }, { name: 'rollercoaster-booth-02.png' }],
     resourceComponents: [
-      { role: 'pc_client', required: true, fileName: 'rollercoaster-vr-v2.4.0.zip', fileSize: '2.4 GB' },
-      { role: 'patch', required: false, fileName: 'rollercoaster-v2.4.0-hotfix.patch', fileSize: '280 MB' },
+      { role: 'pc_client', required: true, fileName: 'rollercoaster-vr-v2.4.0.zip', fileSize: '2.4 GB',
+        sha256: 'd4e5f6a7b8c9...3f2a1b0c', prevSha256: 'a1b2c3d4e5f6...8a7b6c5d' },
+      { role: 'patch', required: false, fileName: 'rollercoaster-v2.4.0-hotfix.patch', fileSize: '280 MB',
+        sha256: 'e8f7a6b5c4d3...7b6c5d4e', prevSha256: '' },
     ],
     presetPrice: 38,
+    changeManifest: {
+      changeLevel: 'L1',
+      fromVersion: 'v2.3.2',
+      toVersion: 'v2.4.0',
+      metadataChanges: [
+        { field: 'coverUrl', action: 'update', oldHash: 'abc123', newHash: 'def456' },
+        { field: 'videoUrl', action: 'update', oldHash: 'vid789', newHash: 'vid012' },
+        { field: 'description', action: 'update' },
+      ],
+      artifactChanges: [
+        { role: 'pc_client', action: 'update', fileSize: 2576980378, sha256: 'd4e5f6a7b8c9...3f2a1b0c' },
+        { role: 'patch', action: 'add', fileSize: 293601280, sha256: 'e8f7a6b5c4d3...7b6c5d4e' },
+      ],
+    },
+  },
+  // ── L0 示例：仅素材/元数据变更，不入分发队列 ──
+  {
+    id: 7, name: '恐怖医院', cpName: '极境互动科技', prevVersion: 'v1.8.5', version: 'v1.8.6', category: '恐怖', size: '—', duration: 12,
+    platform: '一体机', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    reviewType: 'update', submitTime: '2026-06-28 16:45', description: '更新封面图与展位宣传图，调整游戏介绍文案。',
+    devNote: 'CP 仅替换了封面图和 banner 素材，无任何二进制变更。',
+    runtimeArchitecture: 'headset_native', installTarget: 'headset', packageIdentifier: 'horror-hospital',
+    entryPoint: 'HorrorHospital.apk', launchArgs: '', servicePort: '', startupOrder: '', networkMode: 'offline',
+    portList: '', technicalNote: '',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'horror-hospital-cover-v2.png', videoName: '', bannerList: [{ name: 'horror-booth-v2-01.png' }, { name: 'horror-booth-v2-02.png' }],
+    resourceComponents: [
+      { role: 'headset_client', required: true, fileName: 'horror-hospital-v1.8.5.apk', fileSize: '1.8 GB',
+        sha256: 'b2c3d4e5f6a7...9b0c1d2e', prevSha256: 'b2c3d4e5f6a7...9b0c1d2e' },
+      { role: 'headset_data', required: true, fileName: 'horror-hospital-data.obb', fileSize: '920 MB',
+        sha256: 'c3d4e5f6a7b8...0c1d2e3f', prevSha256: 'c3d4e5f6a7b8...0c1d2e3f' },
+    ],
+    presetPrice: 48,
+    changeManifest: {
+      changeLevel: 'L0',
+      fromVersion: 'v1.8.5',
+      toVersion: 'v1.8.6',
+      metadataChanges: [
+        { field: 'coverUrl', action: 'update', oldHash: 'hh001', newHash: 'hh002' },
+        { field: 'bannerList', action: 'update', oldHash: 'hb001', newHash: 'hb002' },
+        { field: 'description', action: 'update' },
+      ],
+      artifactChanges: [],
+    },
+  },
+  // ── L2 示例：运行架构变更，全量分发 ──
+  {
+    id: 8, name: '末日求生', cpName: '极境互动科技', prevVersion: 'v0.9.1', version: 'v1.0.0', category: '生存', size: '4.2G', duration: 30,
+    platform: 'PCVR+一体机', gameMode: 'multiplayer_coop', gameModeLabel: '多人联机', playerCountLabel: '2-4 人',
+    reviewType: 'update', submitTime: '2026-06-25 11:20', description: '重大版本升级：从一体机独占升级为 PCVR + 一体机双端架构，新增联机模式。',
+    devNote: '运行架构从 headset 改为 dual_device，所有构件都需要换新。',
+    runtimeArchitecture: 'headset_with_pc_service', installTarget: 'headset+pc', packageIdentifier: 'doomsday-survival',
+    entryPoint: 'DoomsdayVR.exe', launchArgs: '-mode=mp', servicePort: '', startupOrder: 'pc_first', networkMode: 'online',
+    portList: '7777,7778', technicalNote: 'PC 端需安装 SteamVR 运行时，头显端通过无线串流连接。',
+    streamingProvider: '', cloudGameId: '', externalPlatform: '', externalGameId: '', webEntryUrl: '', browserRequirement: '',
+    coverName: 'doomsday-v1-cover.png', videoName: 'doomsday-trailer-v1.mp4', bannerList: [{ name: 'doomsday-booth-v1.png' }],
+    resourceComponents: [
+      { role: 'headset_client', required: true, fileName: 'doomsday-quest-v1.0.0.apk', fileSize: '2.1 GB',
+        sha256: 'f1a2b3c4d5e6...8e7d6c5b', prevSha256: 'a7b8c9d0e1f2...3a4b5c6d' },
+      { role: 'headset_data', required: true, fileName: 'doomsday-assets.obb', fileSize: '1.5 GB',
+        sha256: 'e1f2a3b4c5d6...7e8f9a0b', prevSha256: 'b8c9d0e1f2a3...4b5c6d7e' },
+      { role: 'pc_client', required: true, fileName: 'doomsday-pc-v1.0.0.zip', fileSize: '4.2 GB',
+        sha256: 'd1e2f3a4b5c6...9a0b1c2d', prevSha256: '' },
+    ],
+    presetPrice: 58,
+    changeManifest: {
+      changeLevel: 'L2',
+      fromVersion: 'v0.9.1',
+      toVersion: 'v1.0.0',
+      metadataChanges: [
+        { field: 'coverUrl', action: 'update', oldHash: 'ds001', newHash: 'ds002' },
+        { field: 'videoUrl', action: 'add', newHash: 'dsv001' },
+        { field: 'name', action: 'update' },
+        { field: 'description', action: 'update' },
+        { field: 'platform', action: 'update' },
+        { field: 'gameMode', action: 'update' },
+        { field: 'playerCountLabel', action: 'update' },
+      ],
+      artifactChanges: [
+        { role: 'headset_client', action: 'update', fileSize: 2254857830, sha256: 'f1a2b3c4d5e6...8e7d6c5b' },
+        { role: 'headset_data', action: 'update', fileSize: 1610612736, sha256: 'e1f2a3b4c5d6...7e8f9a0b' },
+        { role: 'pc_client', action: 'add', fileSize: 4509715660, sha256: 'd1e2f3a4b5c6...9a0b1c2d' },
+      ],
+    },
   },
 ])
 
@@ -644,6 +811,39 @@ function resourceMeta(role: ResourceRole) {
 
 function getRequiredResourceCount(game: ReviewGame) {
   return game.resourceComponents.filter(item => item.required).length
+}
+
+function changeLevelTagType(level: ChangeLevel) {
+  return level === 'L0' ? 'success' : level === 'L1' ? 'warning' : 'error'
+}
+
+function changeLevelLabel(level: ChangeLevel) {
+  return level === 'L0' ? '仅元数据变更' : level === 'L1' ? '部分构件变更' : '全量构件变更'
+}
+
+const metadataFieldNameMap: Record<string, string> = {
+  coverUrl: '游戏封面',
+  videoUrl: '宣传视频',
+  bannerList: '展位图',
+  name: '游戏名称',
+  description: '游戏简介',
+  category: '游戏题材',
+  tags: '标签',
+  gameBeanCost: '游戏豆消耗',
+  timeLimitMinutes: '时长限制',
+  timeLimitEnabled: '时长开关',
+  payMode: '付费模式',
+}
+
+function metadataFieldLabel(field: string) {
+  return metadataFieldNameMap[field] || field
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB'
+  if (bytes >= 1048576) return (bytes / 1048576).toFixed(0) + ' MB'
+  if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB'
+  return bytes + ' B'
 }
 
 function triggerMockDownload(fileName: string, content: string) {
@@ -1049,6 +1249,105 @@ function rejectGame() {
 
 .asset-download-card.empty {
   opacity: 0.7;
+}
+
+/* 变更摘要面板 */
+.change-summary-panel {
+  border-color: #fcd34d !important;
+  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%) !important;
+}
+
+.change-summary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.change-summary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.change-summary-label {
+  min-width: 72px;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.change-summary-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+}
+
+.change-summary-value code {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  font-size: 12px;
+  color: #334155;
+}
+
+.change-arrow {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.change-summary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 资源构件 SHA 对比 */
+.resource-sha-diff {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.sha-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.sha-row + .sha-row {
+  margin-top: 4px;
+}
+
+.sha-label {
+  color: var(--text-muted);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.sha-value {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  word-break: break-all;
+}
+
+.sha-value.old {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.resource-card.has-sha-diff {
+  border-color: #fcd34d;
+  background: #fffdf5;
 }
 
 @media (max-width: 900px) {
