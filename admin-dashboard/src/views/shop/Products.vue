@@ -66,7 +66,6 @@
     <n-modal v-model:show="showRestock" preset="card" title="商品补货" style="width: 420px;" :bordered="false">
       <div v-if="restockProduct" style="margin-bottom: 16px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-          <span style="font-size:24px;">{{ restockProduct.icon }}</span>
           <div>
             <div style="font-weight:600;">{{ restockProduct.name }}</div>
             <div style="font-size:12px;color:#94a3b8;">当前库存: {{ restockProduct.stock }}</div>
@@ -258,7 +257,7 @@ const outReasonOptions = [
 ]
 
 const stockProductOptions = computed(() =>
-  physicalData.map(p => ({ label: `${p.icon} ${p.name}（库存: ${p.stock}）`, value: p.name }))
+  physicalData.map(p => ({ label: `${p.name}（库存: ${p.stock}）`, value: p.name }))
 )
 
 function quickPurchase() {
@@ -273,7 +272,7 @@ function openStockModal(type: 'in' | 'out' | 'check') {
   else {
     // 盘点：初始化每件商品的实际库存为系统库存
     checkData.value = physicalData.map(p => ({
-      name: p.icon + ' ' + p.name,
+      name: p.name,
       systemStock: parseInt(p.stock),
       actualStock: parseInt(p.stock),
     }))
@@ -501,11 +500,11 @@ function createCover(text: string, from: string, to: string) {
 
 function createDefaultPhysicalData() {
   return [
-    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), icon: '😷', category: '消耗品', price: '3.0', stock: '200', sales: 1256, status: 'on' },
-    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), icon: '🧤', category: '配件', price: '29.0', stock: '15', sales: 328, status: 'on' },
-    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), icon: '🧸', category: '周边', price: '68.0', stock: '52', sales: 156, status: 'on' },
-    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), icon: '🔑', category: '周边', price: '18.0', stock: '3', sales: 289, status: 'off' },
-    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), icon: '🥤', category: '饮品', price: '5.0', stock: '30', sales: 856, status: 'on' },
+    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), category: '消耗品', price: '3.0', stock: '200', sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), category: '配件', price: '29.0', stock: '15', sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), category: '周边', price: '68.0', stock: '52', sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), category: '周边', price: '18.0', stock: '3', sales: 289, status: 'off' },
+    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), category: '饮品', price: '5.0', stock: '30', sales: 856, status: 'on' },
   ]
 }
 
@@ -529,14 +528,7 @@ const physicalColumns = [
       style: 'width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0;background:#f8fafc;'
     })
   }},
-  { title: '商品', key: 'info', render(row: any) {
-    return h('div', { style: 'display:flex;align-items:center;gap:10px;' }, [
-      h('div', { style: 'width:40px;height:40px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;' }, row.icon),
-      h('div', {}, [
-        h('div', { style: 'font-weight:500' }, row.name)
-      ])
-    ])
-  }},
+  { title: '商品名称', key: 'name', render: (row: any) => h('span', { style: 'font-weight:500' }, row.name) },
   { title: '分类', key: 'category' },
   { title: '售价', key: 'price', render: (row: any) => `¥${row.price}` },
   { title: '库存', key: 'stock', render: (row: any) => h('span', { style: `font-weight:600;` }, row.stock) },
