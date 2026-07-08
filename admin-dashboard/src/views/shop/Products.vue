@@ -163,9 +163,6 @@
         <n-form-item label="分类名称" required>
           <n-input v-model:value="categoryForm.name" placeholder="请输入分类名称" />
         </n-form-item>
-        <n-form-item label="分类图标">
-          <n-input v-model:value="categoryForm.icon" placeholder="如：📦（emoji或文字）" />
-        </n-form-item>
         <n-form-item label="排序">
           <n-input-number v-model:value="categoryForm.sort" :min="0" placeholder="数字越小越靠前" style="width: 100%;" />
         </n-form-item>
@@ -389,10 +386,10 @@ function confirmStockCheck() {
 
 // ===== 商品分类管理 =====
 const categories = ref([
-  { id: 1, name: '消耗品', icon: '🧴', sort: 1, status: 'active' },
-  { id: 2, name: '配件', icon: '🔧', sort: 2, status: 'active' },
-  { id: 3, name: '周边', icon: '🎁', sort: 3, status: 'active' },
-  { id: 4, name: '饮品', icon: '🥤', sort: 4, status: 'active' },
+  { id: 1, name: '消耗品', sort: 1, status: 'active' },
+  { id: 2, name: '配件', sort: 2, status: 'active' },
+  { id: 3, name: '周边', sort: 3, status: 'active' },
+  { id: 4, name: '饮品', sort: 4, status: 'active' },
 ])
 let nextCategoryId = 5
 
@@ -400,13 +397,13 @@ const categoryFilterOptions = computed(() =>
   categories.value
     .filter(c => c.status === 'active')
     .sort((a, b) => a.sort - b.sort)
-    .map(c => ({ label: `${c.icon} ${c.name}`, value: c.name }))
+    .map(c => ({ label: c.name, value: c.name }))
 )
 
 const showCategoryManager = ref(false)
 const showCategoryEdit = ref(false)
 const editingCategory = ref<any>(null)
-const categoryForm = ref({ name: '', icon: '', sort: 0, status: 'active' })
+const categoryForm = ref({ name: '', sort: 0, status: 'active' })
 
 function openCategoryManager() {
   showCategoryManager.value = true
@@ -415,10 +412,10 @@ function openCategoryManager() {
 function openCategoryEdit(cat: any) {
   if (cat) {
     editingCategory.value = cat
-    categoryForm.value = { name: cat.name, icon: cat.icon, sort: cat.sort, status: cat.status }
+    categoryForm.value = { name: cat.name, sort: cat.sort, status: cat.status }
   } else {
     editingCategory.value = null
-    categoryForm.value = { name: '', icon: '', sort: categories.value.length + 1, status: 'active' }
+    categoryForm.value = { name: '', sort: categories.value.length + 1, status: 'active' }
   }
   showCategoryEdit.value = true
 }
@@ -434,7 +431,6 @@ function confirmCategoryEdit() {
     const cat = categories.value.find(c => c.id === editingCategory.value.id)
     if (cat) {
       cat.name = categoryForm.value.name.trim()
-      cat.icon = categoryForm.value.icon.trim() || '📦'
       cat.sort = categoryForm.value.sort
       cat.status = categoryForm.value.status
       // 同步商品的分类名称
@@ -450,7 +446,6 @@ function confirmCategoryEdit() {
     categories.value.push({
       id: nextCategoryId++,
       name: categoryForm.value.name.trim(),
-      icon: categoryForm.value.icon.trim() || '📦',
       sort: categoryForm.value.sort,
       status: categoryForm.value.status,
     })
@@ -470,7 +465,6 @@ function deleteCategory(cat: any) {
 }
 
 const categoryColumns = [
-  { title: '图标', key: 'icon', width: 60, render: (row: any) => h('span', { style: 'font-size:20px;' }, row.icon) },
   { title: '分类名称', key: 'name' },
   { title: '排序', key: 'sort', width: 70 },
   { title: '状态', key: 'status', width: 80, render: (row: any) => h(NTag, { type: row.status === 'active' ? 'success' : 'default', size: 'small' }, () => row.status === 'active' ? '启用' : '停用') },
