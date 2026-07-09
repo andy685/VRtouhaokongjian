@@ -113,7 +113,6 @@
             <n-descriptions label-placement="left" :column="2" bordered size="small">
               <n-descriptions-item label="结算单号">{{ currentRecord.settlementNo }}</n-descriptions-item>
               <n-descriptions-item label="代理商">{{ currentRecord.agentName }}</n-descriptions-item>
-              <n-descriptions-item label="代理商级别">{{ currentRecord.agentLevel || '-' }}</n-descriptions-item>
               <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
               <n-descriptions-item label="月游戏豆采购额">{{ `¥${currentRecord.monthlyFlow.toLocaleString()}` }}</n-descriptions-item>
               <n-descriptions-item label="供应商成本">
@@ -134,7 +133,6 @@
               <n-descriptions-item label="分账状态">
                 <n-tag :type="statusType(currentRecord.status)" size="medium" round :bordered="false">{{ statusLabel(currentRecord.status) }}</n-tag>
               </n-descriptions-item>
-              <n-descriptions-item label="拉卡拉流水号">{{ currentRecord.lakalaNo || '-' }}</n-descriptions-item>
               <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
               <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? formatCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
               <n-descriptions-item label="创建时间">{{ currentRecord.submitTime }}</n-descriptions-item>
@@ -421,11 +419,19 @@ const columns = [
     render: (row: any) => h('span', { style: 'font-family:monospace;font-size:12px;' }, row.settlementNo)
   },
   { title: '代理商', key: 'agentName', width: 140 },
-  { title: '级别', key: 'agentLevel', width: 60, align: 'center' },
   { title: '周期', key: 'period', width: 85, align: 'center' },
   {
     title: '采购额(¥)', key: 'monthlyFlow', width: 115,
     render: (row: any) => row.monthlyFlow > 0 ? `¥${row.monthlyFlow.toLocaleString()}` : h('span', { style: 'color:#9CA3AF;' }, '¥0')
+  },
+  {
+    title: '分润比例', key: 'shareRatio', width: 90, align: 'center',
+    render: (row: any) => {
+      const base = row.monthlyFlow - row.supplierCost
+      if (base <= 0 || row.commissionAmount <= 0) return h('span', { style: 'color:#9CA3AF;' }, '-')
+      const ratio = (row.commissionAmount / base * 100).toFixed(1)
+      return h('span', { style: 'font-weight:500;color:#6366F1;' }, `${ratio}%`)
+    }
   },
   {
     title: '应发分润(¥)', key: 'commissionAmount', width: 120,
@@ -461,8 +467,8 @@ const columns = [
         : [h(NTag, { type: statusType(row.status), size: 'small', round: true, bordered: false }, () => statusLabel(row.status))]
     )
   },
-  { title: '拉卡拉流水号', key: 'lakalaNo', width: 160, ellipsis: { tooltip: true },
-    render: (row: any) => row.lakalaNo ? h('span', { style: 'font-family:monospace;font-size:11px;color:#6B7280;' }, row.lakalaNo) : '-'
+  { title: '创建时间', key: 'submitTime', width: 160, ellipsis: { tooltip: true },
+    render: (row: any) => row.submitTime
   },
   {
     title: '操作', key: 'actions', width: 85, fixed: 'right' as const,

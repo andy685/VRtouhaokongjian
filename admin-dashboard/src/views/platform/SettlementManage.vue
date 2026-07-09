@@ -126,7 +126,6 @@
               <n-descriptions-item label="分账状态">
                 <n-tag :type="statusType(currentRecord.status)" size="medium" round :bordered="false">{{ statusLabel(currentRecord.status) }}</n-tag>
               </n-descriptions-item>
-              <n-descriptions-item label="拉卡拉流水号">{{ currentRecord.lakalaNo || '-' }}</n-descriptions-item>
               <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
               <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? maskCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
               <n-descriptions-item label="创建时间">{{ currentRecord.createTime }}</n-descriptions-item>
@@ -384,8 +383,8 @@ const columns = [
         : [h(NTag, { type: statusType(row.status), size: 'small', round: true, bordered: false }, () => statusLabel(row.status))]
     )
   },
-  { title: '拉卡拉流水号', key: 'lakalaNo', width: 160, ellipsis: { tooltip: true },
-    render: (row: any) => row.lakalaNo ? h('span', { style: 'font-family:monospace;font-size:11px;color:#6B7280;' }, row.lakalaNo) : '-'
+  { title: '创建时间', key: 'createTime', width: 160, ellipsis: { tooltip: true },
+    render: (row: any) => row.createTime
   },
   {
     title: '操作', key: 'actions', width: 85, fixed: 'right' as const,

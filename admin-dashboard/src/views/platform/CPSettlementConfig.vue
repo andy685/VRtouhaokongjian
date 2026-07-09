@@ -17,7 +17,7 @@
             <span class="form-hint">系统将按此周期自动生成供应商结算单</span>
           </n-form-item>
 
-          <n-form-item label="结算日">
+          <n-form-item label="结算日" v-if="settlementConfig.period !== 't1'">
             <n-select v-model:value="settlementConfig.settlementDay" :options="dayOptions" style="width: 200px;" />
             <span class="form-hint">每周周几/每月几号执行结算</span>
           </n-form-item>
@@ -115,9 +115,13 @@ const settlementConfig = ref({
 const periodOptions = [
   { label: '每周', value: 'weekly' },
   { label: '每月', value: 'monthly' },
+  { label: 'T+1（次日）', value: 't1' },
 ]
 
 const dayOptions = computed(() => {
+  if (settlementConfig.value.period === 't1') {
+    return [{ label: '次日自动结算', value: 0 }]
+  }
   if (settlementConfig.value.period === 'monthly') {
     return [
       { label: '每月1号', value: 1 },

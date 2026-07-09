@@ -5,7 +5,7 @@
       <div>
         <h1>游戏供应商结算</h1>
         <p class="header-desc">
-          结算公式：<strong class="highlight">单次成本 × 游戏次数 = 结算额</strong>，
+          结算公式：<strong class="highlight">游戏供应商按月结算</strong>，
           拉卡拉扣2%提现手续费后为到账金额。CP结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，
           平台仅<strong>定时同步</strong>拉卡拉结算状态。
         </p>
@@ -112,11 +112,7 @@
           <n-descriptions-item label="供应商">{{ currentRecord.cpName }}</n-descriptions-item>
           <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
           <n-descriptions-item label="在架游戏">{{ currentRecord.gameCount }} 款</n-descriptions-item>
-          <n-descriptions-item label="总体验次数">{{ currentRecord.totalPlays.toLocaleString() }} 次</n-descriptions-item>
-          <n-descriptions-item label="单次成本">
-            <span style="color:#6B7280;">¥{{ currentRecord.perPlayCost.toFixed(2) }}</span>
-          </n-descriptions-item>
-          <n-descriptions-item label="结算额（成本×次数）">
+          <n-descriptions-item label="结算额">
             <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.settledAmount.toLocaleString() }}</span>
           </n-descriptions-item>
           <n-descriptions-item label="提现手续费（2%）">
@@ -351,13 +347,6 @@ const columns = [
     render: (row: any) => `${row.gameCount}款`
   },
   { title: '周期', key: 'period', width: 100 },
-  { title: '游戏次数', key: 'totalPlays', width: 100, align: 'right',
-    render: (row: any) => row.totalPlays.toLocaleString()
-  },
-  {
-    title: '单次成本(¥)', key: 'perPlayCost', width: 105, align: 'right',
-    render: (row: any) => h('span', { style: 'color:#6B7280;' }, row.perPlayCost.toFixed(2))
-  },
   {
     title: '结算额(¥)', key: 'settledAmount', width: 110, align: 'right',
     render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.settledAmount.toLocaleString()}`)
@@ -379,8 +368,8 @@ const columns = [
         : [h(NTag, { type: statusType(row.status), size: 'small', round: true, bordered: false }, () => statusLabel(row.status))]
     )
   },
-  { title: '拉卡拉流水号', key: 'lakalaNo', width: 155, ellipsis: { tooltip: true },
-    render: (row: any) => row.lakalaNo ? h('span', { style: 'font-family:monospace;font-size:11px;color:#6B7280;' }, row.lakalaNo) : '-'
+  { title: '创建时间', key: 'createTime', width: 155, ellipsis: { tooltip: true },
+    render: (row: any) => row.createTime
   },
   {
     title: '操作', key: 'actions', width: 75, fixed: 'right' as const,
