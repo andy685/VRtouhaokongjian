@@ -38,7 +38,7 @@
           <n-icon :component="CheckmarkCircleOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">已到账</span>
+          <span class="label">已打款</span>
           <span class="value">¥{{ totalPaid.toLocaleString() }}</span>
         </div>
       </div>
@@ -47,7 +47,7 @@
           <n-icon :component="TimeOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">待结算</span>
+          <span class="label">待打款</span>
           <span class="value warning">¥{{ totalPending.toLocaleString() }}</span>
         </div>
       </div>
@@ -55,10 +55,6 @@
 
     <!-- 结算表格 -->
     <div class="content-card">
-      <div class="table-hint">
-        <n-icon :component="InformationCircleOutline" size="16" style="color: #10B981; flex-shrink: 0;" />
-        <span>提现手续费按结算额的 <strong>2%</strong> 收取，实际到账 = 结算额 - 提现手续费。</span>
-      </div>
       <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
     </div>
 
@@ -68,8 +64,6 @@
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
         <n-descriptions-item label="总结算额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="提现手续费">{{ `¥${currentRecord.fee.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="实际到账">{{ `¥${currentRecord.actualAmount.toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
             {{ currentRecord.statusText }}
@@ -90,18 +84,6 @@
         />
       </div>
 
-      <!-- 打款凭证 -->
-      <div style="margin-top: 20px;" v-if="currentRecord?.status === 'done'">
-        <n-divider>打款凭证</n-divider>
-        <div v-if="currentRecord.voucher">
-          <n-image :src="currentRecord.voucher" width="200" style="border-radius: 8px;" />
-          <p style="margin-top: 8px; font-size: 12px; color: #999;">
-            此为平台上传的打款凭证，如有疑问请联系平台运营
-          </p>
-        </div>
-        <n-empty v-else description="暂无打款凭证" size="small" />
-      </div>
-
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDetailModal = false">关闭</n-button>
@@ -115,12 +97,11 @@
 import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal,
-  NIcon, NDescriptions, NDescriptionsItem, NDatePicker, NImage, NEmpty, NDivider,
+  NIcon, NDescriptions, NDescriptionsItem, NDatePicker, NDivider,
   useMessage
 } from 'naive-ui'
 import {
   WalletOutline, CheckmarkCircleOutline, TimeOutline, DownloadOutline,
-  InformationCircleOutline
 } from '@vicons/ionicons5'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
@@ -132,8 +113,8 @@ const filterStatus = ref<string | null>(null)
 const filterDateRange = ref<[number, number] | null>(null)
 
 const statusOptions = [
-  { label: '已到账', value: 'done' },
-  { label: '待结算', value: 'pending' },
+  { label: '已打款', value: 'done' },
+  { label: '待打款', value: 'pending' },
   { label: '处理中', value: 'processing' },
 ]
 
@@ -150,13 +131,6 @@ const columns = [
   { title: '结算单号', key: 'no', width: 150 },
   { title: '结算周期', key: 'period', width: 180 },
   { title: '结算额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  {
-    title: '提现手续费',
-    key: 'fee',
-    width: 100,
-    render: (row: any) => h('span', { style: 'color: #F59E0B' }, `¥${row.fee.toLocaleString()}`),
-  },
-  { title: '实际到账', key: 'actualAmount', width: 120, render: (row: any) => `¥${row.actualAmount.toLocaleString()}` },
   {
     title: '状态',
     key: 'status',
@@ -188,7 +162,7 @@ const settlementData = ref([
     fee: 1939,
     actualAmount: 95031,
     status: 'done',
-    statusText: '已到账',
+    statusText: '已打款',
     time: '2026-06-03 10:30',
     voucher: '',
     gameDetails: [
@@ -208,7 +182,7 @@ const settlementData = ref([
     fee: 1526,
     actualAmount: 74754,
     status: 'done',
-    statusText: '已到账',
+    statusText: '已打款',
     time: '2026-05-03 09:15',
     voucher: '',
     gameDetails: [
@@ -227,7 +201,7 @@ const settlementData = ref([
     fee: 1151,
     actualAmount: 56379,
     status: 'done',
-    statusText: '已到账',
+    statusText: '已打款',
     time: '2026-04-03 14:20',
     voucher: '',
     gameDetails: [
@@ -245,7 +219,7 @@ const settlementData = ref([
     fee: 902,
     actualAmount: 44198,
     status: 'pending',
-    statusText: '待结算',
+    statusText: '待打款',
     time: '-',
     voucher: '',
     gameDetails: [
@@ -277,8 +251,8 @@ const filteredData = computed(() => {
 
 // 统计
 const totalSettlement = computed(() => filteredData.value.reduce((sum, item) => sum + item.amount, 0))
-const totalPaid = computed(() => filteredData.value.filter(item => item.status === 'done').reduce((sum, item) => sum + item.actualAmount, 0))
-const totalPending = computed(() => filteredData.value.filter(item => item.status !== 'done').reduce((sum, item) => sum + item.actualAmount, 0))
+const totalPaid = computed(() => filteredData.value.filter(item => item.status === 'done').reduce((sum, item) => sum + item.amount, 0))
+const totalPending = computed(() => filteredData.value.filter(item => item.status === 'pending').reduce((sum, item) => sum + item.amount, 0))
 
 // 详情弹窗
 const showDetailModal = ref(false)
@@ -299,8 +273,6 @@ function exportToExcel() {
         '结算单号': item.no,
         '结算周期': item.period,
         '结算额': item.amount,
-        '提现手续费': item.fee,
-        '实际到账': item.actualAmount,
         '状态': item.statusText,
         '打款时间': item.time,
         '游戏数': `${item.gameDetails.length} 款`,
@@ -311,8 +283,6 @@ function exportToExcel() {
           '结算单号': '',
           '结算周期': '',
           '结算额': '',
-          '提现手续费': '',
-          '实际到账': '',
           '状态': '',
           '打款时间': '',
           '游戏数': `${g.gameName} - ${g.playCount.toLocaleString()}次 × ¥${g.perPlayCost.toFixed(2)} = ¥${g.revenue.toLocaleString()}`,
@@ -326,7 +296,7 @@ function exportToExcel() {
 
     ws['!cols'] = [
       { wch: 8 }, { wch: 16 }, { wch: 22 }, { wch: 12 },
-      { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 52 },
+      { wch: 10 }, { wch: 18 }, { wch: 52 },
     ]
 
     const fileName = `CP结算记录_${new Date().toLocaleDateString('zh-CN')}.xlsx`

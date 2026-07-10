@@ -102,49 +102,94 @@
     <!-- 详情弹窗 -->
     <n-modal v-model:show="showDetailModal" preset="card" :title="`结算详情 - ${currentRecord?.no || ''}`" style="width: 780px;" :bordered="false">
       <template v-if="currentRecord">
+        <!-- 异常标识 -->
         <div v-if="isException(currentRecord)" class="exception-banner">
           <n-icon :component="AlertCircleOutline" size="18" color="#DC2626" />
           <span><strong>异常拦截</strong> — {{ currentRecord.exceptionReason }}</span>
         </div>
 
-        <n-descriptions label-placement="left" :column="2" bordered size="small">
-          <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
-          <n-descriptions-item label="供应商">{{ currentRecord.cpName }}</n-descriptions-item>
-          <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
-          <n-descriptions-item label="在架游戏">{{ currentRecord.gameCount }} 款</n-descriptions-item>
-          <n-descriptions-item label="结算额">
-            <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.settledAmount.toLocaleString() }}</span>
-          </n-descriptions-item>
-          <n-descriptions-item label="提现手续费（2%）">
-            <span style="color:#9CA3AF;">-¥{{ currentRecord.feeAmount.toLocaleString() }}</span>
-          </n-descriptions-item>
-          <n-descriptions-item label="到账金额">
-            <span style="font-weight:700;font-size:16px;color:#10B981;">¥{{ currentRecord.actualAmount.toLocaleString() }}</span>
-          </n-descriptions-item>
-          <n-descriptions-item label="分账状态">
-            <n-tag :type="statusType(currentRecord.status)" size="medium" round :bordered="false">{{ statusLabel(currentRecord.status) }}</n-tag>
-          </n-descriptions-item>
-          <n-descriptions-item label="拉卡拉流水号">{{ currentRecord.lakalaNo || '-' }}</n-descriptions-item>
-          <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
-          <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? maskCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
-          <n-descriptions-item label="创建时间">{{ currentRecord.createTime }}</n-descriptions-item>
-          <n-descriptions-item label="到账时间">{{ currentRecord.settledTime || '-' }}</n-descriptions-item>
-        </n-descriptions>
+        <n-tabs v-model:value="detailTab" type="line" animated size="small">
+          <!-- Tab 1: 基本信息 -->
+          <n-tab-pane name="info" tab="基本信息">
+            <n-descriptions label-placement="left" :column="2" bordered size="small">
+              <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
+              <n-descriptions-item label="供应商">{{ currentRecord.cpName }}</n-descriptions-item>
+              <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
+              <n-descriptions-item label="在架游戏">{{ currentRecord.gameCount }} 款</n-descriptions-item>
+              <n-descriptions-item label="结算额">
+                <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.settledAmount.toLocaleString() }}</span>
+              </n-descriptions-item>
+              <n-descriptions-item label="提现手续费（2%）">
+                <span style="color:#9CA3AF;">-¥{{ currentRecord.feeAmount.toLocaleString() }}</span>
+              </n-descriptions-item>
+              <n-descriptions-item label="到账金额">
+                <span style="font-weight:700;font-size:16px;color:#10B981;">¥{{ currentRecord.actualAmount.toLocaleString() }}</span>
+              </n-descriptions-item>
+              <n-descriptions-item label="分账状态">
+                <n-tag :type="statusType(currentRecord.status)" size="medium" round :bordered="false">{{ statusLabel(currentRecord.status) }}</n-tag>
+              </n-descriptions-item>
+              <n-descriptions-item label="拉卡拉流水号">{{ currentRecord.lakalaNo || '-' }}</n-descriptions-item>
+              <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
+              <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? maskCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
+              <n-descriptions-item label="打款时间">{{ currentRecord.settledTime || '-' }}</n-descriptions-item>
+              <n-descriptions-item label="创建时间">{{ currentRecord.createTime }}</n-descriptions-item>
+            </n-descriptions>
+          </n-tab-pane>
 
-        <!-- 分账日志 -->
-        <div style="margin-top: 20px;">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">操作时间线</div>
-          <n-timeline size="medium">
-            <n-timeline-item
-              v-for="log in currentRecord.logs"
-              :key="log.time"
-              :type="log.type"
-              :title="log.action"
-              :time="log.time"
-              :content="log.detail"
-            />
-          </n-timeline>
-        </div>
+          <!-- Tab 2: 游戏明细 -->
+          <n-tab-pane name="breakdown" tab="游戏明细">
+            <div v-if="currentRecord?.totalPlays > 0" style="margin-bottom: 16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:10px;">结算计算</div>
+              <n-descriptions label-placement="left" :column="1" bordered size="small">
+                <n-descriptions-item label="总游戏次数">{{ currentRecord.totalPlays.toLocaleString() }} 次</n-descriptions-item>
+                <n-descriptions-item label="平均单次成本">¥{{ currentRecord.perPlayCost.toFixed(2) }}</n-descriptions-item>
+                <n-descriptions-item label="结算额">
+                  <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.settledAmount.toLocaleString() }}</span>
+                </n-descriptions-item>
+              </n-descriptions>
+            </div>
+            <div v-if="currentRecord?.gameDetails?.length" style="margin-top: 16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:10px;">游戏明细</div>
+              <n-data-table :columns="gameDetailColumns" :data="currentRecord.gameDetails" :pagination="false" size="small" striped />
+            </div>
+            <n-empty v-if="currentRecord?.totalPlays <= 0 && !currentRecord?.gameDetails?.length" description="暂无游戏明细数据" style="padding:40px 0;" />
+          </n-tab-pane>
+
+          <!-- Tab 3: 分账日志 + 打款凭证 -->
+          <n-tab-pane name="log" tab="分账日志">
+            <!-- 打款凭证（已到账时显示） -->
+            <div v-if="currentRecord?.status === 'settled'" style="margin-bottom: 16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:10px;">打款凭证</div>
+              <div v-if="currentRecord.voucher">
+                <n-image :src="currentRecord.voucher" width="200" style="border-radius: 8px;" />
+                <div style="margin-top: 8px;">
+                  <n-button size="small" @click="currentRecord.voucher = undefined; message.success('凭证已删除')">删除凭证</n-button>
+                </div>
+              </div>
+              <n-upload v-else accept="image/*" :max="1" :custom-request="handleVoucherUpload">
+                <n-upload-dragger>
+                  <div style="padding: 20px 0;">
+                    <n-icon size="32" :depth="3"><CloudUploadOutline /></n-icon>
+                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">点击或拖拽上传拉卡拉打款回执凭证</p>
+                  </div>
+                </n-upload-dragger>
+              </n-upload>
+            </div>
+
+            <!-- 时间线日志 -->
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;">操作时间线</div>
+            <n-timeline size="medium">
+              <n-timeline-item
+                v-for="log in currentRecord.logs"
+                :key="log.time"
+                :type="log.type"
+                :title="log.action"
+                :time="log.time"
+                :content="log.detail"
+              />
+            </n-timeline>
+          </n-tab-pane>
+        </n-tabs>
       </template>
 
       <template #footer>
@@ -161,11 +206,12 @@ import {
   NButton, NDataTable, NTag, NSpace, NModal, NTabs, NTabPane,
   NIcon, NDescriptions, NDescriptionsItem,
   NTimeline, NTimelineItem, NDatePicker, NAlert, NSelect,
+  NUpload, NUploadDragger, NImage, NEmpty, NInput,
   useMessage
 } from 'naive-ui'
 import {
   FlashOutline, SyncOutline, CheckmarkDoneOutline,
-  SearchOutline, AlertCircleOutline,
+  SearchOutline, AlertCircleOutline, CloudUploadOutline,
 } from '@vicons/ionicons5'
 
 const message = useMessage()
@@ -198,6 +244,8 @@ interface CPSettlement {
   settledTime: string
   createTime: string
   logs: Array<{ action: string; time: string; detail: string; type: 'info' | 'success' | 'warning' | 'error' }>
+  gameDetails: Array<{ game: string; plays: number; amount: number }>
+  voucher?: string
 }
 
 const cpOptions = [
@@ -226,6 +274,12 @@ const settlementData = ref<CPSettlement[]>([
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530001', type: 'info' as const },
     ],
+    gameDetails: [
+      { game: '星际迷航VR', plays: 18200, amount: 43680 },
+      { game: '深海探险', plays: 12100, amount: 29040 },
+      { game: '极限滑雪', plays: 9500, amount: 22800 },
+      { game: '太空对战', plays: 6000, amount: 14400 },
+    ],
   },
   {
     id: 2, no: 'CPS202605002', cpName: '闪耀游戏工作室',
@@ -240,6 +294,10 @@ const settlementData = ref<CPSettlement[]>([
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '自动放行', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530002', type: 'info' as const },
       { action: '拉卡拉受理', time: '2026-05-31 09:30', detail: '开票请求已受理，等待回调', type: 'warning' as const },
+    ],
+    gameDetails: [
+      { game: '魔法森林', plays: 13500, amount: 27000 },
+      { game: '极速飞车', plays: 8600, amount: 17200 },
     ],
   },
   {
@@ -257,6 +315,11 @@ const settlementData = ref<CPSettlement[]>([
       { action: '拉卡拉受理', time: '2026-04-26 09:00', detail: '开票请求已受理', type: 'warning' as const },
       { action: '分账成功', time: '2026-04-28 10:30', detail: '拉卡拉异步回调：开票成功，到账¥66,679', type: 'success' as const },
     ],
+    gameDetails: [
+      { game: '幻境探险', plays: 15800, amount: 33180 },
+      { game: '虚拟战场', plays: 9600, amount: 20160 },
+      { game: '梦境漫游', plays: 7000, amount: 14700 },
+    ],
   },
   {
     id: 4, no: 'CPS202605004', cpName: '乐游网络',
@@ -270,6 +333,9 @@ const settlementData = ref<CPSettlement[]>([
     logs: [
       { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥1.80×8,500次=¥15,300，扣提现手续费¥306，到账¥14,994', type: 'info' as const },
       { action: '异常拦截', time: '2026-05-31 08:00:01', detail: '收款银行账户未绑定，不符合自动分账条件', type: 'error' as const },
+    ],
+    gameDetails: [
+      { game: '欢乐捕鱼', plays: 8500, amount: 15300 },
     ],
   },
   {
@@ -287,6 +353,9 @@ const settlementData = ref<CPSettlement[]>([
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530005', type: 'info' as const },
       { action: '开票失败', time: '2026-05-31 08:05', detail: '拉卡拉返回：账户名与开户名不一致(BANK_NAME_MISMATCH)', type: 'error' as const },
     ],
+    gameDetails: [
+      { game: '星球大战VR', plays: 3200, amount: 6720 },
+    ],
   },
   {
     id: 6, no: 'CPS202605006', cpName: '星辰游戏',
@@ -301,6 +370,10 @@ const settlementData = ref<CPSettlement[]>([
       { action: '自动校验通过', time: '2026-05-31 08:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-05-31 08:00:02', detail: 'LK20260530006', type: 'info' as const },
     ],
+    gameDetails: [
+      { game: '星辰大海', plays: 9200, amount: 19320 },
+      { game: '银河护卫队', plays: 6400, amount: 13440 },
+    ],
   },
   {
     id: 7, no: 'CPS202605007', cpName: '未来幻境',
@@ -314,6 +387,9 @@ const settlementData = ref<CPSettlement[]>([
     logs: [
       { action: '结算单生成', time: '2026-05-31 08:00', detail: '¥2.10×1,200次=¥2,520，扣提现手续费¥50，到账¥2,470', type: 'info' as const },
       { action: '异常拦截', time: '2026-05-31 08:00:01', detail: '结算金额¥2,520，未达最低门槛¥100，暂不自动分账', type: 'error' as const },
+    ],
+    gameDetails: [
+      { game: '幻境奇缘', plays: 1200, amount: 2520 },
     ],
   },
 ])
@@ -422,10 +498,35 @@ function maskCardNo(no: string): string {
 
 // ========== 详情弹窗 ==========
 const showDetailModal = ref(false)
+const detailTab = ref('info')
 const currentRecord = ref<CPSettlement | null>(null)
 function openDetail(row: CPSettlement) {
   currentRecord.value = row
+  detailTab.value = 'info'
   showDetailModal.value = true
+}
+
+// 游戏明细表格列
+const gameDetailColumns = [
+  { title: '游戏名称', key: 'game', width: 240 },
+  { title: '游戏次数', key: 'plays', width: 120, render: (r: any) => `${r.plays.toLocaleString()} 次` },
+  { title: '结算金额', key: 'amount', width: 140, render: (r: any) => `¥${r.amount.toLocaleString()}` },
+]
+
+// 打款凭证上传
+function handleVoucherUpload({ file, onFinish }: any) {
+  if (!currentRecord.value) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const idx = settlementData.value.findIndex(d => d.id === currentRecord.value!.id)
+    if (idx !== -1) {
+      settlementData.value[idx].voucher = e.target?.result as string
+      currentRecord.value = settlementData.value[idx]
+      message.success('凭证上传成功')
+    }
+    onFinish()
+  }
+  reader.readAsDataURL(file.file)
 }
 
 // ========== 同步拉卡拉状态 ==========

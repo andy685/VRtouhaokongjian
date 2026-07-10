@@ -45,6 +45,9 @@
         <n-form-item label="订单状态">
           <n-select v-model:value="filterStatus" :options="statusOptions" placeholder="选择订单状态" clearable />
         </n-form-item>
+        <n-form-item label="结算状态">
+          <n-select v-model:value="filterSettled" :options="settledFilterOptions" placeholder="选择结算状态" clearable />
+        </n-form-item>
         <n-form-item label="日期范围">
           <n-date-picker type="daterange" clearable v-model:value="dateRange" style="width: 100%;" />
         </n-form-item>
@@ -58,76 +61,90 @@
     </n-modal>
 
     <!-- 退款弹窗 -->
-    <n-modal v-model:show="showRefund" preset="card" :title="isSettled ? '线下退款' : '退货'" style="width: 560px;" :bordered="false" :mask-closable="false">
-      <!-- 结算状态提示 -->
-      <n-alert v-if="!isSettled" type="info" :bordered="false" style="margin-bottom:12px;">
-        该订单<strong>未结算</strong>，将自动通过拉卡拉原路退回。
-      </n-alert>
-      <n-alert v-else type="warning" :bordered="false" style="margin-bottom:12px;">
-        该订单<strong>已结算</strong>，款项已到商家账户。请商家线下退款给用户后，上传凭证并确认。
-      </n-alert>
-
-      <div class="refund-section">
-        <n-data-table
-          :columns="refundColumns"
-          :data="refundItems"
-          :bordered="true"
-          :single-line="false"
-          size="small"
-        />
-      </div>
-      <div class="refund-notice">
-        <div class="notice-title">注意：</div>
-        <ul class="notice-list">
-          <li>组合支付的订单只能整单退</li>
-          <li v-if="!isSettled">预存款支付的金额只能原路退回</li>
-          <li v-else>已结算订单退款后，不影响该订单的结算记录</li>
-        </ul>
-        <n-button size="small" class="refund-all-btn" @click="refundAll">全退</n-button>
+    <n-modal v-model:show="showRefund" preset="card" :title="'退款'" style="width: 560px;" :bordered="false" :mask-closable="false" size="small">
+      <!-- 顶部提示条 -->
+      <div class="refund-banner" :class="isSettled ? 'offline' : 'original'">
+        <span class="banner-icon">{{ isSettled ? '!' : 'i' }}</span>
+        <span class="banner-text">
+          {{ isSettled ? '线下退款' : '原路退回' }}，退款总金额<span class="banner-amount">¥{{ refundTotalAmount.toFixed(2) }}元</span>
+        </span>
       </div>
 
-      <div class="refund-reason">
-        <div class="reason-label">退款原因 <span style="color:#EF4444;">*</span></div>
-        <n-select v-model:value="refundReason" :options="refundReasonOptions" placeholder="请选择退款原因" style="margin-bottom:8px;" />
-        <n-input v-if="refundReason === '其他'" v-model:value="refundReasonCustom" type="textarea" :rows="2" placeholder="请详细描述退款原因" />
+      <!-- 基本信息 2x2 -->
+      <div class="refund-info-grid">
+        <div class="refund-info-cell">
+          <div class="cell-label">订单号</div>
+          <div class="cell-value">{{ detailRow?.orderNo }}</div>
+        </div>
+        <div class="refund-info-cell">
+          <div class="cell-label">退款内容</div>
+          <div class="cell-value highlight">{{ detailRow?.product || '--' }}</div>
+        </div>
+        <div class="refund-info-cell">
+          <div class="cell-label">退款金额</div>
+          <div class="cell-value amount">¥{{ refundTotalAmount.toFixed(2) }}</div>
+        </div>
+        <div class="refund-info-cell">
+          <div class="cell-label">退款方式</div>
+          <div class="cell-value">{{ isSettled ? '线下退款' : '原路退款' }}</div>
+        </div>
       </div>
 
-      <!-- 已结算：线下退款凭证 -->
-      <div v-if="isSettled" class="refund-receipt">
-        <div class="receipt-label">线下退款凭证（选填）</div>
-        <n-upload
-          action="/api/upload"
-          accept=".jpg,.png,.jpeg"
-          :max="1"
-          v-model:file-list="receiptFileList"
-          list-type="image-card"
-        >
-          <n-button size="tiny">📎 上传转账截图</n-button>
+      <!-- 退款路径 -->
+      <div class="refund-section-title">退款路径</div>
+      <div class="refund-path-table">
+        <div class="path-row path-header">
+          <div class="path-cell">支付方式</div>
+          <div class="path-cell">支付渠道</div>
+          <div class="path-cell">退款金额</div>
+          <div class="path-cell">说明</div>
+        </div>
+        <div v-for="(p, idx) in refundPathList" :key="idx" class="path-row">
+          <div class="path-cell method" :style="{ color: p.color }">{{ p.method }}</div>
+          <div class="path-cell">{{ p.channel }}</div>
+          <div class="path-cell">¥{{ p.amount.toFixed(2) }}</div>
+          <div class="path-cell remark">{{ p.remark }}</div>
+        </div>
+        <div v-if="!refundPathList.length" class="path-empty">暂无退款路径</div>
+      </div>
+
+      <!-- 已结算：上传线下退款凭证 -->
+      <div v-if="isSettled" class="refund-receipt-block">
+        <div class="receipt-label">线下退款凭证 <span class="required">*</span></div>
+        <n-upload action="/api/upload" accept=".jpg,.png,.jpeg" :max="1" v-model:file-list="receiptFileList" list-type="image-card">
+          <n-button size="small">上传转账截图</n-button>
         </n-upload>
         <div class="receipt-hint">上传微信/支付宝转账截图或现金收据照片</div>
       </div>
 
-      <!-- 已结算：退款方式说明 -->
-      <div v-if="isSettled" class="refund-method offline">
-        <div class="method-label">退款方式：</div>
-        <span class="method-text">线下退款（现金/转账）</span>
-      </div>
-      <div v-else class="refund-method">
-        <div class="method-label">退款方式：</div>
-        <span class="method-text">拉卡拉原路退回</span>
+      <!-- 退款原因 -->
+      <div class="refund-reason-block">
+        <div class="refund-reason-label">退款原因<span class="required">*</span></div>
+        <n-select v-model:value="refundReason" :options="refundReasonOptions" placeholder="请选择退款原因" size="small" />
+        <n-input v-if="refundReason === '其他'" v-model:value="refundReasonCustom" type="textarea" :rows="2" placeholder="请详细描述退款原因" style="margin-top:8px;" />
       </div>
 
-      <div class="refund-total">
-        本次退款总额：<span class="total-amount">¥{{ refundTotalAmount.toFixed(2) }}</span>
+      <!-- 底部汇总卡 -->
+      <div class="refund-summary" :class="isSettled ? 'offline' : 'original'">
+        <div class="summary-row">
+          <span class="summary-label">退款方式：</span>
+          <span class="summary-text">{{ isSettled ? '线下退款' : '原路退款' }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">本次退款总额：</span>
+          <span class="summary-total">¥{{ refundTotalAmount.toFixed(2) }}</span>
+        </div>
+        <div v-if="paymentMethods.length" class="summary-row breakdown">
+          <span v-for="(p, idx) in paymentMethods" :key="idx" class="breakdown-item" :style="{ color: p.color }">
+            {{ p.method }}：¥{{ p.amount.toFixed(2) }}
+          </span>
+        </div>
       </div>
 
-      <div class="refund-detail" v-if="detailRow">
-        <span v-for="(pay, idx) in paymentMethods" :key="idx" :style="{color: pay.color, display:'block', marginBottom:'4px', fontSize:'13px'}">{{ pay.method }}：¥{{ pay.amount.toFixed(2) }}</span>
-      </div>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showRefund = false">取消</n-button>
-          <n-button :type="isSettled ? 'warning' : 'primary'" @click="confirmRefund">
+          <n-button @click="showRefund = false" size="small">取消</n-button>
+          <n-button :type="isSettled ? 'warning' : 'primary'" @click="confirmRefund" size="small">
             {{ isSettled ? '确认已线下退款' : '确认退款' }}
           </n-button>
         </n-space>
@@ -197,7 +214,7 @@ import {
   NAlert, NUpload,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { FilterOutline, DownloadOutline, PrintOutline, RefreshOutline, WarningOutline } from '@vicons/ionicons5'
+import { FilterOutline, DownloadOutline, PrintOutline, RefreshOutline } from '@vicons/ionicons5'
 import { useExceptionOrders } from '@/composables/useExceptionOrders'
 import MarkExceptionDialog from '@/components/MarkExceptionDialog.vue'
 
@@ -236,6 +253,7 @@ const filterOrderNo = ref('')
 const filterPhone = ref('')
 const filterSource = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
+const filterSettled = ref<string | null>(null)
 const dateRange = ref<[number, number] | null>(null)
 
 const shopOptions = [
@@ -251,6 +269,11 @@ const statusOptions = [
   { label: '完成', value: '完成' },
   { label: '已退款', value: '已退款' },
   { label: '待支付', value: '待支付' },
+]
+
+const settledFilterOptions = [
+  { label: '已结算', value: '已结算' },
+  { label: '未结算', value: '未结算' },
 ]
 
 const refundAmount = ref<number | null>(null)
@@ -301,13 +324,49 @@ const refundColumns: DataTableColumns = [
   },
 ]
 
+// 整单退款：退款总额 = 实付金额（paid）
 const refundTotalAmount = computed(() => {
-  return refundItems.value.reduce((sum, item) => sum + item.currentRefundQty * item.price, 0)
+  if (!detailRow.value) return 0
+  // 已退过款的话，按"实付 - 已退"算；否则直接实付
+  const paid = detailRow.value.paid || 0
+  const refunded = detailRow.value.refunded || 0
+  return Math.max(0, paid - refunded)
 })
 
 const paymentMethods = computed(() => {
   return getPaymentDetail(detailRow.value?.paymentContent || '')
 })
+
+// 退款路径：每一笔支付 → 退款渠道
+const refundPathList = computed(() => {
+  if (!detailRow.value) return []
+  const pays = paymentMethods.value
+  if (pays.length === 0) {
+    return [{
+      method: '现金',
+      channel: isSettled.value ? '线下账户' : '原路退回',
+      amount: refundTotalAmount.value,
+      remark: isSettled.value ? '商家线下退款' : '原路退回至现金账户',
+      color: '#64748b',
+    }]
+  }
+  return pays.map((p: any) => ({
+    method: p.method,
+    channel: isSettled.value ? '线下账户' : '原路退回',
+    amount: p.amount,
+    remark: isSettled.value ? '商家线下退款' : `原路退回至${channelLabel(p.method)}`,
+    color: p.color,
+  }))
+})
+
+function channelLabel(method: string) {
+  if (method.includes('预存款') || method.includes('余额')) return '会员卡余额'
+  if (method.includes('微信')) return '微信账户'
+  if (method.includes('支付宝')) return '支付宝账户'
+  if (method.includes('游戏币')) return '游戏币账户'
+  if (method.includes('现金')) return '现金'
+  return '用户支付账户'
+}
 
 const pagination = { pageSize: 15 }
 
@@ -367,6 +426,15 @@ const columns: DataTableColumns = [
     render(row: any) {
       const s = statusMap[row.status] || { type: 'default', label: row.status }
       return h(NTag, { type: s.type, size: 'small', bordered: false }, { default: () => s.label })
+    },
+  },
+  {
+    title: '会员/商家结算',
+    key: 'settled',
+    width: 100,
+    align: 'center',
+    render(row: any) {
+      return h(NTag, { type: row.settled ? 'warning' : 'success', size: 'small', bordered: false }, { default: () => row.settled ? '已结算' : '未结算' })
     },
   },
   { title: '会员/散客', key: 'member', width: 150, align: 'center' },
@@ -459,7 +527,7 @@ const rawData = ref([
   },
   {
     orderNo: '585317339722770507787072', shop: '利民街小展厅', member: '散客（未知）', product: '暗黑双子星', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:57', status: '完成',
-    refunded: 0, remark: '', source: '收银系统', operator: '李小红',
+    refunded: 0, remark: '', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '暗黑双子星', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 0, refundAmount: 0 },
     ],
@@ -467,7 +535,7 @@ const rawData = ref([
   },
   {
     orderNo: '585317339722430507710651', shop: '利民街小展厅', member: '散客（未知）', product: '暗黑双子星', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:57', status: '完成',
-    refunded: 0, remark: '', source: '收银系统', operator: '王建国',
+    refunded: 0, remark: '', source: '收银系统', settled: true, operator: '王建国',
     items: [
       { name: '暗黑双子星', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 0, refundAmount: 0 },
     ],
@@ -475,7 +543,7 @@ const rawData = ref([
   },
   {
     orderNo: '585317339722140507740638', shop: '利民街小展厅', member: '散客（未知）', product: '幻影时空', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:56', status: '完成',
-    refunded: 0, remark: '', source: '收银系统', operator: '李小红',
+    refunded: 0, remark: '', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '幻影时空', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 0, refundAmount: 0 },
     ],
@@ -483,7 +551,7 @@ const rawData = ref([
   },
   {
     orderNo: '585317330011220507331122', shop: '利民街小展厅', member: '张伟（13800138000）', product: '亲子套票+幻影飞碟', amount: 346, discount: 48, paid: 298, paymentContent: '微信:298.00元', createTime: '2025-01-15 14:30', status: '完成',
-    refunded: 0, remark: '会员日活动', source: '收银系统', operator: '李小红',
+    refunded: 0, remark: '会员日活动', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '亲子套票', originalPrice: 298.00, price: 268.00, quantity: 1, subtotal: 268.00, remark: '会员价', refundedQty: 0, refundAmount: 0 },
       { name: '幻影飞碟', originalPrice: 48.00, price: 30.00, quantity: 1, subtotal: 30.00, remark: '搭配优惠', refundedQty: 0, refundAmount: 0 },
@@ -495,7 +563,7 @@ const rawData = ref([
   },
   {
     orderNo: '585317330022330507442233', shop: '利民街小展厅', member: '李娜（13900139000）', product: '充500送200+暗黑战场', amount: 580, discount: 80, paid: 500, paymentContent: '支付宝:500.00元', createTime: '2025-01-16 10:15', status: '完成',
-    refunded: 0, remark: '新客首充', source: '小程序', operator: '小程序用户',
+    refunded: 0, remark: '新客首充', source: '小程序', settled: false, operator: '小程序用户',
     items: [
       { name: '充500送200', originalPrice: 500.00, price: 500.00, quantity: 1, subtotal: 500.00, remark: '首充优惠', refundedQty: 0, refundAmount: 0 },
       { name: '暗黑战场', originalPrice: 80.00, price: 0.00, quantity: 1, subtotal: 0.00, remark: '首充赠送', refundedQty: 0, refundAmount: 0 },
@@ -506,7 +574,7 @@ const rawData = ref([
   },
   {
     orderNo: '585317330033440507553344', shop: '利民街小展厅', member: '散客（未知）', product: 'VR全家桶套餐', amount: 399, discount: 100, paid: 299, paymentContent: '现金:299.00元', createTime: '2025-01-17 16:45', status: '已退款',
-    refunded: 299, remark: '设备故障退款', source: '收银系统', operator: '王建国',
+    refunded: 299, remark: '设备故障退款', source: '收银系统', settled: false, operator: '王建国',
     items: [
       { name: 'VR全家桶套餐', originalPrice: 399.00, price: 299.00, quantity: 1, subtotal: 299.00, remark: '限时特价', refundedQty: 1, refundAmount: 299 },
     ],
@@ -523,6 +591,7 @@ const filteredData = computed(() => {
   if (filterPhone.value) data = data.filter(d => d.member.includes(filterPhone.value))
   if (filterSource.value) data = data.filter(d => d.source === filterSource.value)
   if (filterStatus.value) data = data.filter(d => d.status === filterStatus.value)
+  if (filterSettled.value) data = data.filter(d => (filterSettled.value === '已结算') === d.settled)
   return data
 })
 
@@ -532,6 +601,7 @@ function resetFilter() {
   filterPhone.value = ''
   filterSource.value = null
   filterStatus.value = null
+  filterSettled.value = null
   dateRange.value = null
 }
 
@@ -545,6 +615,7 @@ function openRefund() {
   refundReason.value = null
   refundReasonCustom.value = ''
   receiptFileList.value = []
+  // 整单退款：不再维护每件商品的"本次退货数"
   if (detailRow.value?.items) {
     refundItems.value = detailRow.value.items.map((item: any) => ({
       ...item,
@@ -557,15 +628,19 @@ function openRefund() {
 }
 
 function refundAll() {
-  refundItems.value = refundItems.value.map((item: any) => ({
-    ...item,
-    currentRefundQty: item.quantity - item.refundedQty,
-  }))
+  // 整单退：已结算时直接按实付金额退（不需要逐件勾选）
+  if (isSettled.value) {
+    window.$message?.info('已结算订单请直接确认退款')
+  }
 }
 
 function confirmRefund() {
-  const totalQty = refundItems.value.reduce((sum, item) => sum + item.currentRefundQty, 0)
-  if (totalQty <= 0) return
+  // 整单退款：不再校验退货数，直接按 refundTotalAmount 处理
+  const total = refundTotalAmount.value
+  if (total <= 0) {
+    window.$message?.warning('该订单已无金额可退')
+    return
+  }
 
   const reason = refundReason.value === '其他' ? refundReasonCustom.value : refundReason.value
   if (!reason) {
@@ -573,7 +648,12 @@ function confirmRefund() {
     return
   }
 
-  const total = refundTotalAmount.value
+  // 已结算订单必须上传凭证
+  if (isSettled.value && receiptFileList.value.length === 0) {
+    window.$message?.warning('请上传线下退款凭证')
+    return
+  }
+
   if (detailRow.value) {
     detailRow.value.refundReason = reason
     detailRow.value.refundOperator = '当前收银员' // TODO: 对接真实登录用户
@@ -585,11 +665,13 @@ function confirmRefund() {
       detailRow.value.refundMethod = '线下退款'
       detailRow.value.refundReceipt = receiptFileList.value.length > 0 ? receiptFileList.value[0].name : ''
       detailRow.value.refunded = total
-      detailRow.value.items.forEach((item: any, idx: number) => {
-        const refundQty = refundItems.value[idx]?.currentRefundQty || 0
-        item.refundedQty += refundQty
-        item.refundAmount += refundQty * item.price
-      })
+      // 整单退：所有商品标记为已退
+      if (detailRow.value.items) {
+        detailRow.value.items.forEach((item: any) => {
+          item.refundedQty = item.quantity
+          item.refundAmount = item.subtotal || item.price * item.quantity
+        })
+      }
       showRefund.value = false
       showDetail.value = false
       window.$message?.success(`已标记线下退款，退款金额 ¥${total.toFixed(2)}`)
@@ -604,11 +686,12 @@ function confirmRefund() {
           detailRow.value.status = '已退款'
           detailRow.value.refunded = total
           detailRow.value.refundNo = 'RF' + Date.now() // 拉卡拉退款单号
-          detailRow.value.items.forEach((item: any, idx: number) => {
-            const refundQty = refundItems.value[idx]?.currentRefundQty || 0
-            item.refundedQty += refundQty
-            item.refundAmount += refundQty * item.price
-          })
+          if (detailRow.value.items) {
+            detailRow.value.items.forEach((item: any) => {
+              item.refundedQty = item.quantity
+              item.refundAmount = item.subtotal || item.price * item.quantity
+            })
+          }
           window.$message?.success(`拉卡拉退款成功，退款单号 ${detailRow.value.refundNo}`)
         }
       }, 2000)
@@ -796,4 +879,179 @@ function confirmRefund() {
   font-size: 13px;
   color: #333;
 }
+
+/* ===== 退款弹窗样式 ===== */
+.refund-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  border: 1px solid;
+  line-height: 1.5;
+}
+.refund-banner.original {
+  background: #e6f4ff;
+  border-color: #91caff;
+  color: #0958d9;
+}
+.refund-banner.offline {
+  background: #fff7e6;
+  border-color: #ffd591;
+  color: #d46b08;
+}
+.banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1677ff;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  font-style: italic;
+  flex-shrink: 0;
+}
+.refund-banner.offline .banner-icon {
+  background: #fa8c16;
+}
+.banner-text { flex: 1; }
+.banner-amount {
+  font-weight: 600;
+  margin: 0 2px;
+}
+
+.refund-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.refund-info-cell {
+  padding: 10px 14px;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+.refund-info-cell:nth-child(2n) { border-right: none; }
+.refund-info-cell:nth-last-child(-n+2) { border-bottom: none; }
+.cell-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+.cell-value {
+  font-size: 13px;
+  color: #111827;
+  font-weight: 500;
+  word-break: break-all;
+}
+.cell-value.highlight { color: #1677ff; }
+.cell-value.amount { color: #ef4444; font-size: 16px; font-weight: 600; }
+
+.refund-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+.refund-path-table {
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: #fff;
+}
+.path-row {
+  display: grid;
+  grid-template-columns: 130px 130px 110px 1fr;
+  align-items: center;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.path-row:last-child { border-bottom: none; }
+.path-row.path-header {
+  background: #fafafa;
+  color: #374151;
+  font-weight: 500;
+  font-size: 12px;
+}
+.path-cell {
+  padding: 8px 12px;
+  text-align: center;
+  border-right: 1px solid #f0f0f0;
+}
+.path-cell:last-child { border-right: none; }
+.path-cell.method { font-weight: 500; }
+.path-cell.remark { color: #6b7280; text-align: left; padding-left: 12px; }
+.path-empty {
+  padding: 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.refund-receipt-block {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: #fffbe6;
+  border: 1px dashed #ffe58f;
+  border-radius: 4px;
+}
+.receipt-label {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.receipt-label .required { color: #ef4444; margin-left: 2px; }
+.receipt-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.refund-reason-block { margin-bottom: 16px; }
+.refund-reason-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 8px;
+}
+.refund-reason-label .required { color: #ef4444; margin-left: 2px; }
+
+.refund-summary {
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.refund-summary.original {
+  background: #f0f7ff;
+  border-color: #91caff;
+}
+.refund-summary.offline {
+  background: #fffbe6;
+  border-color: #ffe58f;
+}
+.summary-row {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+.summary-row:last-child { margin-bottom: 0; }
+.summary-label { color: #6b7280; min-width: 110px; }
+.summary-text { color: #111827; font-weight: 500; }
+.summary-total { color: #ef4444; font-size: 16px; font-weight: 600; }
+.summary-row.breakdown { gap: 12px; flex-wrap: wrap; }
+.breakdown-item { font-size: 12px; }
 </style>

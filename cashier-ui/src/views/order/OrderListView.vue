@@ -741,53 +741,54 @@
         </header>
 
         <div class="ors-refund-body">
-          <!-- 顶部提示 -->
+          <!-- 顶部提示（含退款金额） -->
           <div class="ors-refund-alert" :class="refundAlertClass">
             <el-icon class="ors-refund-alert__icon"><InfoFilled /></el-icon>
             <span>{{ refundAlertText }}</span>
           </div>
 
-          <!-- 商品表格 -->
+          <!-- 订单信息区（4 字段网格） -->
           <div class="ors-refund-panel">
-            <div class="ors-refund-table">
-              <div class="ors-refund-thead">
-                <span>商品名称</span>
-                <span>现单价</span>
-                <span>已购数</span>
-                <span>已退数</span>
-                <span>可退数</span>
-                <span>本次退货数</span>
+            <div class="ors-refund-info-grid">
+              <div class="ors-refund-info-item">
+                <span class="ors-refund-info-item__label">订单号</span>
+                <span class="ors-refund-info-item__value">{{ refundOrder?.orderNo }}</span>
               </div>
-              <div class="ors-refund-tbody">
-                <div class="ors-refund-tr">
-                  <span>{{ refundOrder?.product }}</span>
-                  <span>¥{{ refundUnitPrice.toFixed(2) }}</span>
-                  <span>{{ refundOrder?.purchasedQty || 1 }}</span>
-                  <span>{{ refundOrder?.refundedQty || 0 }}</span>
-                  <span>{{ refundableQty }}</span>
-                  <span>
-                    <div class="ors-qty-control">
-                      <button type="button" :disabled="refundQty <= 0" @click="refundQty--">-</button>
-                      <input v-model.number="refundQty" type="number" min="0" :max="refundableQty" readonly />
-                      <button type="button" :disabled="refundQty >= refundableQty" @click="refundQty++">+</button>
-                    </div>
-                  </span>
-                </div>
+              <div class="ors-refund-info-item">
+                <span class="ors-refund-info-item__label">退款内容</span>
+                <span class="ors-refund-info-item__value ors-refund-info-item__value--product">{{ refundOrder?.product }}</span>
+              </div>
+              <div class="ors-refund-info-item">
+                <span class="ors-refund-info-item__label">退款金额</span>
+                <span class="ors-refund-info-item__value ors-refund-info-item__value--amount">¥{{ refundTotal.toFixed(2) }}</span>
+              </div>
+              <div class="ors-refund-info-item">
+                <span class="ors-refund-info-item__label">退款方式</span>
+                <span class="ors-refund-info-item__value">{{ refundMethodText }}</span>
               </div>
             </div>
           </div>
 
-          <!-- 注意提示 -->
-          <div class="ors-refund-panel">
-            <div class="ors-refund-notice">
-              <div>
-                <p>注意：</p>
-                <ul>
-                  <li>组合支付的订单只能整单退</li>
-                  <li>预存款支付的金额只能原路退回</li>
-                </ul>
+          <!-- 退款路径（仅未结算时显示，展示渠道拆分） -->
+          <div v-if="!isRefundSettled" class="ors-refund-panel">
+            <div class="ors-refund-path-title">退款路径</div>
+            <div class="ors-refund-path-table">
+              <div class="ors-refund-path-thead">
+                <span>支付方式</span>
+                <span>支付渠道</span>
+                <span>退款金额</span>
+                <span>说明</span>
               </div>
-              <button type="button" class="ors-refund-allbtn" @click="refundQty = refundableQty">全退</button>
+              <div class="ors-refund-path-tbody">
+                <div v-for="(ch, idx) in refundPathList" :key="idx" class="ors-refund-path-tr">
+                  <span :style="{ color: ch.color }">{{ ch.method }}</span>
+                  <span>{{ ch.channel }}</span>
+                  <span :style="{ color: ch.method === '预存款' || ch.method === '会员卡余额' ? '#6366f1' : '#333' }">
+                    ¥{{ ch.amount.toFixed(2) }}
+                  </span>
+                  <span>{{ ch.desc }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -801,27 +802,37 @@
             </el-select>
           </div>
 
-          <!-- 线下退款凭证：仅已结算显示 -->
-          <div v-if="refundOrder?.settleStatus === '已结算'" class="ors-refund-panel">
-            <label class="ors-refund-label">线下退款凭证（选填）</label>
-            <div class="ors-refund-upload">
-              <div class="ors-refund-upload__area">
-                <el-icon><Upload /></el-icon>
-                <span>上传转账截图</span>
-              </div>
-              <p class="ors-refund-upload__hint">上传微信/支付宝转账截图或现金收据照片</p>
-            </div>
+          <!-- 线下退款凭证：已结算必填 -->
+          <div v-if="isRefundSettled" class="ors-refund-panel">
+            <label class="ors-refund-label">
+              线下退款凭证 <span class="ors-refund-required">*</span>
+            </label>
+            <el-upload
+              ref="refundUploadRef"
+              v-model:file-list="refundVoucherList"
+              :auto-upload="false"
+              :limit="3"
+              accept=".jpg,.png,.jpeg"
+              list-type="picture-card"
+              :on-exceed="onVoucherExceed"
+              :before-upload="beforeVoucherUpload"
+            >
+              <el-icon><Plus /></el-icon>
+            </el-upload>
+            <p class="ors-refund-upload__hint">请上传微信/支付宝转账截图或现金收据照片（必填，最多3张）</p>
           </div>
 
-          <!-- 退款方式 & 总额 -->
+          <!-- 底部汇总区 -->
           <div class="ors-refund-panel ors-refund-summary">
             <div class="ors-refund-method">
               退款方式：{{ refundMethodText }}
             </div>
             <div class="ors-refund-total">
               本次退款总额：<strong>¥{{ refundTotal.toFixed(2) }}</strong>
-              <span v-if="refundChannelBreakdown.length" class="ors-refund-breakdown">
-                （{{ refundChannelBreakdown.join('、') }}）
+            </div>
+            <div v-if="refundChannelBreakdown.length" class="ors-refund-breakdown-detail">
+              <span v-for="(ch, idx) in refundChannelBreakdown" :key="idx" class="ors-refund-breakdown-item">
+                {{ ch }}
               </span>
             </div>
           </div>
@@ -844,7 +855,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { CopyDocument, Close, InfoFilled, Upload } from '@element-plus/icons-vue'
+import { CopyDocument, Close, InfoFilled, Plus } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -1013,6 +1024,7 @@ const orderDataMap = {
       paymentContent: '预存款:40.00元\n微信支付:68.00元',
       status: '完成',
       statusTone: 'done',
+      settleStatus: '未结算',
       member: '张晓明（13900001234）',
       source: '点播系统',
       vodDetails: [
@@ -1035,6 +1047,7 @@ const orderDataMap = {
       paymentContent: '抖音团购:88.00元',
       status: '完成',
       statusTone: 'done',
+      settleStatus: '已结算',
       member: '散客（未知）',
       source: '抖音',
       vodDetails: [
@@ -1056,6 +1069,7 @@ const orderDataMap = {
       paymentContent: '优惠券:30.00元\n微信支付:128.00元',
       status: '进行中',
       statusTone: 'pending',
+      settleStatus: '未结算',
       member: '王芳（13800005566）',
       source: '点播系统',
       vodDetails: [
@@ -1440,7 +1454,7 @@ const tabConfigMap = {
       { key: 'memberSettle', label: '会员/商家结算' },
       { key: 'action', label: '操作' }
     ],
-    grid: '1.5fr 1.2fr 1.1fr 0.8fr 0.8fr 0.8fr 1.3fr 0.8fr 0.85fr 0.55fr',
+    grid: '1.4fr 1.2fr 1fr 0.7fr 0.7fr 0.7fr 1.2fr 0.8fr 1.1fr 0.55fr',
     filters: ['source', 'status'],
     detailType: 'cashier',
     showRefund: true
@@ -1454,14 +1468,14 @@ const tabConfigMap = {
       { key: 'duration', label: '时长' },
       { key: 'paidAmount', label: '金额', type: 'money' },
       { key: 'paymentContent', label: '支付方式' },
-      { key: 'member', label: '会员/散客' },
       { key: 'status', label: '订单状态' },
+      { key: 'memberSettle', label: '会员/商家结算' },
       { key: 'action', label: '操作' }
     ],
-    grid: '1.5fr 1.2fr 1fr 1fr 0.7fr 0.8fr 1.2fr 1fr 0.8fr 0.55fr',
+    grid: '1.4fr 1.2fr 0.9fr 0.9fr 0.65fr 0.7fr 1.1fr 0.8fr 1.1fr 0.55fr',
     filters: ['device', 'game'],
     detailType: 'vod',
-    showRefund: false
+    showRefund: true
   },
   '/order/manual': {
     columns: [
@@ -1678,19 +1692,22 @@ const refundVisible = ref(false)
 const refundOrder = ref(null)
 const refundQty = ref(0)
 const refundReason = ref('')
+const refundVoucherList = ref([])
 const refundReasonOptions = ['客户不想要了', '游戏体验异常', '操作错误（买错项目）', '设备故障', '重复付款', '其他']
 
-const refundTitle = computed(() => refundOrder.value?.settleStatus === '已结算' ? '线下退款' : '申请退款')
+const isRefundSettled = computed(() => refundOrder.value?.settleStatus === '已结算')
+
+const refundTitle = computed(() => isRefundSettled.value ? '线下退款' : '申请退款')
 
 const refundAlertClass = computed(() =>
-  refundOrder.value?.settleStatus === '已结算' ? 'ors-refund-alert--warning' : 'ors-refund-alert--info'
+  isRefundSettled.value ? 'ors-refund-alert--warning' : 'ors-refund-alert--info'
 )
 
 const refundAlertText = computed(() => {
-  if (refundOrder.value?.settleStatus === '已结算') {
+  if (isRefundSettled.value) {
     return '该订单已结算，款项已到商家账户。请商家线下退款给用户后，上传凭证并确认。'
   }
-  return '该订单未结算，确认后款项将通过拉卡拉原路退回到用户支付账户，无需线下操作。'
+  return `原路退回，退款总金额 ¥${refundTotal.value.toFixed(2)} 元`
 })
 
 const refundUnitPrice = computed(() => {
@@ -1708,33 +1725,55 @@ const refundableQty = computed(() => {
 const refundTotal = computed(() => refundUnitPrice.value * refundQty.value)
 
 const refundMethodText = computed(() => {
-  if (refundOrder.value?.settleStatus === '已结算') return '线下退款（现金/转账）'
-  return '拉卡拉原路退回（自动）'
+  if (isRefundSettled.value) return '线下退款'
+  return '原路退款'
 })
 
-const refundChannelBreakdown = computed(() => {
+// 退款路径：未结算时展示支付方式/渠道/金额/说明拆分
+const refundPathList = computed(() => {
   if (!refundOrder.value || refundTotal.value <= 0) return []
   const content = refundOrder.value.paymentContent || ''
-  // 解析支付方式，如 "预存款:40.00元\n微信支付:40.00元"
   const lines = content.split('\n').filter(Boolean)
-  const channels = []
+  const paths = []
   const ratio = refundTotal.value / refundOrder.value.paidAmount
   for (const line of lines) {
     const match = line.match(/^(.+?):([\d.]+)元/)
     if (match) {
+      const method = match[1]
       const amount = parseFloat(match[2]) * ratio
-      channels.push(`${match[1]}：¥${amount.toFixed(2)}`)
+      const isPrepaid = method.includes('预存款') || method.includes('余额')
+      paths.push({
+        method,
+        channel: isPrepaid ? '内部账户' : method,
+        amount,
+        desc: isPrepaid ? `原路退回至${method}` : `${method}原路退回`,
+        color: isPrepaid ? '#6366f1' : method.includes('微信') ? '#07c160' : method.includes('支付宝') ? '#1677ff' : '#333',
+      })
     }
   }
-  return channels.length ? channels : []
+  return paths
 })
 
-const canConfirmRefund = computed(() => refundQty.value > 0 && refundReason.value)
+const refundChannelBreakdown = computed(() => {
+  return refundPathList.value.map(p => `${p.method}：¥${p.amount.toFixed(2)}`)
+})
+
+const canConfirmRefund = computed(() => {
+  if (refundQty.value <= 0) return false
+  if (!refundReason.value) return false
+  // 已结算订单必须上传凭证
+  if (isRefundSettled.value && refundVoucherList.value.length === 0) return false
+  return true
+})
 
 const openRefund = () => {
   refundOrder.value = selectedOrder.value
-  refundQty.value = 0
+  // 整单退款：数量直接设为可退数
+  const purchased = refundOrder.value?.purchasedQty || 1
+  const refunded = refundOrder.value?.refundedQty || 0
+  refundQty.value = purchased - refunded
   refundReason.value = ''
+  refundVoucherList.value = []
   refundVisible.value = true
 }
 
@@ -1743,6 +1782,24 @@ const closeRefund = () => {
   refundOrder.value = null
   refundQty.value = 0
   refundReason.value = ''
+  refundVoucherList.value = []
+}
+
+// 凭证上传校验
+const beforeVoucherUpload = (file) => {
+  const isValidType = ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)
+  const isValidSize = file.size / 1024 / 1024 <= 5
+  if (!isValidType) {
+    window.ElMessage?.warning?.('仅支持 JPG/PNG 格式')
+  }
+  if (!isValidSize) {
+    window.ElMessage?.warning?.('文件大小不能超过 5MB')
+  }
+  return isValidType && isValidSize
+}
+
+const onVoucherExceed = () => {
+  window.ElMessage?.warning?.('最多上传 3 张凭证图片')
 }
 
 const confirmRefund = () => {
@@ -1753,6 +1810,13 @@ const confirmRefund = () => {
     refundOrder.value.refundAmount = refundTotal.value
     refundOrder.value.refundReason = refundReason.value
     refundOrder.value.refundedQty = (refundOrder.value.refundedQty || 0) + refundQty.value
+    // 保存凭证信息
+    if (isRefundSettled.value && refundVoucherList.value.length > 0) {
+      refundOrder.value.refundVoucherList = refundVoucherList.value.map(f => ({
+        name: f.name,
+        url: f.url || f.response?.url || '',
+      }))
+    }
     // 未结算订单退款后，结算状态标记为无需结算
     if (refundOrder.value.settleStatus === '未结算') {
       refundOrder.value.settleStatus = '无需结算'
@@ -3006,23 +3070,68 @@ const confirmRefund = () => {
   box-shadow: 0 2px 8px rgba(21, 88, 150, 0.06);
 }
 
-/* 退款商品表格 */
-.ors-refund-table {
+/* ======== 退款弹窗样式 ======== */
+
+/* 订单信息 4 字段网格 */
+.ors-refund-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+
+.ors-refund-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ors-refund-info-item__label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.ors-refund-info-item__value {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.ors-refund-info-item__value--product {
+  color: #2563eb;
+}
+
+.ors-refund-info-item__value--amount {
+  font-size: 18px;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* 退款路径表格 */
+.ors-refund-path-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.ors-refund-path-table {
   border: 1px solid #f1f5f9;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.ors-refund-thead,
-.ors-refund-tr {
+.ors-refund-path-thead,
+.ors-refund-path-tr {
   display: grid;
-  grid-template-columns: 2fr 1fr 70px 70px 70px 110px;
+  grid-template-columns: 1.2fr 1fr 1fr 1.5fr;
   gap: 8px;
   align-items: center;
   padding: 0 12px;
 }
 
-.ors-refund-thead {
+.ors-refund-path-thead {
   min-height: 34px;
   background: #f8fafc;
   color: #64748b;
@@ -3030,110 +3139,18 @@ const confirmRefund = () => {
   font-weight: 600;
 }
 
-.ors-refund-tr {
-  min-height: 44px;
+.ors-refund-path-tr {
+  min-height: 40px;
   color: #334155;
   font-size: 13px;
   border-top: 1px solid #f1f5f9;
 }
 
-.ors-refund-tr span {
+.ors-refund-path-tr span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* 数量控制器 */
-.ors-qty-control {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  overflow: hidden;
-  width: fit-content;
-}
-
-.ors-qty-control button {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  background: #f8fafc;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.ors-qty-control button:hover:not(:disabled) {
-  background: #e2e8f0;
-}
-
-.ors-qty-control button:disabled {
-  color: #cbd5e1;
-  cursor: not-allowed;
-}
-
-.ors-qty-control input {
-  width: 36px;
-  height: 28px;
-  border: 0;
-  border-left: 1px solid #e2e8f0;
-  border-right: 1px solid #e2e8f0;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1e293b;
-  background: #fff;
-  outline: none;
-}
-
-/* 注意提示 */
-.ors-refund-notice {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.ors-refund-notice p {
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.ors-refund-notice ul {
-  margin: 0;
-  padding-left: 16px;
-  font-size: 12px;
-  color: #64748b;
-  line-height: 1.6;
-}
-
-.ors-refund-allbtn {
-  flex-shrink: 0;
-  height: 30px;
-  padding: 0 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #fff;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.ors-refund-allbtn:hover {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: #2563eb;
 }
 
 /* 退款原因 */
@@ -3164,37 +3181,10 @@ const confirmRefund = () => {
 }
 
 /* 上传区域 */
-.ors-refund-upload__area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 100px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #94a3b8;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.ors-refund-upload__area:hover {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: #3b82f6;
-}
-
-.ors-refund-upload__area .el-icon {
-  font-size: 24px;
-}
-
 .ors-refund-upload__hint {
   margin: 6px 0 0;
   font-size: 11px;
   color: #94a3b8;
-  text-align: center;
 }
 
 /* 退款汇总 */
@@ -3220,10 +3210,15 @@ const confirmRefund = () => {
   color: #dc2626;
 }
 
-.ors-refund-breakdown {
+.ors-refund-breakdown-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
+
+.ors-refund-breakdown-item {
   font-size: 12px;
   color: #64748b;
-  margin-left: 4px;
 }
 
 /* 底部按钮 */

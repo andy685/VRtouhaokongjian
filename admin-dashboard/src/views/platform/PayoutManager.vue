@@ -115,13 +115,6 @@
               <n-descriptions-item label="代理商">{{ currentRecord.agentName }}</n-descriptions-item>
               <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
               <n-descriptions-item label="月游戏豆采购额">{{ `¥${currentRecord.monthlyFlow.toLocaleString()}` }}</n-descriptions-item>
-              <n-descriptions-item label="供应商成本">
-                <span style="color:#F59E0B;">¥{{ (currentRecord.supplierCost || 0).toLocaleString() }}</span>
-              </n-descriptions-item>
-              <n-descriptions-item label="分润计算基数">
-                <span style="font-weight:600;">¥{{ ((currentRecord.monthlyFlow - (currentRecord.supplierCost || 0))).toLocaleString() }}</span>
-                <span style="font-size:11px;color:#9CA3AF;margin-left:4px;">（采购额 − 供应商成本）</span>
-              </n-descriptions-item>
               <n-descriptions-item label="应发分润">
                 <span style="font-weight:700;font-size:16px;color:#4F46E5;">¥{{ currentRecord.commissionAmount.toLocaleString() }}</span>
               </n-descriptions-item>
@@ -135,20 +128,18 @@
               </n-descriptions-item>
               <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
               <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? formatCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
+              <n-descriptions-item label="打款时间">{{ currentRecord.paidTime || '-' }}</n-descriptions-item>
               <n-descriptions-item label="创建时间">{{ currentRecord.submitTime }}</n-descriptions-item>
-              <n-descriptions-item label="到账时间">{{ currentRecord.paidTime || '-' }}</n-descriptions-item>
             </n-descriptions>
           </n-tab-pane>
 
           <!-- Tab 2: 分润明细 -->
           <n-tab-pane name="breakdown" tab="分润明细">
-            <div v-if="currentRecord?.supplierCost != null" style="margin-bottom: 16px;">
-              <div style="font-size:13px;font-weight:600;margin-bottom:10px;">成本扣除计算</div>
+            <div v-if="currentRecord?.monthlyFlow > 0" style="margin-bottom: 16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:10px;">分润计算</div>
               <n-descriptions label-placement="left" :column="1" bordered size="small">
                 <n-descriptions-item label="月采购额">¥{{ currentRecord.monthlyFlow.toLocaleString() }}</n-descriptions-item>
-                <n-descriptions-item label="供应商成本">− ¥{{ currentRecord.supplierCost.toLocaleString() }}</n-descriptions-item>
-                <n-descriptions-item label="分润基数">= ¥{{ (currentRecord.monthlyFlow - currentRecord.supplierCost).toLocaleString() }}</n-descriptions-item>
-                <n-descriptions-item label="分润比例">{{ (currentRecord.commissionAmount / (currentRecord.monthlyFlow - currentRecord.supplierCost) * 100).toFixed(1) }}%</n-descriptions-item>
+                <n-descriptions-item label="分润比例">{{ (currentRecord.commissionAmount / currentRecord.monthlyFlow * 100).toFixed(1) }}%</n-descriptions-item>
                 <n-descriptions-item label="应发分润">
                   <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.commissionAmount.toLocaleString() }}</span>
                 </n-descriptions-item>
@@ -158,7 +149,7 @@
               <div style="font-size:13px;font-weight:600;margin-bottom:10px;">下属商家分润明细</div>
               <n-data-table :columns="merchantDetailColumns" :data="currentRecord.merchantDetails" :pagination="false" size="small" striped />
             </div>
-            <n-empty v-if="currentRecord?.supplierCost == null && !currentRecord?.merchantDetails?.length" description="暂无分润明细数据" style="padding:40px 0;" />
+            <n-empty v-if="currentRecord?.monthlyFlow <= 0 && !currentRecord?.merchantDetails?.length" description="暂无分润明细数据" style="padding:40px 0;" />
           </n-tab-pane>
 
           <!-- Tab 3: 分账日志 + 打款凭证 -->
@@ -245,8 +236,7 @@ interface SettlementRecord {
   agentId: number
   period: string
   monthlyFlow: number
-  supplierCost: number        // 供应商成本（扣除后计算分润基数）
-  commissionAmount: number    // 应发分润 = (monthlyFlow - supplierCost) × commissionRate
+  commissionAmount: number    // 应发分润 = monthlyFlow × 分润比例
   fee: number
   feeRate: number             // 提现手续费率（如 0.005 = 0.5%）
   bankName: string
@@ -258,28 +248,28 @@ interface SettlementRecord {
   paidTime: string
   remark: string
   logs: Array<{ action: string; time: string; detail: string; type: 'info' | 'success' | 'warning' | 'error' }>
-  merchantDetails: Array<{ merchant: string; purchaseAmount: number; commission: number; fee: number }>
+  merchantDetails: Array<{ merchant: string; purchaseAmount: number }>
   voucher?: string            // 打款凭证图片(base64)
 }
 
-// Mock 数据 —— 展示新流程的各类状态（分润 = (采购额 - 供应商成本) × 分润比例）
+// Mock 数据 —— 分润 = 采购额 × 分润比例
 const payoutData = ref<SettlementRecord[]>([
   {
     // 场景1：正常单 - 系统自动提交拉卡拉
     id: 201, settlementNo: 'ST-202604-001', agentName: '广东省级总代-A', agentLevel: '省级',
-    agentId: 1, period: '2026-04', monthlyFlow: 1850000, supplierCost: 1110000,
+    agentId: 1, period: '2026-04', monthlyFlow: 1850000, supplierCost: 0,
     commissionAmount: 111000, fee: 555.0, feeRate: 0.005,
     bankName: '招商银行', cardNo: '6214838888888888888',
     status: 'auto_submitted',
     lakalaNo: 'LK202604280930001',
     submitTime: '2026-04-28 09:00', paidTime: '', remark: '',
     merchantDetails: [
-      { merchant: '恒然集团VR旗舰店', purchaseAmount: 856200, commission: 51372, fee: 256.86 },
-      { merchant: '南山科创体验中心', purchaseAmount: 534600, commission: 32076, fee: 160.38 },
-      { merchant: '利民街商家', purchaseAmount: 459200, commission: 27552, fee: 137.76 },
+      { merchant: '恒然集团VR旗舰店', purchaseAmount: 856200 },
+      { merchant: '南山科创体验中心', purchaseAmount: 534600 },
+      { merchant: '利民街商家', purchaseAmount: 459200 },
     ],
     logs: [
-      { action: '结算单生成', time: '2026-04-28 09:00', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-28 09:00', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '自动校验通过', time: '2026-04-28 09:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-04-28 09:00:03', detail: '开票+分账请求已发送 LK202604280930001', type: 'info' as const },
     ],
@@ -287,18 +277,18 @@ const payoutData = ref<SettlementRecord[]>([
   {
     // 场景2：正常单 - 拉卡拉正在分账中
     id: 202, settlementNo: 'ST-202604-002', agentName: '华东区域代理-B', agentLevel: '区域',
-    agentId: 2, period: '2026-04', monthlyFlow: 680000, supplierCost: 374000,
-    commissionAmount: 21420, fee: 128.52, feeRate: 0.006,
+    agentId: 2, period: '2026-04', monthlyFlow: 680000, supplierCost: 0,
+    commissionAmount: 20400, fee: 122.40, feeRate: 0.006,
     bankName: '工商银行', cardNo: '6222021234567890123',
     status: 'processing',
     lakalaNo: 'LK202604280931002',
     submitTime: '2026-04-27 14:30', paidTime: '', remark: '',
     merchantDetails: [
-      { merchant: '幻影星空VR体验馆', purchaseAmount: 385000, commission: 12128, fee: 72.77 },
-      { merchant: '华东展厅', purchaseAmount: 295000, commission: 9293, fee: 55.76 },
+      { merchant: '幻影星空VR体验馆', purchaseAmount: 385000 },
+      { merchant: '华东展厅', purchaseAmount: 295000 },
     ],
     logs: [
-      { action: '结算单生成', time: '2026-04-27 14:30', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-27 14:30', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '自动校验通过', time: '2026-04-27 14:30:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-04-27 14:30:02', detail: 'LK202604280931002', type: 'info' as const },
       { action: '拉卡拉受理', time: '2026-04-28 09:30', detail: '分账请求已受理，等待打款结果回调', type: 'warning' as const },
@@ -307,35 +297,35 @@ const payoutData = ref<SettlementRecord[]>([
   {
     // 场景3：正常单 - 已经到账
     id: 203, settlementNo: 'ST-202603-004', agentName: '广州城市代理-D', agentLevel: '城市',
-    agentId: 4, period: '2026-03', monthlyFlow: 45000, supplierCost: 22500,
+    agentId: 4, period: '2026-03', monthlyFlow: 45000, supplierCost: 0,
     commissionAmount: 1125, fee: 5.63, feeRate: 0.005,
     bankName: '农业银行', cardNo: '6228481234567890123',
     status: 'settled',
     lakalaNo: 'LK20260402080003',
     submitTime: '2026-04-02 08:00', paidTime: '2026-04-05 10:20', remark: '',
     logs: [
-      { action: '结算单生成', time: '2026-04-02 08:00', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-02 08:00', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '自动校验通过', time: '2026-04-02 08:00:01', detail: '自动放行', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-04-02 08:00:02', detail: 'LK20260402080003', type: 'info' as const },
       { action: '拉卡拉受理', time: '2026-04-03 09:00', detail: '分账请求已受理', type: 'warning' as const },
       { action: '分账成功', time: '2026-04-05 10:20', detail: '拉卡拉异步回调：开票成功 + 打款到账', type: 'success' as const },
     ],
     merchantDetails: [
-      { merchant: '天河城VR店', purchaseAmount: 28000, commission: 700, fee: 3.50 },
-      { merchant: '番禺体验中心', purchaseAmount: 17000, commission: 425, fee: 2.13 },
+      { merchant: '天河城VR店', purchaseAmount: 28000 },
+      { merchant: '番禺体验中心', purchaseAmount: 17000 },
     ],
   },
   {
     // 场景4：异常 - 账户未绑定
     id: 204, settlementNo: 'ST-202604-005', agentName: '成都城市代理-E', agentLevel: '城市',
-    agentId: 5, period: '2026-04', monthlyFlow: 89000, supplierCost: 53400,
+    agentId: 5, period: '2026-04', monthlyFlow: 89000, supplierCost: 0,
     commissionAmount: 1780, fee: 8.9, feeRate: 0.005,
     bankName: '-', cardNo: '-',
     status: 'exception',
     exceptionReason: '收款银行账户未绑定',
     submitTime: '2026-04-28 09:00', paidTime: '', remark: '',
     logs: [
-      { action: '结算单生成', time: '2026-04-28 09:00', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-28 09:00', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '异常拦截', time: '2026-04-28 09:00:01', detail: '收款银行账户未绑定，不符合自动分账条件', type: 'error' as const },
     ],
     merchantDetails: [],
@@ -350,7 +340,7 @@ const payoutData = ref<SettlementRecord[]>([
     exceptionReason: '本月游戏豆采购额为 ¥0，低于最低分润门槛(¥100)',
     submitTime: '2026-04-28 09:00', paidTime: '', remark: '',
     logs: [
-      { action: '结算单生成', time: '2026-04-28 09:00', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-28 09:00', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '异常拦截', time: '2026-04-28 09:00:01', detail: '采购额 ¥0，低于最低分润门槛，累积至下月', type: 'error' as const },
     ],
     merchantDetails: [],
@@ -358,7 +348,7 @@ const payoutData = ref<SettlementRecord[]>([
   {
     // 场景6：失败 - 拉卡拉返回账户异常
     id: 206, settlementNo: 'ST-202604-007', agentName: '杭州城市代理-G', agentLevel: '城市',
-    agentId: 7, period: '2026-04', monthlyFlow: 230000, supplierCost: 126500,
+    agentId: 7, period: '2026-04', monthlyFlow: 230000, supplierCost: 0,
     commissionAmount: 5175, fee: 25.88, feeRate: 0.005,
     bankName: '交通银行', cardNo: '6222581234567890123',
     status: 'failed',
@@ -366,33 +356,33 @@ const payoutData = ref<SettlementRecord[]>([
     lakalaNo: 'LK20260428100007',
     submitTime: '2026-04-28 10:00', paidTime: '', remark: '',
     logs: [
-      { action: '结算单生成', time: '2026-04-28 10:00', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-28 10:00', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '自动校验通过', time: '2026-04-28 10:00:01', detail: '自动放行', type: 'success' as const },
       { action: '已提交拉卡拉', time: '2026-04-28 10:00:02', detail: 'LK20260428100007', type: 'info' as const },
       { action: '分账失败', time: '2026-04-28 10:05', detail: '拉卡拉开票失败：收款账户名与开户名不一致(ERROR_CODE: BANK_NAME_MISMATCH)', type: 'error' as const },
     ],
     merchantDetails: [
-      { merchant: '杭州西湖体验馆', purchaseAmount: 138000, commission: 3105, fee: 15.53 },
-      { merchant: '滨江店', purchaseAmount: 92000, commission: 2070, fee: 10.35 },
+      { merchant: '杭州西湖体验馆', purchaseAmount: 138000 },
+      { merchant: '滨江店', purchaseAmount: 92000 },
     ],
   },
   {
     // 场景7：异常 - 代理商发起申诉，被临时冻结
     id: 207, settlementNo: 'ST-202604-008', agentName: '南京城市代理-H', agentLevel: '城市',
-    agentId: 8, period: '2026-04', monthlyFlow: 560000, supplierCost: 308000,
+    agentId: 8, period: '2026-04', monthlyFlow: 560000, supplierCost: 0,
     commissionAmount: 12600, fee: 63, feeRate: 0.005,
     bankName: '民生银行', cardNo: '6226221234567890123',
     status: 'exception',
     exceptionReason: '代理商已发起分润申诉，分润暂冻结，等待财务复核',
     submitTime: '2026-04-28 09:00', paidTime: '', remark: '代理商称本月有3家商家退款导致采购额虚高',
     logs: [
-      { action: '结算单生成', time: '2026-04-28 09:00', detail: '扣除供应商成本后按比例自动计算', type: 'info' as const },
+      { action: '结算单生成', time: '2026-04-28 09:00', detail: '按采购额 × 分润比例自动计算', type: 'info' as const },
       { action: '自动校验通过', time: '2026-04-28 09:00:01', detail: '账户完整 · 金额≥¥100 · 无申诉', type: 'success' as const },
       { action: '申诉冻结', time: '2026-04-28 11:30', detail: '代理商发起申诉，分润暂冻结', type: 'error' as const },
     ],
     merchantDetails: [
-      { merchant: '南京新街口店', purchaseAmount: 320000, commission: 7200, fee: 36.00 },
-      { merchant: '江宁体验馆', purchaseAmount: 240000, commission: 5400, fee: 27.00 },
+      { merchant: '南京新街口店', purchaseAmount: 320000 },
+      { merchant: '江宁体验馆', purchaseAmount: 240000 },
     ],
   },
 ])
@@ -427,9 +417,8 @@ const columns = [
   {
     title: '分润比例', key: 'shareRatio', width: 90, align: 'center',
     render: (row: any) => {
-      const base = row.monthlyFlow - row.supplierCost
-      if (base <= 0 || row.commissionAmount <= 0) return h('span', { style: 'color:#9CA3AF;' }, '-')
-      const ratio = (row.commissionAmount / base * 100).toFixed(1)
+      if (row.monthlyFlow <= 0 || row.commissionAmount <= 0) return h('span', { style: 'color:#9CA3AF;' }, '-')
+      const ratio = (row.commissionAmount / row.monthlyFlow * 100).toFixed(1)
       return h('span', { style: 'font-weight:500;color:#6366F1;' }, `${ratio}%`)
     }
   },
@@ -480,10 +469,8 @@ const columns = [
 
 // 下属商家分润明细（从 AgentSettlementManage 合并）
 const merchantDetailColumns = [
-  { title: '下属商家', key: 'merchant', width: 180 },
-  { title: '采购额(¥)', key: 'purchaseAmount', width: 120, render: (r: any) => `¥${r.purchaseAmount.toLocaleString()}` },
-  { title: '分润(¥)', key: 'commission', width: 110, render: (r: any) => h('span', { style: 'font-weight:600;color:#3B82F6;' }, `¥${r.commission.toLocaleString()}`) },
-  { title: '提现手续费(¥)', key: 'fee', width: 100, render: (r: any) => `¥${r.fee.toFixed(2)}` },
+  { title: '下属商家', key: 'merchant', width: 260 },
+  { title: '采购额(¥)', key: 'purchaseAmount', width: 140, render: (r: any) => `¥${r.purchaseAmount.toLocaleString()}` },
 ]
 
 // ========== 过滤 ==========

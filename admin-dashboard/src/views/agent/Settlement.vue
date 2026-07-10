@@ -40,7 +40,7 @@
           <n-icon :component="CheckmarkCircleOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">已到账</span>
+          <span class="label">已打款</span>
           <span class="value">¥{{ totalPaid.toLocaleString() }}</span>
         </div>
       </div>
@@ -49,7 +49,7 @@
           <n-icon :component="TimeOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">待结算</span>
+          <span class="label">待打款</span>
           <span class="value warning">¥{{ totalPending.toLocaleString() }}</span>
         </div>
       </div>
@@ -62,8 +62,7 @@
         <span>本系统通过 <strong>拉卡拉支付</strong> 自动完成分润打款，到期自动结算至绑定银行账户。</span>
         <span style="color:var(--text-muted); margin-left: 4px;">如遇状态未及时更新，可手动同步拉卡拉回调结果。</span>
         <div style="width: 100%; margin-top: 4px; color:var(--text-secondary);">
-          到账计算：<strong>分润 =（采购额 − 供应商成本）× 分润比例，实际到账 = 分润金额 − 银行手续费</strong>
-          <span style="color:#F59E0B; margin-left: 4px;">（手续费按分润金额的 0.5% 收取）</span>
+          到账计算：<strong>分润 = 充值额 × 分润比例</strong>
         </div>
       </div>
       <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
@@ -75,11 +74,7 @@
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
         <n-descriptions-item label="充值总额">{{ `¥${currentRecord.rechargeAmount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="供应商成本">{{ `¥${(currentRecord.supplierCost || 0).toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="分润基数">{{ `¥${((currentRecord.rechargeAmount - (currentRecord.supplierCost || 0))).toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="分润金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
-        <n-descriptions-item label="手续费">{{ `¥${currentRecord.fee}` }}</n-descriptions-item>
-        <n-descriptions-item label="实际到账">{{ `¥${(currentRecord.amount - currentRecord.fee).toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
             {{ currentRecord.statusText }}
@@ -100,26 +95,6 @@
         />
       </div>
 
-      <!-- 打款凭证 / 上传收款凭证 -->
-      <div style="margin-top: 20px;" v-if="currentRecord?.status === 'done' || currentRecord?.status === 'processing'">
-        <n-divider>凭证管理</n-divider>
-        <!-- 平台打款凭证（只读） -->
-        <div style="margin-bottom: 16px;">
-          <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">平台打款凭证</p>
-          <div v-if="currentRecord.voucher">
-            <n-image
-              :src="currentRecord.voucher"
-              width="200"
-              style="border-radius: 8px;"
-            />
-            <p style="margin-top: 8px; font-size: 12px; color: #999;">
-              此为平台上传的打款凭证，如有疑问请联系平台运营
-            </p>
-          </div>
-          <n-empty v-else description="暂无打款凭证" size="small" />
-        </div>
-      </div>
-
       <template #footer>
         <n-space justify="end">
           <n-button @click="showDetailModal = false">关闭</n-button>
@@ -133,7 +108,7 @@
 import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal,
-  NIcon, NDescriptions, NDescriptionsItem, NDatePicker, NImage, NEmpty, NDivider,
+  NIcon, NDescriptions, NDescriptionsItem, NDatePicker, NDivider,
   useMessage
 } from 'naive-ui'
 import {
@@ -160,7 +135,6 @@ const statusOptions = [
 const merchantDetailColumns = [
   { title: '商家名称', key: 'merchant', width: 140 },
   { title: '充值金额', key: 'rechargeAmount', width: 110, render: (row: any) => `¥${row.rechargeAmount.toLocaleString()}` },
-  { title: '供应商成本', key: 'supplierCost', width: 100, render: (row: any) => `¥${(row.supplierCost || 0).toLocaleString()}` },
   { title: '分润比例', key: 'rate', width: 80 },
   { title: '分润金额', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
 ]
@@ -170,14 +144,6 @@ const columns = [
   { title: '结算单号', key: 'no', width: 150 },
   { title: '结算周期', key: 'period', width: 140 },
   { title: '分润金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  {
-    title: '手续费',
-    key: 'fee',
-    width: 100,
-    render: (row: any) => h('span', { style: 'color:#F59E0B' }, `¥${row.fee.toFixed(2)}`),
-    sorter: (a: any, b: any) => a.fee - b.fee,
-  },
-  { title: '实际到账', key: 'actualAmount', width: 120, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString()}` },
   {
     title: '状态',
     key: 'status',
@@ -198,27 +164,25 @@ const columns = [
   },
 ]
 
-// 模拟数据 —— 分润 =（采购额 − 供应商成本）× 分润比例
+// 模拟数据 —— 分润 = 充值额 × 分润比例
 const settlementData = ref([
   {
     id: 1,
     no: 'AS2026042001',
     period: '2026-04-13 ~ 2026-04-19',
     rechargeAmount: 890300,
-    supplierCost: 489665,
-    amount: 53418,
+    amount: 127869,
     feeRate: 0.005,
-    fee: 267.09,
+    fee: 639.35,
     status: 'done',
     statusText: '已打款',
     time: '2026-04-20 14:00',
-    voucher: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280"><rect width="200" height="280" fill="#EEF2FF" rx="8"/><rect x="40" y="30" width="120" height="30" fill="#4F46E5" rx="4" opacity="0.8"/><rect x="30" y="80" width="140" height="2" fill="#C7D2FE"/><text x="100" y="100" text-anchor="middle" font-size="9" fill="#6366F1">拉卡拉电子回执</text><text x="100" y="120" text-anchor="middle" font-size="9" fill="#374151">付款方：头号空间平台</text><text x="100" y="140" text-anchor="middle" font-size="9" fill="#374151">收款方：深圳未来科技</text><text x="100" y="160" text-anchor="middle" font-size="9" fill="#374151">金额：¥53,150.91</text><text x="100" y="180" text-anchor="middle" font-size="9" fill="#374151">流水号：LK2026042001</text><text x="100" y="260" text-anchor="middle" font-size="8" fill="#9CA3AF">平台上传打款凭证</text></svg>'),
     receiptVoucher: '',
     merchantDetails: [
-      { merchant: '恒然集团', rechargeAmount: 356800, supplierCost: 196240, rate: '15%', amount: 24084 },
-      { merchant: '南山科创', rechargeAmount: 245600, supplierCost: 135080, rate: '15%', amount: 16578 },
-      { merchant: '利民街商家', rechargeAmount: 189200, supplierCost: 104060, rate: '12%', amount: 10217 },
-      { merchant: '宝安体验中心', rechargeAmount: 98700, supplierCost: 54285, rate: '15%', amount: 2539 },
+      { merchant: '恒然集团', rechargeAmount: 356800, rate: '15%', amount: 53520 },
+      { merchant: '南山科创', rechargeAmount: 245600, rate: '15%', amount: 36840 },
+      { merchant: '利民街商家', rechargeAmount: 189200, rate: '12%', amount: 22704 },
+      { merchant: '宝安体验中心', rechargeAmount: 98700, rate: '15%', amount: 14805 },
     ]
   },
   {
@@ -226,20 +190,18 @@ const settlementData = ref([
     no: 'AS2026041301',
     period: '2026-04-06 ~ 2026-04-12',
     rechargeAmount: 826700,
-    supplierCost: 454685,
-    amount: 55802,
+    amount: 118710,
     feeRate: 0.005,
-    fee: 279.01,
+    fee: 593.55,
     status: 'done',
     statusText: '已打款',
     time: '2026-04-13 14:00',
-    voucher: '',
     receiptVoucher: '',
     merchantDetails: [
-      { merchant: '恒然集团', rechargeAmount: 328400, supplierCost: 180620, rate: '15%', amount: 22167 },
-      { merchant: '南山科创', rechargeAmount: 221800, supplierCost: 121990, rate: '15%', amount: 14972 },
-      { merchant: '利民街商家', rechargeAmount: 176500, supplierCost: 97075, rate: '12%', amount: 9531 },
-      { merchant: '宝安体验中心', rechargeAmount: 100000, supplierCost: 55000, rate: '15%', amount: 9133 },
+      { merchant: '恒然集团', rechargeAmount: 328400, rate: '15%', amount: 49260 },
+      { merchant: '南山科创', rechargeAmount: 221800, rate: '15%', amount: 33270 },
+      { merchant: '利民街商家', rechargeAmount: 176500, rate: '12%', amount: 21180 },
+      { merchant: '宝安体验中心', rechargeAmount: 100000, rate: '15%', amount: 15000 },
     ]
   },
   {
@@ -247,20 +209,18 @@ const settlementData = ref([
     no: 'AS2026040601',
     period: '2026-03-30 ~ 2026-04-05',
     rechargeAmount: 796900,
-    supplierCost: 438295,
-    amount: 53791,
+    amount: 114495,
     feeRate: 0.005,
-    fee: 268.96,
+    fee: 572.48,
     status: 'pending',
     statusText: '待打款',
     time: '-',
-    voucher: '',
     receiptVoucher: '',
     merchantDetails: [
-      { merchant: '恒然集团', rechargeAmount: 298600, supplierCost: 164230, rate: '15%', amount: 20156 },
-      { merchant: '南山科创', rechargeAmount: 198300, supplierCost: 109065, rate: '15%', amount: 13385 },
-      { merchant: '利民街商家', rechargeAmount: 168000, supplierCost: 92400, rate: '12%', amount: 9072 },
-      { merchant: '宝安体验中心', rechargeAmount: 132000, supplierCost: 72600, rate: '15%', amount: 11178 },
+      { merchant: '恒然集团', rechargeAmount: 298600, rate: '15%', amount: 44790 },
+      { merchant: '南山科创', rechargeAmount: 198300, rate: '15%', amount: 29745 },
+      { merchant: '利民街商家', rechargeAmount: 168000, rate: '12%', amount: 20160 },
+      { merchant: '宝安体验中心', rechargeAmount: 132000, rate: '15%', amount: 19800 },
     ]
   },
   {
@@ -268,20 +228,18 @@ const settlementData = ref([
     no: 'AS2026033001',
     period: '2026-03-23 ~ 2026-03-29',
     rechargeAmount: 723400,
-    supplierCost: 397870,
-    amount: 40510,
+    amount: 98276,
     feeRate: 0.005,
-    fee: 202.55,
+    fee: 491.38,
     status: 'processing',
     statusText: '处理中',
     time: '-',
-    voucher: '',
     receiptVoucher: '',
     merchantDetails: [
-      { merchant: '恒然集团', rechargeAmount: 312700, supplierCost: 171985, rate: '14%', amount: 19700 },
-      { merchant: '南山科创', rechargeAmount: 210500, supplierCost: 115775, rate: '14%', amount: 13262 },
-      { merchant: '利民街商家', rechargeAmount: 150000, supplierCost: 82500, rate: '12%', amount: 8100 },
-      { merchant: '宝安体验中心', rechargeAmount: 50200, supplierCost: 27610, rate: '14%', amount: 3163 },
+      { merchant: '恒然集团', rechargeAmount: 312700, rate: '14%', amount: 43778 },
+      { merchant: '南山科创', rechargeAmount: 210500, rate: '14%', amount: 29470 },
+      { merchant: '利民街商家', rechargeAmount: 150000, rate: '12%', amount: 18000 },
+      { merchant: '宝安体验中心', rechargeAmount: 50200, rate: '14%', amount: 7028 },
     ]
   },
 ])
@@ -307,8 +265,8 @@ const filteredData = computed(() => {
 
 // 统计数据
 const totalCommission = computed(() => filteredData.value.reduce((sum, item) => sum + item.amount, 0))
-const totalPaid = computed(() => filteredData.value.filter(item => item.status === 'done').reduce((sum, item) => sum + (item.amount - item.fee), 0))
-const totalPending = computed(() => filteredData.value.filter(item => item.status === 'pending').reduce((sum, item) => sum + (item.amount - item.fee), 0))
+const totalPaid = computed(() => filteredData.value.filter(item => item.status === 'done').reduce((sum, item) => sum + item.amount, 0))
+const totalPending = computed(() => filteredData.value.filter(item => item.status === 'pending').reduce((sum, item) => sum + item.amount, 0))
 
 // 导出Excel
 function exportToExcel() {
@@ -320,8 +278,6 @@ function exportToExcel() {
         '结算单号': item.no,
         '结算周期': item.period,
         '分润金额': item.amount,
-        '手续费': item.fee,
-        '实际到账': item.amount - item.fee,
         '状态': item.statusText,
         '打款时间': item.time,
         '商家数': `${item.merchantDetails.length} 家`,
@@ -332,8 +288,6 @@ function exportToExcel() {
           '结算单号': '',
           '结算周期': '',
           '分润金额': '',
-          '手续费': '',
-          '实际到账': '',
           '状态': '',
           '打款时间': '',
           '商家数': `${m.merchant} ¥${m.amount.toLocaleString()} (${m.rate})`,
@@ -350,8 +304,6 @@ function exportToExcel() {
       { wch: 16 },  // 结算单号
       { wch: 22 },  // 结算周期
       { wch: 14 },  // 分润金额
-      { wch: 10 },  // 手续费
-      { wch: 12 },  // 实际到账
       { wch: 10 },  // 状态
       { wch: 18 },  // 打款时间
       { wch: 36 },  // 商家明细

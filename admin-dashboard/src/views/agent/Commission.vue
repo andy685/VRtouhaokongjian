@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>分润中心</h1>
-        <p class="header-desc">查看您从店铺游戏豆充值中的分润明细（按扣除供应商成本后的采购额计算）</p>
+        <p class="header-desc">查看您从店铺游戏豆充值中的分润明细（按充值额 × 分润比例计算）</p>
       </div>
       <n-space>
         <n-select v-model:value="filterYear" :options="yearOptions" size="small" style="width: 100px;" />
@@ -69,7 +69,7 @@
         <n-icon :component="InformationCircleOutline" /> 分润规则速查
       </h3>
       <n-descriptions :column="2" bordered size="small">
-        <n-descriptions-item label="分润基数">（店铺充值总额 − 供应商成本）× 分润比例</n-descriptions-item>
+        <n-descriptions-item label="分润基数">店铺充值总额 × 分润比例</n-descriptions-item>
         <n-descriptions-item label="当前级别">{{ myLevel }}代理 / 基础 {{ myBaseRate }}%</n-descriptions-item>
         <n-descriptions-item label="结算周期">T+1 月结，次月15日前打款</n-descriptions-item>
         <n-descriptions-item label="最低提现">¥100（不足累积下月）</n-descriptions-item>
@@ -104,9 +104,7 @@ type RowStatus = '已结算' | '待结算'
 const columns = [
   { title: '结算周期', key: 'period', width: 130 },
   { title: '商家名称', key: 'merchant', width: 160 },
-  { title: '游戏豆充值额', key: 'rechargeAmount', width: 130 },
-  { title: '供应商成本', key: 'supplierCost', width: 110 },
-  { title: '分润基数', key: 'commissionBase', width: 110 },
+  { title: '充值额', key: 'rechargeAmount', width: 130 },
   {
     title: '分润比例',
     key: 'rate',
@@ -128,16 +126,16 @@ const columns = [
 ]
 
 const commissionData = ref([
-  { period: '2026-04', merchant: '恒然集团', rechargeAmount: '¥356,800', supplierCost: '¥196,240', commissionBase: '¥160,560', rate: '15%', amount: '¥24,084', settleDate: '2026-05-10', status: '已结算' as RowStatus },
-  { period: '2026-04', merchant: '南山科创', rechargeAmount: '¥245,600', supplierCost: '¥135,080', commissionBase: '¥110,520', rate: '15%', amount: '¥16,578', settleDate: '2026-05-10', status: '已结算' as RowStatus },
-  { period: '2026-04', merchant: '利民街商家', rechargeAmount: '¥189,200', supplierCost: '¥104,060', commissionBase: '¥85,140', rate: '12%', amount: '¥10,217', settleDate: '-', status: '待结算' as RowStatus },
-  { period: '2026-04', merchant: '宝安体验中心', rechargeAmount: '¥98,700', supplierCost: '¥54,285', commissionBase: '¥44,415', rate: '15%', amount: '¥6,662', settleDate: '-', status: '待结算' as RowStatus },
-  { period: '2026-03', merchant: '恒然集团', rechargeAmount: '¥328,400', supplierCost: '¥180,620', commissionBase: '¥147,780', rate: '15%', amount: '¥22,167', settleDate: '2026-04-10', status: '已结算' as RowStatus },
-  { period: '2026-03', merchant: '南山科创', rechargeAmount: '¥221,800', supplierCost: '¥121,990', commissionBase: '¥99,810', rate: '15%', amount: '¥14,972', settleDate: '2026-04-10', status: '已结算' as RowStatus },
-  { period: '2026-03', merchant: '利民街商家', rechargeAmount: '¥176,500', supplierCost: '¥97,075', commissionBase: '¥79,425', rate: '12%', amount: '¥9,531', settleDate: '2026-04-10', status: '已结算' as RowStatus },
-  { period: '2026-02', merchant: '恒然集团', rechargeAmount: '¥298,600', supplierCost: '¥164,230', commissionBase: '¥134,370', rate: '15%', amount: '¥20,156', settleDate: '2026-03-10', status: '已结算' as RowStatus },
-  { period: '2026-02', merchant: '南山科创', rechargeAmount: '¥198,300', supplierCost: '¥109,065', commissionBase: '¥89,235', rate: '15%', amount: '¥13,385', settleDate: '2026-03-10', status: '已结算' as RowStatus },
-  { period: '2026-01', merchant: '恒然集团', rechargeAmount: '¥312,700', supplierCost: '¥171,985', commissionBase: '¥140,715', rate: '15%', amount: '¥21,107', settleDate: '2026-02-10', status: '已结算' as RowStatus },
+  { period: '2026-04', merchant: '恒然集团', rechargeAmount: '¥356,800', rate: '15%', amount: '¥53,520', settleDate: '2026-05-10', status: '已结算' as RowStatus },
+  { period: '2026-04', merchant: '南山科创', rechargeAmount: '¥245,600', rate: '15%', amount: '¥36,840', settleDate: '2026-05-10', status: '已结算' as RowStatus },
+  { period: '2026-04', merchant: '利民街商家', rechargeAmount: '¥189,200', rate: '12%', amount: '¥22,704', settleDate: '-', status: '待结算' as RowStatus },
+  { period: '2026-04', merchant: '宝安体验中心', rechargeAmount: '¥98,700', rate: '15%', amount: '¥14,805', settleDate: '-', status: '待结算' as RowStatus },
+  { period: '2026-03', merchant: '恒然集团', rechargeAmount: '¥328,400', rate: '15%', amount: '¥49,260', settleDate: '2026-04-10', status: '已结算' as RowStatus },
+  { period: '2026-03', merchant: '南山科创', rechargeAmount: '¥221,800', rate: '15%', amount: '¥33,270', settleDate: '2026-04-10', status: '已结算' as RowStatus },
+  { period: '2026-03', merchant: '利民街商家', rechargeAmount: '¥176,500', rate: '12%', amount: '¥21,180', settleDate: '2026-04-10', status: '已结算' as RowStatus },
+  { period: '2026-02', merchant: '恒然集团', rechargeAmount: '¥298,600', rate: '15%', amount: '¥44,790', settleDate: '2026-03-10', status: '已结算' as RowStatus },
+  { period: '2026-02', merchant: '南山科创', rechargeAmount: '¥198,300', rate: '15%', amount: '¥29,745', settleDate: '2026-03-10', status: '已结算' as RowStatus },
+  { period: '2026-01', merchant: '恒然集团', rechargeAmount: '¥312,700', rate: '15%', amount: '¥46,905', settleDate: '2026-02-10', status: '已结算' as RowStatus },
 ])
 
 const pagination = { pageSize: 10 }

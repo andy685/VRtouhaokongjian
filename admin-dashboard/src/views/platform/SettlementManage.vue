@@ -128,8 +128,8 @@
               </n-descriptions-item>
               <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
               <n-descriptions-item label="收款账号">{{ currentRecord.cardNo ? maskCardNo(currentRecord.cardNo) : '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
+              <n-descriptions-item label="打款时间">{{ currentRecord.time || '-' }}</n-descriptions-item>
               <n-descriptions-item label="创建时间">{{ currentRecord.createTime }}</n-descriptions-item>
-              <n-descriptions-item label="到账时间">{{ currentRecord.time !== '-' ? currentRecord.time : '-' }}</n-descriptions-item>
             </n-descriptions>
           </n-tab-pane>
 
@@ -394,9 +394,8 @@ const columns = [
 
 // 店铺明细表格列
 const storeDetailColumns = [
-  { title: '店铺名称', key: 'store', width: 180 },
-  { title: '结算额(¥)', key: 'amount', width: 120, render: (r: any) => `¥${r.amount.toLocaleString()}` },
-  { title: '提现手续费(¥)', key: 'fee', width: 110, render: (r: any) => `¥${r.fee.toFixed(2)}` },
+  { title: '店铺名称', key: 'store', width: 280 },
+  { title: '结算额(¥)', key: 'amount', width: 140, render: (r: any) => `¥${r.amount.toLocaleString()}` },
 ]
 
 // ========== 过滤 ==========
