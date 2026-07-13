@@ -4,11 +4,12 @@
 
     <n-tabs type="line" animated>
       <n-tab-pane name="hosts" tab="🖥️ 主机统计">
-        <div class="metrics-grid">
-          <div class="metric-card"><div class="metric-label">主机总数</div><div class="metric-value">{{ hostSummary.total }}</div><div class="metric-sub">在线 {{ hostSummary.online }} / 离线 {{ hostSummary.offline }}</div></div>
-          <div class="metric-card"><div class="metric-label">今日核销次数</div><div class="metric-value" style="color:#6366f1">{{ hostSummary.dailyVerifyCount }}</div></div>
-          <div class="metric-card"><div class="metric-label">今日核销金额</div><div class="metric-value" style="color:#10B981">¥{{ hostSummary.dailyAmount.toLocaleString() }}</div></div>
-          <div class="metric-card"><div class="metric-label">平均在线率</div><div class="metric-value" :style="{color:hostSummary.avgRate>=90?'#10B981':'#F59E0B'}">{{ hostSummary.avgRate }}%</div><div class="metric-sub">故障主机 {{ hostSummary.fault }}</div></div>
+        <div class="metrics-grid metrics-grid-5">
+          <div class="metric-card"><div class="metric-label">主机总数</div><div class="metric-value">{{ hostSummary.total }}</div></div>
+          <div class="metric-card"><div class="metric-label">在线总数</div><div class="metric-value" style="color:#10B981">{{ hostSummary.online }}</div></div>
+          <div class="metric-card"><div class="metric-label">离线总数</div><div class="metric-value" style="color:#94A3B8">{{ hostSummary.offline }}</div></div>
+          <div class="metric-card"><div class="metric-label">故障总数</div><div class="metric-value" :style="{color:hostSummary.fault>0?'#F59E0B':'#10B981'}">{{ hostSummary.fault }}</div></div>
+          <div class="metric-card"><div class="metric-label">在线率</div><div class="metric-value" :style="{color:hostSummary.onlineRate>=85?'#10B981':'#F59E0B'}">{{ hostSummary.onlineRate }}%</div><div class="metric-sub">在线总数 / 主机总数</div></div>
         </div>
         <div class="filter-bar">
           <n-select v-model:value="hostFilterStore" :options="hostStoreOpts" placeholder="全部店铺" style="width:150px;" clearable size="small" />
@@ -20,11 +21,12 @@
       </n-tab-pane>
 
       <n-tab-pane name="headsets" tab="🥽 头显统计">
-        <div class="metrics-grid">
-          <div class="metric-card"><div class="metric-label">头显总数</div><div class="metric-value">{{ hsSummary.total }}</div><div class="metric-sub">在线 {{ hsSummary.online }} / 使用中 {{ hsSummary.inUse }}</div></div>
-          <div class="metric-card"><div class="metric-label">在线率</div><div class="metric-value" :style="{color:hsSummary.rate>=85?'#10B981':'#F59E0B'}">{{ hsSummary.rate }}%</div></div>
-          <div class="metric-card"><div class="metric-label">低电量预警</div><div class="metric-value" :style="{color:hsSummary.lowBattery>0?'#EF4444':'#10B981'}">{{ hsSummary.lowBattery }} 台</div></div>
-          <div class="metric-card"><div class="metric-label">绑定率</div><div class="metric-value" style="color:#6366f1">{{ hsSummary.boundRate }}%</div></div>
+        <div class="metrics-grid metrics-grid-5">
+          <div class="metric-card"><div class="metric-label">头显总数</div><div class="metric-value">{{ hsSummary.total }}</div></div>
+          <div class="metric-card"><div class="metric-label">在线总数</div><div class="metric-value" style="color:#10B981">{{ hsSummary.online }}</div></div>
+          <div class="metric-card"><div class="metric-label">离线总数</div><div class="metric-value" style="color:#94A3B8">{{ hsSummary.offline }}</div></div>
+          <div class="metric-card"><div class="metric-label">故障总数</div><div class="metric-value" :style="{color:hsSummary.fault>0?'#F59E0B':'#10B981'}">{{ hsSummary.fault }}</div></div>
+          <div class="metric-card"><div class="metric-label">在线率</div><div class="metric-value" :style="{color:hsSummary.onlineRate>=85?'#10B981':'#F59E0B'}">{{ hsSummary.onlineRate }}%</div><div class="metric-sub">在线总数 / 头显总数</div></div>
         </div>
         <div class="filter-bar">
           <n-select v-model:value="hsFilterStore" :options="hsStoreOpts" placeholder="全部店铺" style="width:150px;" clearable size="small" />
@@ -45,19 +47,17 @@ import { NDataTable, NTag, NSelect, NInput, NTabs, NTabPane, NTooltip } from 'na
 
 // ─── 主机 ──────────────────────────────────────────
 const hostData = ref([
-  { name: '主机 #01', serial: 'PCT-001', store: '利民街小展厅', status: 'online', bound: 2, uptime: '7d 12h', lastHb: '2026-05-08 09:30:00', dailyVerifyCount: 42, dailyAmount: 5960, playHours: 28.6, onlineRate: 96, exceptionCount: 1, faultCount: 0, topContent: '阿拉丁历险记4K高清版' },
-  { name: '主机 #02', serial: 'PCT-002', store: '利民街小展厅', status: 'online', bound: 1, uptime: '3d 05h', lastHb: '2026-05-08 09:29:45', dailyVerifyCount: 31, dailyAmount: 4280, playHours: 19.4, onlineRate: 91, exceptionCount: 2, faultCount: 0, topContent: '勇闯恐龙谷' },
-  { name: '主机 #03', serial: 'PCT-003', store: '利民街大展厅', status: 'offline', bound: 0, uptime: '--', lastHb: '2026-05-07 18:00:00', dailyVerifyCount: 0, dailyAmount: 0, playHours: 0, onlineRate: 0, exceptionCount: 0, faultCount: 1, topContent: '--' },
-  { name: '主机 #04', serial: 'PCT-004', store: '卓远萝岗区店', status: 'online', bound: 2, uptime: '10d 03h', lastHb: '2026-05-08 09:28:20', dailyVerifyCount: 26, dailyAmount: 3260, playHours: 18.2, onlineRate: 94, exceptionCount: 1, faultCount: 0, topContent: '节奏光剑' },
+  { name: '主机 #01', serial: 'PCT-001', store: '利民街小展厅', status: 'online', bound: 2, totalRunHours: 186.5, todayRunHours: 12.3, totalPlayHours: 428.6, todayPlayHours: 28.6, uptime: '7d 12h', lastHb: '2026-05-08 09:30:00', dailyVerifyCount: 42, dailyAmount: 5960, exceptionCount: 1, faultCount: 0, topContent: '阿拉丁历险记4K高清版' },
+  { name: '主机 #02', serial: 'PCT-002', store: '利民街小展厅', status: 'online', bound: 1, totalRunHours: 77.2, todayRunHours: 9.8, totalPlayHours: 286.4, todayPlayHours: 19.4, uptime: '3d 05h', lastHb: '2026-05-08 09:29:45', dailyVerifyCount: 31, dailyAmount: 4280, exceptionCount: 2, faultCount: 0, topContent: '勇闯恐龙谷' },
+  { name: '主机 #03', serial: 'PCT-003', store: '利民街大展厅', status: 'offline', bound: 0, totalRunHours: 0, todayRunHours: 0, totalPlayHours: 0, todayPlayHours: 0, uptime: '--', lastHb: '2026-05-07 18:00:00', dailyVerifyCount: 0, dailyAmount: 0, exceptionCount: 0, faultCount: 1, topContent: '--' },
+  { name: '主机 #04', serial: 'PCT-004', store: '卓远萝岗区店', status: 'online', bound: 2, totalRunHours: 243.8, todayRunHours: 11.6, totalPlayHours: 318.2, todayPlayHours: 18.2, uptime: '10d 03h', lastHb: '2026-05-08 09:28:20', dailyVerifyCount: 26, dailyAmount: 3260, exceptionCount: 1, faultCount: 0, topContent: '节奏光剑' },
 ])
 const hostFilterStore = ref<string | null>(null); const hostKeyword = ref('')
 const hostStoreOpts = computed(() => [...new Set(hostData.value.map(d => d.store))].filter(Boolean).map(s => ({ label: s, value: s })))
 const hostSummary = computed(() => {
   const all = hostData.value; const total = all.length; const online = all.filter(d => d.status === 'online').length; const offline = all.filter(d => d.status === 'offline').length; const fault = all.filter(d => d.status === 'fault').length
-  const dailyVerifyCount = all.reduce((s, d) => s + d.dailyVerifyCount, 0)
-  const dailyAmount = all.reduce((s, d) => s + d.dailyAmount, 0)
-  const avgRate = total ? Math.round(all.reduce((s, d) => s + d.onlineRate, 0) / total) : 0
-  return { total, online, offline, fault, avgRate, dailyVerifyCount, dailyAmount }
+  const onlineRate = total ? Math.round(online / total * 100) : 0
+  return { total, online, offline, fault, onlineRate }
 })
 const filteredHostData = computed(() => {
   let d = hostData.value
@@ -74,10 +74,11 @@ const columnTip = (label: string, tip: string) => h(NTooltip, { trigger: 'hover'
 const hostColumns = [
   { title: '主机名称', key: 'name', minWidth: 100 }, { title: '编号', key: 'serial', width: 100 }, { title: '门店', key: 'store', minWidth: 120 },
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: any) => statusRender(row.status) },
-  { title: '今日核销', key: 'dailyVerifyCount', width: 90, align:'center' as const },
-  { title: '核销金额', key: 'dailyAmount', width: 100, align:'center' as const, render: (row: any) => `¥${row.dailyAmount.toLocaleString()}` },
-  { title: () => columnTip('体验时长', '统计周期内用户实际游玩 Session 累计时长，用于商家查看主机使用效率。'), key: 'playHours', width: 90, align:'center' as const, render: (row: any) => `${row.playHours}h` },
-  { title: () => columnTip('在线率', '统计周期内主机在线时长 / 门店营业时长或应在线时长。'), key: 'onlineRate', width: 80, align:'center' as const, render: (row: any) => `${row.onlineRate}%` },
+  { title: '今日核销次数', key: 'dailyVerifyCount', width: 100, align:'center' as const },
+  { title: () => columnTip('总运行时长', '设备累计运行时长，用于查看设备生命周期使用情况。'), key: 'totalRunHours', width: 100, align:'center' as const, render: (row: any) => `${row.totalRunHours}h` },
+  { title: () => columnTip('今日运行时长', '设备今日运行时长，用于查看当天在线与开机情况。'), key: 'todayRunHours', width: 100, align:'center' as const, render: (row: any) => `${row.todayRunHours}h` },
+  { title: () => columnTip('总体验时长', '玩家在该设备上的累计体验时长。'), key: 'totalPlayHours', width: 100, align:'center' as const, render: (row: any) => `${row.totalPlayHours}h` },
+  { title: () => columnTip('今日体验时长', '玩家今日在该设备上的累计体验时长。'), key: 'todayPlayHours', width: 100, align:'center' as const, render: (row: any) => `${row.todayPlayHours}h` },
   { title: '异常', key: 'exceptionCount', width: 70, align:'center' as const },
   { title: '故障', key: 'faultCount', width: 70, align:'center' as const },
   { title: 'Top内容', key: 'topContent', minWidth: 130 },
@@ -88,18 +89,18 @@ const hostColumns = [
 
 // ─── 头显 ──────────────────────────────────────────
 const hsData = ref([
-  { name: 'Pico 4 Pro #01', sn: 'SN100001A', store: '利民街小展厅', model: 'Pico 4 Pro', status: 'idle', battery: 85, bound: '主机 #01', lastHb: '2026-05-08 09:28:10' },
-  { name: 'Pico 4 Pro #02', sn: 'SN100002B', store: '利民街小展厅', model: 'Pico 4 Pro', status: 'in_use', battery: 65, bound: '主机 #01', lastHb: '2026-05-08 09:29:50' },
-  { name: 'Pico 4 #01', sn: 'SN100003C', store: '利民街大展厅', model: 'Pico 4', status: 'offline', battery: 0, bound: '--', lastHb: '2026-05-07 18:00:00' },
-  { name: 'Meta Quest 3 #01', sn: 'SN200001A', store: '卓远萝岗区店', model: 'Meta Quest 3', status: 'idle', battery: 30, bound: '主机 #04', lastHb: '2026-05-08 08:50:00' },
-  { name: 'Pico 4 #02', sn: 'SN100004D', store: '卓远萝岗区店', model: 'Pico 4', status: 'charging', battery: 72, bound: '--', lastHb: '2026-05-08 09:28:15' },
+  { name: 'Pico 4 Pro #01', sn: 'SN100001A', store: '利民街小展厅', model: 'Pico 4 Pro', status: 'idle', battery: 85, totalRunHours: 152.6, todayRunHours: 10.4, totalPlayHours: 236.8, todayPlayHours: 16.2, bound: '主机 #01', lastHb: '2026-05-08 09:28:10' },
+  { name: 'Pico 4 Pro #02', sn: 'SN100002B', store: '利民街小展厅', model: 'Pico 4 Pro', status: 'in_use', battery: 65, totalRunHours: 168.1, todayRunHours: 11.2, totalPlayHours: 254.3, todayPlayHours: 17.8, bound: '主机 #01', lastHb: '2026-05-08 09:29:50' },
+  { name: 'Pico 4 #01', sn: 'SN100003C', store: '利民街大展厅', model: 'Pico 4', status: 'offline', battery: 0, totalRunHours: 0, todayRunHours: 0, totalPlayHours: 0, todayPlayHours: 0, bound: '--', lastHb: '2026-05-07 18:00:00' },
+  { name: 'Meta Quest 3 #01', sn: 'SN200001A', store: '卓远萝岗区店', model: 'Meta Quest 3', status: 'idle', battery: 30, totalRunHours: 96.4, todayRunHours: 8.1, totalPlayHours: 142.7, todayPlayHours: 9.5, bound: '主机 #04', lastHb: '2026-05-08 08:50:00' },
+  { name: 'Pico 4 #02', sn: 'SN100004D', store: '卓远萝岗区店', model: 'Pico 4', status: 'charging', battery: 72, totalRunHours: 82.5, todayRunHours: 6.3, totalPlayHours: 118.4, todayPlayHours: 7.2, bound: '--', lastHb: '2026-05-08 09:28:15' },
 ])
 const hsFilterStore = ref<string | null>(null); const hsFilterStatus = ref<string | null>(null); const hsKeyword = ref('')
 const hsStatusOpts = [{ label: '空闲', value: 'idle' }, { label: '使用中', value: 'in_use' }, { label: '充电', value: 'charging' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
 const hsStoreOpts = computed(() => [...new Set(hsData.value.map(d => d.store))].filter(Boolean).map(s => ({ label: s, value: s })))
 const hsSummary = computed(() => {
-  const all = hsData.value; const total = all.length; const online = all.filter(d => d.status !== 'offline').length; const inUse = all.filter(d => d.status === 'in_use').length; const lowBattery = all.filter(d => d.battery > 0 && d.battery < 30).length; const bound = all.filter(d => d.bound !== '--').length
-  return { total, online, inUse, rate: total ? Math.round(online / total * 100) : 0, lowBattery, boundRate: total ? Math.round(bound / total * 100) : 0 }
+  const all = hsData.value; const total = all.length; const online = all.filter(d => d.status !== 'offline' && d.status !== 'fault').length; const offline = all.filter(d => d.status === 'offline').length; const fault = all.filter(d => d.status === 'fault').length
+  return { total, online, offline, fault, onlineRate: total ? Math.round(online / total * 100) : 0 }
 })
 const filteredHsData = computed(() => {
   let d = hsData.value
@@ -108,10 +109,14 @@ const filteredHsData = computed(() => {
   if (hsKeyword.value) { const kw = hsKeyword.value.toLowerCase(); d = d.filter(i => i.name.includes(kw) || i.sn.includes(kw)) }
   return d
 })
-const hsStatusRender = (s: string) => { const m: Record<string,any> = { idle:{type:'info',label:'空闲'}, in_use:{type:'success',label:'使用中'}, charging:{type:'warning',label:'充电'}, offline:{type:'default',label:'离线'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
+const hsStatusRender = (s: string) => { const m: Record<string,any> = { idle:{type:'info',label:'空闲'}, in_use:{type:'success',label:'使用中'}, charging:{type:'warning',label:'充电'}, offline:{type:'default',label:'离线'}, fault:{type:'error',label:'故障'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
 const hsColumns = [
   { title: '头显名称', key: 'name', minWidth: 130 }, { title: 'SN 码', key: 'sn', width: 100 }, { title: '门店', key: 'store', minWidth: 110 },
   { title: '型号', key: 'model', width: 100 }, { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: any) => hsStatusRender(row.status) },
+  { title: () => columnTip('总运行时长', '头显累计在线或可用时长。'), key: 'totalRunHours', width: 100, align:'center' as const, render: (row: any) => `${row.totalRunHours}h` },
+  { title: () => columnTip('今日运行时长', '头显今日在线或可用时长。'), key: 'todayRunHours', width: 100, align:'center' as const, render: (row: any) => `${row.todayRunHours}h` },
+  { title: () => columnTip('总体验时长', '玩家在该头显上的累计体验时长。'), key: 'totalPlayHours', width: 100, align:'center' as const, render: (row: any) => `${row.totalPlayHours}h` },
+  { title: () => columnTip('今日体验时长', '玩家今日在该头显上的累计体验时长。'), key: 'todayPlayHours', width: 100, align:'center' as const, render: (row: any) => `${row.todayPlayHours}h` },
   { title: '电量', key: 'battery', width: 60, align:'center' as const, render: (row: any) => row.battery ? h('span', { style: `color:${row.battery>50?'#10B981':row.battery>20?'#F59E0B':'#EF4444'};font-weight:600` }, `${row.battery}%`) : '--' },
   { title: '绑定主机', key: 'bound', width: 90, align:'center' as const },
   { title: '最后心跳', key: 'lastHb', minWidth: 150 },
@@ -123,6 +128,7 @@ const hsColumns = [
 .page-header { margin-bottom: 20px; }
 .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
 .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.metrics-grid-5 { grid-template-columns: repeat(5, 1fr); }
 .metric-card { background: white; border-radius: 12px; padding: 16px 20px; border: 1px solid var(--border-color); }
 .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
 .metric-value { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-primary); }

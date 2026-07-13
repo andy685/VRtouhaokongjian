@@ -39,9 +39,23 @@
         <n-form-item label="订单号">
           <n-input v-model:value="filterOrderNo" placeholder="输入订单号..." />
         </n-form-item>
+        <template v-if="currentType === '收银订单'">
+          <n-form-item label="会员">
+            <n-input v-model:value="filterCashierMember" placeholder="手机号/昵称/会员ID" clearable />
+          </n-form-item>
+          <n-form-item label="复玩">
+            <n-select v-model:value="filterCashierRepurchase" :options="repurchaseOptions" placeholder="全部" clearable />
+          </n-form-item>
+        </template>
         <template v-if="currentType === '点播系统订单'">
           <n-form-item label="设备">
             <n-input v-model:value="filterVodDevice" placeholder="输入设备名称..." clearable />
+          </n-form-item>
+          <n-form-item label="会员">
+            <n-input v-model:value="filterVodMember" placeholder="手机号/昵称/会员ID" clearable />
+          </n-form-item>
+          <n-form-item label="复玩">
+            <n-select v-model:value="filterVodRepurchase" :options="vodRepurchaseOptions" placeholder="全部" clearable />
           </n-form-item>
           <n-form-item label="异常">
             <n-select v-model:value="filterVodException" :options="vodExceptionOptions" placeholder="全部异常状态" clearable />
@@ -75,6 +89,13 @@
             <n-descriptions-item label="交易时间">{{ detailRow.time }}</n-descriptions-item>
             <n-descriptions-item label="操作人">{{ detailRow.operator }}</n-descriptions-item>
             <n-descriptions-item label="来源">{{ detailRow.source || '收银系统' }}</n-descriptions-item>
+            <n-descriptions-item label="会员">{{ detailRow.cashierMember || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="复玩标识">
+              <n-tag v-if="detailRow.cashierRepurchase" :type="detailRow.cashierRepurchase === '复玩' ? 'success' : 'info'" size="small" bordered>
+                {{ detailRow.cashierRepurchase }}
+              </n-tag>
+              <span v-else>--</span>
+            </n-descriptions-item>
             <n-descriptions-item label="备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
           </n-descriptions>
           <div class="detail-section">
@@ -99,6 +120,13 @@
             <n-descriptions-item label="交易时间">{{ detailRow.time }}</n-descriptions-item>
             <n-descriptions-item label="操作人">{{ detailRow.operator || '--' }}</n-descriptions-item>
             <n-descriptions-item label="来源">{{ detailRow.source || '点播系统' }}</n-descriptions-item>
+            <n-descriptions-item label="会员">{{ detailRow.vodMember || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="复玩标识">
+              <n-tag v-if="detailRow.vodRepurchase" :type="detailRow.vodRepurchase === '复玩' ? 'success' : 'info'" size="small" bordered>
+                {{ detailRow.vodRepurchase }}
+              </n-tag>
+              <span v-else>--</span>
+            </n-descriptions-item>
             <n-descriptions-item label="设备">{{ detailRow.vodDevice || '--' }}</n-descriptions-item>
             <n-descriptions-item label="设备类型">{{ detailRow.vodDeviceType || '--' }}</n-descriptions-item>
             <n-descriptions-item label="核销方式">{{ detailRow.vodVerifyMode || '--' }}</n-descriptions-item>
@@ -277,7 +305,11 @@ const filterMerchant = ref<number | null>(null)
 const filterStore = ref<number | null>(null)
 const filterOrderNo = ref('')
 const filterDateRange = ref<[number, number] | null>(null)
+const filterCashierMember = ref('')
+const filterCashierRepurchase = ref<string | null>(null)
 const filterVodDevice = ref('')
+const filterVodMember = ref('')
+const filterVodRepurchase = ref<string | null>(null)
 const filterVodException = ref<string | null>(null)
 
 const merchantOptions = [
@@ -300,6 +332,18 @@ const vodExceptionOptions = [
   { label: '正常', value: '正常' },
   { label: '异常', value: '异常' },
 ]
+
+const repurchaseOptions = [
+  { label: '首玩', value: '首玩' },
+  { label: '复玩', value: '复玩' },
+]
+
+const vodRepurchaseOptions = repurchaseOptions
+
+const renderRepurchaseTag = (value?: string) => {
+  if (!value) return h('span', { style: 'color:#94a3b8;' }, '--')
+  return h(NTag, { type: value === '复玩' ? 'success' : 'info', size: 'small', bordered: false }, { default: () => value })
+}
 
 interface PaymentItem {
   method: string
@@ -350,17 +394,17 @@ const cashierItemColumns: DataTableColumns = [
 // ===== Mock 数据 =====
 const allData = ref([
   // === 收银订单 ===
-  { id: 1, orderNo: 'CO202309160001', merchant: '恒然集团', store: '恒然分部展厅', type: '收银订单', amount: 128.00, paymentContent: '微信支付:128.00', time: '2023-09-16 16:25:10', status: '已完成', operator: '王建国', settled: false, source: '收银系统', remark: '', orderItems: [{ name: 'VR体验', price: '¥98.00', quantity: 1, subtotal: '¥98.00' }, { name: '饮料', price: '¥15.00', quantity: 2, subtotal: '¥30.00' }] },
-  { id: 3, orderNo: 'CO202309160005', merchant: '华东展厅', store: '华东展厅', type: '收银订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2023-09-16 16:05:18', status: '已完成', operator: '张运营', settled: true, source: '收银系统', remark: '', orderItems: [{ name: '单次体验', price: '¥88.00', quantity: 1, subtotal: '¥88.00' }] },
-  { id: 0, orderNo: 'MX202605070001', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 10:30:00', status: '已完成', operator: '李小红', settled: false, source: '小程序', remark: '会员95折', orderItems: [{ name: '过山车VR', price: '¥36.10', quantity: 1, subtotal: '¥36.10' }] },
-  { id: 20, orderNo: 'CO20260415020', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '收银订单', amount: 298.00, paymentContent: '支付宝:298.00', time: '2026-04-15 14:22:00', status: '已完成', operator: '赵前台', settled: true, source: '收银系统', remark: '会员日活动', orderItems: [{ name: '亲子套票', price: '¥298.00', quantity: 1, subtotal: '¥298.00' }] },
+  { id: 1, orderNo: 'CO202309160001', merchant: '恒然集团', store: '恒然分部展厅', type: '收银订单', amount: 128.00, paymentContent: '微信支付:128.00', time: '2023-09-16 16:25:10', status: '已完成', operator: '王建国', settled: false, source: '收银系统', cashierMember: '张小明(138****1234)', cashierRepurchase: '复玩', remark: '', orderItems: [{ name: 'VR体验', price: '¥98.00', quantity: 1, subtotal: '¥98.00' }, { name: '饮料', price: '¥15.00', quantity: 2, subtotal: '¥30.00' }] },
+  { id: 3, orderNo: 'CO202309160005', merchant: '华东展厅', store: '华东展厅', type: '收银订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2023-09-16 16:05:18', status: '已完成', operator: '张运营', settled: true, source: '收银系统', cashierMember: '散客', cashierRepurchase: '', remark: '', orderItems: [{ name: '单次体验', price: '¥88.00', quantity: 1, subtotal: '¥88.00' }] },
+  { id: 0, orderNo: 'MX202605070001', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 10:30:00', status: '已完成', operator: '李小红', settled: false, source: '小程序', cashierMember: '王五(136****9012)', cashierRepurchase: '复玩', remark: '会员95折', orderItems: [{ name: '过山车VR', price: '¥36.10', quantity: 1, subtotal: '¥36.10' }] },
+  { id: 20, orderNo: 'CO20260415020', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '收银订单', amount: 298.00, paymentContent: '支付宝:298.00', time: '2026-04-15 14:22:00', status: '已完成', operator: '赵前台', settled: true, source: '收银系统', cashierMember: '李四(139****5678)', cashierRepurchase: '首玩', remark: '会员日活动', orderItems: [{ name: '亲子套票', price: '¥298.00', quantity: 1, subtotal: '¥298.00' }] },
   // === 点播系统订单 ===
-  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45.00, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑机甲22版', vodDeviceType: 'VR设备', vodVerifyMode: '会员码反扫', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '10分钟' },
-  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30.00, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '', vodName: '恐怖医院', vodDevice: '幻影飞碟', vodDeviceType: 'VR设备', vodVerifyMode: '小程序主动扫码', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '15分钟' },
-  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑战场[主控端]', vodDeviceType: '主机串流', vodVerifyMode: '店员扫码点播', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '12分钟' },
-  { id: 24, orderNo: 'OD202604230018', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 68.00, paymentContent: '微信支付:68.00', time: '2026-04-23 15:42:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '已记录异常，待门店复核是否补开局', vodName: '急速森林(飞碟)', vodDevice: '幻影飞碟', vodDeviceType: 'VR设备', vodVerifyMode: '小程序主动扫码', vodEndReason: '未开局', vodExceptionStatus: '异常', vodExceptionType: '支付成功未开局', vodDuration: '0分钟' },
-  { id: 25, orderNo: 'OD202604230033', merchant: '卓远科技', store: '卓远萧山区店', type: '点播系统订单', amount: 78.00, paymentContent: '会员余额:78.00', time: '2026-04-23 16:40:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '玩家中途退出，按规则不退款', vodName: '极限滑雪', vodDevice: 'Pico 4 Pro #03', vodDeviceType: 'VR头显', vodVerifyMode: '会员码反扫', vodEndReason: '中途退出不退款', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '6分钟' },
-  { id: 26, orderNo: 'OD202604230041', merchant: '恒然集团', store: '恒然科技园店', type: '点播系统订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2026-04-23 18:20:00', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '员工现场人工强停', vodName: '星际探险', vodDevice: 'Pico 4 Pro #01', vodDeviceType: 'VR头显', vodVerifyMode: '店员扫码点播', vodEndReason: '人工强停', vodExceptionStatus: '异常', vodExceptionType: '人工强停', vodDuration: '8分钟' },
+  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45.00, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodMember: '张小明(138****1234)', vodRepurchase: '复玩', vodDevice: '暗黑机甲22版', vodDeviceType: 'VR设备', vodVerifyMode: '会员码反扫', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '10分钟' },
+  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30.00, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '', vodName: '恐怖医院', vodMember: '李四(139****5678)', vodRepurchase: '首玩', vodDevice: '幻影飞碟', vodDeviceType: 'VR设备', vodVerifyMode: '小程序主动扫码', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '15分钟' },
+  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodMember: '王五(136****9012)', vodRepurchase: '复玩', vodDevice: '暗黑战场[主控端]', vodDeviceType: '主机串流', vodVerifyMode: '店员扫码点播', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '12分钟' },
+  { id: 24, orderNo: 'OD202604230018', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 68.00, paymentContent: '微信支付:68.00', time: '2026-04-23 15:42:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '已记录异常，待门店复核是否补开局', vodName: '急速森林(飞碟)', vodMember: '散客', vodRepurchase: '', vodDevice: '幻影飞碟', vodDeviceType: 'VR设备', vodVerifyMode: '小程序主动扫码', vodEndReason: '未开局', vodExceptionStatus: '异常', vodExceptionType: '支付成功未开局', vodDuration: '0分钟' },
+  { id: 25, orderNo: 'OD202604230033', merchant: '卓远科技', store: '卓远萧山区店', type: '点播系统订单', amount: 78.00, paymentContent: '会员余额:78.00', time: '2026-04-23 16:40:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '玩家中途退出，按规则不退款', vodName: '极限滑雪', vodMember: '赵六(137****7788)', vodRepurchase: '复玩', vodDevice: 'Pico 4 Pro #03', vodDeviceType: 'VR头显', vodVerifyMode: '会员码反扫', vodEndReason: '中途退出不退款', vodExceptionStatus: '正常', vodExceptionType: '', vodDuration: '6分钟' },
+  { id: 26, orderNo: 'OD202604230041', merchant: '恒然集团', store: '恒然科技园店', type: '点播系统订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2026-04-23 18:20:00', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '员工现场人工强停', vodName: '星际探险', vodMember: '员工点播', vodRepurchase: '', vodDevice: 'Pico 4 Pro #01', vodDeviceType: 'VR头显', vodVerifyMode: '店员扫码点播', vodEndReason: '人工强停', vodExceptionStatus: '异常', vodExceptionType: '人工强停', vodDuration: '8分钟' },
   // === 手动扣费订单 ===
   { id: 6, orderNo: 'MD202309160006', merchant: '恒然集团', store: '恒然分部展厅', type: '手动扣费订单', amount: 20.00, paymentContent: '现金:20.00', time: '2023-09-16 15:55:30', status: '已完成', operator: '店员A', reason: '设备损耗扣费' },
   { id: 7, orderNo: 'MD202309160008', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '手动扣费订单', amount: 15.00, paymentContent: '余额:15.00', time: '2023-09-16 15:40:12', status: '已完成', operator: '店员B', reason: '超时扣费' },
@@ -406,12 +450,24 @@ const baseColumns: DataTableColumns = [
 // 各类型特有的业务列
 const typeExtraCols: Record<string, DataTableColumns> = {
   '收银订单': [
-    { title: '商品清单', key: 'items', minWidth: 180 },
+    {
+      title: '商品清单',
+      key: 'orderItems',
+      minWidth: 180,
+      render: (row: any) => {
+        if (!row.orderItems?.length) return '--'
+        return row.orderItems.map((item: any) => `${item.name}×${item.quantity}`).join('、')
+      },
+    },
     { title: '操作人', key: 'operator', width: 90, align: 'center' },
+    { title: '会员', key: 'cashierMember', width: 140, align: 'center' },
+    { title: '复玩', key: 'cashierRepurchase', width: 80, align: 'center', render: (row: any) => renderRepurchaseTag(row.cashierRepurchase) },
   ],
   '点播系统订单': [
     { title: '点播内容', key: 'vodName', width: 130, align: 'center' },
     { title: '设备', key: 'vodDevice', width: 140, align: 'center' },
+    { title: '会员', key: 'vodMember', width: 140, align: 'center' },
+    { title: '复玩', key: 'vodRepurchase', width: 80, align: 'center', render: (row: any) => renderRepurchaseTag(row.vodRepurchase) },
     { title: '核销方式', key: 'vodVerifyMode', width: 120, align: 'center' },
     {
       title: '异常状态',
@@ -503,10 +559,26 @@ const filteredData = computed(() => {
   if (filterOrderNo.value) {
     data = data.filter(d => d.orderNo.toLowerCase().includes(filterOrderNo.value.toLowerCase()))
   }
+  if (currentType.value === '收银订单') {
+    if (filterCashierMember.value) {
+      const kw = filterCashierMember.value.toLowerCase()
+      data = data.filter(d => (d.cashierMember || '').toLowerCase().includes(kw))
+    }
+    if (filterCashierRepurchase.value) {
+      data = data.filter(d => d.cashierRepurchase === filterCashierRepurchase.value)
+    }
+  }
   if (currentType.value === '点播系统订单') {
     if (filterVodDevice.value) {
       const kw = filterVodDevice.value.toLowerCase()
       data = data.filter(d => (d.vodDevice || '').toLowerCase().includes(kw))
+    }
+    if (filterVodMember.value) {
+      const kw = filterVodMember.value.toLowerCase()
+      data = data.filter(d => (d.vodMember || '').toLowerCase().includes(kw))
+    }
+    if (filterVodRepurchase.value) {
+      data = data.filter(d => d.vodRepurchase === filterVodRepurchase.value)
     }
     if (filterVodException.value) {
       data = data.filter(d => (d.vodExceptionStatus || '正常') === filterVodException.value)
@@ -532,7 +604,11 @@ function resetFilter() {
   filterStore.value = null
   filterOrderNo.value = ''
   filterDateRange.value = null
+  filterCashierMember.value = ''
+  filterCashierRepurchase.value = null
   filterVodDevice.value = ''
+  filterVodMember.value = ''
+  filterVodRepurchase.value = null
   filterVodException.value = null
 }
 

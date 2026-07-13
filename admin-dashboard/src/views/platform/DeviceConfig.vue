@@ -144,13 +144,20 @@
         <n-form-item label="系统版本"><n-input v-model:value="editHostForm.osVersion" /></n-form-item>
         <n-form-item label="MAC 地址"><n-input v-model:value="editHostForm.macAddress" placeholder="如：00:1A:2B:3C:4D:5E" /></n-form-item>
         <n-form-item label="状态">
-          <n-radio-group v-model:value="editHostForm.status">
-            <n-radio value="online">在线</n-radio>
-            <n-radio value="offline">离线</n-radio>
-            <n-radio value="fault" style="color:#f59e0b;">故障</n-radio>
-          </n-radio-group>
+          <n-space align="center">
+            <n-tag size="small" :type="statusTagType(editHostForm.runtimeStatus)">{{ statusTagLabel(editHostForm.runtimeStatus) }}</n-tag>
+            <n-text depth="3" style="font-size:11px;">设备状态由心跳实时判定，不可手动修改</n-text>
+          </n-space>
+        </n-form-item>
+        <n-form-item label="故障标记">
+          <n-space align="center">
+            <n-switch v-model:value="editHostForm.isFault" />
+            <n-text :depth="editHostForm.isFault ? 2 : 3" style="font-size:12px;">
+              {{ editHostForm.isFault ? '已标记为故障' : '未标记故障' }}
+            </n-text>
+          </n-space>
           <n-text depth="3" style="font-size:11px;margin-top:4px;display:block;">
-            在线/离线由心跳自动判定，故障需手动标记。标记故障后该主机不再分配游戏。
+            在线/离线由设备心跳自动判定，此处仅支持标记是否为故障。标记故障后该主机不再分配游戏。
           </n-text>
         </n-form-item>
       </n-form>
@@ -272,7 +279,7 @@ import { ref, computed, h } from 'vue'
 import {
   NTabs, NTabPane, NDataTable, NButton, NIcon, NSpace, NInput,
   NModal, NForm, NFormItem, NSelect, NTag, NUpload, NDescriptions, NDescriptionsItem,
-  NRadioGroup, NRadio, NText, NAlert,
+  NSwitch, NText, NAlert,
   type FormInst, type FormRules
 } from 'naive-ui'
 import { AddOutline, CloudUploadOutline, ArrowForwardOutline, CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5'
@@ -349,25 +356,42 @@ const merchantOpts = computed(() => merchantNames.map(m => ({ label: m, value: m
 function getStoreOpts(merchant: string) { if (!merchant) return []; return (merchantStoreMap[merchant] || []).map(s => ({ label: s, value: s })) }
 
 // ─── 主机管理 ──────────────────────────────────────
-interface HostDevice { id: number; serialNo: string; name: string; deviceType: string; specs: string; macAddress: string; osVersion: string; status: 'online' | 'offline' | 'fault'; merchant: string; store: string; token: string; tokenStatus: 'active' | 'none'; boundHeadsets: number[]; createdAt: string }
+interface HostDevice { id: number; serialNo: string; name: string; deviceType: string; specs: string; macAddress: string; osVersion: string; runtimeStatus: 'online' | 'offline'; isFault: boolean; merchant: string; store: string; token: string; tokenStatus: 'active' | 'none'; boundHeadsets: number[]; createdAt: string }
 const hostTypeNames = ['悬浮骑兵', '暗黑行者', '暗黑机甲', '幻影飞碟', '通用主机']
 function genHosts(): HostDevice[] {
   const r: HostDevice[] = []; const specs = ['i5-12400/16GB/512GB SSD', 'i7-12700/32GB/1TB SSD', 'i9-13900/64GB/2TB SSD']
   for (let i = 1; i <= 20; i++) {
-    const s = (['online', 'online', 'online', 'offline', 'fault'] as const)[i % 5]
+    const status = (['online', 'online', 'online', 'offline', 'fault'] as const)[i % 5]
     const m = merchantNames[i % 5]
     const stores = merchantStoreMap[m] || []
     const ss = i > 5 && stores.length > 0 ? stores[i % stores.length] : '--'
     const mac = `00:1A:2B:${String(i).padStart(3,'0').slice(0,2)}:${String(i*7).padStart(2,'0')}:${String(i*13).padStart(2,'0')}`
-    r.push({ id: i, serialNo: `PCT-${String(i).padStart(3,'0')}`, name: `主机 #${String(i).padStart(2,'0')}`, deviceType: hostTypeNames[i % hostTypeNames.length], specs: specs[i%3], macAddress: mac, osVersion: 'Windows 11 Kiosk v2.1', status: s, merchant: i > 5 ? m : '--', store: i > 5 ? ss : '--', token: i > 5 ? `tk_host_${i}` : '--', tokenStatus: i > 5 ? 'active' : 'none', boundHeadsets: [], createdAt: '2026-03-10' })
+    r.push({
+      id: i,
+      serialNo: `PCT-${String(i).padStart(3,'0')}`,
+      name: `主机 #${String(i).padStart(2,'0')}`,
+      deviceType: hostTypeNames[i % hostTypeNames.length],
+      specs: specs[i % 3],
+      macAddress: mac,
+      osVersion: 'Windows 11 Kiosk v2.1',
+      runtimeStatus: status === 'fault' ? 'offline' : status,
+      isFault: status === 'fault',
+      merchant: i > 5 ? m : '--',
+      store: i > 5 ? ss : '--',
+      token: i > 5 ? `tk_host_${i}` : '--',
+      tokenStatus: i > 5 ? 'active' : 'none',
+      boundHeadsets: [],
+      createdAt: '2026-03-10'
+    })
   }
   return r
 }
 const hosts = ref<HostDevice[]>(genHosts())
 const selectedHostIds = ref<number[]>([])
-const hostOnlineCount = computed(() => hosts.value.filter(d => d.status === 'online').length)
-const hostOfflineCount = computed(() => hosts.value.filter(d => d.status === 'offline').length)
-const hostFaultCount = computed(() => hosts.value.filter(d => d.status === 'fault').length)
+const getHostStatus = (host: Pick<HostDevice, 'runtimeStatus' | 'isFault'>) => (host.isFault ? 'fault' : host.runtimeStatus)
+const hostOnlineCount = computed(() => hosts.value.filter(d => getHostStatus(d) === 'online').length)
+const hostOfflineCount = computed(() => hosts.value.filter(d => getHostStatus(d) === 'offline').length)
+const hostFaultCount = computed(() => hosts.value.filter(d => getHostStatus(d) === 'fault').length)
 const hostFilterMerchant = ref<string | null>(null); const hostFilterStore = ref<string | null>(null); const hostFilterType = ref<string | null>(null); const hostFilterStatus = ref<string | null>(null); const hostFilterKeyword = ref('')
 const hostStatusOpts = [{ label: '在线', value: 'online' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
 const hostTypeOpts = computed(() => hostTypeNames.map(n => ({ label: n, value: n })))
@@ -380,7 +404,7 @@ const filteredHosts = computed(() => {
   if (hostFilterMerchant.value) list = list.filter(d => d.merchant === hostFilterMerchant.value)
   if (hostFilterStore.value) list = list.filter(d => d.store === hostFilterStore.value)
   if (hostFilterType.value) list = list.filter(d => d.deviceType === hostFilterType.value)
-  if (hostFilterStatus.value) list = list.filter(d => d.status === hostFilterStatus.value)
+  if (hostFilterStatus.value) list = list.filter(d => getHostStatus(d) === hostFilterStatus.value)
   if (hostFilterKeyword.value) { const kw = hostFilterKeyword.value.toLowerCase(); list = list.filter(d => d.serialNo.toLowerCase().includes(kw) || d.name.toLowerCase().includes(kw) || d.macAddress.toLowerCase().includes(kw)) }
   return list
 })
@@ -406,7 +430,7 @@ const hostColumns = [
   { title: '硬件配置', key: 'specs', minWidth: 180 }, { title: '系统版本', key: 'osVersion', minWidth: 160 },
   { title: 'MAC 地址', key: 'macAddress', width: 140, render: (row: HostDevice) => h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;' }, row.macAddress) },
   { title: '所属商家', key: 'merchant', minWidth: 100 }, { title: '所属门店', key: 'store', minWidth: 120 },
-  { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: HostDevice) => hostStatusRender(row.status) },
+  { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: HostDevice) => hostStatusRender(getHostStatus(row)) },
   { title: '绑定头显', key: 'boundHeadsets', width: 80, align:'center' as const, render: (row: HostDevice) => h(NTag, { size:'small', type:'info' }, { default: () => `${row.boundHeadsets.length}台` }) },
   {
     title: 'Token', key: 'token', minWidth: 140,
@@ -442,7 +466,7 @@ const hostColumns = [
   },
 ]
 
-const showEditHostModal = ref(false); const editHostForm = ref({ id: 0, serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', macAddress: '', status: 'online' as 'online' | 'offline' | 'fault' })
+const showEditHostModal = ref(false); const editHostForm = ref({ id: 0, serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', macAddress: '', runtimeStatus: 'online' as 'online' | 'offline', isFault: false })
 const showUnassignModal = ref(false); const unassignTarget = ref<HostDevice | null>(null)
 function confirmUnassign() {
   const row = unassignTarget.value; if (!row) return
@@ -451,17 +475,33 @@ function confirmUnassign() {
   showUnassignModal.value = false; unassignTarget.value = null
   ;(window as any).$message?.info(`已取消分配：${row.name}，Token 已自动吊销`)
 }
-function openEditHost(row: HostDevice) { editHostForm.value = { id: row.id, serialNo: row.serialNo, name: row.name, deviceType: row.deviceType, specs: row.specs, osVersion: row.osVersion, macAddress: row.macAddress, status: row.status }; showEditHostModal.value = true }
+function openEditHost(row: HostDevice) {
+  editHostForm.value = {
+    id: row.id,
+    serialNo: row.serialNo,
+    name: row.name,
+    deviceType: row.deviceType,
+    specs: row.specs,
+    osVersion: row.osVersion,
+    macAddress: row.macAddress,
+    runtimeStatus: row.runtimeStatus,
+    isFault: row.isFault,
+  }
+  showEditHostModal.value = true
+}
 function handleEditHost() {
   const idx = hosts.value.findIndex(d => d.id === editHostForm.value.id)
-  if (idx !== -1) { hosts.value[idx] = { ...hosts.value[idx], ...editHostForm.value }; (window as any).$message?.success('主机信息已更新') }
+  if (idx !== -1) {
+    hosts.value[idx] = { ...hosts.value[idx], ...editHostForm.value }
+    ;(window as any).$message?.success('主机信息已更新')
+  }
   showEditHostModal.value = false
 }
 const showAddHostModal = ref(false); const addHostFormRef = ref<FormInst | null>(null)
 const addHostForm = ref({ serialNo: '', name: '', deviceType: '', specs: '', osVersion: '', macAddress: '', notes: '' })
 const hostRules: FormRules = { serialNo: { required: true, message: '请输入主机编号', trigger: 'blur' }, name: { required: true, message: '请输入主机名称', trigger: 'blur' }, deviceType: { required: true, message: '请选择设备类型', trigger: 'change' }, macAddress: { required: true, message: '请输入 MAC 地址', trigger: 'blur' } }
 function handleAddHost() {
-  addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', macAddress: addHostForm.value.macAddress, osVersion: addHostForm.value.osVersion || '--', status: 'online', merchant: '--', store: '--', token: '--', tokenStatus: 'none', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', macAddress:'', notes:'' }; (window as any).$message?.success('主机已录入') })
+  addHostFormRef.value?.validate(e => { if (e) return; hosts.value.unshift({ id: Date.now(), serialNo: addHostForm.value.serialNo, name: addHostForm.value.name, deviceType: addHostForm.value.deviceType, specs: addHostForm.value.specs || '--', macAddress: addHostForm.value.macAddress, osVersion: addHostForm.value.osVersion || '--', runtimeStatus: 'online', isFault: false, merchant: '--', store: '--', token: '--', tokenStatus: 'none', boundHeadsets: [], createdAt: new Date().toISOString().slice(0,10) }); showAddHostModal.value = false; addHostForm.value = { serialNo:'', name:'', deviceType:'', specs:'', osVersion:'', macAddress:'', notes:'' }; (window as any).$message?.success('主机已录入') })
 }
 const showAllocHostModal = ref(false); const allocHostFormRef = ref<FormInst | null>(null)
 const allocHostForm = ref({ deviceId: 0, deviceName: '', serialNo: '', merchant: '', store: '' })
@@ -542,7 +582,7 @@ const showAllocHeadsetModal = ref(false); const allocHeadsetFormRef = ref<FormIn
 const allocHeadsetForm = ref({ deviceId: 0, deviceName: '', sn: '', merchant: '', store: '' })
 const allocHeadsetRules: FormRules = { merchant: { required: true, message: '请选择商家', trigger: 'change' }, store: { required: true, message: '请选择门店', trigger: 'change' } }
 const showBindHostModal = ref(false); const bindHostForm = ref({ headsetId: 0, headsetName: '', hostId: null as number | null })
-const hostOpts = computed(() => hosts.value.filter(h => h.merchant !== '--' && h.status === 'online').map(h => ({ label: `${h.name} (${h.serialNo}) - ${h.store}`, value: h.id })))
+const hostOpts = computed(() => hosts.value.filter(h => h.merchant !== '--' && getHostStatus(h) === 'online').map(h => ({ label: `${h.name} (${h.serialNo}) - ${h.store}`, value: h.id })))
 const showUnassignHeadsetModal = ref(false); const unassignHeadsetTarget = ref<HeadsetDevice | null>(null)
 
 function openEditHeadset(row: HeadsetDevice) { editHeadsetForm.value = { id: row.id, name: row.name, model: row.model, sn: row.sn, firmware: row.firmware, status: row.status }; showEditHeadsetModal.value = true }

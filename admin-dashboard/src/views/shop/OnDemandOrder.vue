@@ -39,6 +39,12 @@
         <n-form-item label="游戏/影片">
           <n-input v-model:value="filterGameFilm" placeholder="输入游戏或影片名称..." />
         </n-form-item>
+        <n-form-item label="会员">
+          <n-input v-model:value="filterMember" placeholder="手机号/昵称/会员ID" clearable />
+        </n-form-item>
+        <n-form-item label="复玩">
+          <n-select v-model:value="filterRepurchase" :options="repurchaseOptions" placeholder="全部" clearable />
+        </n-form-item>
         <n-form-item label="结算状态">
           <n-select v-model:value="filterSettled" :options="settledOptions" placeholder="选择结算状态" clearable />
         </n-form-item>
@@ -60,6 +66,12 @@
         <n-descriptions-item label="订单号">{{ currentOrder.orderNo }}</n-descriptions-item>
         <n-descriptions-item label="店铺">{{ currentOrder.shop }}</n-descriptions-item>
         <n-descriptions-item label="会员">{{ currentOrder.member }}</n-descriptions-item>
+        <n-descriptions-item label="复玩标识">
+          <n-tag v-if="currentOrder.repurchase" :type="currentOrder.repurchase === '复玩' ? 'success' : 'info'" size="small" bordered>
+            {{ currentOrder.repurchase }}
+          </n-tag>
+          <span v-else>--</span>
+        </n-descriptions-item>
         <n-descriptions-item label="金额">¥{{ currentOrder.amount.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="订单状态">
           <n-tag :type="statusType(currentOrder.status)" size="small">{{ currentOrder.status }}</n-tag>
@@ -353,6 +365,8 @@ const paymentColumns: DataTableColumns = [
 const filterShop = ref<string | null>(null)
 const filterDevice = ref('')
 const filterGameFilm = ref('')
+const filterMember = ref('')
+const filterRepurchase = ref<string | null>(null)
 const filterSettled = ref<string | null>(null)
 const dateRange = ref<[number, number] | null>(null)
 
@@ -363,6 +377,11 @@ const shopOptions = [
 const settledOptions = [
   { label: '已结算', value: '已结算' },
   { label: '未结算', value: '未结算' },
+]
+
+const repurchaseOptions = [
+  { label: '首玩', value: '首玩' },
+  { label: '复玩', value: '复玩' },
 ]
 
 const pagination = { pageSize: 15 }
@@ -381,6 +400,11 @@ function statusType(status: string) {
 function openDetail(row: any) {
   currentOrder.value = row
   showDetail.value = true
+}
+
+const renderRepurchaseTag = (value?: string) => {
+  if (!value) return h('span', { style: 'color:#94a3b8;' }, '--')
+  return h(NTag, { type: value === '复玩' ? 'success' : 'info', size: 'small', bordered: false }, { default: () => value })
 }
 
 const columns: DataTableColumns = [
@@ -407,6 +431,7 @@ const columns: DataTableColumns = [
     },
   },
   { title: '会员', key: 'member', width: 130, align: 'center' },
+  { title: '复玩', key: 'repurchase', width: 80, align: 'center', render: (row: any) => renderRepurchaseTag(row.repurchase) },
   { title: '创建时间', key: 'createTime', width: 160, align: 'center' },
   { title: '状态', key: 'status', width: 90, align: 'center', render: (row: any) => h(NTag, { type: statusType(row.status), size: 'small' }, { default: () => row.status }) },
   {
@@ -444,7 +469,7 @@ function getVodDetailRows(order: any) {
 const rawData = ref([
   // 混合支付示例（预存款+微信支付）
   {
-    orderNo: 'MX202605070003', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '过山车VR', type: 'VR', duration: '10分钟', amount: 36.10, member: '张小明(139****5678)', createTime: '2026-05-07 11:00', status: '已完成', paymentContent: '预存款:26.10,微信支付:10.00', settled: false, source: '小程序', remark: '金卡95折',
+    orderNo: 'MX202605070003', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '过山车VR', type: 'VR', duration: '10分钟', amount: 36.10, member: '张小明(139****5678)', repurchase: '复玩', createTime: '2026-05-07 11:00', status: '已完成', paymentContent: '预存款:26.10,微信支付:10.00', settled: false, source: '小程序', remark: '金卡95折',
     details: [
       { item: '支付方式', content: '预存款+微信支付' },
       { item: '优惠', content: '金卡95折, 游戏币抵扣260币' },
@@ -452,7 +477,7 @@ const rawData = ref([
     ], payMethod: '混合支付',
   },
   {
-    orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '星际穿越', type: 'VR', duration: '15分钟', amount: 48.00, member: '散客', createTime: '2023-07-25 12:54', status: '已完成', paymentContent: '微信支付:48.00', settled: true, source: '点播系统', remark: '',
+    orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '星际穿越', type: 'VR', duration: '15分钟', amount: 48.00, member: '散客', repurchase: '', createTime: '2023-07-25 12:54', status: '已完成', paymentContent: '微信支付:48.00', settled: true, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '星际穿越' },
       { item: '设备名称', content: '幻影飞碟' },
@@ -462,7 +487,7 @@ const rawData = ref([
     ], payMethod: '微信支付',
   },
   {
-    orderNo: 'OD202307250002', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'VR设备', verifyMode: '会员码反扫', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '机甲风暴', type: 'VR', duration: '20分钟', amount: 58.00, member: '138****1234', createTime: '2023-07-25 11:30', status: '已完成', paymentContent: '余额:58.00', settled: false, source: '点播系统', remark: '',
+    orderNo: 'OD202307250002', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'VR设备', verifyMode: '会员码反扫', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '机甲风暴', type: 'VR', duration: '20分钟', amount: 58.00, member: '138****1234', repurchase: '复玩', createTime: '2023-07-25 11:30', status: '已完成', paymentContent: '余额:58.00', settled: false, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '机甲风暴' },
       { item: '设备名称', content: '暗黑机甲22版' },
@@ -472,7 +497,7 @@ const rawData = ref([
     ], payMethod: '余额',
   },
   {
-    orderNo: 'OD202307250003', shop: '利民街小展厅', device: '暗黑战场[主控端]', deviceType: '主机串流', verifyMode: '店员扫码点播', endReason: '进行中', exceptionStatus: '正常', exceptionType: '', gameFilm: '僵尸围城', type: 'VR', duration: '10分钟', amount: 38.00, member: '139****5678', createTime: '2023-07-25 10:47', status: '进行中', paymentContent: '预存次数:38.00', settled: false, source: '点播系统', remark: '',
+    orderNo: 'OD202307250003', shop: '利民街小展厅', device: '暗黑战场[主控端]', deviceType: '主机串流', verifyMode: '店员扫码点播', endReason: '进行中', exceptionStatus: '正常', exceptionType: '', gameFilm: '僵尸围城', type: 'VR', duration: '10分钟', amount: 38.00, member: '139****5678', repurchase: '首玩', createTime: '2023-07-25 10:47', status: '进行中', paymentContent: '预存次数:38.00', settled: false, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '僵尸围城' },
       { item: '设备名称', content: '暗黑战场[主控端]' },
@@ -482,7 +507,7 @@ const rawData = ref([
     ], payMethod: '预存次数',
   },
   {
-    orderNo: 'OD202307250004', shop: '利民街小展厅', device: '悬浮骑兵', deviceType: 'VR设备', verifyMode: '会员码反扫', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '极速飞车', type: 'VR', duration: '12分钟', amount: 28.00, member: '137****9012', createTime: '2023-07-25 10:33', status: '已完成', paymentContent: '套票抵扣:28.00', settled: true, source: '点播系统', remark: '',
+    orderNo: 'OD202307250004', shop: '利民街小展厅', device: '悬浮骑兵', deviceType: 'VR设备', verifyMode: '会员码反扫', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '极速飞车', type: 'VR', duration: '12分钟', amount: 28.00, member: '137****9012', repurchase: '复玩', createTime: '2023-07-25 10:33', status: '已完成', paymentContent: '套票抵扣:28.00', settled: true, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '极速飞车' },
       { item: '设备名称', content: '悬浮骑兵' },
@@ -492,7 +517,7 @@ const rawData = ref([
     ], payMethod: '套票抵扣',
   },
   {
-    orderNo: 'OD202307250005', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '用户取消', exceptionStatus: '正常', exceptionType: '', gameFilm: '深海探险', type: '银幕', duration: '25分钟', amount: 68.00, member: '136****3456', createTime: '2023-07-25 09:15', status: '已取消', paymentContent: '微信支付:68.00', settled: false, source: '点播系统', remark: '',
+    orderNo: 'OD202307250005', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '用户取消', exceptionStatus: '正常', exceptionType: '', gameFilm: '深海探险', type: '银幕', duration: '25分钟', amount: 68.00, member: '136****3456', repurchase: '首玩', createTime: '2023-07-25 09:15', status: '已取消', paymentContent: '微信支付:68.00', settled: false, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '深海探险' },
       { item: '设备名称', content: '幻影飞碟' },
@@ -502,7 +527,7 @@ const rawData = ref([
     ], payMethod: '微信支付',
   },
   {
-    orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '恐龙世界', type: 'VR', duration: '18分钟', amount: 52.00, member: '散客', createTime: '2023-07-25 08:40', status: '已完成', paymentContent: '微信支付:52.00', settled: true, source: '点播系统', remark: '',
+    orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '恐龙世界', type: 'VR', duration: '18分钟', amount: 52.00, member: '散客', repurchase: '', createTime: '2023-07-25 08:40', status: '已完成', paymentContent: '微信支付:52.00', settled: true, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '恐龙世界' },
       { item: '设备名称', content: '暗黑机甲22版' },
@@ -518,6 +543,11 @@ const filteredData = computed(() => {
   if (filterShop.value) data = data.filter(d => d.shop === filterShop.value)
   if (filterDevice.value) data = data.filter(d => d.device.includes(filterDevice.value))
   if (filterGameFilm.value) data = data.filter(d => d.gameFilm.includes(filterGameFilm.value))
+  if (filterMember.value) {
+    const kw = filterMember.value.toLowerCase()
+    data = data.filter(d => (d.member || '').toLowerCase().includes(kw))
+  }
+  if (filterRepurchase.value) data = data.filter(d => d.repurchase === filterRepurchase.value)
   if (filterSettled.value) data = data.filter(d => (filterSettled.value === '已结算') === d.settled)
   return data
 })
@@ -526,6 +556,8 @@ function resetFilter() {
   filterShop.value = null
   filterDevice.value = ''
   filterGameFilm.value = ''
+  filterMember.value = ''
+  filterRepurchase.value = null
   filterSettled.value = null
   dateRange.value = null
 }

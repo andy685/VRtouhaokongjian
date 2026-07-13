@@ -39,6 +39,9 @@
         <n-form-item label="会员手机">
           <n-input v-model:value="filterPhone" placeholder="输入会员手机号..." />
         </n-form-item>
+        <n-form-item label="复玩">
+          <n-select v-model:value="filterRepurchase" :options="repurchaseOptions" placeholder="全部" clearable />
+        </n-form-item>
         <n-form-item label="订单来源">
           <n-select v-model:value="filterSource" :options="sourceOptions" placeholder="选择订单来源" clearable />
         </n-form-item>
@@ -157,6 +160,12 @@
         <n-descriptions-item label="订单号">{{ detailRow.orderNo }}</n-descriptions-item>
         <n-descriptions-item label="所属店铺">{{ detailRow.shop }}</n-descriptions-item>
         <n-descriptions-item label="会员">{{ detailRow.member || '散客' }}</n-descriptions-item>
+        <n-descriptions-item label="复玩标识">
+          <n-tag v-if="detailRow.repurchase" :type="detailRow.repurchase === '复玩' ? 'success' : 'info'" size="small" bordered>
+            {{ detailRow.repurchase }}
+          </n-tag>
+          <span v-else>--</span>
+        </n-descriptions-item>
         <n-descriptions-item label="金额">¥{{ detailRow.paid.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="订单状态">
           <n-tag :type="detailRow.status === '已退款' ? 'error' : detailRow.status === '退款中' ? 'warning' : 'success'" size="small">{{ detailRow.status }}</n-tag>
@@ -209,30 +218,35 @@
 import { ref, computed, h } from 'vue'
 import {
   NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
-  NSelect, NInput, NInputNumber, NDatePicker, NSpace, NTag, NEmpty,
-  NRadioGroup, NRadio, NSwitch, NDescriptions, NDescriptionsItem,
-  NAlert, NUpload,
+  NSelect, NInput, NDatePicker, NSpace, NTag,
+  NDescriptions, NDescriptionsItem, NUpload, useMessage,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { FilterOutline, DownloadOutline, PrintOutline, RefreshOutline } from '@vicons/ionicons5'
+import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
 import { useExceptionOrders } from '@/composables/useExceptionOrders'
 import MarkExceptionDialog from '@/components/MarkExceptionDialog.vue'
 
 const { openMarkDialog, isMarked, unmarkOrder } = useExceptionOrders()
+const message = useMessage()
 
 const showFilter = ref(false)
 const showDetail = ref(false)
 const showRefund = ref(false)
 const detailRow = ref<any>(null)
-const refundRemark = ref('')
 
 const isSettled = computed(() => detailRow.value?.settled === true)
 const receiptFileList = ref<any[]>([])
 
-function getPaymentDetail(paymentContent: string) {
+interface PaymentItem {
+  method: string
+  amount: number
+  color: string
+}
+
+function getPaymentDetail(paymentContent: string): PaymentItem[] {
   if (!paymentContent || paymentContent === '待支付') return []
   const parts = paymentContent.split(/[,，]/)
-  return parts.map((p: string) => {
+  return parts.reduce<PaymentItem[]>((result, p: string) => {
     const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
     if (match) {
       const method = match[1]
@@ -242,15 +256,16 @@ function getPaymentDetail(paymentContent: string) {
         : method.includes('支付宝') ? '#1677ff'
         : method.includes('游戏币') ? '#f59e0b'
         : '#64748b'
-      return { method, amount, color }
+      result.push({ method, amount, color })
     }
-    return null
-  }).filter(Boolean)
+    return result
+  }, [])
 }
 
 const filterShop = ref<string | null>(null)
 const filterOrderNo = ref('')
 const filterPhone = ref('')
+const filterRepurchase = ref<string | null>(null)
 const filterSource = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
 const filterSettled = ref<string | null>(null)
@@ -276,10 +291,11 @@ const settledFilterOptions = [
   { label: '未结算', value: '未结算' },
 ]
 
-const refundAmount = ref<number | null>(null)
-const refundItems = ref<any[]>([])
-const refundMethod = ref('original')
-const allowPointsRefund = ref(false)
+const repurchaseOptions = [
+  { label: '首玩', value: '首玩' },
+  { label: '复玩', value: '复玩' },
+]
+
 const refundReason = ref<string | null>(null)
 const refundReasonCustom = ref('')
 
@@ -295,33 +311,6 @@ const refundReasonOptions = [
 const paymentColumns: DataTableColumns = [
   { title: '支付方式', key: 'method', width: 140, align: 'center', render: (row: any) => h('span', { style: `color:${row.color};font-weight:500;` }, row.method) },
   { title: '金额', key: 'amount', width: 120, align: 'center', render: (row: any) => `¥${row.amount.toFixed(2)}` },
-]
-
-const refundColumns: DataTableColumns = [
-  { title: '商品名称', key: 'name', minWidth: 120 },
-  { title: '现单价', key: 'price', width: 80, align: 'center', render: (row: any) => `¥${row.price.toFixed(2)}` },
-  { title: '已购数', key: 'quantity', width: 70, align: 'center' },
-  { title: '已退数', key: 'refundedQty', width: 70, align: 'center' },
-  { title: '可退数', key: 'refundable', width: 70, align: 'center', render: (row: any) => row.quantity - row.refundedQty },
-  {
-    title: '本次退货数',
-    key: 'currentRefundQty',
-    width: 100,
-    align: 'center',
-    render(row: any, index: number) {
-      return h(NInputNumber, {
-        value: row.currentRefundQty,
-        min: 0,
-        max: row.quantity - row.refundedQty,
-        precision: 0,
-        size: 'small',
-        style: 'width: 80px;',
-        'onUpdate:value': (val: number | null) => {
-          refundItems.value[index].currentRefundQty = val || 0
-        },
-      })
-    },
-  },
 ]
 
 // 整单退款：退款总额 = 实付金额（paid）
@@ -381,6 +370,11 @@ function openDetail(row: any) {
   showDetail.value = true
 }
 
+const renderRepurchaseTag = (value?: string) => {
+  if (!value) return h('span', { style: 'color:#94a3b8;' }, '--')
+  return h(NTag, { type: value === '复玩' ? 'success' : 'info', size: 'small', bordered: false }, { default: () => value })
+}
+
 const columns: DataTableColumns = [
   { title: '订单号', key: 'orderNo', width: 200, align: 'center' },
   { title: '所属店铺', key: 'shop', width: 120, align: 'center' },
@@ -438,6 +432,7 @@ const columns: DataTableColumns = [
     },
   },
   { title: '会员/散客', key: 'member', width: 150, align: 'center' },
+  { title: '复玩', key: 'repurchase', width: 80, align: 'center', render: (row: any) => renderRepurchaseTag(row.repurchase) },
   { title: '操作人', key: 'operator', width: 80, align: 'center' },
   {
     title: '操作',
@@ -449,8 +444,8 @@ const columns: DataTableColumns = [
         default: () => [
           h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }),
           isMarked(row.orderNo)
-            ? h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { unmarkOrder(row.orderNo); window.$message?.info('已取消标记') } }, { default: () => '取消标记' })
-            : h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { if (!openMarkDialog({ orderNo: row.orderNo, store: row.shop, amount: `¥${row.amount.toFixed(2)}` })) window.$message?.warning('该订单已在异常列表中') } }, { default: () => '标记异常' }),
+            ? h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { unmarkOrder(row.orderNo); message.info('已取消标记') } }, { default: () => '取消标记' })
+            : h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { if (!openMarkDialog({ orderNo: row.orderNo, store: row.shop, amount: `¥${row.amount.toFixed(2)}` })) message.warning('该订单已在异常列表中') } }, { default: () => '标记异常' }),
         ]
       })
     },
@@ -468,7 +463,7 @@ const detailColumns: DataTableColumns = [
 const rawData = ref([
   // 混合支付示例：预存款 + 微信支付
   {
-    orderNo: 'MX202605070001', shop: '利民街小展厅', member: '张小明（13912345678）', product: '过山车VR', amount: 38, discount: 1.90, paid: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', createTime: '2026-05-07 10:30', status: '完成',
+    orderNo: 'MX202605070001', shop: '利民街小展厅', member: '张小明（13912345678）', repurchase: '复玩', product: '过山车VR', amount: 38, discount: 1.90, paid: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', createTime: '2026-05-07 10:30', status: '完成',
     refunded: 0, remark: '会员95折+游戏币抵扣', source: '小程序',     settled: false, operator: '李小红',
     items: [
       { name: '过山车VR', originalPrice: 38.00, price: 36.10, quantity: 1, subtotal: 36.10, remark: '金卡95折', refundedQty: 0, refundAmount: 0 },
@@ -478,7 +473,7 @@ const rawData = ref([
     ],
   },
   {
-    orderNo: '585317365644510507768770', shop: '利民街小展厅', member: '散客（未知）', product: '暗黑战场', amount: 80, discount: 0, paid: 80, paymentContent: '现金:80.00元', createTime: '2025-01-11 11:00', status: '完成',
+    orderNo: '585317365644510507768770', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: '暗黑战场', amount: 80, discount: 0, paid: 80, paymentContent: '现金:80.00元', createTime: '2025-01-11 11:00', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: true, operator: '王建国',
     items: [
       { name: '暗黑战场', originalPrice: 20.00, price: 20.00, quantity: 4, subtotal: 80.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -486,7 +481,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317365644330507765412', shop: '利民街小展厅', member: '奥特曼（13903019429）', product: '充1000送1000,充300送100（一年有效）', amount: 1300, discount: 0, paid: 1300, paymentContent: '线下微信:1300.00元', createTime: '2025-01-11 11:00', status: '完成',
+    orderNo: '585317365644330507765412', shop: '利民街小展厅', member: '奥特曼（13903019429）', repurchase: '复玩', product: '充1000送1000,充300送100（一年有效）', amount: 1300, discount: 0, paid: 1300, paymentContent: '线下微信:1300.00元', createTime: '2025-01-11 11:00', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '充1000送1000,充300送100', originalPrice: 1300.00, price: 1300.00, quantity: 1, subtotal: 1300.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -494,7 +489,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317365644180507785875', shop: '利民街小展厅', member: '散客（未知）', product: '幻影时空', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2025-01-11 11:00', status: '已退款',
+    orderNo: '585317365644180507785875', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: '幻影时空', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2025-01-11 11:00', status: '已退款',
     refunded: 20, remark: '客户要求退款', source: '收银系统', settled: false, operator: '系统自动',
     items: [
       { name: '幻影时空', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 1, refundAmount: 20 },
@@ -502,7 +497,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317359562270507729610', shop: '利民街小展厅', member: '奥特曼（13903019429）', product: '充200送100', amount: 200, discount: 0, paid: 200, paymentContent: '现金:200.00元', createTime: '2025-01-04 10:03', status: '完成',
+    orderNo: '585317359562270507729610', shop: '利民街小展厅', member: '奥特曼（13903019429）', repurchase: '复玩', product: '充200送100', amount: 200, discount: 0, paid: 200, paymentContent: '现金:200.00元', createTime: '2025-01-04 10:03', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: true, operator: '王建国',
     items: [
       { name: '充200送100', originalPrice: 200.00, price: 200.00, quantity: 1, subtotal: 200.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -510,7 +505,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317350083850507752054', shop: '利民街小展厅', member: '侯女士（13903019225）', product: '100元5次（1年有效）', amount: 100, discount: 0, paid: 0, paymentContent: '待支付', createTime: '2024-12-24 10:46', status: '待支付',
+    orderNo: '585317350083850507752054', shop: '利民街小展厅', member: '侯女士（13903019225）', repurchase: '首玩', product: '100元5次（1年有效）', amount: 100, discount: 0, paid: 0, paymentContent: '待支付', createTime: '2024-12-24 10:46', status: '待支付',
     refunded: 0, remark: '', source: '收银系统', settled: false, operator: '李小红',
     items: [
       { name: '100元5次（1年有效）', originalPrice: 100.00, price: 100.00, quantity: 1, subtotal: 100.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -518,7 +513,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '5853173398878940507723026', shop: '利民街小展厅', member: '散客（未知）', product: '幻影飞碟', amount: 48, discount: 0, paid: 48, paymentContent: '线下支付宝:48.00元', createTime: '2024-12-12 15:18', status: '完成',
+    orderNo: '5853173398878940507723026', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: '幻影飞碟', amount: 48, discount: 0, paid: 48, paymentContent: '线下支付宝:48.00元', createTime: '2024-12-12 15:18', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: false, operator: '王建国',
     items: [
       { name: '幻影飞碟', originalPrice: 48.00, price: 48.00, quantity: 1, subtotal: 48.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -526,7 +521,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317339722770507787072', shop: '利民街小展厅', member: '散客（未知）', product: '暗黑双子星', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:57', status: '完成',
+    orderNo: '585317339722770507787072', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: '暗黑双子星', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:57', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '暗黑双子星', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -534,7 +529,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317339722430507710651', shop: '利民街小展厅', member: '散客（未知）', product: '暗黑双子星', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:57', status: '完成',
+    orderNo: '585317339722430507710651', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: '暗黑双子星', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:57', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: true, operator: '王建国',
     items: [
       { name: '暗黑双子星', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -542,7 +537,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317339722140507740638', shop: '利民街小展厅', member: '散客（未知）', product: '幻影时空', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:56', status: '完成',
+    orderNo: '585317339722140507740638', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: '幻影时空', amount: 20, discount: 0, paid: 20, paymentContent: '线下支付宝:20.00元', createTime: '2024-12-12 10:56', status: '完成',
     refunded: 0, remark: '', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '幻影时空', originalPrice: 20.00, price: 20.00, quantity: 1, subtotal: 20.00, remark: '', refundedQty: 0, refundAmount: 0 },
@@ -550,7 +545,7 @@ const rawData = ref([
     discounts: [],
   },
   {
-    orderNo: '585317330011220507331122', shop: '利民街小展厅', member: '张伟（13800138000）', product: '亲子套票+幻影飞碟', amount: 346, discount: 48, paid: 298, paymentContent: '微信:298.00元', createTime: '2025-01-15 14:30', status: '完成',
+    orderNo: '585317330011220507331122', shop: '利民街小展厅', member: '张伟（13800138000）', repurchase: '复玩', product: '亲子套票+幻影飞碟', amount: 346, discount: 48, paid: 298, paymentContent: '微信:298.00元', createTime: '2025-01-15 14:30', status: '完成',
     refunded: 0, remark: '会员日活动', source: '收银系统', settled: true, operator: '李小红',
     items: [
       { name: '亲子套票', originalPrice: 298.00, price: 268.00, quantity: 1, subtotal: 268.00, remark: '会员价', refundedQty: 0, refundAmount: 0 },
@@ -562,7 +557,7 @@ const rawData = ref([
     ],
   },
   {
-    orderNo: '585317330022330507442233', shop: '利民街小展厅', member: '李娜（13900139000）', product: '充500送200+暗黑战场', amount: 580, discount: 80, paid: 500, paymentContent: '支付宝:500.00元', createTime: '2025-01-16 10:15', status: '完成',
+    orderNo: '585317330022330507442233', shop: '利民街小展厅', member: '李娜（13900139000）', repurchase: '首玩', product: '充500送200+暗黑战场', amount: 580, discount: 80, paid: 500, paymentContent: '支付宝:500.00元', createTime: '2025-01-16 10:15', status: '完成',
     refunded: 0, remark: '新客首充', source: '小程序', settled: false, operator: '小程序用户',
     items: [
       { name: '充500送200', originalPrice: 500.00, price: 500.00, quantity: 1, subtotal: 500.00, remark: '首充优惠', refundedQty: 0, refundAmount: 0 },
@@ -573,7 +568,7 @@ const rawData = ref([
     ],
   },
   {
-    orderNo: '585317330033440507553344', shop: '利民街小展厅', member: '散客（未知）', product: 'VR全家桶套餐', amount: 399, discount: 100, paid: 299, paymentContent: '现金:299.00元', createTime: '2025-01-17 16:45', status: '已退款',
+    orderNo: '585317330033440507553344', shop: '利民街小展厅', member: '散客（未知）', repurchase: '', product: 'VR全家桶套餐', amount: 399, discount: 100, paid: 299, paymentContent: '现金:299.00元', createTime: '2025-01-17 16:45', status: '已退款',
     refunded: 299, remark: '设备故障退款', source: '收银系统', settled: false, operator: '王建国',
     items: [
       { name: 'VR全家桶套餐', originalPrice: 399.00, price: 299.00, quantity: 1, subtotal: 299.00, remark: '限时特价', refundedQty: 1, refundAmount: 299 },
@@ -589,6 +584,7 @@ const filteredData = computed(() => {
   if (filterShop.value) data = data.filter(d => d.shop === filterShop.value)
   if (filterOrderNo.value) data = data.filter(d => d.orderNo.includes(filterOrderNo.value))
   if (filterPhone.value) data = data.filter(d => d.member.includes(filterPhone.value))
+  if (filterRepurchase.value) data = data.filter(d => d.repurchase === filterRepurchase.value)
   if (filterSource.value) data = data.filter(d => d.source === filterSource.value)
   if (filterStatus.value) data = data.filter(d => d.status === filterStatus.value)
   if (filterSettled.value) data = data.filter(d => (filterSettled.value === '已结算') === d.settled)
@@ -599,6 +595,7 @@ function resetFilter() {
   filterShop.value = null
   filterOrderNo.value = ''
   filterPhone.value = ''
+  filterRepurchase.value = null
   filterSource.value = null
   filterStatus.value = null
   filterSettled.value = null
@@ -610,47 +607,29 @@ function exportData() {
 }
 
 function openRefund() {
-  refundMethod.value = 'original'
-  allowPointsRefund.value = false
   refundReason.value = null
   refundReasonCustom.value = ''
   receiptFileList.value = []
-  // 整单退款：不再维护每件商品的"本次退货数"
-  if (detailRow.value?.items) {
-    refundItems.value = detailRow.value.items.map((item: any) => ({
-      ...item,
-      currentRefundQty: 0,
-    }))
-  } else {
-    refundItems.value = []
-  }
   showRefund.value = true
-}
-
-function refundAll() {
-  // 整单退：已结算时直接按实付金额退（不需要逐件勾选）
-  if (isSettled.value) {
-    window.$message?.info('已结算订单请直接确认退款')
-  }
 }
 
 function confirmRefund() {
   // 整单退款：不再校验退货数，直接按 refundTotalAmount 处理
   const total = refundTotalAmount.value
   if (total <= 0) {
-    window.$message?.warning('该订单已无金额可退')
+    message.warning('该订单已无金额可退')
     return
   }
 
   const reason = refundReason.value === '其他' ? refundReasonCustom.value : refundReason.value
   if (!reason) {
-    window.$message?.warning('请选择退款原因')
+    message.warning('请选择退款原因')
     return
   }
 
   // 已结算订单必须上传凭证
   if (isSettled.value && receiptFileList.value.length === 0) {
-    window.$message?.warning('请上传线下退款凭证')
+    message.warning('请上传线下退款凭证')
     return
   }
 
@@ -674,7 +653,7 @@ function confirmRefund() {
       }
       showRefund.value = false
       showDetail.value = false
-      window.$message?.success(`已标记线下退款，退款金额 ¥${total.toFixed(2)}`)
+      message.success(`已标记线下退款，退款金额 ¥${total.toFixed(2)}`)
     } else {
       // 未结算 → 调拉卡拉退款
       detailRow.value.status = '退款中'
@@ -692,13 +671,13 @@ function confirmRefund() {
               item.refundAmount = item.subtotal || item.price * item.quantity
             })
           }
-          window.$message?.success(`拉卡拉退款成功，退款单号 ${detailRow.value.refundNo}`)
+          message.success(`拉卡拉退款成功，退款单号 ${detailRow.value.refundNo}`)
         }
       }, 2000)
 
       showRefund.value = false
       showDetail.value = false
-      window.$message?.info('退款请求已提交，等待拉卡拉处理...')
+      message.info('退款请求已提交，等待拉卡拉处理...')
     }
   }
 }
