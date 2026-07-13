@@ -58,15 +58,23 @@
     <n-modal v-model:show="showDetail" preset="card" title="订单详情" style="width: 620px;" :bordered="false">
       <n-descriptions v-if="currentOrder" :column="2" bordered label-placement="left" size="small">
         <n-descriptions-item label="订单号">{{ currentOrder.orderNo }}</n-descriptions-item>
-        <n-descriptions-item label="所属店铺">{{ currentOrder.shop }}</n-descriptions-item>
+        <n-descriptions-item label="店铺">{{ currentOrder.shop }}</n-descriptions-item>
         <n-descriptions-item label="会员">{{ currentOrder.member }}</n-descriptions-item>
         <n-descriptions-item label="金额">¥{{ currentOrder.amount.toFixed(2) }}</n-descriptions-item>
         <n-descriptions-item label="订单状态">
           <n-tag :type="statusType(currentOrder.status)" size="small">{{ currentOrder.status }}</n-tag>
         </n-descriptions-item>
         <n-descriptions-item label="交易时间">{{ currentOrder.createTime }}</n-descriptions-item>
-        <n-descriptions-item label="点播内容">{{ currentOrder.gameFilm }}</n-descriptions-item>
-        <n-descriptions-item label="时长">{{ currentOrder.duration }}</n-descriptions-item>
+        <n-descriptions-item label="设备">{{ currentOrder.device || '--' }}</n-descriptions-item>
+        <n-descriptions-item label="设备类型">{{ currentOrder.deviceType || '--' }}</n-descriptions-item>
+        <n-descriptions-item label="核销方式">{{ currentOrder.verifyMode || '--' }}</n-descriptions-item>
+        <n-descriptions-item label="结束原因">{{ currentOrder.endReason || '正常完成' }}</n-descriptions-item>
+        <n-descriptions-item label="异常状态">
+          <n-tag :type="currentOrder.exceptionStatus === '异常' ? 'warning' : 'success'" size="small">
+            {{ currentOrder.exceptionStatus || '正常' }}
+          </n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="异常类型">{{ currentOrder.exceptionType || '--' }}</n-descriptions-item>
         <n-descriptions-item label="结算状态">
           <n-tag :type="currentOrder.settled ? 'warning' : 'success'" size="small">
             {{ currentOrder.settled ? '已结算' : '未结算' }}
@@ -81,7 +89,7 @@
       </div>
       <div v-if="currentOrder" class="detail-section">
         <h3 class="section-title">点播明细</h3>
-        <n-data-table :columns="detailColumns" :data="currentOrder.details" :bordered="true" :single-line="false" size="small" />
+        <n-data-table :columns="detailColumns" :data="getVodDetailRows(currentOrder)" :bordered="true" :single-line="false" size="small" />
       </div>
       <template #footer>
         <n-space justify="center">
@@ -197,7 +205,7 @@ import { ref, computed, h } from 'vue'
 import {
   NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
   NSelect, NInput, NDatePicker, NSpace, NTag,
-  NDescriptions, NDescriptionsItem, NAlert, NUpload,
+  NDescriptions, NDescriptionsItem, NUpload, useMessage,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
@@ -205,6 +213,7 @@ import { useExceptionOrders } from '@/composables/useExceptionOrders'
 import MarkExceptionDialog from '@/components/MarkExceptionDialog.vue'
 
 const { openMarkDialog, isMarked, unmarkOrder } = useExceptionOrders()
+const message = useMessage()
 
 const showFilter = ref(false)
 const showDetail = ref(false)
@@ -237,12 +246,12 @@ function openRefund() {
 function confirmRefund() {
   const reason = refundReason.value === '其他' ? refundReasonCustom.value : refundReason.value
   if (!reason) {
-    window.$message?.warning('请选择退款原因')
+    message.warning('请选择退款原因')
     return
   }
   // 已结算订单必须上传凭证
   if (isSettled.value && refundReceiptFiles.value.length === 0) {
-    window.$message?.warning('请上传线下退款凭证')
+    message.warning('请上传线下退款凭证')
     return
   }
   if (currentOrder.value) {
@@ -252,7 +261,7 @@ function confirmRefund() {
       currentOrder.value.status = '已退款'
       currentOrder.value.refundMethod = '线下退款'
       currentOrder.value.refundReceipt = refundReceiptFiles.value.length > 0 ? refundReceiptFiles.value[0].name : ''
-      window.$message?.success(`已标记线下退款，退款金额 ¥${currentOrder.value.amount.toFixed(2)}`)
+      message.success(`已标记线下退款，退款金额 ¥${currentOrder.value.amount.toFixed(2)}`)
     } else {
       currentOrder.value.status = '退款中'
       currentOrder.value.refundMethod = '拉卡拉原路退回'
@@ -260,30 +269,36 @@ function confirmRefund() {
         if (currentOrder.value) {
           currentOrder.value.status = '已退款'
           currentOrder.value.refundNo = 'RF' + Date.now()
-          window.$message?.success(`拉卡拉退款成功，退款单号 ${currentOrder.value.refundNo}`)
+          message.success(`拉卡拉退款成功，退款单号 ${currentOrder.value.refundNo}`)
         }
       }, 2000)
-      window.$message?.info('退款请求已提交，等待拉卡拉处理...')
+      message.info('退款请求已提交，等待拉卡拉处理...')
     }
     showRefund.value = false
     showDetail.value = false
   }
 }
 
-function parsePayments(paymentContent: string) {
+interface PaymentItem {
+  method: string
+  amount: number
+  color: string
+}
+
+function parsePayments(paymentContent: string): PaymentItem[] {
   if (!paymentContent) return []
   const parts = paymentContent.split(/[,，]/)
-  return parts.map((p: string) => {
+  return parts.reduce<PaymentItem[]>((result, p: string) => {
     const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
     if (match) {
       const method = match[1]; const amount = parseFloat(match[2])
       const color = method.includes('预存款') || method.includes('余额') ? '#6366f1'
         : method.includes('微信') ? '#07c160' : method.includes('支付宝') ? '#1677ff'
         : method.includes('游戏币') ? '#f59e0b' : method.includes('现金') ? '#64748b' : '#64748b'
-      return { method, amount, color }
+      result.push({ method, amount, color })
     }
-    return null
-  }).filter(Boolean)
+    return result
+  }, [])
 }
 
 const onDemandPayments = computed(() => parsePayments(currentOrder.value?.paymentContent || ''))
@@ -401,18 +416,35 @@ const columns: DataTableColumns = [
     align: 'center',
     render: (row: any) => h(NTag, { type: row.settled ? 'warning' : 'success', size: 'small', bordered: false }, { default: () => row.settled ? '已结算' : '未结算' }),
   },
-  { title: '操作', key: 'action', width: 160, align: 'center', render: (row: any) => h(NSpace, { size: 4 }, { default: () => [h(NButton, { type: 'primary', size: 'small', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }), isMarked(row.orderNo) ? h(NButton, { type: 'warning', size: 'small', text: true, onClick: () => { unmarkOrder(row.orderNo); window.$message?.info('已取消标记') } }, { default: () => '取消标记' }) : h(NButton, { type: 'warning', size: 'small', text: true, onClick: () => { if (!openMarkDialog({ orderNo: row.orderNo, store: row.shop, amount: `¥${row.amount.toFixed(2)}` })) window.$message?.warning('该订单已在异常列表中') } }, { default: () => '标记异常' })] }) },
+  { title: '操作', key: 'action', width: 160, align: 'center', render: (row: any) => h(NSpace, { size: 4 }, { default: () => [h(NButton, { type: 'primary', size: 'small', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }), isMarked(row.orderNo) ? h(NButton, { type: 'warning', size: 'small', text: true, onClick: () => { unmarkOrder(row.orderNo); message.info('已取消标记') } }, { default: () => '取消标记' }) : h(NButton, { type: 'warning', size: 'small', text: true, onClick: () => { if (!openMarkDialog({ orderNo: row.orderNo, store: row.shop, amount: `¥${row.amount.toFixed(2)}` })) message.warning('该订单已在异常列表中') } }, { default: () => '标记异常' })] }) },
 ]
 
 const detailColumns: DataTableColumns = [
-  { title: '项目', key: 'item', align: 'center' },
-  { title: '内容', key: 'content', align: 'center' },
+  { title: '点播内容', key: 'content', minWidth: 120 },
+  { title: '设备', key: 'device', width: 130, align: 'center' },
+  { title: '核销方式', key: 'verifyMode', width: 120, align: 'center' },
+  { title: '时长', key: 'duration', width: 90, align: 'center' },
+  { title: '结束原因', key: 'endReason', width: 130, align: 'center' },
+  { title: '异常类型', key: 'exceptionType', width: 130, align: 'center' },
+  { title: '金额', key: 'price', width: 100, align: 'center' },
 ]
+
+function getVodDetailRows(order: any) {
+  return [{
+    content: order.gameFilm || '--',
+    device: order.device || '--',
+    verifyMode: order.verifyMode || '--',
+    duration: order.duration || '--',
+    endReason: order.endReason || '正常完成',
+    exceptionType: order.exceptionType || '无',
+    price: `¥${(order.amount || 0).toFixed(2)}`,
+  }]
+}
 
 const rawData = ref([
   // 混合支付示例（预存款+微信支付）
   {
-    orderNo: 'MX202605070003', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '过山车VR', type: 'VR', duration: '10分钟', amount: 36.10, member: '张小明(139****5678)', createTime: '2026-05-07 11:00', status: '已完成', paymentContent: '预存款:26.10,微信支付:10.00', settled: false, source: '小程序', remark: '金卡95折',
+    orderNo: 'MX202605070003', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '过山车VR', type: 'VR', duration: '10分钟', amount: 36.10, member: '张小明(139****5678)', createTime: '2026-05-07 11:00', status: '已完成', paymentContent: '预存款:26.10,微信支付:10.00', settled: false, source: '小程序', remark: '金卡95折',
     details: [
       { item: '支付方式', content: '预存款+微信支付' },
       { item: '优惠', content: '金卡95折, 游戏币抵扣260币' },
@@ -420,7 +452,7 @@ const rawData = ref([
     ], payMethod: '混合支付',
   },
   {
-    orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '星际穿越', type: 'VR', duration: '15分钟', amount: 48.00, member: '散客', createTime: '2023-07-25 12:54', status: '已完成', paymentContent: '微信支付:48.00', settled: true, source: '点播系统', remark: '',
+    orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '星际穿越', type: 'VR', duration: '15分钟', amount: 48.00, member: '散客', createTime: '2023-07-25 12:54', status: '已完成', paymentContent: '微信支付:48.00', settled: true, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '星际穿越' },
       { item: '设备名称', content: '幻影飞碟' },
@@ -430,7 +462,7 @@ const rawData = ref([
     ], payMethod: '微信支付',
   },
   {
-    orderNo: 'OD202307250002', shop: '利民街小展厅', device: '暗黑机甲22版', gameFilm: '机甲风暴', type: 'VR', duration: '20分钟', amount: 58.00, member: '138****1234', createTime: '2023-07-25 11:30', status: '已完成', paymentContent: '余额:58.00', settled: false, source: '点播系统', remark: '',
+    orderNo: 'OD202307250002', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'VR设备', verifyMode: '会员码反扫', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '机甲风暴', type: 'VR', duration: '20分钟', amount: 58.00, member: '138****1234', createTime: '2023-07-25 11:30', status: '已完成', paymentContent: '余额:58.00', settled: false, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '机甲风暴' },
       { item: '设备名称', content: '暗黑机甲22版' },
@@ -440,7 +472,7 @@ const rawData = ref([
     ], payMethod: '余额',
   },
   {
-    orderNo: 'OD202307250003', shop: '利民街小展厅', device: '暗黑战场[主控端]', gameFilm: '僵尸围城', type: 'VR', duration: '10分钟', amount: 38.00, member: '139****5678', createTime: '2023-07-25 10:47', status: '进行中', paymentContent: '预存次数:38.00', settled: false, source: '点播系统', remark: '',
+    orderNo: 'OD202307250003', shop: '利民街小展厅', device: '暗黑战场[主控端]', deviceType: '主机串流', verifyMode: '店员扫码点播', endReason: '进行中', exceptionStatus: '正常', exceptionType: '', gameFilm: '僵尸围城', type: 'VR', duration: '10分钟', amount: 38.00, member: '139****5678', createTime: '2023-07-25 10:47', status: '进行中', paymentContent: '预存次数:38.00', settled: false, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '僵尸围城' },
       { item: '设备名称', content: '暗黑战场[主控端]' },
@@ -450,7 +482,7 @@ const rawData = ref([
     ], payMethod: '预存次数',
   },
   {
-    orderNo: 'OD202307250004', shop: '利民街小展厅', device: '悬浮骑兵', gameFilm: '极速飞车', type: 'VR', duration: '12分钟', amount: 28.00, member: '137****9012', createTime: '2023-07-25 10:33', status: '已完成', paymentContent: '套票抵扣:28.00', settled: true, source: '点播系统', remark: '',
+    orderNo: 'OD202307250004', shop: '利民街小展厅', device: '悬浮骑兵', deviceType: 'VR设备', verifyMode: '会员码反扫', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '极速飞车', type: 'VR', duration: '12分钟', amount: 28.00, member: '137****9012', createTime: '2023-07-25 10:33', status: '已完成', paymentContent: '套票抵扣:28.00', settled: true, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '极速飞车' },
       { item: '设备名称', content: '悬浮骑兵' },
@@ -460,7 +492,7 @@ const rawData = ref([
     ], payMethod: '套票抵扣',
   },
   {
-    orderNo: 'OD202307250005', shop: '利民街小展厅', device: '幻影飞碟', gameFilm: '深海探险', type: '银幕', duration: '25分钟', amount: 68.00, member: '136****3456', createTime: '2023-07-25 09:15', status: '已取消', paymentContent: '微信支付:68.00', settled: false, source: '点播系统', remark: '',
+    orderNo: 'OD202307250005', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '用户取消', exceptionStatus: '正常', exceptionType: '', gameFilm: '深海探险', type: '银幕', duration: '25分钟', amount: 68.00, member: '136****3456', createTime: '2023-07-25 09:15', status: '已取消', paymentContent: '微信支付:68.00', settled: false, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '深海探险' },
       { item: '设备名称', content: '幻影飞碟' },
@@ -470,7 +502,7 @@ const rawData = ref([
     ], payMethod: '微信支付',
   },
   {
-    orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑机甲22版', gameFilm: '恐龙世界', type: 'VR', duration: '18分钟', amount: 52.00, member: '散客', createTime: '2023-07-25 08:40', status: '已完成', paymentContent: '微信支付:52.00', settled: true, source: '点播系统', remark: '',
+    orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'VR设备', verifyMode: '小程序主动扫码', endReason: '正常完成', exceptionStatus: '正常', exceptionType: '', gameFilm: '恐龙世界', type: 'VR', duration: '18分钟', amount: 52.00, member: '散客', createTime: '2023-07-25 08:40', status: '已完成', paymentContent: '微信支付:52.00', settled: true, source: '点播系统', remark: '',
     details: [
       { item: '点播内容', content: '恐龙世界' },
       { item: '设备名称', content: '暗黑机甲22版' },
