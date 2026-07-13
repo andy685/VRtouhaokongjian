@@ -14,6 +14,7 @@
         <div class="filter-bar">
           <n-select v-model:value="filterShop" :options="shopOptions" size="small" style="width:150px" clearable placeholder="全部店铺" />
           <n-input v-model:value="filterDevice" size="small" style="width:160px" clearable placeholder="搜索设备" />
+          <n-select v-model:value="filterFilmException" :options="filmExceptionOptions" size="small" style="width:120px" clearable placeholder="异常状态" />
           <n-input v-model:value="filterFilmGame" size="small" style="width:160px" clearable placeholder="搜索游戏" />
           <n-date-picker type="daterange" clearable size="small" v-model:value="dateRange" style="width:240px" />
         </div>
@@ -158,7 +159,6 @@
         </n-space>
       </template>
     </n-modal>
-
   </div>
 </template>
 
@@ -173,6 +173,7 @@ const activeTab = ref('film-record')
 // ==================== 公共筛选 ====================
 const filterShop = ref<string | null>(null)
 const filterDevice = ref('')
+const filterFilmException = ref<string | null>(null)
 const filterGameSummary = ref('')
 const dateRange = ref<[number, number] | null>(null)
 
@@ -183,27 +184,62 @@ const shopOptions = [
 const pagination = { pageSize: 15 }
 
 // ==================== Tab 1: 消费记录 ====================
-const filmColumns: DataTableColumns = [
+interface VodConsumptionRecord {
+  orderNo: string
+  shop: string
+  device: string
+  deviceType: string
+  deviceTypeText: string
+  game: string
+  people: number
+  time: string
+  duration: number
+  amount: number
+  verifyMode: string
+  exceptionStatus: '正常' | '异常'
+  exceptionType: string
+  refundRule: string
+  allowRenewal: boolean
+}
+
+const filmExceptionOptions = [
+  { label: '正常', value: '正常' },
+  { label: '异常', value: '异常' },
+]
+
+const filmExceptionRender = (row: VodConsumptionRecord) => {
+  if (row.exceptionStatus === '异常') {
+    return h(NTag, { type: 'warning', size: 'small', bordered: false }, { default: () => row.exceptionType })
+  }
+  return h(NTag, { type: 'success', size: 'small', bordered: false }, { default: () => '正常' })
+}
+
+const filmColumns: DataTableColumns<VodConsumptionRecord> = [
+  { title: '订单号', key: 'orderNo', width: 150, align: 'center' },
   { title: '店铺', key: 'shop', width: 130, align: 'center' },
   { title: '设备', key: 'device', width: 140, align: 'center' },
   { title: '游戏', key: 'game', minWidth: 180 },
   { title: '人数', key: 'people', width: 70, align: 'center' },
+  { title: '时长', key: 'duration', width: 80, align: 'center', render: (row) => `${row.duration}分钟` },
+  { title: '金额', key: 'amount', width: 90, align: 'center', render: (row) => `¥${row.amount.toFixed(2)}` },
+  { title: '核销方式', key: 'verifyMode', width: 120, align: 'center' },
+  { title: '异常', key: 'exceptionStatus', width: 130, align: 'center', render: filmExceptionRender },
   { title: '消费时间', key: 'time', width: 160, align: 'center' },
 ]
 
-const filmRawData = ref([
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 12:54', allowRenewal: true },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '勇闯恐龙谷(飞碟)', people: 1, time: '2023-07-25 12:50', allowRenewal: false },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '荒岛逃生(飞碟)', people: 1, time: '2023-07-25 12:45', allowRenewal: false },
-  { shop: '利民街小展厅', device: '暗黑机甲22版', game: '幻影突袭', people: 1, time: '2023-07-25 11:30', allowRenewal: true },
-  { shop: '利民街小展厅', device: '暗黑战场[主控端]', game: '幻影突袭', people: 1, time: '2023-07-25 10:47', allowRenewal: true },
-  { shop: '利民街小展厅', device: '暗黑战场[主控端]', game: '破甲风暴', people: 2, time: '2023-07-25 10:38', allowRenewal: false },
-  { shop: '利民街小展厅', device: '悬浮骑兵', game: '节奏光剑', people: 1, time: '2023-07-25 10:33', allowRenewal: true },
-  { shop: '利民街小展厅', device: '悬浮骑兵', game: '节奏光剑', people: 1, time: '2023-07-25 10:30', allowRenewal: true },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '急速森林(飞碟)', people: 5, time: '2023-07-25 11:39', allowRenewal: false },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '恐怖森林(飞碟)', people: 1, time: '2023-07-25 11:23', allowRenewal: false },
-  { shop: '利民街小展厅', device: '幻影飞碟', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 11:17', allowRenewal: true },
-  { shop: '利民街小展厅', device: '暗黑机甲22版', game: '幻影突袭', people: 1, time: '2023-07-25 11:05', allowRenewal: true },
+const filmRawData = ref<VodConsumptionRecord[]>([
+  { orderNo: 'OD202307250001', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'vr', deviceTypeText: 'VR设备', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2023-07-25 12:54', duration: 15, amount: 68, verifyMode: '小程序主动扫码', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: true },
+  { orderNo: 'OD202307250002', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'vr', deviceTypeText: 'VR设备', game: '勇闯恐龙谷(飞碟)', people: 1, time: '2023-07-25 12:50', duration: 12, amount: 45, verifyMode: '会员码反扫', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: false },
+  { orderNo: 'OD202307250003', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'vr', deviceTypeText: 'VR设备', game: '荒岛逃生(飞碟)', people: 1, time: '2023-07-25 12:45', duration: 12, amount: 45, verifyMode: '会员码反扫', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: false },
+  { orderNo: 'OD202307250004', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'vr', deviceTypeText: 'VR设备', game: '幻影突袭', people: 1, time: '2023-07-25 11:30', duration: 15, amount: 58, verifyMode: '小程序主动扫码', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: true },
+  { orderNo: 'OD202307250005', shop: '利民街小展厅', device: '暗黑战场[主控端]', deviceType: 'host', deviceTypeText: '主机串流', game: '幻影突袭', people: 1, time: '2023-07-25 10:47', duration: 15, amount: 58, verifyMode: '店员扫码点播', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: true },
+  { orderNo: 'OD202307250006', shop: '利民街小展厅', device: '暗黑战场[主控端]', deviceType: 'host', deviceTypeText: '主机串流', game: '破甲风暴', people: 2, time: '2023-07-25 10:38', duration: 12, amount: 45, verifyMode: '店员扫码点播', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: false },
+  { orderNo: 'OD202307250007', shop: '利民街小展厅', device: '悬浮骑兵', deviceType: 'vr', deviceTypeText: 'VR设备', game: '节奏光剑', people: 1, time: '2023-07-25 10:33', duration: 10, amount: 38, verifyMode: '小程序主动扫码', exceptionStatus: '异常', exceptionType: '启动失败', refundRule: '需人工核实后处理，不自动退款', allowRenewal: true },
+  { orderNo: 'OD202307250008', shop: '利民街小展厅', device: '悬浮骑兵', deviceType: 'vr', deviceTypeText: 'VR设备', game: '节奏光剑', people: 1, time: '2023-07-25 10:30', duration: 10, amount: 38, verifyMode: '小程序主动扫码', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: true },
+  { orderNo: 'OD202604230018', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'vr', deviceTypeText: 'VR设备', game: '急速森林(飞碟)', people: 5, time: '2026-04-23 15:42', duration: 0, amount: 68, verifyMode: '小程序主动扫码', exceptionStatus: '异常', exceptionType: '支付成功未开局', refundRule: '需人工核实后处理，不自动退款', allowRenewal: false },
+  { orderNo: 'OD202307250010', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'vr', deviceTypeText: 'VR设备', game: '恐怖森林(飞碟)', people: 1, time: '2023-07-25 11:23', duration: 12, amount: 45, verifyMode: '会员码反扫', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: false },
+  { orderNo: 'OD202604230033', shop: '利民街小展厅', device: '幻影飞碟', deviceType: 'vr', deviceTypeText: 'VR设备', game: '阿拉丁历险记4K高清版(飞碟)', people: 2, time: '2026-04-23 16:40', duration: 6, amount: 68, verifyMode: '会员码反扫', exceptionStatus: '正常', exceptionType: '', refundRule: '中途退出不退款，仅保留记录', allowRenewal: true },
+  { orderNo: 'OD202307250012', shop: '利民街小展厅', device: '暗黑机甲22版', deviceType: 'vr', deviceTypeText: 'VR设备', game: '幻影突袭', people: 1, time: '2023-07-25 11:05', duration: 15, amount: 58, verifyMode: '小程序主动扫码', exceptionStatus: '正常', exceptionType: '', refundRule: '正常完成，不涉及退款', allowRenewal: true },
 ])
 
 const filterFilmGame = ref('')
@@ -212,16 +248,10 @@ const filteredFilmData = computed(() => {
   let data = filmRawData.value
   if (filterShop.value) data = data.filter(d => d.shop === filterShop.value)
   if (filterDevice.value) data = data.filter(d => d.device.includes(filterDevice.value))
+  if (filterFilmException.value) data = data.filter(d => d.exceptionStatus === filterFilmException.value)
   if (filterFilmGame.value) data = data.filter(d => d.game.includes(filterFilmGame.value))
   return data
 })
-
-function resetFilmFilter() {
-  filterShop.value = null
-  filterDevice.value = ''
-  filterFilmGame.value = ''
-  dateRange.value = null
-}
 
 // ==================== Tab 2: 游戏汇总 ====================
 const gameSummaryColumns: DataTableColumns = [
@@ -263,19 +293,13 @@ const gameSummaryKpi = computed(() => {
   }
 })
 
-function resetGameFilter() {
-  filterShop.value = null
-  filterGameSummary.value = ''
-  dateRange.value = null
-}
-
 // ==================== Tab 3: 员工点播 ====================
 const staffFilterShop = ref<string | null>(null)
 const staffFilterEmployee = ref<string | null>(null)
 const staffDeviceType = ref<string | null>(null)
 const staffFilterGame = ref('')
 const deviceTypeOptions = [
-  { label: '全部设备', value: null },
+  { label: '全部设备', value: '' },
   { label: 'VR设备', value: 'vr' },
   { label: '银幕互动', value: 'screen' },
 ]
@@ -359,14 +383,6 @@ const currentStaffRecord = ref<any>(null)
 function showStaffDetailFn(row: any) {
   currentStaffRecord.value = row
   showStaffDetail.value = true
-}
-
-function resetStaffFilter() {
-  staffFilterShop.value = null
-  staffFilterEmployee.value = null
-  staffDeviceType.value = null
-  staffFilterGame.value = ''
-  staffDateRange.value = getTodayRange()
 }
 
 // ==================== 公共导出 ====================

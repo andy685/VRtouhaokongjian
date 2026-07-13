@@ -24,7 +24,7 @@
       :bordered="true"
       :single-line="false"
       size="small"
-      :scroll-x="1200"
+      :scroll-x="1800"
     />
 
     <!-- 筛选弹窗 -->
@@ -39,6 +39,14 @@
         <n-form-item label="订单号">
           <n-input v-model:value="filterOrderNo" placeholder="输入订单号..." />
         </n-form-item>
+        <template v-if="currentType === '点播系统订单'">
+          <n-form-item label="设备">
+            <n-input v-model:value="filterVodDevice" placeholder="输入设备名称..." clearable />
+          </n-form-item>
+          <n-form-item label="异常">
+            <n-select v-model:value="filterVodException" :options="vodExceptionOptions" placeholder="全部异常状态" clearable />
+          </n-form-item>
+        </template>
         <n-form-item label="日期范围">
           <n-date-picker type="daterange" clearable v-model:value="filterDateRange" style="width: 100%;" />
         </n-form-item>
@@ -91,6 +99,15 @@
             <n-descriptions-item label="交易时间">{{ detailRow.time }}</n-descriptions-item>
             <n-descriptions-item label="操作人">{{ detailRow.operator || '--' }}</n-descriptions-item>
             <n-descriptions-item label="来源">{{ detailRow.source || '点播系统' }}</n-descriptions-item>
+            <n-descriptions-item label="设备">{{ detailRow.vodDevice || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="设备类型">{{ detailRow.vodDeviceType || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="核销方式">{{ detailRow.vodVerifyMode || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="结束原因">{{ detailRow.vodEndReason || '正常完成' }}</n-descriptions-item>
+            <n-descriptions-item label="异常状态">
+              <n-tag :type="detailRow.vodExceptionStatus === '正常' ? 'success' : 'warning'" size="small">{{ detailRow.vodExceptionStatus || '正常' }}</n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item label="异常类型">{{ detailRow.vodExceptionType || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="退款规则">{{ detailRow.vodRefundRule || '按订单状态处理' }}</n-descriptions-item>
             <n-descriptions-item label="备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
           </n-descriptions>
           <div class="detail-section">
@@ -99,7 +116,7 @@
           </div>
           <div class="detail-section">
             <h3 class="section-title">点播明细</h3>
-            <n-data-table :columns="vodDetailColumns" :data="[{ content: detailRow.vodName, device: detailRow.vodDevice || '-', duration: detailRow.vodDuration || '-', price: '¥' + detailRow.amount.toFixed(2) }]" :bordered="true" :single-line="false" size="small" />
+            <n-data-table :columns="vodDetailColumns" :data="[{ content: detailRow.vodName, device: detailRow.vodDevice || '-', verifyMode: detailRow.vodVerifyMode || '-', duration: detailRow.vodDuration || '-', endReason: detailRow.vodEndReason || '正常完成', exceptionType: detailRow.vodExceptionType || '无', price: '¥' + detailRow.amount.toFixed(2) }]" :bordered="true" :single-line="false" size="small" />
           </div>
         </template>
         <!-- 手动扣费订单详情 -->
@@ -200,7 +217,11 @@ const route = useRoute()
 function markAsException(row: any) {
   const storeName = row.store || ''
   const amount = row.type === '活动赠送记录' ? '¥0.00' : `¥${(row.amount || 0).toFixed(2)}`
-  if (!openMarkDialog({ orderNo: row.orderNo, store: storeName, amount, source: '平台巡检' })) {
+  const defaultType = row.type === '点播系统订单' ? row.vodExceptionType : ''
+  const defaultReason = row.type === '点播系统订单' && row.vodDevice
+    ? `${row.vodDevice} / ${row.vodName || '点播内容'} / ${row.vodVerifyMode || '未知核销方式'}`
+    : ''
+  if (!openMarkDialog({ orderNo: row.orderNo, store: storeName, amount, source: '平台巡检', defaultType, defaultReason })) {
     message.warning('该订单已在异常列表中')
   }
 }
@@ -238,10 +259,27 @@ function isRefunded(row: any) {
   return row?.status === '已退款' || row?.status === '退款中'
 }
 
+function isExceptionMarked(row: any) {
+  return row?.vodExceptionStatus === '异常' || isMarked(row.orderNo)
+}
+
+function cancelExceptionMark(row: any) {
+  const removed = isMarked(row.orderNo) ? unmarkOrder(row.orderNo) : false
+  if (row.vodExceptionStatus === '异常') {
+    row.vodExceptionStatus = '正常'
+    row.vodExceptionType = ''
+  }
+  if (removed || row.vodExceptionStatus === '正常') {
+    message.info('已取消标记')
+  }
+}
+
 const filterMerchant = ref<number | null>(null)
 const filterStore = ref<number | null>(null)
 const filterOrderNo = ref('')
 const filterDateRange = ref<[number, number] | null>(null)
+const filterVodDevice = ref('')
+const filterVodException = ref<string | null>(null)
 
 const merchantOptions = [
   { label: '恒然集团', value: 1 },
@@ -259,11 +297,22 @@ const storeOptions = [
   { label: '华东展厅', value: 5 },
 ]
 
+const vodExceptionOptions = [
+  { label: '正常', value: '正常' },
+  { label: '异常', value: '异常' },
+]
+
+interface PaymentItem {
+  method: string
+  amount: number
+  color: string
+}
+
 // 支付方式解析
-function parsePayments(paymentContent: string) {
+function parsePayments(paymentContent: string): PaymentItem[] {
   if (!paymentContent || paymentContent === '待支付') return []
   const parts = paymentContent.split(/[,，]/)
-  return parts.map((p: string) => {
+  return parts.reduce<PaymentItem[]>((result, p: string) => {
     const match = p.match(/(.+?)[:：]\s*([\d.]+)/)
     if (match) {
       const method = match[1]
@@ -275,10 +324,10 @@ function parsePayments(paymentContent: string) {
         : method.includes('现金') ? '#64748b'
         : method.includes('后台') ? '#94a3b8'
         : '#64748b'
-      return { method, amount, color }
+      result.push({ method, amount, color })
     }
-    return null
-  }).filter(Boolean)
+    return result
+  }, [])
 }
 
 function parseOrderPayments(row: any) {
@@ -307,9 +356,12 @@ const allData = ref([
   { id: 0, orderNo: 'MX202605070001', merchant: '利民街商家', store: '利民街大展厅', type: '收银订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 10:30:00', status: '已完成', operator: '李小红', settled: false, source: '小程序', remark: '会员95折', orderItems: [{ name: '过山车VR', price: '¥36.10', quantity: 1, subtotal: '¥36.10' }] },
   { id: 20, orderNo: 'CO20260415020', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '收银订单', amount: 298.00, paymentContent: '支付宝:298.00', time: '2026-04-15 14:22:00', status: '已完成', operator: '赵前台', settled: true, source: '收银系统', remark: '会员日活动', orderItems: [{ name: '亲子套票', price: '¥298.00', quantity: 1, subtotal: '¥298.00' }] },
   // === 点播系统订单 ===
-  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45.00, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑机甲22版', vodDuration: '10分钟' },
-  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30.00, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '', vodName: '恐怖医院', vodDevice: '幻影飞碟', vodDuration: '15分钟' },
-  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑战场[主控端]', vodDuration: '12分钟' },
+  { id: 4, orderNo: 'OD202309160002', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '点播系统订单', amount: 45.00, paymentContent: '余额:45.00', time: '2023-09-16 16:20:33', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑机甲22版', vodDeviceType: 'VR设备', vodVerifyMode: '会员码反扫', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodRefundRule: '正常完成，不涉及退款', vodDuration: '10分钟' },
+  { id: 5, orderNo: 'OD202309160004', merchant: '党建馆集团', store: '党建馆', type: '点播系统订单', amount: 30.00, paymentContent: '游戏币:30.00', time: '2023-09-16 16:10:45', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '', vodName: '恐怖医院', vodDevice: '幻影飞碟', vodDeviceType: 'VR设备', vodVerifyMode: '小程序主动扫码', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodRefundRule: '正常完成，不涉及退款', vodDuration: '15分钟' },
+  { id: 14, orderNo: 'MX202605070002', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 36.10, paymentContent: '预存款:26.10,微信支付:10.00', time: '2026-05-07 11:00:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '', vodName: '过山车VR', vodDevice: '暗黑战场[主控端]', vodDeviceType: '主机串流', vodVerifyMode: '店员扫码点播', vodEndReason: '正常完成', vodExceptionStatus: '正常', vodExceptionType: '', vodRefundRule: '正常完成，不涉及退款', vodDuration: '12分钟' },
+  { id: 24, orderNo: 'OD202604230018', merchant: '利民街商家', store: '利民街大展厅', type: '点播系统订单', amount: 68.00, paymentContent: '微信支付:68.00', time: '2026-04-23 15:42:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '已记录异常，待门店复核是否补开局', vodName: '急速森林(飞碟)', vodDevice: '幻影飞碟', vodDeviceType: 'VR设备', vodVerifyMode: '小程序主动扫码', vodEndReason: '未开局', vodExceptionStatus: '异常', vodExceptionType: '支付成功未开局', vodRefundRule: '需人工核实后处理，不自动退款', vodDuration: '0分钟' },
+  { id: 25, orderNo: 'OD202604230033', merchant: '卓远科技', store: '卓远萧山区店', type: '点播系统订单', amount: 78.00, paymentContent: '会员余额:78.00', time: '2026-04-23 16:40:00', status: '已完成', operator: '系统自动', settled: false, source: '点播系统', remark: '玩家中途退出，按规则不退款', vodName: '极限滑雪', vodDevice: 'Pico 4 Pro #03', vodDeviceType: 'VR头显', vodVerifyMode: '会员码反扫', vodEndReason: '中途退出不退款', vodExceptionStatus: '正常', vodExceptionType: '', vodRefundRule: '中途退出不退款，仅保留记录', vodDuration: '6分钟' },
+  { id: 26, orderNo: 'OD202604230041', merchant: '恒然集团', store: '恒然科技园店', type: '点播系统订单', amount: 88.00, paymentContent: '微信支付:88.00', time: '2026-04-23 18:20:00', status: '已完成', operator: '系统自动', settled: true, source: '点播系统', remark: '员工现场人工强停', vodName: '星际探险', vodDevice: 'Pico 4 Pro #01', vodDeviceType: 'VR头显', vodVerifyMode: '店员扫码点播', vodEndReason: '人工强停', vodExceptionStatus: '异常', vodExceptionType: '人工强停', vodRefundRule: '按门店权限人工处理', vodDuration: '8分钟' },
   // === 手动扣费订单 ===
   { id: 6, orderNo: 'MD202309160006', merchant: '恒然集团', store: '恒然分部展厅', type: '手动扣费订单', amount: 20.00, paymentContent: '现金:20.00', time: '2023-09-16 15:55:30', status: '已完成', operator: '店员A', reason: '设备损耗扣费' },
   { id: 7, orderNo: 'MD202309160008', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '手动扣费订单', amount: 15.00, paymentContent: '余额:15.00', time: '2023-09-16 15:40:12', status: '已完成', operator: '店员B', reason: '超时扣费' },
@@ -360,6 +412,16 @@ const typeExtraCols: Record<string, DataTableColumns> = {
   ],
   '点播系统订单': [
     { title: '点播内容', key: 'vodName', width: 130, align: 'center' },
+    { title: '设备', key: 'vodDevice', width: 140, align: 'center' },
+    { title: '核销方式', key: 'vodVerifyMode', width: 120, align: 'center' },
+    {
+      title: '异常状态',
+      key: 'vodExceptionStatus',
+      width: 100,
+      align: 'center',
+      render: (row: any) => h(NTag, { type: row.vodExceptionStatus === '异常' ? 'warning' : 'success', size: 'small', bordered: false }, () => row.vodExceptionStatus || '正常'),
+    },
+    { title: '异常类型', key: 'vodExceptionType', minWidth: 140, render: (row: any) => row.vodExceptionType || '--' },
   ],
   '手动扣费订单': [
     { title: '操作人', key: 'operator', width: 80, align: 'center' },
@@ -383,25 +445,32 @@ const typeExtraCols: Record<string, DataTableColumns> = {
 const actionCol: DataTableColumns = [
   {
     title: '操作', key: 'action', width: 140, align: 'center', fixed: 'right' as const,
-    render: (row: any) => h(NSpace, { size: 4 }, { default: () => [
-      h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }),
-      isMarked(row.orderNo)
-        ? h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => { unmarkOrder(row.orderNo); window.$message?.info('已取消标记') } }, { default: () => '取消标记' })
-        : h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => markAsException(row) }, { default: () => '标记异常' }),
-    ]}),
+    render: (row: any) => {
+      const actions = [
+        h(NButton, { size: 'small', type: 'primary', text: true, onClick: () => openDetail(row) }, { default: () => '详情' }),
+      ]
+
+      if (isExceptionMarked(row)) {
+        actions.push(h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => cancelExceptionMark(row) }, { default: () => '取消标记' }))
+      } else {
+        actions.push(h(NButton, { size: 'small', type: 'warning', text: true, onClick: () => markAsException(row) }, { default: () => '标记异常' }))
+      }
+
+      return h(NSpace, { size: 4 }, { default: () => actions })
+    },
   },
 ]
 
 const currentColumns = computed(() => {
   if (!currentType.value) {
     // 全部订单：只显示基础列 + 操作（去掉金额和支付方式列，因为活动赠送没有）
-    const allCols = baseColumns.filter(c => c.key !== 'amount' && c.key !== 'paymentContent')
+    const allCols = baseColumns.filter((c: any) => c.key !== 'amount' && c.key !== 'paymentContent')
     return [...allCols, ...actionCol]
   }
   const extra = typeExtraCols[currentType.value] || []
   // 活动赠送记录不显示金额和支付方式
   if (currentType.value === '活动赠送记录') {
-    const cols = baseColumns.filter(c => c.key !== 'amount' && c.key !== 'paymentContent')
+    const cols = baseColumns.filter((c: any) => c.key !== 'amount' && c.key !== 'paymentContent')
     return [...cols, ...extra, ...actionCol]
   }
   return [...baseColumns, ...extra, ...actionCol]
@@ -411,7 +480,10 @@ const currentColumns = computed(() => {
 const vodDetailColumns: DataTableColumns = [
   { title: '点播内容', key: 'content', minWidth: 120 },
   { title: '设备', key: 'device', width: 130, align: 'center' },
+  { title: '核销方式', key: 'verifyMode', width: 120, align: 'center' },
   { title: '时长', key: 'duration', width: 90, align: 'center' },
+  { title: '结束原因', key: 'endReason', width: 130, align: 'center' },
+  { title: '异常类型', key: 'exceptionType', width: 130, align: 'center' },
   { title: '价格', key: 'price', width: 100, align: 'center' },
 ]
 
@@ -431,6 +503,15 @@ const filteredData = computed(() => {
   }
   if (filterOrderNo.value) {
     data = data.filter(d => d.orderNo.toLowerCase().includes(filterOrderNo.value.toLowerCase()))
+  }
+  if (currentType.value === '点播系统订单') {
+    if (filterVodDevice.value) {
+      const kw = filterVodDevice.value.toLowerCase()
+      data = data.filter(d => (d.vodDevice || '').toLowerCase().includes(kw))
+    }
+    if (filterVodException.value) {
+      data = data.filter(d => (d.vodExceptionStatus || '正常') === filterVodException.value)
+    }
   }
   if (filterDateRange.value) {
     const start = new Date(filterDateRange.value[0])
@@ -452,6 +533,8 @@ function resetFilter() {
   filterStore.value = null
   filterOrderNo.value = ''
   filterDateRange.value = null
+  filterVodDevice.value = ''
+  filterVodException.value = null
 }
 
 function exportData() {

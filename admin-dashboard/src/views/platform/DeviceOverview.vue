@@ -10,9 +10,9 @@
       <n-tab-pane name="hosts" tab="🖥️ 主机监控" style="overflow:visible;">
         <div class="metrics-grid">
           <div class="metric-card"><div class="metric-label">主机总数</div><div class="metric-value">{{ hostSummary.total }}</div><div class="metric-sub">在线 {{ hostSummary.online }} / 离线 {{ hostSummary.offline }}</div></div>
-          <div class="metric-card"><div class="metric-label">平均在线率</div><div class="metric-value" :style="{color:hostSummary.avgRate>=90?'#10B981':'#F59E0B'}">{{ hostSummary.avgRate }}%</div></div>
-          <div class="metric-card"><div class="metric-label">故障主机</div><div class="metric-value" :style="{color:hostSummary.fault>0?'#EF4444':'#10B981'}">{{ hostSummary.fault }}</div></div>
-          <div class="metric-card"><div class="metric-label">CPU 平均使用率</div><div class="metric-value" style="color:#6366f1">{{ hostSummary.avgCpu }}%</div></div>
+          <div class="metric-card"><div class="metric-label">今日核销次数</div><div class="metric-value" style="color:#6366f1">{{ hostSummary.dailyVerifyCount }}</div></div>
+          <div class="metric-card"><div class="metric-label">今日核销金额</div><div class="metric-value" style="color:#10B981">¥{{ hostSummary.dailyAmount.toLocaleString() }}</div></div>
+          <div class="metric-card"><div class="metric-label">平均在线率</div><div class="metric-value" :style="{color:hostSummary.avgRate>=90?'#10B981':'#F59E0B'}">{{ hostSummary.avgRate }}%</div><div class="metric-sub">故障主机 {{ hostSummary.fault }}</div></div>
         </div>
         <div class="filter-bar">
           <n-select v-model:value="hostFilterMerchant" :options="merchantOpts" placeholder="全部商家" style="width:150px;" clearable size="small" @update:value="hostFilterStore = null" />
@@ -49,31 +49,52 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
-import { NDataTable, NTag, NSelect, NTabs, NTabPane, NInput, NSpace } from 'naive-ui'
+import { NDataTable, NTag, NSelect, NTabs, NTabPane, NInput, NTooltip } from 'naive-ui'
 
 // ─── 公共数据 ──────────────────────────────────────
 const merchantNames = ['恒然集团', '利民街商家', '党建馆集团', '华东展厅', '卓远科技']
 const merchantOpts = computed(() => merchantNames.map(m => ({ label: m, value: m })))
 
 // ─── 主机监控数据 ─────────────────────────────────
-interface HostMonitor { merchant: string; store: string; hostName: string; serialNo: string; status: 'online' | 'offline' | 'fault'; cpu: number; mem: number; disk: number; uptime: string; boundHeadsetCount: number; lastHeartbeat: string }
+interface HostMonitor {
+  merchant: string
+  store: string
+  hostName: string
+  serialNo: string
+  status: 'online' | 'offline' | 'fault'
+  cpu: number
+  mem: number
+  disk: number
+  uptime: string
+  boundHeadsetCount: number
+  lastHeartbeat: string
+  dailyVerifyCount: number
+  dailyAmount: number
+  playHours: number
+  onlineRate: number
+  exceptionCount: number
+  faultCount: number
+  replayRate: number
+  cardLeadCount: number
+  topContent: string
+}
 const hostMonitorData = ref<HostMonitor[]>([
-  { merchant: '恒然集团', store: '恒然科技园店', hostName: '主机 #01', serialNo: 'PCT-001', status: 'online', cpu: 32, mem: 55, disk: 68, uptine: '7d 12h', boundHeadsetCount: 3, lastHeartbeat: '2026-05-08 09:30:00' },
-  { merchant: '恒然集团', store: '恒然科技园店', hostName: '主机 #02', serialNo: 'PCT-002', status: 'online', cpu: 78, mem: 82, disk: 72, uptine: '3d 05h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:29:45' },
-  { merchant: '恒然集团', store: '恒然分部展厅', hostName: '主机 #03', serialNo: 'PCT-003', status: 'online', cpu: 15, mem: 30, disk: 45, uptine: '15d 08h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:28:20' },
-  { merchant: '利民街商家', store: '利民街小展厅', hostName: '主机 #04', serialNo: 'PCT-004', status: 'offline', cpu: 0, mem: 0, disk: 0, uptine: '--', boundHeadsetCount: 0, lastHeartbeat: '2026-05-07 18:00:00' },
-  { merchant: '利民街商家', store: '利民街小展厅', hostName: '主机 #05', serialNo: 'PCT-005', status: 'online', cpu: 45, mem: 60, disk: 55, uptine: '10d 03h', boundHeadsetCount: 1, lastHeartbeat: '2026-05-08 09:27:55' },
-  { merchant: '卓远科技', store: '卓远萧山区店', hostName: '主机 #06', serialNo: 'PCT-006', status: 'fault', cpu: 0, mem: 0, disk: 0, uptine: '--', boundHeadsetCount: 0, lastHeartbeat: '2026-05-06 14:30:00' },
-  { merchant: '党建馆集团', store: '党建馆', hostName: '主机 #07', serialNo: 'PCT-007', status: 'online', cpu: 22, mem: 45, disk: 60, uptine: '20d 01h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:26:40' },
+  { merchant: '恒然集团', store: '恒然科技园店', hostName: '主机 #01', serialNo: 'PCT-001', status: 'online', cpu: 32, mem: 55, disk: 68, uptime: '7d 12h', boundHeadsetCount: 3, lastHeartbeat: '2026-05-08 09:30:00', dailyVerifyCount: 42, dailyAmount: 5960, playHours: 28.6, onlineRate: 96, exceptionCount: 1, faultCount: 0, replayRate: 24, cardLeadCount: 3, topContent: '星际探险' },
+  { merchant: '恒然集团', store: '恒然科技园店', hostName: '主机 #02', serialNo: 'PCT-002', status: 'online', cpu: 78, mem: 82, disk: 72, uptime: '3d 05h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:29:45', dailyVerifyCount: 31, dailyAmount: 4280, playHours: 19.4, onlineRate: 91, exceptionCount: 2, faultCount: 0, replayRate: 18, cardLeadCount: 2, topContent: '深海潜水' },
+  { merchant: '恒然集团', store: '恒然分部展厅', hostName: '主机 #03', serialNo: 'PCT-003', status: 'online', cpu: 15, mem: 30, disk: 45, uptime: '15d 08h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:28:20', dailyVerifyCount: 26, dailyAmount: 3260, playHours: 18.2, onlineRate: 94, exceptionCount: 1, faultCount: 0, replayRate: 16, cardLeadCount: 1, topContent: '节奏光剑' },
+  { merchant: '利民街商家', store: '利民街小展厅', hostName: '主机 #04', serialNo: 'PCT-004', status: 'offline', cpu: 0, mem: 0, disk: 0, uptime: '--', boundHeadsetCount: 0, lastHeartbeat: '2026-05-07 18:00:00', dailyVerifyCount: 0, dailyAmount: 0, playHours: 0, onlineRate: 0, exceptionCount: 0, faultCount: 1, replayRate: 0, cardLeadCount: 0, topContent: '--' },
+  { merchant: '利民街商家', store: '利民街小展厅', hostName: '主机 #05', serialNo: 'PCT-005', status: 'online', cpu: 45, mem: 60, disk: 55, uptime: '10d 03h', boundHeadsetCount: 1, lastHeartbeat: '2026-05-08 09:27:55', dailyVerifyCount: 48, dailyAmount: 7280, playHours: 31.4, onlineRate: 97, exceptionCount: 2, faultCount: 0, replayRate: 29, cardLeadCount: 4, topContent: '急速森林(飞碟)' },
+  { merchant: '卓远科技', store: '卓远萧山区店', hostName: '主机 #06', serialNo: 'PCT-006', status: 'fault', cpu: 0, mem: 0, disk: 0, uptime: '--', boundHeadsetCount: 0, lastHeartbeat: '2026-05-06 14:30:00', dailyVerifyCount: 8, dailyAmount: 760, playHours: 4.1, onlineRate: 42, exceptionCount: 4, faultCount: 2, replayRate: 6, cardLeadCount: 0, topContent: '极限滑雪' },
+  { merchant: '党建馆集团', store: '党建馆', hostName: '主机 #07', serialNo: 'PCT-007', status: 'online', cpu: 22, mem: 45, disk: 60, uptime: '20d 01h', boundHeadsetCount: 2, lastHeartbeat: '2026-05-08 09:26:40', dailyVerifyCount: 22, dailyAmount: 2860, playHours: 15.5, onlineRate: 90, exceptionCount: 1, faultCount: 0, replayRate: 12, cardLeadCount: 1, topContent: '红色征程VR' },
 ])
-// 处理 uptime 字段名不一致
-hostMonitorData.value.forEach(d => { (d as any).uptime = (d as any).uptine; delete (d as any).uptine })
 
 const hostSummary = computed(() => {
-  const all = hostMonitorData.value; const total = all.length; const online = all.filter(d => d.status === 'online').length; const offline = all.filter(d => d.status === 'offline').length; const fault = all.filter(d => d.status === 'fault').length
-  const rates = all.filter(d => d.status === 'online'); const avgCpu = rates.length ? Math.round(rates.reduce((s,d) => s+d.cpu, 0) / rates.length) : 0
-  return { total, online, offline, fault, avgRate: total ? Math.round(online / total * 100) : 0, avgCpu }
-})
+	  const all = hostMonitorData.value; const total = all.length; const online = all.filter(d => d.status === 'online').length; const offline = all.filter(d => d.status === 'offline').length; const fault = all.filter(d => d.status === 'fault').length
+	  const dailyVerifyCount = all.reduce((s, d) => s + d.dailyVerifyCount, 0)
+	  const dailyAmount = all.reduce((s, d) => s + d.dailyAmount, 0)
+	  const avgOnlineRate = total ? Math.round(all.reduce((s, d) => s + d.onlineRate, 0) / total) : 0
+	  return { total, online, offline, fault, avgRate: avgOnlineRate, dailyVerifyCount, dailyAmount }
+	})
 
 const hostFilterMerchant = ref<string | null>(null); const hostFilterStore = ref<string | null>(null); const hostFilterKeyword = ref('')
 const hostStoreOpts = computed(() => {
@@ -89,21 +110,23 @@ const filteredHostMonitor = computed(() => {
 })
 
 const statusRender = (s: string) => { const m: Record<string,any> = { online:{type:'success',label:'在线'}, offline:{type:'default',label:'离线'}, fault:{type:'warning',label:'故障'} }; return h(NTag, { size:'small', type: m[s]?.type }, { default: () => m[s]?.label }) }
-const usageBar = (v: number) => {
-  const color = v > 80 ? '#EF4444' : v > 60 ? '#F59E0B' : '#10B981'
-  return h('div', { style: 'display:flex;align-items:center;gap:6px;' }, [
-    h('div', { style: `width:60px;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;` }, [h('div', { style: `width:${v}%;height:100%;background:${color};border-radius:3px;` })]),
-    h('span', { style: `font-size:11px;color:${color};font-weight:600;min-width:28px;` }, `${v}%`),
-  ])
-}
-
+const columnTip = (label: string, tip: string) => h(NTooltip, { trigger: 'hover' }, {
+  trigger: () => h('span', { style: 'cursor: help; border-bottom: 1px dotted #94a3b8;' }, label),
+  default: () => tip,
+})
 const hostMonitorColumns = [
   { title: '商家', key: 'merchant', minWidth: 100 }, { title: '店铺', key: 'store', minWidth: 130 }, { title: '主机名称', key: 'hostName', minWidth: 100 },
   { title: '编号', key: 'serialNo', width: 90 }, { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: any) => statusRender(row.status) },
-  { title: 'CPU', key: 'cpu', width: 100, render: (row: any) => usageBar(row.cpu) },
-  { title: '内存', key: 'mem', width: 100, render: (row: any) => usageBar(row.mem) },
-  { title: '磁盘', key: 'disk', width: 100, render: (row: any) => usageBar(row.disk) },
-  { title: '运行时长', key: 'uptime', width: 90 }, { title: '绑定头显', key: 'boundHeadsetCount', width: 80, align:'center' as const },
+  { title: '今日核销', key: 'dailyVerifyCount', width: 90, align:'center' as const },
+  { title: '核销金额', key: 'dailyAmount', width: 100, align:'center' as const, render: (row: any) => `¥${row.dailyAmount.toLocaleString()}` },
+  { title: () => columnTip('体验时长', '统计周期内用户实际游玩 Session 累计时长，用于设备经营效率分析。'), key: 'playHours', width: 90, align:'center' as const, render: (row: any) => `${row.playHours}h` },
+  { title: () => columnTip('在线率', '统计周期内主机在线时长 / 门店营业时长或应在线时长。'), key: 'onlineRate', width: 80, align:'center' as const, render: (row: any) => `${row.onlineRate}%` },
+  { title: '复玩率', key: 'replayRate', width: 80, align:'center' as const, render: (row: any) => `${row.replayRate}%` },
+  { title: '带动办卡', key: 'cardLeadCount', width: 90, align:'center' as const, render: (row: any) => `${row.cardLeadCount}人` },
+  { title: '异常', key: 'exceptionCount', width: 70, align:'center' as const },
+  { title: '故障', key: 'faultCount', width: 70, align:'center' as const },
+  { title: 'Top内容', key: 'topContent', minWidth: 130 },
+  { title: () => columnTip('运行时长', '主机自最近一次启动或上线后的连续运行时长，重启后重新计算。'), key: 'uptime', width: 90 }, { title: '绑定头显', key: 'boundHeadsetCount', width: 80, align:'center' as const },
   { title: '最后心跳', key: 'lastHeartbeat', minWidth: 150 },
 ]
 
@@ -159,6 +182,7 @@ const hsMonitorColumns = [
   { title: '绑定主机', key: 'boundHost', width: 100, align:'center' as const },
   { title: '固件', key: 'firmware', width: 80 }, { title: '最后心跳', key: 'lastHeartbeat', minWidth: 150 },
 ]
+
 </script>
 
 <style scoped>

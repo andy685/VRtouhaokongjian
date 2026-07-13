@@ -13,7 +13,15 @@ export interface ExceptionOrder {
   source: string
 }
 
-export const exceptionTypes = ['金额异常', '重复支付', '未到账'] as const
+export const exceptionTypes = [
+  '金额异常',
+  '重复支付',
+  '未到账',
+  '支付成功未开局',
+  '启动失败',
+  '设备离线',
+  '人工强停',
+] as const
 
 // 商家后台共享的异常订单列表
 const exceptionOrders = ref<ExceptionOrder[]>([
@@ -48,7 +56,7 @@ export function useExceptionOrders() {
    * 打开「标记异常」弹窗（由列表页按钮触发）
    * 返回 false 表示该订单已存在异常列表中，不应重复标记
    */
-  function openMarkDialog(order: { orderNo: string; store: string; amount: string; source?: string }): boolean {
+  function openMarkDialog(order: { orderNo: string; store: string; amount: string; source?: string; defaultType?: string; defaultReason?: string }): boolean {
     const exists = exceptionOrders.value.some(o => o.orderNo === order.orderNo)
     if (exists) return false
     markTarget.value = {
@@ -57,8 +65,8 @@ export function useExceptionOrders() {
       amount: order.amount,
       source: order.source || '商家提交',
     }
-    markType.value = ''
-    markReason.value = ''
+    markType.value = order.defaultType || ''
+    markReason.value = order.defaultReason || ''
     markDialogVisible.value = true
     return true
   }
