@@ -66,14 +66,15 @@ const routes: RouteRecordRaw[] = [
       { path: 'finance', name: 'PlatformFinance', component: () => import('../views/platform/FinanceOverview.vue'), meta: { title: '营收总览' } },
       { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: () => import('../views/platform/SettlementManage.vue'), meta: { title: '商家分账管理' } },
       { path: 'finance/settlement-config', name: 'PlatformSettlementConfig', component: () => import('../views/platform/SettlementConfig.vue'), meta: { title: '结算配置' } },
-      { path: 'finance/reconciliation', name: 'PlatformFinanceReconciliation', component: () => import('../views/platform/Reconciliation.vue'), meta: { title: '对账中心' } },
+      { path: 'finance/reconciliation', redirect: '/platform/finance/exception-orders' },
+      { path: 'finance/exception-orders', name: 'PlatformFinanceExceptionOrders', component: () => import('../views/platform/Reconciliation.vue'), meta: { title: '异常订单' } },
       { path: 'finance/payouts', name: 'PlatformPayoutManager', component: () => import('../views/platform/PayoutManager.vue'), meta: { title: '代理商分账管理' } },
       { path: 'finance/agent-settlement-config', name: 'PlatformAgentSettlementConfig', component: () => import('../views/platform/AgentSettlementConfig.vue'), meta: { title: '代理商结算配置' } },
       // 阶梯策略配置暂不启用
       // { path: 'finance/tier-config', name: 'PlatformTierConfig', component: () => import('../views/platform/TierStrategyConfig.vue'), meta: { title: '阶梯策略配置' } },
       { path: 'finance/cp-settlement', name: 'PlatformCPSettlement', component: () => import('../views/platform/CPSettlement.vue'), meta: { title: '游戏供应商结算' } },
       { path: 'finance/cp-settlement-config', name: 'PlatformCPSettlementConfig', component: () => import('../views/platform/CPSettlementConfig.vue'), meta: { title: 'CP结算配置' } },
-      { path: 'finance/cp-reconciliation', name: 'PlatformCPReconciliation', component: () => import('../views/platform/CPReconciliation.vue'), meta: { title: 'CP对账中心' } },
+      { path: 'finance/cp-reconciliation', redirect: '/platform/finance/cp-settlement' },
       { path: 'finance/lakala-config', name: 'PlatformLakalaConfig', component: () => import('../views/platform/LakalaConfig.vue'), meta: { title: '拉卡拉配置' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: () => import('../views/platform/System.vue'), meta: { title: '版本发布' } },
@@ -150,7 +151,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'gift-order', name: 'ShopGiftOrder', component: () => import('../views/shop/GiftOrder.vue'), meta: { title: '活动赠送订单' } },
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '内容消耗明细' } },
       { path: 'settlement', name: 'ShopSettlement', component: () => import('../views/shop/Settlement.vue'), meta: { title: '结算记录' } },
-      { path: 'reconciliation', name: 'ShopReconciliation', component: () => import('../views/shop/Reconciliation.vue'), meta: { title: '对账中心' } },
+      { path: 'reconciliation', redirect: '/shop/exception-orders' },
+      { path: 'exception-orders', name: 'ShopExceptionOrders', component: () => import('../views/shop/Reconciliation.vue'), meta: { title: '异常订单' } },
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: () => import('../views/shop/ShopStoreList.vue'), meta: { title: '店铺列表' } },
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: () => import('../views/shop/OnDemandSettings.vue'), meta: { title: '待机画面' } },

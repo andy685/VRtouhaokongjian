@@ -103,7 +103,7 @@ const docsList = ref<DocItem[]>([
   { id: 1, title: '平台快速入门指南', category: 'quick-start', categoryName: '快速入门', views: 1523, author: '运营组', updatedAt: '2026-04-20', status: true },
   { id: 2, title: '店铺创建与设备接入流程', category: 'guide', categoryName: '操作指南', views: 890, author: '技术组', updatedAt: '2026-04-18', status: true },
   { id: 3, title: '结算规则说明', category: 'guide', categoryName: '操作指南', views: 2100, author: '财务组', updatedAt: '2026-04-15', status: true },
-  { id: 4, title: '对账中心使用手册', category: 'guide', categoryName: '操作指南', views: 654, author: '财务组', updatedAt: '2026-04-28', status: true },
+  { id: 4, title: '异常订单处理手册', category: 'guide', categoryName: '操作指南', views: 654, author: '财务组', updatedAt: '2026-04-28', status: true },
   { id: 5, title: 'API接口调用规范', category: 'api', categoryName: 'API文档', views: 320, author: '技术组', updatedAt: '2026-03-10', status: false },
 ])
 

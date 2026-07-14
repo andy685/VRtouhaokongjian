@@ -169,7 +169,7 @@ const permissionTree = [
     children: [
       { label: '财务总览', key: 'finance_overview' },
       { label: '结算管理', key: 'settlement' },
-      { label: '对账中心', key: 'reconciliation' },
+      { label: '异常订单', key: 'exception_orders' },
     ]
   },
   {

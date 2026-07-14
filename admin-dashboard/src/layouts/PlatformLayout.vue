@@ -375,7 +375,7 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: '商家分账管理', key: '/platform/finance/settlement' },
           { label: '结算配置', key: '/platform/finance/settlement-config' },
-          { label: '对账中心', key: '/platform/finance/reconciliation' },
+          { label: '异常订单', key: '/platform/finance/exception-orders' },
         ]
       },
       {
@@ -394,7 +394,6 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: 'CP结算管理', key: '/platform/finance/cp-settlement' },
           { label: 'CP结算配置', key: '/platform/finance/cp-settlement-config' },
-          { label: 'CP对账中心', key: '/platform/finance/cp-reconciliation' },
         ]
       },
       { label: '拉卡拉配置', key: '/platform/finance/lakala-config' },

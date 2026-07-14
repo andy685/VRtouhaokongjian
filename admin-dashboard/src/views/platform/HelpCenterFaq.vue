@@ -124,7 +124,7 @@ const faqList = ref<FaqItem[]>([
   { id: 1, question: '如何注册成为商家？', answer: '访问平台首页，点击「商家入驻」按钮，填写企业信息、营业执照、联系人等资料，提交审核通过后即可开通商家后台。', category: 'account', hot: true, enabled: true },
   { id: 2, question: '支付渠道如何配置？', answer: '进入系统设置→收银设置→支付配置，填写微信/支付宝商户号、密钥等信息，完成绑定后即可支持对应渠道收款。', category: 'payment', hot: true, enabled: true },
   { id: 3, question: '设备离线怎么办？', answer: '首先检查设备网络连接，确认路由器正常工作；其次检查设备电源是否稳定。若持续离线，可在设备管理页面发起远程诊断或联系技术支持。', category: 'device', hot: false, enabled: true },
-  { id: 4, question: '对账异常如何处理？', answer: '在对账中心的异常订单列表中找到对应记录，点击「处理」，根据实际情况选择「已解决」「退款」或「忽略」，填写备注后提交即可。', category: 'payment', hot: true, enabled: true },
+  { id: 4, question: '异常订单如何处理？', answer: '在「异常订单」页面找到对应记录，点击「处理」，根据实际情况选择「已解决」「退款」或「驳回/重新提交」，填写备注后提交即可。', category: 'payment', hot: true, enabled: true },
   { id: 5, question: '结算周期是多久？', answer: '默认为T+7结算周期，即订单完成后第7个工作日打款到商家账户。具体周期可在财务管理→结算配置中进行调整。', category: 'payment', hot: false, enabled: true },
   { id: 6, question: '会员充值未到账怎么处理？', answer: '先在会员储值变更记录中查询该笔充值是否显示，如已有记录但余额未更新，可联系客服核实；如无记录则需检查支付流水是否成功扣款。', category: 'order', hot: false, enabled: true },
   { id: 7, question: '如何修改店铺营业时间？', answer: '进入系统设置→店铺列表→编辑店铺，修改「营业时间」字段保存即可。修改后会在收银端和用户端同步生效。', category: 'other', hot: false, enabled: false },

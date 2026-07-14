@@ -334,7 +334,7 @@ interface MsgItem {
 }
 const msgList = ref<MsgItem[]>([
   { id: 1, title: '系统升级维护通知', content: '计划于5月2日02:00-06:00进行系统升级维护', category: 'announcement', channels: ['site','sms'], targetType: 'all', status: 'sent', sentAt: '2026-04-29 09:00', readRate: 87.5 },
-  { id: 2, title: '对账中心上线通知', content: '对账中心模块已正式上线，欢迎使用', category: 'announcement', channels: ['site'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-04-28 15:00', readRate: 62.3 },
+  { id: 2, title: '异常订单模块上线通知', content: '异常订单模块已正式上线，欢迎使用', category: 'announcement', channels: ['site'], targetType: 'merchant_admin', status: 'sent', sentAt: '2026-04-28 15:00', readRate: 62.3 },
   { id: 3, title: '结算周期变更提醒', content: '结算周期从T+7调整为T+5', category: 'financial', channels: ['sms'], targetType: 'merchant_admin', status: 'failed', sentAt: '2026-04-27 11:00', readRate: 0, failReason: '短信服务商接口超时' },
   { id: 4, title: '五一活动预热', content: '五一假期即将来临，请提前做好门店活动准备', category: 'announcement', channels: ['site','sms'], targetType: 'merchant_staff', status: 'pending', sentAt: '-', readRate: 0 },
   { id: 5, title: '结算到账通知', content: '深圳福田旗舰店您好，您2026年4月的结算金额 ¥52,380.00 已到账', category: 'financial', channels: ['site'], targetType: 'custom', targetDetail: '深圳福田旗舰店', status: 'sent', sentAt: '2026-04-26 08:30', readRate: 95.1 },

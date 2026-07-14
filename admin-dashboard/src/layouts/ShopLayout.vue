@@ -274,7 +274,7 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(WalletOutline),
     children: [
       { label: '结算记录', key: '/shop/settlement' },
-      { label: '对账中心', key: '/shop/reconciliation' },
+      { label: '异常订单', key: '/shop/exception-orders' },
     ]
   },
   {
