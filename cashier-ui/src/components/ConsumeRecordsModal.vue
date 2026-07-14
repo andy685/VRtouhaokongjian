@@ -30,11 +30,11 @@
           <section class="crm-summary">
             <div class="crm-summary-card">
               <span>累计消费金额：</span>
-              <strong>¥{{ totalAmount.toFixed(1) }}</strong>
+              <strong>¥{{ consumeTotal.toFixed(1) }}</strong>
             </div>
             <div class="crm-summary-card">
-              <span>订单笔数：</span>
-              <strong>{{ records.length }}</strong>
+              <span>消费订单笔数：</span>
+              <strong>{{ consumeCount }}</strong>
             </div>
           </section>
 
@@ -42,20 +42,42 @@
 
           <div class="crm-table-wrap">
             <table class="crm-table">
+              <colgroup>
+                <col style="width:18%">
+                <col style="width:22%">
+                <col style="width:10%">
+                <col style="width:10%">
+                <col style="width:20%">
+                <col style="width:10%">
+                <col style="width:10%">
+              </colgroup>
               <thead>
                 <tr>
                   <th>交易时间</th>
                   <th>商品</th>
-                  <th>实收总额</th>
-                  <th>订单状态</th>
+                  <th>应付</th>
+                  <th>实收</th>
+                  <th>支付方式</th>
+                  <th>状态</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
+                <tr v-if="!consumptionRecords.length">
+                  <td colspan="7" class="crm-empty-row">暂无消费记录</td>
+                </tr>
                 <tr v-for="row in pagedRecords" :key="row.id">
                   <td>{{ row.time }}</td>
-                  <td>{{ row.product }}</td>
-                  <td class="crm-amount">{{ row.amount }}</td>
+                  <td class="crm-product-cell">{{ row.product }}</td>
+                  <td class="crm-amount">¥{{ row.payableAmount || row.amount }}</td>
+                  <td class="crm-amount crm-paid-amount" :class="{ 'crm-paid-zero': (row.paidAmount || row.amount) === '0' || (row.paidAmount || row.amount) === '0.00' }">¥{{ row.paidAmount || row.amount }}</td>
+                  <td>
+                    <div class="crm-payment-tags">
+                      <template v-for="(pm, pi) in parsePaymentContent(row.paymentContent || row.payMethod)" :key="pi">
+                        <span class="crm-pay-tag" :class="pm.colorClass">{{ pm.label }}<template v-if="pm.amount"> ¥{{ pm.amount }}</template></span>
+                      </template>
+                    </div>
+                  </td>
                   <td><span class="crm-status" :class="statusClass(row.status)">{{ row.status }}</span></td>
                   <td><button type="button" class="crm-detail-btn" @click="openDetail(row)">详情</button></td>
                 </tr>
@@ -101,7 +123,7 @@
                 </div>
                 <div class="crm-detail-item">
                   <label>订单类型</label>
-                  <span class="crm-type-tag recharge">充值充值</span>
+                  <span class="crm-type-tag recharge">充值</span>
                 </div>
                 <div class="crm-detail-item">
                   <label>订单状态</label>
@@ -322,18 +344,58 @@ const pageSize = 4
 const selectedRecord = ref(null)
 const memberInitial = computed(() => (props.memberName || '会').charAt(0))
 
-const pageCount = computed(() => Math.max(1, Math.ceil(props.records.length / pageSize)))
+const consumptionRecords = computed(() => props.records.filter(r => r.type !== 'recharge'))
+
+const pageCount = computed(() => Math.max(1, Math.ceil(consumptionRecords.value.length / pageSize)))
 
 const pagedRecords = computed(() => {
   const start = (page.value - 1) * pageSize
-  return props.records.slice(start, start + pageSize)
+  return consumptionRecords.value.slice(start, start + pageSize)
 })
+
+const consumeTotal = computed(() => {
+  return consumptionRecords.value.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)
+})
+
+const consumeCount = computed(() => consumptionRecords.value.length)
+
+watch(() => props.records, () => { page.value = 1 })
 
 const statusClass = (status) => {
   if (status === '完成') return 'status-done'
   if (status === '退款' || status === '已退款') return 'status-refund'
   if (status === '进行中') return 'status-pending'
   return ''
+}
+
+const PAY_COLORS = {
+  '预存款': 'pay-balance',
+  '余额抵扣': 'pay-balance',
+  '余额': 'pay-balance',
+  '微信支付': 'pay-wechat',
+  '微信': 'pay-wechat',
+  '支付宝': 'pay-alipay',
+  '游戏币': 'pay-coin',
+  '游戏币抵扣': 'pay-coin',
+  '现金': 'pay-cash',
+  '会员券': 'pay-coupon',
+  '套票抵扣': 'pay-coupon'
+}
+
+const parsePaymentContent = (content) => {
+  if (!content) return []
+  const parts = String(content).split(/[,，]/)
+  return parts.map((p) => {
+    const m = p.trim().match(/^(.+?)[:：]\s*([\d.]+)$/)
+    if (m) {
+      const label = m[1].trim()
+      const colorClass = PAY_COLORS[label] || 'pay-other'
+      return { label, amount: m[2], colorClass }
+    }
+    const label = p.trim()
+    const colorClass = PAY_COLORS[label] || 'pay-other'
+    return { label, amount: '', colorClass }
+  })
 }
 
 const openDetail = (row) => {
@@ -361,40 +423,39 @@ watch(() => props.visible, (val) => {
 }
 
 .crm-dialog {
-  width: min(100%, 1040px);
+  width: min(100%, 860px);
   max-height: 92vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 16px;
-  background: #dff0ff;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
 }
 
 .crm-header {
-  height: 54px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 22px 0 24px;
-  background: #fff;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 0 20px;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .crm-header-title {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .crm-header-avatar {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #9bd6ff 0%, #2a8fff 100%);
+  border-radius: 8px;
+  background: #3b82f6;
   color: #fff;
   font-size: 13px;
   font-weight: 700;
@@ -403,51 +464,59 @@ watch(() => props.visible, (val) => {
 .crm-header h2 {
   margin: 0;
   color: #111827;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .crm-header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .crm-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border: 0;
   background: transparent;
-  color: #6b7280;
+  color: #94a3b8;
   cursor: pointer;
-  font-size: 22px;
-  line-height: 1;
+  font-size: 20px;
+  line-height: 30px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.crm-close-btn:hover {
+  color: #475569;
+  background: #f1f5f9;
 }
 
 .crm-refresh-btn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
   background: transparent;
-  color: #6b7280;
+  color: #94a3b8;
   cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
+  border-radius: 6px;
+  transition: all 0.15s;
 }
 
 .crm-refresh-btn:hover {
   color: #3b82f6;
+  background: #eff6ff;
 }
 
 .crm-body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 20px 14px 22px;
+  gap: 10px;
+  padding: 12px 16px 16px;
 }
 
 .crm-detail-body {
@@ -457,38 +526,40 @@ watch(() => props.visible, (val) => {
 .crm-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .crm-summary-card {
-  min-height: 62px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 18px;
-  background: #fff;
-  color: #111827;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #f1f5f9;
 }
 
 .crm-summary-card strong {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  color: #0f172a;
 }
 
 .crm-note {
   margin: 0 2px;
-  color: #374151;
-  font-size: 13px;
+  color: #94a3b8;
+  font-size: 11px;
   font-weight: 500;
 }
 
 .crm-note em {
   margin-right: 2px;
-  color: #ef4444;
+  color: #f87171;
   font-style: normal;
 }
 
@@ -496,32 +567,41 @@ watch(() => props.visible, (val) => {
   min-height: 0;
   flex: 1;
   overflow: auto;
-  border-radius: 18px;
+  border-radius: 10px;
   background: #fff;
+  border: 1px solid #f1f5f9;
 }
 
 .crm-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 .crm-table thead th {
-  padding: 18px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 12px;
   text-align: left;
-  color: #111827;
-  font-size: 14px;
-  font-weight: 700;
-  border-bottom: 1px solid #edf2f7;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #f1f5f9;
   background: #fff;
+  white-space: nowrap;
 }
 
 .crm-table tbody td {
-  padding: 20px;
+  padding: 12px;
   color: #1f2937;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+
+.crm-table tbody tr:hover td {
+  background: #fafafa;
 }
 
 .crm-table tbody tr:last-child td {
@@ -530,6 +610,86 @@ watch(() => props.visible, (val) => {
 
 .crm-amount {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.crm-paid-amount {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.crm-paid-zero {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.crm-product-cell {
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crm-payment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.crm-pay-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.crm-pay-tag.pay-balance {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.crm-pay-tag.pay-wechat {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.crm-pay-tag.pay-alipay {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.crm-pay-tag.pay-coin {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.crm-pay-tag.pay-cash {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.crm-pay-tag.pay-coupon {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.crm-pay-tag.pay-other {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.crm-empty-row {
+  text-align: center !important;
+  padding: 48px 20px !important;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .crm-status {
@@ -537,74 +697,86 @@ watch(() => props.visible, (val) => {
   height: 22px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(96, 165, 250, 0.55);
-  background: rgba(239, 246, 255, 0.92);
-  color: #3b82f6;
+  padding: 0 10px;
+  border-radius: 11px;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .crm-status.status-done {
-  border-color: rgba(34, 197, 94, 0.45);
-  background: rgba(240, 253, 244, 0.92);
-  color: #16a34a;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .crm-status.status-refund {
-  border-color: rgba(239, 68, 68, 0.45);
-  background: rgba(254, 242, 242, 0.92);
+  background: #fee2e2;
   color: #dc2626;
 }
 
 .crm-status.status-pending {
-  border-color: rgba(245, 158, 11, 0.45);
-  background: rgba(255, 251, 235, 0.92);
-  color: #d97706;
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .crm-detail-btn {
   border: 0;
   background: transparent;
   color: #3b82f6;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.15s;
+  white-space: nowrap;
+  transition: color 0.15s;
 }
 
 .crm-detail-btn:hover {
-  opacity: 0.75;
+  color: #1d4ed8;
 }
 
 .crm-pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  padding-top: 4px;
 }
 
 .crm-page-btn {
-  width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 32px;
-  border: 1px solid #d7dfeb;
-  border-radius: 4px;
+  min-width: 32px;
+  padding: 0 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
   background: #fff;
-  color: #64748b;
+  color: #475569;
   font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.crm-page-btn:hover:not(:disabled):not(.active) {
+  border-color: #93c5fd;
+  color: #2563eb;
 }
 
 .crm-page-btn.active {
-  border-color: #60a5fa;
-  background: #60a5fa;
+  border-color: #3b82f6;
+  background: #3b82f6;
   color: #fff;
 }
 
 .crm-page-btn:disabled {
-  opacity: 0.45;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
@@ -612,21 +784,21 @@ watch(() => props.visible, (val) => {
 .crm-back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   align-self: flex-start;
   border: 0;
   background: transparent;
-  color: #3b82f6;
-  font-size: 14px;
-  font-weight: 600;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: background 0.15s;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
 }
 
 .crm-back-btn:hover {
-  background: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
 }
 
 .crm-detail-card {
@@ -634,34 +806,35 @@ watch(() => props.visible, (val) => {
   min-height: 0;
   overflow-y: auto;
   background: #fff;
-  border-radius: 18px;
-  padding: 28px 32px 32px;
+  border-radius: 10px;
+  padding: 20px 24px 24px;
+  border: 1px solid #f1f5f9;
 }
 
 .crm-detail-section-title {
-  margin: 0 0 16px;
-  padding-bottom: 10px;
-  color: #111827;
-  font-size: 15px;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  color: #0f172a;
+  font-size: 14px;
   font-weight: 700;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .crm-detail-section-title + .crm-detail-section-title {
-  margin-top: 28px;
+  margin-top: 20px;
 }
 
 .crm-detail-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0 24px;
+  gap: 0 16px;
 }
 
 .crm-detail-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 0;
+  gap: 2px;
+  padding: 6px 0;
 }
 
 .crm-detail-item.crm-detail-full {
@@ -669,10 +842,9 @@ watch(() => props.visible, (val) => {
 }
 
 .crm-detail-item label {
-  color: #6b7280;
+  color: #94a3b8;
   font-size: 12px;
-  font-weight: 600;
-  text-transform: none;
+  font-weight: 500;
 }
 
 .crm-detail-item span {
@@ -685,13 +857,13 @@ watch(() => props.visible, (val) => {
 
 .crm-detail-mono {
   font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
-  font-size: 13px !important;
-  letter-spacing: 0.02em;
+  font-size: 12px !important;
 }
 
 .crm-detail-strong {
   font-weight: 700 !important;
   font-size: 15px !important;
+  color: #0f172a;
 }
 
 .crm-type-tag {
@@ -705,19 +877,27 @@ watch(() => props.visible, (val) => {
   align-self: flex-start;
 }
 
+.crm-detail-item .crm-status {
+  font-size: 12px;
+}
+
+.crm-detail-item .crm-type-tag {
+  font-size: 11px;
+}
+
 .crm-type-tag.recharge {
   background: #ede9fe;
-  color: #7c3aed;
+  color: #6d28d9;
 }
 
 .crm-type-tag.consumption {
   background: #dbeafe;
-  color: #2563eb;
+  color: #1d4ed8;
 }
 
 .crm-type-tag.purchase {
   background: #fef3c7;
-  color: #d97706;
+  color: #b45309;
 }
 
 /* ===== 过渡动画 ===== */

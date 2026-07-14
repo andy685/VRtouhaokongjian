@@ -207,7 +207,6 @@
       :visible="showConsumeRecords"
       :member-name="member.name"
       :records="consumeRecords"
-      :total-amount="2614"
       @close="showConsumeRecords = false"
     />
 
@@ -273,7 +272,7 @@ const member = ref({
   level: '钻石',
   levelKey: 'diamond',
   gender: '男',
-  totalSpent: '¥2614.00',
+  totalSpent: '¥415.00',
   lastVisitDate: '2024/12/12',
   storeName: '北京头号空间店',
   registerStore: '2024-11-01 10:32',
@@ -643,10 +642,13 @@ const consumeRecords = ref([
     type: 'recharge',
     time: '2024-12-17 12:24',
     product: '充300送100（纯游戏币）',
-    amount: '300',
+    amount: '300.00',
+    payableAmount: '300.00',
+    paidAmount: '300.00',
     status: '完成',
     orderNo: 'CZ20241217001',
     payMethod: '微信支付',
+    paymentContent: '微信支付:300.00',
     store: '北京头号空间店',
     operator: '小范',
     detail: {
@@ -663,10 +665,13 @@ const consumeRecords = ref([
     type: 'recharge',
     time: '2024-12-17 12:24',
     product: '充300送100（纯游戏币）',
-    amount: '300',
+    amount: '300.00',
+    payableAmount: '300.00',
+    paidAmount: '300.00',
     status: '完成',
     orderNo: 'CZ20241217002',
     payMethod: '微信支付',
+    paymentContent: '微信支付:300.00',
     store: '北京头号空间店',
     operator: '玩家自助',
     detail: {
@@ -683,10 +688,13 @@ const consumeRecords = ref([
     type: 'consumption',
     time: '2024-12-17 14:08',
     product: 'VR过山车 · 30分钟',
-    amount: '58',
+    amount: '58.00',
+    payableAmount: '58.00',
+    paidAmount: '0.00',
     status: '完成',
     orderNo: 'XF20241217003',
     payMethod: '游戏币抵扣',
+    paymentContent: '游戏币:58.00',
     store: '北京头号空间店',
     operator: '玩家自助',
     detail: {
@@ -695,7 +703,7 @@ const consumeRecords = ref([
       unitPrice: '58.00',
       unit: '次',
       quantity: '1',
-      paid: '58.00'
+      paid: '0.00'
     }
   },
   {
@@ -703,10 +711,13 @@ const consumeRecords = ref([
     type: 'consumption',
     time: '2024-12-17 15:20',
     product: '密室逃脱VR · 60分钟',
-    amount: '120',
+    amount: '120.00',
+    payableAmount: '120.00',
+    paidAmount: '0.00',
     status: '完成',
     orderNo: 'XF20241217004',
     payMethod: '预存款抵扣',
+    paymentContent: '预存款:120.00',
     store: '北京头号空间店',
     operator: '小范',
     detail: {
@@ -715,7 +726,7 @@ const consumeRecords = ref([
       unitPrice: '120.00',
       unit: '次',
       quantity: '1',
-      paid: '120.00'
+      paid: '0.00'
     }
   },
   {
@@ -723,10 +734,13 @@ const consumeRecords = ref([
     type: 'recharge',
     time: '2024-12-16 10:12',
     product: '储值500送80',
-    amount: '500',
+    amount: '500.00',
+    payableAmount: '500.00',
+    paidAmount: '500.00',
     status: '完成',
     orderNo: 'CZ20241216001',
     payMethod: '支付宝',
+    paymentContent: '支付宝:500.00',
     store: '北京头号空间店',
     operator: '小范',
     detail: {
@@ -743,10 +757,13 @@ const consumeRecords = ref([
     type: 'recharge',
     time: '2024-12-12 18:40',
     product: '储值1000送200',
-    amount: '1000',
+    amount: '1000.00',
+    payableAmount: '1000.00',
+    paidAmount: '1000.00',
     status: '完成',
     orderNo: 'CZ20241212001',
     payMethod: '微信支付',
+    paymentContent: '微信支付:1000.00',
     store: '北京头号空间店',
     operator: '小范',
     detail: {
@@ -763,10 +780,13 @@ const consumeRecords = ref([
     type: 'recharge',
     time: '2024-12-06 15:18',
     product: '首充体验储值',
-    amount: '99',
+    amount: '99.00',
+    payableAmount: '99.00',
+    paidAmount: '99.00',
     status: '完成',
     orderNo: 'CZ20241206001',
     payMethod: '微信支付',
+    paymentContent: '微信支付:99.00',
     store: '北京头号空间店',
     operator: '玩家自助',
     detail: {
@@ -783,10 +803,13 @@ const consumeRecords = ref([
     type: 'purchase',
     time: '2024-12-02 14:30',
     product: '暗黑战场限定手办',
-    amount: '149',
+    amount: '149.00',
+    payableAmount: '149.00',
+    paidAmount: '49.00',
     status: '完成',
     orderNo: 'SP20241202001',
-    payMethod: '微信支付',
+    payMethod: '预存款+微信',
+    paymentContent: '预存款:100.00,微信支付:49.00',
     store: '北京头号空间店',
     operator: '小范',
     detail: {
@@ -801,10 +824,13 @@ const consumeRecords = ref([
     type: 'consumption',
     time: '2024-11-28 19:15',
     product: '射击对抗 · 45分钟',
-    amount: '88',
+    amount: '88.00',
+    payableAmount: '88.00',
+    paidAmount: '0.00',
     status: '退款',
     orderNo: 'XF20241128009',
     payMethod: '预存款抵扣',
+    paymentContent: '预存款:88.00',
     store: '北京头号空间店',
     operator: '小范',
     detail: {
@@ -813,7 +839,7 @@ const consumeRecords = ref([
       unitPrice: '88.00',
       unit: '次',
       quantity: '1',
-      paid: '88.00'
+      paid: '0.00'
     }
   }
 ])
@@ -1054,13 +1080,14 @@ const handleDeductionConfirm = (payload) => {
 /* 累计消耗卡片 */
 .mdv-consume-card {
   width: 184px;
-  height: 52px;
+  height: 56px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin-top: 16px;
+  margin-top: 14px;
   overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #0f93f3 0%, #0e6edc 100%);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .mdv-consume-left,
@@ -1069,7 +1096,7 @@ const handleDeductionConfirm = (payload) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   color: #fff;
 }
 
@@ -1081,7 +1108,7 @@ const handleDeductionConfirm = (payload) => {
 }
 
 .mdv-consume-trigger:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .mdv-consume-trigger:focus-visible {
