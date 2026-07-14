@@ -207,7 +207,7 @@
       :visible="showConsumeRecords"
       :member-name="member.name"
       :records="consumeRecords"
-      :total-amount="2234.1"
+      :total-amount="2614"
       @close="showConsumeRecords = false"
     />
 
@@ -273,7 +273,7 @@ const member = ref({
   level: '钻石',
   levelKey: 'diamond',
   gender: '男',
-  totalSpent: '¥2434.1',
+  totalSpent: '¥2614.00',
   lastVisitDate: '2024/12/12',
   storeName: '北京头号空间店',
   registerStore: '2024-11-01 10:32',
@@ -638,14 +638,184 @@ const prepaidRecords = ref([
 ])
 
 const consumeRecords = ref([
-  { id: 'co-01', time: '2024-12-17 12:24', product: '充300送100（纯游戏币）', amount: '300', status: '完成' },
-  { id: 'co-02', time: '2024-12-17 12:24', product: '充300送100（纯游戏币）', amount: '300', status: '完成' },
-  { id: 'co-03', time: '2024-12-17 12:24', product: '充300送100（纯游戏币）', amount: '300', status: '完成' },
-  { id: 'co-04', time: '2024-12-17 12:24', product: '充300送100（纯游戏币）', amount: '300', status: '完成' },
-  { id: 'co-05', time: '2024-12-16 10:12', product: '储值500送80', amount: '500', status: '完成' },
-  { id: 'co-06', time: '2024-12-12 18:40', product: '储值1000送200', amount: '1000', status: '完成' },
-  { id: 'co-07', time: '2024-12-06 15:18', product: '首充体验储值', amount: '99', status: '完成' },
-  { id: 'co-08', time: '2024-12-02 11:06', product: '储值300送100（纯游戏币）', amount: '300', status: '完成' }
+  {
+    id: 'co-01',
+    type: 'recharge',
+    time: '2024-12-17 12:24',
+    product: '充300送100（纯游戏币）',
+    amount: '300',
+    status: '完成',
+    orderNo: 'CZ20241217001',
+    payMethod: '微信支付',
+    store: '北京头号空间店',
+    operator: '小范',
+    detail: {
+      packageName: '充300送100套餐',
+      packageDesc: '一次性充值300元，额外赠送100游戏币（纯游戏币）',
+      paid: '300.00',
+      gotPrepaid: '300.00',
+      gotCoins: '400',
+      gotTickets: '0'
+    }
+  },
+  {
+    id: 'co-02',
+    type: 'recharge',
+    time: '2024-12-17 12:24',
+    product: '充300送100（纯游戏币）',
+    amount: '300',
+    status: '完成',
+    orderNo: 'CZ20241217002',
+    payMethod: '微信支付',
+    store: '北京头号空间店',
+    operator: '玩家自助',
+    detail: {
+      packageName: '充300送100套餐',
+      packageDesc: '一次性充值300元，额外赠送100游戏币（纯游戏币）',
+      paid: '300.00',
+      gotPrepaid: '300.00',
+      gotCoins: '400',
+      gotTickets: '0'
+    }
+  },
+  {
+    id: 'co-03',
+    type: 'consumption',
+    time: '2024-12-17 14:08',
+    product: 'VR过山车 · 30分钟',
+    amount: '58',
+    status: '完成',
+    orderNo: 'XF20241217003',
+    payMethod: '游戏币抵扣',
+    store: '北京头号空间店',
+    operator: '玩家自助',
+    detail: {
+      projectName: 'VR过山车体验',
+      duration: '30 分钟',
+      unitPrice: '58.00',
+      unit: '次',
+      quantity: '1',
+      paid: '58.00'
+    }
+  },
+  {
+    id: 'co-04',
+    type: 'consumption',
+    time: '2024-12-17 15:20',
+    product: '密室逃脱VR · 60分钟',
+    amount: '120',
+    status: '完成',
+    orderNo: 'XF20241217004',
+    payMethod: '预存款抵扣',
+    store: '北京头号空间店',
+    operator: '小范',
+    detail: {
+      projectName: '密室逃脱VR',
+      duration: '60 分钟',
+      unitPrice: '120.00',
+      unit: '次',
+      quantity: '1',
+      paid: '120.00'
+    }
+  },
+  {
+    id: 'co-05',
+    type: 'recharge',
+    time: '2024-12-16 10:12',
+    product: '储值500送80',
+    amount: '500',
+    status: '完成',
+    orderNo: 'CZ20241216001',
+    payMethod: '支付宝',
+    store: '北京头号空间店',
+    operator: '小范',
+    detail: {
+      packageName: '储值500送80套餐',
+      packageDesc: '一次性储值500元，赠送80游戏币，预存款可全场通用',
+      paid: '500.00',
+      gotPrepaid: '500.00',
+      gotCoins: '80',
+      gotTickets: '0'
+    }
+  },
+  {
+    id: 'co-06',
+    type: 'recharge',
+    time: '2024-12-12 18:40',
+    product: '储值1000送200',
+    amount: '1000',
+    status: '完成',
+    orderNo: 'CZ20241212001',
+    payMethod: '微信支付',
+    store: '北京头号空间店',
+    operator: '小范',
+    detail: {
+      packageName: '储值1000送200套餐',
+      packageDesc: '一次性储值1000元，赠送200游戏币 + 1张体验套票',
+      paid: '1000.00',
+      gotPrepaid: '1000.00',
+      gotCoins: '200',
+      gotTickets: '1'
+    }
+  },
+  {
+    id: 'co-07',
+    type: 'recharge',
+    time: '2024-12-06 15:18',
+    product: '首充体验储值',
+    amount: '99',
+    status: '完成',
+    orderNo: 'CZ20241206001',
+    payMethod: '微信支付',
+    store: '北京头号空间店',
+    operator: '玩家自助',
+    detail: {
+      packageName: '新会员首充体验包',
+      packageDesc: '新会员专属：充值99元得99预存款 + 1次VR体验券，限首次充值',
+      paid: '99.00',
+      gotPrepaid: '99.00',
+      gotCoins: '99',
+      gotTickets: '1'
+    }
+  },
+  {
+    id: 'co-08',
+    type: 'purchase',
+    time: '2024-12-02 14:30',
+    product: '暗黑战场限定手办',
+    amount: '149',
+    status: '完成',
+    orderNo: 'SP20241202001',
+    payMethod: '微信支付',
+    store: '北京头号空间店',
+    operator: '小范',
+    detail: {
+      goodsName: '暗黑战场限定手办 · 暗夜骑士',
+      quantity: '1',
+      unitPrice: '149.00',
+      paid: '149.00'
+    }
+  },
+  {
+    id: 'co-09',
+    type: 'consumption',
+    time: '2024-11-28 19:15',
+    product: '射击对抗 · 45分钟',
+    amount: '88',
+    status: '退款',
+    orderNo: 'XF20241128009',
+    payMethod: '预存款抵扣',
+    store: '北京头号空间店',
+    operator: '小范',
+    detail: {
+      projectName: '射击对抗联机',
+      duration: '45 分钟',
+      unitPrice: '88.00',
+      unit: '次',
+      quantity: '1',
+      paid: '88.00'
+    }
+  }
 ])
 
 const deductionDevices = ref([
