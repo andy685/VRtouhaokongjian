@@ -14,6 +14,16 @@
         <header class="pm-header">
           <h2>{{ title }}</h2>
           <div class="pm-header-actions">
+            <!-- 调试：强制支付失败 -->
+            <button
+              type="button"
+              class="pm-debug-btn"
+              :title="debugHint"
+              @click="cycleDebugMode"
+            >
+              <span class="pm-debug-dot" :class="{ 'pm-debug-dot--on': debugFailMode > 0 }"></span>
+              调试
+            </button>
             <button type="button" class="pm-close-btn" @click="$emit('close')">×</button>
           </div>
         </header>
@@ -88,6 +98,19 @@
               <a href="javascript:void(0)" class="pm-note-link">订/询备注</a>
             </div>
 
+            <!-- 支付失败提示 -->
+            <div v-if="paymentStatus === 'error' && paymentError" class="pm-error-banner">
+              <div class="pm-error-icon">✕</div>
+              <div class="pm-error-body">
+                <strong>{{ paymentError.title }}</strong>
+                <span>{{ paymentError.message }}</span>
+              </div>
+              <div class="pm-error-actions">
+                <button type="button" class="pm-error-retry" @click="retryPayment">重试</button>
+                <button type="button" class="pm-error-close-text" @click="clearPaymentError">关闭</button>
+              </div>
+            </div>
+
             <div v-if="!gameCoinOnly && externalAmount > 0" class="pm-method-list">
               <button
                 v-for="m in payMethods"
@@ -116,13 +139,25 @@
             <button
               type="button"
               class="pm-checkout-btn"
+              :class="{ 'pm-checkout-btn--processing': paymentStatus === 'processing' }"
               :disabled="confirmDisabled"
               @click="handleConfirm"
             >
+              <span v-if="paymentStatus === 'processing'" class="pm-btn-spinner"></span>
               {{ checkoutButtonText }}
             </button>
           </div>
         </div>
+
+        <!-- 支付处理中遮罩 -->
+        <transition name="pm-fade">
+          <div v-if="showProcessingOverlay" class="pm-processing-overlay">
+            <div class="pm-processing-card">
+              <span class="pm-processing-spinner"></span>
+              <p>正在处理支付，请稍候...</p>
+            </div>
+          </div>
+        </transition>
       </section>
     </div>
   </transition>
@@ -287,7 +322,21 @@ const couponDiscount = computed(() => {
 })
 
 const selectedMethod = ref('cash')
-const processing = ref(false)
+const paymentStatus = ref('idle') // idle | processing | error
+const paymentError = ref(null) // { title, message }
+let paymentTimer = null
+let lastPaymentPayload = null // 失败后重试用
+
+// 调试模式：0=正常 1=网络超时 2=余额不足 3=支付被拒 4=系统繁忙
+const debugFailMode = ref(0)
+const debugHint = computed(() => {
+  if (debugFailMode.value === 0) return '调试模式：正常（点此切换）'
+  const names = ['', '网络超时', '余额不足', '支付被拒', '系统繁忙']
+  return `调试模式：下次支付必定「${names[debugFailMode.value]}」`
+})
+const cycleDebugMode = () => {
+  debugFailMode.value = (debugFailMode.value + 1) % 5
+}
 
 // ===== 扫码支付状态 =====
 const showScanner = ref(false)
@@ -319,15 +368,20 @@ const assetPlanNote = computed(() => {
 const gameCoinInsufficient = computed(() => props.gameCoinOnly && coinDeduction.value < props.payableAmount)
 
 const confirmDisabled = computed(() => {
-  if (processing.value) return true
+  if (paymentStatus.value === 'processing') return true
   if (props.gameCoinOnly && gameCoinInsufficient.value) return true
   if (externalAmount.value > 0 && !selectedMethod.value) return true
   return false
 })
 
+// 处理中遮罩（非扫码场景才显示）
+const showProcessingOverlay = computed(() => {
+  return paymentStatus.value === 'processing' && !showScanner.value
+})
+
 // §6 按钮文案规范
 const checkoutButtonText = computed(() => {
-  if (processing.value) return '处理中...'
+  if (paymentStatus.value === 'processing') return '支付处理中...'
   if (props.gameCoinOnly && gameCoinInsufficient.value) return '游戏币不足'
   if (props.gameCoinOnly) return '确认兑换'
   if (needsScanner.value) {
@@ -381,9 +435,16 @@ const resetSelectedMethod = () => {
 
 watch(() => props.visible, (val) => {
   if (val) {
-    processing.value = false
+    paymentStatus.value = 'idle'
+    paymentError.value = null
+    lastPaymentPayload = null
     resetSelectedMethod()
     resetScanner()
+  } else {
+    cleanupPaymentTimer()
+    paymentStatus.value = 'idle'
+    paymentError.value = null
+    lastPaymentPayload = null
   }
 })
 
@@ -580,14 +641,29 @@ const handleConfirm = () => {
     return
   }
 
-  // 现金/会员资产直接确认
+  // 现金/会员资产进入支付处理
   doConfirm()
 }
 
-function doConfirm(scannedCode) {
-  const m = payMethods.value.find(p => p.id === selectedMethod.value)
+// ===== 支付失败模拟 =====
+const PAYMENT_FAILURES = [
+  { title: '网络超时', message: '网络连接超时，请检查网络后重试' },
+  { title: '余额不足', message: '支付账户余额不足，请更换支付方式后重试' },
+  { title: '支付被拒', message: '银行拒绝该笔交易，请联系发卡行或更换支付方式' },
+  { title: '系统繁忙', message: '支付系统繁忙，请稍后重试' },
+]
 
-  // §10 结构化 payment_lines
+function doConfirm(scannedCode) {
+  paymentStatus.value = 'processing'
+  paymentError.value = null
+
+  // 扫码成功 → 关闭扫码弹窗，回到主界面显示处理状态
+  if (showScanner.value) {
+    showScanner.value = false
+  }
+
+  // 构建支付数据（失败重试用）
+  const m = payMethods.value.find(p => p.id === selectedMethod.value)
   const paymentLines = []
   if (prepaidDeduction.value > 0) {
     paymentLines.push({ type: 'prepaid', amount: prepaidDeduction.value })
@@ -603,7 +679,7 @@ function doConfirm(scannedCode) {
     paymentLines.push({ type: externalType, amount: externalAmount.value })
   }
 
-  emit('confirm', {
+  lastPaymentPayload = {
     paymentMethod: externalAmount.value > 0 ? selectedMethod.value : 'member_asset',
     paymentMethodName: externalAmount.value > 0 ? (m?.name || '') : '会员资产自动抵扣',
     amount: externalAmount.value,
@@ -615,7 +691,81 @@ function doConfirm(scannedCode) {
     paymentLines,
     gameCoinOnly: props.gameCoinOnly,
     scannedCode: scannedCode || null
-  })
+  }
+
+  // 模拟支付处理（1-2秒）
+  const delay = 800 + Math.random() * 1200
+  paymentTimer = setTimeout(() => {
+    // 支付失败判断：调试模式强制失败，否则约15%随机失败
+    let shouldFail = false
+    let failureIdx = -1
+    if (debugFailMode.value > 0) {
+      shouldFail = true
+      failureIdx = debugFailMode.value - 1
+    } else if (Math.random() < 0.15) {
+      shouldFail = true
+      failureIdx = Math.floor(Math.random() * PAYMENT_FAILURES.length)
+    }
+
+    if (shouldFail) {
+      paymentError.value = PAYMENT_FAILURES[failureIdx]
+      paymentStatus.value = 'error'
+      return
+    }
+
+    // 支付成功
+    paymentStatus.value = 'idle'
+    paymentError.value = null
+    emit('confirm', lastPaymentPayload)
+    lastPaymentPayload = null
+  }, delay)
+}
+
+// 重试支付
+const retryPayment = () => {
+  if (!lastPaymentPayload) return
+  paymentError.value = null
+  paymentStatus.value = 'processing'
+
+  const delay = 800 + Math.random() * 1200
+  paymentTimer = setTimeout(() => {
+    // 重试时：调试模式优先，否则约8%随机失败
+    let shouldFail = false
+    let failureIdx = -1
+    if (debugFailMode.value > 0) {
+      shouldFail = true
+      failureIdx = debugFailMode.value - 1
+    } else if (Math.random() < 0.08) {
+      shouldFail = true
+      failureIdx = Math.floor(Math.random() * PAYMENT_FAILURES.length)
+    }
+
+    if (shouldFail) {
+      paymentError.value = PAYMENT_FAILURES[failureIdx]
+      paymentStatus.value = 'error'
+      return
+    }
+
+    paymentStatus.value = 'idle'
+    paymentError.value = null
+    emit('confirm', lastPaymentPayload)
+    lastPaymentPayload = null
+  }, delay)
+}
+
+// 清除支付错误（关闭错误横幅）
+const clearPaymentError = () => {
+  paymentStatus.value = 'idle'
+  paymentError.value = null
+  lastPaymentPayload = null
+}
+
+// 关闭弹窗时清理计时器
+const cleanupPaymentTimer = () => {
+  if (paymentTimer) {
+    clearTimeout(paymentTimer)
+    paymentTimer = null
+  }
 }
 </script>
 
@@ -640,6 +790,7 @@ function doConfirm(scannedCode) {
   flex-direction: column;
   border-radius: 16px;
   overflow: hidden;
+  position: relative;
   background: #D9EBFC;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
 }
@@ -667,6 +818,41 @@ function doConfirm(scannedCode) {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* 调试按钮 */
+.pm-debug-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.pm-debug-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #64748b;
+}
+
+.pm-debug-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: background 0.15s;
+}
+
+.pm-debug-dot--on {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
 }
 
 .pm-close-btn {
@@ -1086,6 +1272,157 @@ function doConfirm(scannedCode) {
 .pm-checkout-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.pm-checkout-btn--processing {
+  pointer-events: none;
+}
+
+/* 按钮内加载动画 */
+.pm-btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  vertical-align: -3px;
+  animation: pm-spin 0.7s linear infinite;
+}
+
+@keyframes pm-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- 支付错误横幅 ---- */
+.pm-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.pm-error-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pm-error-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pm-error-body strong {
+  font-size: 13px;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.pm-error-body span {
+  font-size: 12px;
+  color: #b91c1c;
+  line-height: 1.5;
+}
+
+.pm-error-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pm-error-retry {
+  padding: 5px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.pm-error-retry:hover {
+  background: #dc2626;
+}
+
+.pm-error-close-text {
+  padding: 5px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.pm-error-close-text:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ---- 支付处理中遮罩 ---- */
+.pm-processing-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(217, 235, 252, 0.85);
+  backdrop-filter: blur(2px);
+  border-radius: 16px;
+}
+
+.pm-processing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 36px 48px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.pm-processing-card p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pm-processing-spinner {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #F97316;
+  border-radius: 50%;
+  animation: pm-spin 0.8s linear infinite;
 }
 
 /* ===== 过渡动画 ===== */
