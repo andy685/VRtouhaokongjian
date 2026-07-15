@@ -66,44 +66,9 @@
             </label>
           </div>
 
-          <!-- 第3行：绑定IC卡 + 会员卡号 -->
-          <div class="nmm-row">
-            <label class="nmm-field">
-              <span class="nmm-label">绑定IC卡：</span>
-              <label class="nmm-switch">
-                <input v-model="form.bindIC" type="checkbox" />
-                <span class="nmm-track"><span class="nmm-thumb"></span></span>
-              </label>
-            </label>
-            <label class="nmm-field">
-              <span class="nmm-label">会员卡号：</span>
-              <div class="nmm-input-wrap">
-                <input v-model.trim="form.cardNo" type="text" placeholder="非必填" />
-              </div>
-            </label>
-          </div>
-
-          <!-- 第4行：绑定微信 + 备注 -->
+          <!-- 第3行：备注 -->
           <div class="nmm-row nmm-row-tall">
-            <label class="nmm-field">
-              <span class="nmm-label">绑定微信：</span>
-              <div class="nmm-qr-box">
-                <svg viewBox="0 0 100 100" class="nmm-qr-svg">
-                  <rect x="6" y="6" width="28" height="28" rx="4" fill="#1e3a5f"/>
-                  <rect x="10" y="10" width="20" height="20" rx="2" fill="#fff"/>
-                  <rect x="66" y="6" width="28" height="28" rx="4" fill="#1e3a5f"/>
-                  <rect x="70" y="10" width="20" height="20" rx="2" fill="#fff"/>
-                  <rect x="6" y="66" width="28" height="28" rx="4" fill="#1e3a5f"/>
-                  <rect x="10" y="70" width="20" height="20" rx="2" fill="#fff"/>
-                  <rect x="44" y="14" width="12" height="12" rx="1" fill="#1e3a5f"/>
-                  <rect x="60" y="42" width="10" height="10" rx="1" fill="#1e3a5f"/>
-                  <rect x="74" y="58" width="8" height="8" rx="1" fill="#1e3a5f"/>
-                  <rect x="40" y="60" width="16" height="16" rx="2" fill="#1e3a5f"/>
-                  <rect x="62" y="76" width="10" height="10" rx="1" fill="#1e3a5f"/>
-                </svg>
-              </div>
-            </label>
-            <label class="nmm-field">
+            <label class="nmm-field nmm-field-full">
               <span class="nmm-label">备注：</span>
               <div class="nmm-textarea-wrap">
                 <textarea v-model.trim="form.remark" rows="3" placeholder="非必填"></textarea>
@@ -212,7 +177,6 @@ const form = reactive({
   gender: '男',
   birthday: '',
   bindIC: false,
-  cardNo: '',
   remark: ''
 })
 
@@ -327,7 +291,7 @@ watch(() => props.visible, (val) => {
   if (val) {
     Object.assign(form, {
       name: '', phone: '', gender: '男', birthday: '',
-      bindIC: false, cardNo: '', remark: ''
+      bindIC: false, remark: ''
     })
     selectedPkg.value = -1
     showPayment.value = false
@@ -494,6 +458,10 @@ const handleSuccessClose = () => {
   flex-direction: row;
   align-items: center;
   gap: 8px;
+}
+
+.nmm-field-full {
+  grid-column: 1 / -1;
 }
 
 .nmm-label {
@@ -684,24 +652,6 @@ const handleSuccessClose = () => {
 
 .nmm-switch input:checked + .nmm-track .nmm-thumb {
   transform: translateX(18px);
-}
-
-/* 微信二维码 */
-.nmm-qr-box {
-  width: 110px;
-  height: 110px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  border: 1px solid #d5eaf9;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(21, 88, 150, 0.05);
-}
-
-.nmm-qr-svg {
-  width: 90px;
-  height: 90px;
 }
 
 /* ===== 底部套餐区 ===== */

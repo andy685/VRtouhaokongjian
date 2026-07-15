@@ -564,7 +564,6 @@ const COUPON_POOL = [
     tag: '优惠券',
     type: 'discount',
     value: '1.50',
-    originalPrice: '58.00',
     condition: '满20可用',
     validity: '2024/12/13 ~ 2025/01/15',
     minAmount: 20,
@@ -587,7 +586,6 @@ const COUPON_POOL = [
     tag: '特享券',
     type: 'discount',
     value: '10.00',
-    originalPrice: null,
     condition: '不限',
     validity: '2024/12/13 ~ 2025/01/15',
     minAmount: 0,
@@ -607,10 +605,9 @@ const COUPON_POOL = [
     tag: '折扣券',
     type: 'rate',
     value: '8.8',
-    originalPrice: null,
-    condition: '全场可用',
+    condition: '满39可用',
     validity: '2025/06/15 ~ 2025/08/31',
-    minAmount: 0,
+    minAmount: 39,
     code: 'CP-DZ03',
     stores: '全门店通用',
     projects: '全场消费项目可用',
@@ -627,7 +624,6 @@ const COUPON_POOL = [
     tag: '新人',
     type: 'discount',
     value: '5.00',
-    originalPrice: null,
     condition: '满50可用',
     validity: '2025/01/01 ~ 2025/07/31',
     minAmount: 50,
@@ -648,7 +644,6 @@ const COUPON_POOL = [
     tag: '储值券',
     type: 'discount',
     value: '30.00',
-    originalPrice: null,
     condition: '满300可用',
     validity: '2025/06/01 ~ 2025/09/01',
     minAmount: 300,
@@ -665,10 +660,9 @@ const COUPON_POOL = [
     tag: '折扣券',
     type: 'rate',
     value: '9.0',
-    originalPrice: null,
-    condition: '全场可用',
+    condition: '满39可用',
     validity: '长期有效',
-    minAmount: 0,
+    minAmount: 39,
     code: 'CP-ZK07',
     stores: '全门店通用',
     projects: '全场任意消费',
@@ -685,7 +679,6 @@ const COUPON_POOL = [
     tag: '特享券',
     type: 'discount',
     value: '8.00',
-    originalPrice: null,
     condition: '不限',
     validity: '2025/06/01 ~ 2025/12/31',
     minAmount: 0,
@@ -1217,8 +1210,8 @@ const handleMemberSelected = (member) => {
   const idx = memberHistory.value.findIndex((m) => m.id === member.id)
   if (idx > -1) memberHistory.value.splice(idx, 1)
   memberHistory.value.unshift({ id: member.id, name: member.name, phone: member.phone, avatar: member.avatar, level: member.level })
-  // 随机分配 0-4 张优惠券
-  const count = Math.floor(Math.random() * 5) // 0-4
+  // 随机分配 1-4 张优惠券
+  const count = Math.floor(Math.random() * 4) + 1 // 1-4
   userCoupons.value = pickRandomCoupons(count)
   selectedCoupon.value = null
 }

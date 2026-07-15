@@ -373,13 +373,13 @@ const hoveredPos = ref({ x: 0, y: 0 })
 
 // ===== 优惠券系统 =====
 const COUPON_POOL = [
-  { id: 1, name: '9.9元体验1次', tag: '特价券', type: 'discount', value: '1.50', originalPrice: '58.00', condition: '满20可用', validity: '2024/12/13 ~ 2025/01/15', minAmount: 20, code: 'CP-9901', stores: '卓远亚运城店、卓远天河路店、卓远白云万达', projects: '可兑换1次 · 21个项目可选', projectList: ['VR过山车', '星际穿越', '海底探险', '时空穿梭', '密室逃脱VR', '射击战场VR', '极速滑雪VR', '飞行模拟VR', '恐龙世界VR', '太空漫步VR', '深海潜行VR', '魔法学院VR', '赛车狂飙VR', '僵尸围城VR', '地心历险VR', '奇幻漂流VR', '音乐节奏VR', '拳击对战VR', '西部枪战VR', '忍者训练VR', '末日求生VR'], dateRule: '无限制', otherRule: '暂无' },
-  { id: 2, name: '10元优惠券', tag: '优惠券', type: 'discount', value: '10.00', originalPrice: '10.00', condition: '无门槛', validity: '2024/12/13 ~ 2025/06/30', minAmount: 0, code: 'CP-1001', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '无限制', otherRule: '单次仅可使用一张' },
-  { id: 3, name: '8.8折畅玩券', tag: '折扣券', type: 'rate', value: '8.8', originalPrice: '无限制', condition: '无门槛', validity: '2024/12/13 ~ 2025/03/31', minAmount: 0, code: 'CP-8801', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '仅工作日可用', otherRule: '不可与其他优惠同享' },
-  { id: 4, name: '新人立减5元券', tag: '新人券', type: 'discount', value: '5.00', originalPrice: '5.00', condition: '满50可用', validity: '2024/12/13 ~ 2025/12/31', minAmount: 50, code: 'CP-NEW5', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '无限制', otherRule: '仅限新注册会员使用' },
-  { id: 5, name: '储值满300减30', tag: '储值券', type: 'discount', value: '30.00', originalPrice: '30.00', condition: '满300可用', validity: '2024/12/13 ~ 2025/06/30', minAmount: 300, code: 'CP-30030', stores: '全部门店通用', projects: '储值套餐专用', projectList: ['储值300送30', '储值500送80'], dateRule: '无限制', otherRule: '仅限储值类项目使用' },
-  { id: 6, name: '9折优惠券', tag: '折扣券', type: 'rate', value: '9.0', originalPrice: '无限制', condition: '无门槛', validity: '2024/12/13 ~ 2025/09/30', minAmount: 0, code: 'CP-9001', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '无限制', otherRule: '可与其他优惠叠加使用' },
-  { id: 7, name: '会员日立减8元', tag: '会员券', type: 'discount', value: '8.00', originalPrice: '8.00', condition: '无门槛', validity: '2024/12/13 ~ 2025/12/31', minAmount: 0, code: 'CP-MEM8', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '仅限每月15日使用', otherRule: '仅限会员日当天有效' },
+  { id: 1, name: '9.9元体验1次', tag: '特价券', type: 'discount', value: '1.50', condition: '满20可用', validity: '2024/12/13 ~ 2025/01/15', minAmount: 20, code: 'CP-9901', stores: '卓远亚运城店、卓远天河路店、卓远白云万达', projects: '可兑换1次 · 21个项目可选', projectList: ['VR过山车', '星际穿越', '海底探险', '时空穿梭', '密室逃脱VR', '射击战场VR', '极速滑雪VR', '飞行模拟VR', '恐龙世界VR', '太空漫步VR', '深海潜行VR', '魔法学院VR', '赛车狂飙VR', '僵尸围城VR', '地心历险VR', '奇幻漂流VR', '音乐节奏VR', '拳击对战VR', '西部枪战VR', '忍者训练VR', '末日求生VR'], dateRule: '无限制', otherRule: '暂无' },
+  { id: 2, name: '10元优惠券', tag: '优惠券', type: 'discount', value: '10.00', condition: '无门槛', validity: '2024/12/13 ~ 2025/06/30', minAmount: 0, code: 'CP-1001', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '无限制', otherRule: '单次仅可使用一张' },
+  { id: 3, name: '8.8折畅玩券', tag: '折扣券', type: 'rate', value: '8.8', condition: '无门槛', validity: '2024/12/13 ~ 2025/03/31', minAmount: 0, code: 'CP-8801', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '仅工作日可用', otherRule: '不可与其他优惠同享' },
+  { id: 4, name: '新人立减5元券', tag: '新人券', type: 'discount', value: '5.00', condition: '满50可用', validity: '2024/12/13 ~ 2025/12/31', minAmount: 50, code: 'CP-NEW5', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '无限制', otherRule: '仅限新注册会员使用' },
+  { id: 5, name: '储值满300减30', tag: '储值券', type: 'discount', value: '30.00', condition: '满300可用', validity: '2024/12/13 ~ 2025/06/30', minAmount: 300, code: 'CP-30030', stores: '全部门店通用', projects: '储值套餐专用', projectList: ['储值300送30', '储值500送80'], dateRule: '无限制', otherRule: '仅限储值类项目使用' },
+  { id: 6, name: '9折优惠券', tag: '折扣券', type: 'rate', value: '9.0', condition: '无门槛', validity: '2024/12/13 ~ 2025/09/30', minAmount: 0, code: 'CP-9001', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '无限制', otherRule: '可与其他优惠叠加使用' },
+  { id: 7, name: '会员日立减8元', tag: '会员券', type: 'discount', value: '8.00', condition: '无门槛', validity: '2024/12/13 ~ 2025/12/31', minAmount: 0, code: 'CP-MEM8', stores: '全部门店通用', projects: '全部项目可用', projectList: ['全部项目可用'], dateRule: '仅限每月15日使用', otherRule: '仅限会员日当天有效' },
 ]
 
 const selectedCoupon = ref(null)
@@ -647,7 +647,7 @@ const handleMemberSelected = (member) => {
     tickets: member.tickets,
     expireHint: member.expireHint
   })
-  const count = Math.floor(Math.random() * 5)
+  const count = Math.floor(Math.random() * 4) + 1
   userCoupons.value = pickRandomCoupons(count)
   selectedCoupon.value = null
   avatarError.value = false

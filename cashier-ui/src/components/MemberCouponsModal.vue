@@ -24,7 +24,7 @@
         <div class="mcm-toolbar">
           <div class="mcm-search-box">
             <el-icon><Search /></el-icon>
-            <input v-model="searchText" type="text" placeholder="搜索优惠券名称或券码" />
+            <input v-model="searchText" type="text" placeholder="搜索优惠券名称" />
           </div>
           <button type="button" class="mcm-search-btn" @click="searchText = ''" v-if="searchText">清除</button>
         </div>
@@ -62,49 +62,15 @@
               </div>
             </div>
 
-            <!-- 第三行：原价 -->
-            <div v-if="coupon.originalPrice" class="mcm-original-row">
-              <span class="mcm-original-price">原价：<em>¥{{ coupon.originalPrice }}</em></span>
-            </div>
-
             <!-- 有效期 -->
             <div v-if="coupon.validity" class="mcm-valid-row">
               可用时间：{{ coupon.validity }}
             </div>
 
             <!-- 使用规则 -->
-            <ul class="mcm-rules-list">
+            <ul v-if="coupon.stores" class="mcm-rules-list">
               <li v-if="coupon.stores">
                 <label>可用门店：</label>{{ coupon.stores }}
-              </li>
-              <li v-if="coupon.projects">
-                <label>可兑换项目：</label>{{ coupon.projects }}
-                <a
-                  v-if="coupon.projectList && coupon.projectList.length > 0"
-                  href="javascript:void(0)"
-                  class="mcm-link"
-                  @click.stop="toggleProjects(coupon.id)"
-                >{{ expandedIds.has(coupon.id) ? '收起 ▲' : '查看明细 ▼' }}</a>
-                <div v-if="expandedIds.has(coupon.id)" class="mcm-projects-detail">
-                  <template v-if="coupon.projectList && coupon.projectList.length > 0">
-                    <ul class="mcm-project-items">
-                      <li v-for="(item, i) in coupon.projectList" :key="i">
-                        <span class="mcm-project-dot"></span>{{ item }}
-                      </li>
-                    </ul>
-                    <p class="mcm-project-count">共 {{ coupon.projectList.length }} 个项目</p>
-                  </template>
-                  <p v-else>{{ coupon.projects }}</p>
-                </div>
-              </li>
-              <li v-if="coupon.dateRule">
-                <label>可用日期：</label>{{ coupon.dateRule }}
-              </li>
-              <li v-if="coupon.otherRule">
-                <label>其它规则：</label>{{ coupon.otherRule }}
-              </li>
-              <li v-if="coupon.code" class="mcm-code-row">
-                <label>券码：</label><code>{{ coupon.code }}</code>
               </li>
             </ul>
           </article>
@@ -135,17 +101,6 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const searchText = ref('')
-const expandedIds = ref(new Set())
-
-const toggleProjects = (id) => {
-  const s = new Set(expandedIds.value)
-  if (s.has(id)) {
-    s.delete(id)
-  } else {
-    s.add(id)
-  }
-  expandedIds.value = s
-}
 
 const statusLabel = (status) => {
   const map = { valid: '有效', used: '已使用', expired: '已过期', frozen: '已冻结' }
@@ -165,7 +120,6 @@ const filteredCoupons = computed(() => {
 watch(() => props.visible, (val) => {
   if (val) {
     searchText.value = ''
-    expandedIds.value = new Set()
   }
 })
 </script>
@@ -484,21 +438,6 @@ watch(() => props.visible, (val) => {
   margin-left: 4px;
 }
 
-/* ---- 原价行 ---- */
-.mcm-original-row { margin-bottom: 6px; }
-
-.mcm-original-price {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.mcm-original-price em {
-  font-style: normal;
-  text-decoration: line-through;
-  color: #b0b8c4;
-  font-weight: 600;
-}
-
 /* ---- 有效期行 ---- */
 .mcm-valid-row {
   font-size: 12px;
@@ -535,76 +474,6 @@ watch(() => props.visible, (val) => {
 
 .mcm-rules-list label {
   color: #6b7280;
-  font-weight: 500;
-}
-
-.mcm-link {
-  color: #3791ff;
-  font-weight: 600;
-  text-decoration: none;
-  margin-left: 2px;
-  transition: color 0.15s ease;
-}
-
-.mcm-link:hover {
-  color: #2563eb;
-  text-decoration: underline;
-}
-
-.mcm-code-row code {
-  font-family: 'SF Mono', 'Menlo', monospace;
-  background: #f3f6fc;
-  padding: 1px 6px;
-  border-radius: 3px;
-  color: #4f5d73;
-}
-
-/* ---- 可兑换项目展开 ---- */
-.mcm-projects-detail {
-  margin-top: 8px;
-  padding: 10px 14px;
-  background: #f0f6ff;
-  border-radius: 8px;
-  border: 1px solid #d5eaf9;
-  font-size: 12px;
-  color: #374151;
-  line-height: 1.7;
-}
-
-.mcm-projects-detail p {
-  margin: 0;
-}
-
-.mcm-project-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px 12px;
-}
-
-.mcm-project-items li {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #374151;
-  padding: 2px 0;
-}
-
-.mcm-project-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #3791ff;
-  flex-shrink: 0;
-}
-
-.mcm-project-count {
-  margin-top: 8px !important;
-  font-size: 11px;
-  color: #94a3b8;
   font-weight: 500;
 }
 

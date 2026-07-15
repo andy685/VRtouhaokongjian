@@ -8,12 +8,7 @@
         <h1>{{ game.name }}</h1>
         <p class="header-desc">游戏数据详情 · 版本 {{ game.version }} · 上线于 {{ game.onlineDate }}</p>
       </div>
-      <n-space>
-        <n-select v-model:value="datePreset" :options="dateOptions" size="small" style="width: 110px;" />
-        <n-button size="small" secondary @click="refreshData">
-          <template #icon><n-icon :component="RefreshOutline" /></template> 刷新
-        </n-button>
-      </n-space>
+      <n-select v-model:value="datePreset" :options="dateOptions" size="small" style="width: 110px;" />
     </div>
 
     <!-- 状态标签 -->
@@ -141,7 +136,7 @@
 import { ref, computed, h } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NIcon, NTag, NSelect, NSpace, NDataTable } from 'naive-ui'
-import { ArrowBackOutline, RefreshOutline, TrendingUpOutline, WalletOutline, BarChartOutline, CashOutline } from '@vicons/ionicons5'
+import { ArrowBackOutline, TrendingUpOutline, WalletOutline, BarChartOutline, CashOutline } from '@vicons/ionicons5'
 
 const route = useRoute()
 const gameId = route.params.id as string
@@ -164,8 +159,6 @@ function statusType(s: string) {
   const m: Record<string, any> = { online: 'success', pending: 'warning', rejected: 'error', offline: 'default', draft: 'info' }
   return m[s] || 'default'
 }
-
-function refreshData() {}
 
 // SVG 图表计算
 const SVG_W = 600, SVG_H = 180, PAD = 8

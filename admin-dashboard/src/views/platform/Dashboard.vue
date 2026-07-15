@@ -9,9 +9,6 @@
       <div class="header-actions">
         <n-date-picker type="daterange" clearable size="small" />
         <n-button secondary size="small">导出报表</n-button>
-        <n-button type="primary" size="small" @click="refreshData">
-          <template #icon><n-icon :component="RefreshOutline" /></template> 刷新
-        </n-button>
       </div>
     </div>
 
@@ -147,7 +144,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import {
   TrendingUpOutline, PeopleOutline, HardwareChipOutline,
-  StorefrontOutline, RefreshOutline, SearchOutline
+  StorefrontOutline, SearchOutline
 } from '@vicons/ionicons5'
 
 echarts.use([
@@ -331,10 +328,6 @@ function initCharts() {
       window.addEventListener('resize', () => storeChart.resize())
     }
   })
-}
-
-function refreshData() {
-  console.log('刷新数据')
 }
 
 onMounted(() => {

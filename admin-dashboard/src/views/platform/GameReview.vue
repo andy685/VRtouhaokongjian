@@ -53,7 +53,6 @@
           <div class="section-header">
             <n-space>
               <n-select v-model:value="reviewFilter" placeholder="审核结果" :options="reviewResultOptions" size="small" style="width: 140px;" clearable />
-              <n-button size="small" secondary>刷新</n-button>
             </n-space>
           </div>
           <n-data-table :columns="reviewedColumns" :data="filteredReviewedData" :pagination="pagination" striped />

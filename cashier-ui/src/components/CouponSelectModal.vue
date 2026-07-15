@@ -25,7 +25,7 @@
           <span class="csm-toolbar-label">变换类型:</span>
           <div class="csm-search-box">
             <el-icon><Search /></el-icon>
-            <input v-model="searchText" type="text" placeholder="请输入优惠券码" />
+            <input v-model="searchText" type="text" placeholder="搜索优惠券名称" />
           </div>
           <button type="button" class="csm-search-btn">搜索</button>
           <button type="button" class="csm-confirm-btn-inline" @click="handleConfirm">确定</button>
@@ -70,12 +70,7 @@
               </div>
             </div>
 
-            <!-- 第三行：原价 -->
-            <div v-if="coupon.originalPrice" class="csm-original-row">
-              <span class="csm-original-price">原价：<em>¥{{ coupon.originalPrice }}</em></span>
-            </div>
-
-            <!-- 第四行：有效期 -->
+            <!-- 有效期 -->
             <div v-if="coupon.validity && !coupon.validity.includes('过期')" class="csm-valid-row">
               可用时间：{{ coupon.validity }}
             </div>
@@ -89,35 +84,9 @@
             </div>
 
             <!-- 使用规则 -->
-            <ul class="csm-rules-list">
-              <li v-if="coupon.stores">
+            <ul v-if="coupon.stores" class="csm-rules-list">
+              <li>
                 <label>可用门店：</label>{{ coupon.stores }}
-              </li>
-              <li v-if="coupon.projects">
-                <label>可兑换项目：</label>{{ coupon.projects }}
-                <a
-                  v-if="coupon.projectList && coupon.projectList.length > 0"
-                  href="javascript:void(0)"
-                  class="csm-link"
-                  @click.stop="toggleProjects(coupon.id)"
-                >{{ expandedIds.has(coupon.id) ? '收起 ▲' : '查看明细 ▼' }}</a>
-                <div v-if="expandedIds.has(coupon.id)" class="csm-projects-detail">
-                  <template v-if="coupon.projectList && coupon.projectList.length > 0">
-                    <ul class="csm-project-items">
-                      <li v-for="(item, i) in coupon.projectList" :key="i">
-                        <span class="csm-project-dot"></span>{{ item }}
-                      </li>
-                    </ul>
-                    <p class="csm-project-count">共 {{ coupon.projectList.length }} 个项目</p>
-                  </template>
-                  <p v-else>{{ coupon.projects }}</p>
-                </div>
-              </li>
-              <li>
-                <label>可用日期：</label>{{ coupon.dateRule || '无限制' }}
-              </li>
-              <li>
-                <label>其它规则：</label>{{ coupon.otherRule || '暂无' }}
               </li>
             </ul>
 
@@ -146,17 +115,6 @@ const emit = defineEmits(['close', 'select', 'refresh'])
 const coupons = ref([])
 const selectedCoupon = ref(-1)
 const searchText = ref('')
-const expandedIds = ref(new Set())
-
-const toggleProjects = (id) => {
-  const s = new Set(expandedIds.value)
-  if (s.has(id)) {
-    s.delete(id)
-  } else {
-    s.add(id)
-  }
-  expandedIds.value = s
-}
 
 const getCouponAvailability = (coupon) => {
   if (!coupon) return { available: false, reason: '优惠券状态异常' }
@@ -210,7 +168,6 @@ watch(() => props.visible, (val) => {
   if (val) {
     hydrateCoupons()
     searchText.value = ''
-    expandedIds.value = new Set()
     if (!props.currentCouponId) selectedCoupon.value = -1
   }
 })
@@ -584,23 +541,6 @@ const handleConfirm = () => {
   font-size: 12px;
   color: #6b7280;
   font-weight: 500;
-}
-
-/* ---- 原价行 ---- */
-.csm-original-row {
-  margin-bottom: 6px;
-}
-
-.csm-original-price {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.csm-original-price em {
-  font-style: normal;
-  text-decoration: line-through;
-  color: #b0b8c4;
-  font-weight: 600;
 }
 
 .csm-card-discount-area {
