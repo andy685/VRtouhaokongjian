@@ -260,9 +260,13 @@ async function resolveCashierOrigin(path = cashierLoginPath) {
     return window.location.origin
   }
 
-  const currentPort = Number(window.location.port || 5175)
+  const currentPort = Number(window.location.port || 9527)
+  // 开发环境 cashier-ui 固定 9529；排除当前后台端口，避免误跳到 miniapp(9528)
   const candidatePorts = Array.from(
-    new Set([9529, currentPort - 1, 5174, 5173].filter((port) => Number.isFinite(port) && port > 0))
+    new Set(
+      [9529, 5174, 5173]
+        .filter((port) => Number.isFinite(port) && port > 0 && port !== currentPort)
+    )
   )
 
   for (const port of candidatePorts) {
@@ -272,7 +276,7 @@ async function resolveCashierOrigin(path = cashierLoginPath) {
     }
   }
 
-  return createOrigin(candidatePorts[0] || 5174)
+  return createOrigin(9529)
 }
 
 // 菜单配置 - 二级菜单结构

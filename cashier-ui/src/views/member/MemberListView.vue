@@ -143,12 +143,22 @@ const handleOpenRegisterCode = () => {
 }
 
 const handleNewMemberSubmit = (data) => {
+  const m = data?.member || data || {}
   const pkg = data.package
+  const phone = String(m.phone || data.phone || '')
+  // 关联已有会员时不重复插入列表
+  const exists = members.value.some((item) => {
+    const raw = String(item.phone || '').replace(/\D/g, '')
+    const next = phone.replace(/\D/g, '')
+    return raw && next && (raw === next || item.phone.includes(next.slice(-4)))
+  })
+  if (exists && data.mode === 'link_only') return
+
   members.value.unshift({
-    id: Date.now(),
-    name: data.name,
-    phone: data.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2'),
-    level: '普通会员',
+    id: m.id || Date.now(),
+    name: m.name || data.name,
+    phone: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2'),
+    level: m.level || '普通会员',
     balance: pkg && !pkg.name.includes('套票') && !pkg.name.includes('次套票') ? pkg.price : 0,
     times: pkg && pkg.name.includes('次套票') ? parseInt(pkg.name) || 0 : 0,
     lastVisit: '-'

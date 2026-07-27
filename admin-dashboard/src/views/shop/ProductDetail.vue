@@ -17,6 +17,15 @@
       <div class="form-main">
         <n-card title="基本信息" :bordered="false" class="form-card">
           <n-form ref="formRef" :model="formData" label-placement="left" label-width="100">
+            <n-form-item label="所属店铺" path="store" required>
+              <n-select
+                v-model:value="formData.store"
+                :options="storeOptions"
+                placeholder="请选择所属店铺"
+                filterable
+                :disabled="isEdit"
+              />
+            </n-form-item>
             <n-form-item label="商品名称" path="name">
               <n-input v-model:value="formData.name" placeholder="请输入商品名称" />
             </n-form-item>
@@ -75,6 +84,7 @@
             </div>
             <div v-else class="preview-icon">📦</div>
             <div class="preview-name">{{ formData.name || '商品名称' }}</div>
+            <div class="preview-store">{{ formData.store || '未选择店铺' }}</div>
             <div class="preview-category">{{ formData.category ? categoryMap[formData.category] || formData.category : '未分类' }}</div>
             <div class="preview-price">¥{{ formData.price?.toFixed(2) || '0.00' }}</div>
             <div class="preview-stock">
@@ -127,6 +137,13 @@ const message = useMessage()
 const isEdit = computed(() => route.name === 'ShopProductDetail')
 const productId = computed(() => route.params.id as string)
 
+const storeOptions = [
+  { label: '卓远亚运城店', value: '卓远亚运城店' },
+  { label: '卓远文桥路店', value: '卓远文桥路店' },
+  { label: '卓远天河路店', value: '卓远天河路店' },
+  { label: '卓远白云路店', value: '卓远白云路店' },
+]
+
 const categoryOptions = [
   { label: '消耗品', value: 'consumable' },
   { label: '配件', value: 'accessory' },
@@ -163,11 +180,11 @@ function getProductIcon(category: string | null) {
 
 function getDefaultProducts() {
   return [
-    { id: '1', name: '一次性眼罩', icon: '😷', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), category: 'consumable', price: 3.0, stock: 200, sales: 1256, status: 'on' },
-    { id: '2', name: 'VR手柄保护套', icon: '🧤', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), category: 'accessory', price: 29.0, stock: 15, sales: 328, status: 'on' },
-    { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), category: 'merchandise', price: 68.0, stock: 52, sales: 156, status: 'on' },
-    { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), category: 'merchandise', price: 18.0, stock: 3, sales: 289, status: 'on' },
-    { id: '5', name: '可乐330ml', icon: '🥤', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), category: 'drink', price: 5.0, stock: 30, sales: 856, status: 'on' },
+    { id: '1', name: '一次性眼罩', icon: '😷', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), store: '卓远亚运城店', category: 'consumable', price: 3.0, stock: 200, sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', icon: '🧤', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), store: '卓远天河路店', category: 'accessory', price: 29.0, stock: 15, sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', icon: '🧸', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), store: '卓远亚运城店', category: 'merchandise', price: 68.0, stock: 52, sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', icon: '🔑', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), store: '卓远文桥路店', category: 'merchandise', price: 18.0, stock: 3, sales: 289, status: 'on' },
+    { id: '5', name: '可乐330ml', icon: '🥤', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), store: '卓远白云路店', category: 'drink', price: 5.0, stock: 30, sales: 856, status: 'on' },
   ]
 }
 
@@ -176,7 +193,12 @@ function loadProducts() {
     const saved = localStorage.getItem(PRODUCT_STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item: any) => ({
+          ...item,
+          store: item.store || '卓远亚运城店',
+        }))
+      }
     }
   } catch {
     // ignore
@@ -185,6 +207,7 @@ function loadProducts() {
 }
 
 const formData = ref({
+  store: null as string | null,
   name: '',
   category: null as string | null,
   coverUrl: '',
@@ -201,6 +224,7 @@ onMounted(() => {
     if (data) {
       productData.value = data
       formData.value = {
+        store: data.store || null,
         name: data.name,
         category: data.category,
         coverUrl: data.coverUrl || '',
@@ -244,6 +268,10 @@ function removeCover() {
 }
 
 function handleSave() {
+  if (!formData.value.store) {
+    message.warning('请选择所属店铺')
+    return
+  }
   if (!formData.value.name) {
     message.warning('请输入商品名称')
     return
@@ -251,6 +279,7 @@ function handleSave() {
 
   const products = loadProducts()
   const payload = {
+    store: formData.value.store,
     name: formData.value.name,
     icon: getProductIcon(formData.value.category),
     coverUrl: formData.value.coverUrl,
@@ -369,6 +398,9 @@ function handleSave() {
 }
 .preview-name {
   font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;
+}
+.preview-store {
+  font-size: 12px; color: #3B82F6; margin-bottom: 4px; font-weight: 500;
 }
 .preview-category {
   font-size: 12px; color: var(--text-muted); margin-bottom: 12px;

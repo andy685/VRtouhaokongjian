@@ -1224,20 +1224,22 @@ const handleLogout = () => {
 }
 
 const handleNewMember = (data) => {
-  console.log('新增会员：', data)
-  // 支付和注册成功提示已由 NewMemberModal 内部处理
-  // 这里直接登入新会员
+  // 以 registry 返回的全局档案为准，避免门店侧表单覆盖唯一会员信息
+  const m = data?.member || data || {}
+  const name = m.name || data.name
   selectedMember.value = {
-    id: Date.now(),
-    name: data.name,
-    phone: data.phone,
-    avatar: createFallbackMemberAvatar(data.name),
-    level: '普通会员',
-    gender: data.gender,
-    birthday: data.birthday,
+    id: m.id || Date.now(),
+    name,
+    phone: m.phone || data.phone,
+    avatar: m.avatar || createFallbackMemberAvatar(name),
+    level: m.level || '普通会员',
+    gender: m.gender || data.gender,
+    birthday: m.birthday || data.birthday,
     balance: data.package && !data.package.name.includes('套票') && !data.package.name.includes('次套票') ? data.package.price : 0,
-    coins: 0,
-    cardNo: data.cardNo || ''
+    coins: m.coins || 0,
+    cardNo: m.cardNo || data.cardNo || '',
+    remark: m.remark || data.remark || '',
+    linkMode: data.mode || 'create',
   }
   persistSaleMemberSession(selectedMember.value)
   userCoupons.value = []

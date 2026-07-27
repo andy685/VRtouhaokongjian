@@ -99,15 +99,16 @@
             </label>
           </div>
 
-          <!-- 第7行：备注（独占一行） -->
+          <!-- 第7行：备注（全局档案只读） -->
           <div class="emm-row">
             <label class="emm-field emm-field-full">
               <span class="emm-label">备注：</span>
-              <div class="emm-textarea-wrap">
-                <textarea v-model.trim="form.remark" rows="2" placeholder="非必填"></textarea>
+              <div class="emm-readonly-value" style="min-height:52px;align-items:flex-start;padding-top:9px;padding-bottom:9px;white-space:pre-wrap;">
+                {{ form.remark || '无' }}
               </div>
             </label>
           </div>
+          <p class="emm-global-hint">用户名、性别、生日、备注为全局唯一会员档案，门店侧不可修改；本店仅可调整等级与状态。</p>
         </div>
 
         <!-- 底部按钮 -->
@@ -194,7 +195,22 @@ const canSubmit = computed(() => true)
 
 const handleSave = () => {
   if (!canSubmit.value) return
-  emit('save', { ...form })
+  // 仅提交门店可改字段；全局档案字段原样回传但不允许被本页改写
+  emit('save', {
+    levelKey: form.levelKey,
+    status: form.status,
+    registerPercent: form.registerPercent,
+    birthdayPercent: form.birthdayPercent,
+    // 只读回显，调用方不得据此覆盖全局档案
+    name: form.name,
+    phone: form.phone,
+    gender: form.gender,
+    birthday: form.birthday,
+    remark: form.remark,
+    cardNo: form.cardNo,
+    storeName: form.storeName,
+    registerStore: form.registerStore,
+  })
 }
 </script>
 
@@ -484,6 +500,14 @@ const handleSave = () => {
   border: 1px solid #e5ecf5;
   color: #6e737a;
   font-size: 13px;
+}
+
+.emm-global-hint {
+  margin: -4px 0 8px;
+  padding: 0 4px 0 80px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
 }
 
 /* 性别按钮组 */

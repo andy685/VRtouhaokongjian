@@ -112,10 +112,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal } from 'naive-ui'
+import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal, useMessage } from 'naive-ui'
+import { checkSystemLoginAccess } from '../constants/shopAccessSystems'
 
 const router = useRouter()
 const route = useRoute()
+const message = useMessage()
 
 // 登录身份
 const loginRole = ref<'shop' | 'agent' | 'platform' | 'cp'>('shop')
@@ -176,14 +178,18 @@ async function probeOrigin(origin: string, path: string) {
 }
 
 async function resolveCashierOrigin(path: string) {
-  // 有 cashier-ui 运行吗？需要先探测
+  // 开发环境 cashier-ui 固定端口 9529（见 cashier-ui/vite.config.js）
+  // 注意：9528 是 miniapp-payment，不能作为候选端口
   if (!window.location.port) {
     return window.location.origin
   }
 
   const currentPort = Number(window.location.port || 9527)
   const candidatePorts = Array.from(
-    new Set([9526, currentPort + 1, currentPort - 1, 5173, 5174].filter((port) => Number.isFinite(port) && port > 0))
+    new Set(
+      [9529, 5174, 5173]
+        .filter((port) => Number.isFinite(port) && port > 0 && port !== currentPort)
+    )
   )
 
   for (const port of candidatePorts) {
@@ -193,7 +199,7 @@ async function resolveCashierOrigin(path: string) {
     }
   }
 
-  return createOrigin(candidatePorts[0] || 9526)
+  return createOrigin(9529)
 }
 
 // 表单规则
@@ -340,6 +346,24 @@ function isSystemEntryActive(entry: SystemEntry) {
 
 // 处理登录
 function handleLogin() {
+  if (!loginForm.username.trim()) {
+    message.warning('请输入用户名')
+    return
+  }
+  if (!loginForm.password.trim()) {
+    message.warning('请输入密码')
+    return
+  }
+
+  // 商家后台：按角色可用系统校验是否可登录「商家运营后台」
+  if (loginRole.value === 'shop') {
+    const access = checkSystemLoginAccess(loginForm.username, 'shop')
+    if (!access.ok) {
+      message.error(access.message || '无权登录商家运营后台')
+      return
+    }
+  }
+
   isLoading.value = true
   // 模拟登录请求
   setTimeout(() => {

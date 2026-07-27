@@ -161,11 +161,9 @@ const routes: RouteRecordRaw[] = [
       { path: 'devices/bind', name: 'ShopDeviceBind', component: () => import('../views/shop/DeviceBind.vue'), meta: { title: '设备绑定管理' } },
       { path: 'devices/online-stats', name: 'ShopDeviceOnlineStats', component: () => import('../views/shop/DeviceOnlineStats.vue'), meta: { title: '设备在线统计' } },
       { path: 'cashier-terminal', name: 'ShopCashierTerminal', component: () => import('../views/shop/CashierTerminal.vue'), meta: { title: '收银终端' } },
-      { path: 'cashier-settings', name: 'ShopCashierSettings', component: () => import('../views/shop/CashierSettings.vue'), meta: { title: '支付设置' } },
       { path: 'cashier-receipt', name: 'ShopCashierReceipt', component: () => import('../views/shop/CashierReceiptSettings.vue'), meta: { title: '小票设置' } },
       { path: 'ic-card', name: 'ShopIcCard', component: () => import('../views/shop/IcCard.vue'), meta: { title: 'IC卡管理' } },
       { path: 'points-settings', name: 'ShopPointsSettings', component: () => import('../views/shop/PointsSettings.vue'), meta: { title: '游戏币设置' } },
-      { path: 'system-params', name: 'ShopSystemParams', component: () => import('../views/shop/SystemParams.vue'), meta: { title: '系统参数' } },
       { path: 'users', name: 'ShopUsers', component: () => import('../views/shop/Users.vue'), meta: { title: '用户列表' } },
       { path: 'roles', name: 'ShopRoles', component: () => import('../views/shop/Roles.vue'), meta: { title: '角色列表' } },
       // 账户

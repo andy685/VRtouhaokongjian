@@ -93,222 +93,304 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed, h, onMounted, watch } from 'vue'
 import { NDataTable, NButton, NIcon, NSpace, NModal, NForm, NFormItem, NInput, NSelect, NSwitch, NTag, NQrCode, useMessage, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
-import { AddOutline, SearchOutline, CreateOutline, TrashOutline } from '@vicons/ionicons5'
+import { AddOutline } from '@vicons/ionicons5'
+import { saveShopStaffRegistry, removeShopStaff } from '../../constants/shopAccessSystems'
 
 const message = useMessage()
 
-interface User { id:number; role:string; account:string; name:string; phone:string; email:string; status:boolean; createTime:string; wxBound:boolean; wxName?:string; shops:string[]; icCardNo?:string }
+interface User {
+  id: number
+  role: string
+  account: string
+  name: string
+  phone: string
+  email: string
+  status: boolean
+  createTime: string
+  wxBound: boolean
+  wxName?: string
+  shops: string[]
+  icCardNo?: string
+  desc?: string
+}
 
-const filter = ref({ role:null as string|null, status:null as boolean|null, keyword:'' })
-const roleFilterOptions = [{label:'店长',value:'店长'},{label:'收银员',value:'收银员'}]
-const statusFilterOptions = [{label:'正常',value:true},{label:'禁用',value:false}]
+const filter = ref({ role: null as string | null, status: null as boolean | null, keyword: '' })
+const roleFilterOptions = [{ label: '店长', value: '店长' }, { label: '收银员', value: '收银员' }, { label: '导购', value: '导购' }]
+const statusFilterOptions = [{ label: '正常', value: true }, { label: '禁用', value: false }]
 const shopOptions = [
-  {label:'利民街小展厅',value:'利民街小展厅'},
-  {label:'卓远萝岗区店',value:'卓远萝岗区店'},
-  {label:'卓远萧山区店',value:'卓远萧山区店'},
-  {label:'卓远亚运城店',value:'卓远亚运城店'},
-  {label:'卓远文鼎路店',value:'卓远文鼎路店'},
+  { label: '利民街小展厅', value: '利民街小展厅' },
+  { label: '卓远萝岗区店', value: '卓远萝岗区店' },
+  { label: '卓远萧山区店', value: '卓远萧山区店' },
+  { label: '卓远亚运城店', value: '卓远亚运城店' },
+  { label: '卓远文鼎路店', value: '卓远文鼎路店' },
 ]
 
-function resetFilter(){ filter.value={role:null,status:null,keyword:''} }
+function resetFilter() { filter.value = { role: null, status: null, keyword: '' } }
 
 const allUsers = ref<User[]>([
-  {id:1,role:'收银员',account:'18998311111',name:'张三',phone:'18998311111',email:'zhangsan@vr.com',status:true,createTime:'2023-05-19 10:54',wxBound:false,shops:['利民街小展厅'],icCardNo:'IC-0001'},
-  {id:2,role:'店长',account:'hehai',name:'he',phone:'189989898989',email:'hehai@vr.com',status:true,createTime:'2023-05-13 17:11',wxBound:true,wxName:'海哥',shops:['利民街小展厅','卓远亚运城店']},
-  {id:3,role:'店长',account:'mxw72304',name:'马小文',phone:'18688872712',email:'mxw@vr.com',status:true,createTime:'2023-05-13 16:55',wxBound:false,shops:['卓远萝岗区店']},
-  {id:4,role:'店长',account:'luming',name:'luming',phone:'18602015721',email:'lm@vr.com',status:true,createTime:'2023-05-13 16:52',wxBound:false,shops:['卓远萧山区店']},
-  {id:5,role:'店长',account:'18027136456',name:'ming',phone:'18027136456',email:'ming@vr.com',status:true,createTime:'2023-05-13 16:46',wxBound:false,shops:['卓远亚运城店']},
-  {id:6,role:'店长',account:'13326445852',name:'家欢',phone:'13326445852',email:'jh@vr.com',status:true,createTime:'2023-05-04 14:03',wxBound:false,shops:['利民街小展厅']},
-  {id:7,role:'店长',account:'17818070060',name:'胡昕莹',phone:'17818070060',email:'hxy@vr.com',status:true,createTime:'2023-04-07 16:40',wxBound:false,shops:['卓远萝岗区店','卓远萧山区店']},
-  {id:8,role:'店长',account:'19525527224',name:'廖苗',phone:'19525527224',email:'lmiao@vr.com',status:true,createTime:'2023-04-07 16:05',wxBound:false,shops:['卓远亚运城店']},
-  {id:9,role:'店长',account:'15676577933',name:'陈梓衡',phone:'15676577933',email:'czh@vr.com',status:true,createTime:'2023-04-07 16:04',wxBound:false,shops:['卓远文鼎路店']},
-  {id:10,role:'店长',account:'18620017002',name:'何霖',phone:'18620017002',email:'hl@vr.com',status:true,createTime:'2023-04-07 15:52',wxBound:false,shops:['利民街小展厅','卓远亚运城店','卓远萝岗区店']},
+  { id: 1, role: '收银员', account: '18998311111', name: '张三', phone: '18998311111', email: 'zhangsan@vr.com', status: true, createTime: '2023-05-19 10:54', wxBound: false, shops: ['利民街小展厅'], icCardNo: 'IC-0001' },
+  { id: 2, role: '店长', account: 'hehai', name: 'he', phone: '189989898989', email: 'hehai@vr.com', status: true, createTime: '2023-05-13 17:11', wxBound: true, wxName: '海哥', shops: ['利民街小展厅', '卓远亚运城店'] },
+  { id: 3, role: '店长', account: 'mxw72304', name: '马小文', phone: '18688872712', email: 'mxw@vr.com', status: true, createTime: '2023-05-13 16:55', wxBound: false, shops: ['卓远萝岗区店'] },
+  { id: 4, role: '店长', account: 'luming', name: 'luming', phone: '18602015721', email: 'lm@vr.com', status: true, createTime: '2023-05-13 16:52', wxBound: false, shops: ['卓远萧山区店'] },
+  { id: 5, role: '店长', account: '18027136456', name: 'ming', phone: '18027136456', email: 'ming@vr.com', status: true, createTime: '2023-05-13 16:46', wxBound: false, shops: ['卓远亚运城店'] },
+  { id: 6, role: '店长', account: '13326445852', name: '家欢', phone: '13326445852', email: 'jh@vr.com', status: true, createTime: '2023-05-04 14:03', wxBound: false, shops: ['利民街小展厅'] },
+  { id: 7, role: '店长', account: '17818070060', name: '胡昕莹', phone: '17818070060', email: 'hxy@vr.com', status: true, createTime: '2023-04-07 16:40', wxBound: false, shops: ['卓远萝岗区店', '卓远萧山区店'] },
+  { id: 8, role: '店长', account: '19525527224', name: '廖苗', phone: '19525527224', email: 'lmiao@vr.com', status: true, createTime: '2023-04-07 16:05', wxBound: false, shops: ['卓远亚运城店'] },
+  { id: 9, role: '店长', account: '15676577933', name: '陈梓衡', phone: '15676577933', email: 'czh@vr.com', status: true, createTime: '2023-04-07 16:04', wxBound: false, shops: ['卓远文鼎路店'] },
+  { id: 10, role: '店长', account: '18620017002', name: '何霖', phone: '18620017002', email: 'hl@vr.com', status: true, createTime: '2023-04-07 15:52', wxBound: false, shops: ['利民街小展厅', '卓远亚运城店', '卓远萝岗区店'] },
 ])
 
-const filteredUsers = computed(()=>{
-  return allUsers.value.filter(u=>{
-    if(filter.value.role && u.role!==filter.value.role) return false
-    if(filter.value.status!==null && u.status!==filter.value.status) return false
-    if(filter.value.keyword){
-      const k=filter.value.keyword
-      return u.account.includes(k)||u.name.includes(k)||u.phone.includes(k)
+/** 仅同步账号→角色，供登录按角色可用系统鉴权（不在用户上配置系统） */
+function syncStaffRegistry() {
+  saveShopStaffRegistry(
+    allUsers.value.map((u) => ({
+      id: u.id,
+      account: u.account,
+      name: u.name,
+      role: u.role,
+      status: u.status,
+    })),
+  )
+}
+
+onMounted(() => { syncStaffRegistry() })
+watch(allUsers, () => syncStaffRegistry(), { deep: true })
+
+const filteredUsers = computed(() => {
+  return allUsers.value.filter((u) => {
+    if (filter.value.role && u.role !== filter.value.role) return false
+    if (filter.value.status !== null && u.status !== filter.value.status) return false
+    if (filter.value.keyword) {
+      const k = filter.value.keyword
+      return u.account.includes(k) || u.name.includes(k) || u.phone.includes(k)
     }
     return true
   })
 })
 
 const columns: DataTableColumns<User> = [
-  { title:'角色', key:'role', width:100 },
-  { title:'账号', key:'account', width:140 },
-  { title:'姓名', key:'name', width:100 },
-  { title:'联系方式', key:'phone', width:140 },
-  { title:'邮箱', key:'email', width:180 },
-  { title:'店铺', key:'shops', width:200,
-    render(row){ return h('span',{},row.shops.join('、')) }
+  { title: '角色', key: 'role', width: 100 },
+  { title: '账号', key: 'account', width: 140 },
+  { title: '姓名', key: 'name', width: 100 },
+  { title: '联系方式', key: 'phone', width: 140 },
+  { title: '邮箱', key: 'email', width: 180 },
+  {
+    title: '店铺', key: 'shops', width: 200,
+    render(row) { return h('span', {}, row.shops.join('、')) },
   },
-  { title:'状态', key:'status', width:90, align:'center',
-    render(row){ return h(NTag,{size:'small',type:row.status?'success':'error',bordered:true},()=>row.status?'正常':'禁用') }
+  {
+    title: '状态', key: 'status', width: 90, align: 'center',
+    render(row) { return h(NTag, { size: 'small', type: row.status ? 'success' : 'error', bordered: true }, () => row.status ? '正常' : '禁用') },
   },
-  { title:'创建时间', key:'createTime', width:160 },
-  { title:'IC卡', key:'icCardNo', width:100, align:'center',
-    render(row){
-      if(row.icCardNo) return h(NTag,{size:'small',type:'success',bordered:false},()=>row.icCardNo)
-      return h(NTag,{size:'small',type:'default',bordered:false},()=>'未绑定')
-    }
+  { title: '创建时间', key: 'createTime', width: 160 },
+  {
+    title: 'IC卡', key: 'icCardNo', width: 100, align: 'center',
+    render(row) {
+      if (row.icCardNo) return h(NTag, { size: 'small', type: 'success', bordered: false }, () => row.icCardNo)
+      return h(NTag, { size: 'small', type: 'default', bordered: false }, () => '未绑定')
+    },
   },
-  { title:'操作', key:'actions', width:240, fixed:'right', align:'center',
-    render(row){
-      return h(NSpace,{justify:'center',size:4},{
-        default:()=>[
-          h(NButton,{size:'tiny',text:true,type:'primary',onClick:()=>openEdit(row)},{default:()=>'编辑'}),
-          h(NButton,{size:'tiny',text:true,type:'info',onClick:()=>openBindWx(row)},{default:()=>'微信'}),
-          h(NButton,{size:'tiny',text:true,type:row.icCardNo?'default':'warning',onClick:()=>openBindIc(row)},{default:()=>row.icCardNo?'IC卡':'绑定IC卡'}),
-          h(NButton,{size:'tiny',text:true,type:'error',onClick:()=>handleDelete(row)},{default:()=>'删除'}),
-        ]
+  {
+    title: '操作', key: 'actions', width: 240, fixed: 'right', align: 'center',
+    render(row) {
+      return h(NSpace, { justify: 'center', size: 4 }, {
+        default: () => [
+          h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),
+          h(NButton, { size: 'tiny', text: true, type: 'info', onClick: () => openBindWx(row) }, { default: () => '微信' }),
+          h(NButton, { size: 'tiny', text: true, type: row.icCardNo ? 'default' : 'warning', onClick: () => openBindIc(row) }, { default: () => row.icCardNo ? 'IC卡' : '绑定IC卡' }),
+          h(NButton, { size: 'tiny', text: true, type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }),
+        ],
       })
-    }
-  }
+    },
+  },
 ]
 
-const pagination = { pageSize:10, showSizePicker:true, pageSizes:[10,20,50] }
+const pagination = { pageSize: 10, showSizePicker: true, pageSizes: [10, 20, 50] }
 
-// 创建/编辑
 const showUserModal = ref(false)
 const isEdit = ref(false)
-const userFormRef = ref<FormInst|null>(null)
-const userForm = ref({ role:'店长', shops:[] as string[], account:'', name:'', phone:'', email:'', password:'', confirmPassword:'', desc:'', status:true as boolean, changePassword:false, newPassword:'', newConfirmPassword:'' })
-const roleOptions = [{label:'导购',value:'导购'},{label:'店长',value:'店长'},{label:'收银员',value:'收银员'}]
+const userFormRef = ref<FormInst | null>(null)
+const userForm = ref({
+  role: '店长',
+  shops: [] as string[],
+  account: '',
+  name: '',
+  phone: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  desc: '',
+  status: true as boolean,
+  changePassword: false,
+  newPassword: '',
+  newConfirmPassword: '',
+})
+const roleOptions = [{ label: '导购', value: '导购' }, { label: '店长', value: '店长' }, { label: '收银员', value: '收银员' }]
 
 const userRules: FormRules = {
-  role:{required:true,message:'请选择角色',trigger:'change'},
-  account:{required:true,message:'请输入账号',trigger:'blur'},
-  name:{required:true,message:'请输入姓名',trigger:'blur'},
-  phone:{required:true,message:'请输入联系方式',trigger:'blur'},
-  password:{required:true,message:'请输入密码',trigger:'blur'},
-  confirmPassword:{required:true,message:'请确认密码',trigger:'blur'},
+  role: { required: true, message: '请选择角色', trigger: 'change' },
+  account: { required: true, message: '请输入账号', trigger: 'blur' },
+  name: { required: true, message: '请输入姓名', trigger: 'blur' },
+  phone: { required: true, message: '请输入联系方式', trigger: 'blur' },
+  password: { required: true, message: '请输入密码', trigger: 'blur' },
+  confirmPassword: { required: true, message: '请确认密码', trigger: 'blur' },
 }
 
 const editRules: FormRules = {
-  role:{required:true,message:'请选择角色',trigger:'change'},
-  name:{required:true,message:'请输入姓名',trigger:'blur'},
-  phone:{required:true,message:'请输入联系方式',trigger:'blur'},
-  newPassword:{required:true,message:'请输入新密码',trigger:'blur'},
-  newConfirmPassword:{required:true,message:'请确认新密码',trigger:'blur'},
+  role: { required: true, message: '请选择角色', trigger: 'change' },
+  name: { required: true, message: '请输入姓名', trigger: 'blur' },
+  phone: { required: true, message: '请输入联系方式', trigger: 'blur' },
+  newPassword: { required: true, message: '请输入新密码', trigger: 'blur' },
+  newConfirmPassword: { required: true, message: '请确认新密码', trigger: 'blur' },
 }
 
 const activeRules = computed(() => isEdit.value ? editRules : userRules)
 
-function openCreate(){
-  isEdit.value=false
-  userForm.value={role:'店长',shops:[],account:'',name:'',phone:'',email:'',password:'',confirmPassword:'',desc:'',status:true,changePassword:false,newPassword:'',newConfirmPassword:''}
-  showUserModal.value=true
+function openCreate() {
+  isEdit.value = false
+  userForm.value = {
+    role: '店长', shops: [], account: '', name: '', phone: '', email: '',
+    password: '', confirmPassword: '', desc: '', status: true,
+    changePassword: false, newPassword: '', newConfirmPassword: '',
+  }
+  showUserModal.value = true
 }
 
-function openEdit(row:User){
-  isEdit.value=true
-  userForm.value={ role:row.role, shops:[...row.shops], account:row.account, name:row.name, phone:row.phone, email:row.email, password:'', confirmPassword:'', desc:(row as any).desc||'', status:row.status, changePassword:false, newPassword:'', newConfirmPassword:'' }
-  showUserModal.value=true
+function openEdit(row: User) {
+  isEdit.value = true
+  userForm.value = {
+    role: row.role, shops: [...row.shops], account: row.account, name: row.name,
+    phone: row.phone, email: row.email, password: '', confirmPassword: '',
+    desc: row.desc || '', status: row.status, changePassword: false,
+    newPassword: '', newConfirmPassword: '',
+  }
+  showUserModal.value = true
 }
 
-function saveUser(){
-  userFormRef.value?.validate((errors)=>{
-    if(errors) return
-    if(!isEdit.value && userForm.value.password!==userForm.value.confirmPassword){
+function saveUser() {
+  userFormRef.value?.validate((errors) => {
+    if (errors) return
+    if (!isEdit.value && userForm.value.password !== userForm.value.confirmPassword) {
       message.error('两次密码不一致')
       return
     }
-    if(isEdit.value && userForm.value.changePassword && userForm.value.newPassword!==userForm.value.newConfirmPassword){
+    if (isEdit.value && userForm.value.changePassword && userForm.value.newPassword !== userForm.value.newConfirmPassword) {
       message.error('两次新密码不一致')
       return
     }
-    if(isEdit.value){
-      const idx=allUsers.value.findIndex(u=>u.account===userForm.value.account)
-      if(idx!==-1){
-        allUsers.value[idx]={...allUsers.value[idx],...{role:userForm.value.role,shops:[...userForm.value.shops],name:userForm.value.name,phone:userForm.value.phone,email:userForm.value.email,desc:userForm.value.desc,status:userForm.value.status}}
+    if (isEdit.value) {
+      const idx = allUsers.value.findIndex((u) => u.account === userForm.value.account)
+      if (idx !== -1) {
+        allUsers.value[idx] = {
+          ...allUsers.value[idx],
+          role: userForm.value.role,
+          shops: [...userForm.value.shops],
+          name: userForm.value.name,
+          phone: userForm.value.phone,
+          email: userForm.value.email,
+          desc: userForm.value.desc,
+          status: userForm.value.status,
+        }
       }
       message.success('用户已更新')
-    }else{
+    } else {
       allUsers.value.unshift({
-        id:Date.now(), role:userForm.value.role, shops:[...userForm.value.shops], account:userForm.value.account, name:userForm.value.name,
-        phone:userForm.value.phone, email:userForm.value.email, status:userForm.value.status, createTime:new Date().toLocaleString(), wxBound:false, desc:userForm.value.desc
+        id: Date.now(),
+        role: userForm.value.role,
+        shops: [...userForm.value.shops],
+        account: userForm.value.account,
+        name: userForm.value.name,
+        phone: userForm.value.phone,
+        email: userForm.value.email,
+        status: userForm.value.status,
+        createTime: new Date().toLocaleString(),
+        wxBound: false,
+        desc: userForm.value.desc,
       })
       message.success('用户已创建')
     }
-    showUserModal.value=false
+    showUserModal.value = false
   })
 }
 
 // 绑定微信
 const showBindWxModal = ref(false)
-const currentUser = ref<User|null>(null)
-const qrValue = computed(()=>currentUser.value?`BIND_WX_${currentUser.value.id}_${Date.now()}`:'')
+const currentUser = ref<User | null>(null)
+const qrValue = ref('')
 
-function openBindWx(row:User){
-  currentUser.value=row
-  showBindWxModal.value=true
+function openBindWx(row: User) {
+  currentUser.value = row
+  qrValue.value = `https://vr.example.com/bind-wx?uid=${row.id}&t=${Date.now()}`
+  showBindWxModal.value = true
 }
 
-function unbindWx(){
-  if(currentUser.value){
-    currentUser.value.wxBound=false
-    currentUser.value.wxName=undefined
-    message.success('已解除绑定')
+function unbindWx() {
+  if (!currentUser.value) return
+  const idx = allUsers.value.findIndex((u) => u.id === currentUser.value!.id)
+  if (idx !== -1) {
+    allUsers.value[idx].wxBound = false
+    allUsers.value[idx].wxName = undefined
   }
-  showBindWxModal.value=false
+  message.success('已解除微信绑定')
+  showBindWxModal.value = false
 }
 
-// IC卡绑定
+// 绑定IC卡
 const showBindIcModal = ref(false)
-const icFormRef = ref<FormInst|null>(null)
-const icForm = ref({ cardNo:'', notes:'' })
+const icFormRef = ref<FormInst | null>(null)
+const icForm = ref({ cardNo: '', notes: '' })
 const icRules: FormRules = {
-  cardNo: { required:true, message:'请输入卡号', trigger:'blur' },
+  cardNo: { required: true, message: '请输入卡号', trigger: 'blur' },
 }
 
-function openBindIc(row:User){
-  currentUser.value=row
-  icForm.value={cardNo:'', notes:''}
-  showBindIcModal.value=true
+function openBindIc(row: User) {
+  currentUser.value = row
+  icForm.value = { cardNo: '', notes: '' }
+  showBindIcModal.value = true
 }
 
-function bindIc(){
-  if(!currentUser.value) return
-  icFormRef.value?.validate(e=>{
-    if(e) return
-    currentUser.value!.icCardNo=icForm.value.cardNo
-    showBindIcModal.value=false
+function bindIc() {
+  icFormRef.value?.validate((errors) => {
+    if (errors) return
+    if (!currentUser.value) return
+    const idx = allUsers.value.findIndex((u) => u.id === currentUser.value!.id)
+    if (idx !== -1) {
+      allUsers.value[idx].icCardNo = icForm.value.cardNo
+    }
     message.success('IC卡绑定成功')
+    showBindIcModal.value = false
   })
 }
 
-function unbindIc(){
-  if(currentUser.value){
-    currentUser.value.icCardNo=undefined
-    message.success('IC卡已解绑')
+function unbindIc() {
+  if (!currentUser.value) return
+  const idx = allUsers.value.findIndex((u) => u.id === currentUser.value!.id)
+  if (idx !== -1) {
+    allUsers.value[idx].icCardNo = undefined
   }
-  showBindIcModal.value=false
+  message.success('已解除IC卡绑定')
+  showBindIcModal.value = false
 }
 
-// 删除
-function handleDelete(row:User){
+function handleDelete(row: User) {
   const d = window.confirm(`确认删除用户「${row.name}（${row.account}）」吗？`)
-  if(!d) return
-  const idx=allUsers.value.findIndex(u=>u.id===row.id)
-  if(idx!==-1) allUsers.value.splice(idx,1)
+  if (!d) return
+  const idx = allUsers.value.findIndex((u) => u.id === row.id)
+  if (idx !== -1) allUsers.value.splice(idx, 1)
+  removeShopStaff(row.account)
   message.success('用户已删除')
 }
 
-// 导出
-function handleExport(){
-  message.success('导出成功')
+function handleExport() {
+  message.info('导出功能开发中')
 }
 </script>
 
 <style scoped>
-.page-container { padding:24px; }
-.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-.page-header h1 { font-size:20px; font-weight:600; color:#333; margin:0; }
-.filter-card { margin-bottom:16px; border-radius:12px; }
+.page-container { padding: 0; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.page-header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+.filter-card { margin-bottom: 16px; }
 </style>

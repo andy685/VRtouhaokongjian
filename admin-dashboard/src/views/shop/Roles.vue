@@ -93,13 +93,25 @@
     </template>
 
     <!-- 添加/编辑角色弹窗 -->
-    <n-modal v-model:show="showAddModal" preset="card" :title="isEdit ? '编辑角色' : '创建角色'" style="width: 480px;" :bordered="false">
+    <n-modal v-model:show="showAddModal" preset="card" :title="isEdit ? '编辑角色' : '创建角色'" style="width: 520px;" :bordered="false">
       <n-form label-placement="left" label-width="100">
         <n-form-item label="商家">
           <n-input value="幻影星空商家 NO.8088" disabled />
         </n-form-item>
         <n-form-item label="角色名称" required>
           <n-input v-model:value="form.name" placeholder="请输入角色名称" />
+        </n-form-item>
+        <n-form-item label="可用系统" required>
+          <n-checkbox-group v-model:value="form.systems">
+            <n-space>
+              <n-checkbox
+                v-for="opt in systemOptions"
+                :key="opt.value"
+                :value="opt.value"
+                :label="opt.label"
+              />
+            </n-space>
+          </n-checkbox-group>
         </n-form-item>
         <n-form-item label="描述">
           <n-input v-model:value="form.desc" type="textarea" :rows="4" :maxlength="50" show-count placeholder="请描述" />
@@ -115,16 +127,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, computed, watch } from 'vue'
+import { ref, h, computed, watch, onMounted } from 'vue'
 import {
   NCard, NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
-  NInput, NTag, NSpace, NCheckbox
+  NInput, NTag, NSpace, NCheckbox, NCheckboxGroup
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import {
   PencilOutline, TrashOutline, KeyOutline, ArrowBackOutline,
   ChevronForwardOutline, ChevronDownOutline
 } from '@vicons/ionicons5'
+import {
+  type ShopAccessSystem,
+  SHOP_ACCESS_SYSTEM_OPTIONS,
+  defaultSystemsByRole,
+  formatSystems,
+  saveShopRoleRegistry,
+  loadShopRoleRegistry,
+} from '../../constants/shopAccessSystems'
 
 interface PermNode {
   key: string
@@ -147,26 +167,70 @@ interface Role {
   userCount: number
   status: boolean
   permissions: string[]
+  systems: ShopAccessSystem[]
 }
 
 const viewMode = ref<'list' | 'permission'>('list')
 const showAddModal = ref(false)
 const isEdit = ref(false)
 const editingId = ref<number | null>(null)
-const form = ref({ name: '', desc: '', status: true })
+const systemOptions = SHOP_ACCESS_SYSTEM_OPTIONS
+const form = ref({ name: '', desc: '', status: true, systems: ['shop', 'cashier'] as ShopAccessSystem[] })
 const pagination = { pageSize: 10 }
 
 const roleData = ref<Role[]>([
-  { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'] },
-  { id: 2, name: '收银员', desc: '收银、退款、查询订单', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'] },
-  { id: 3, name: '接待员', desc: '会员办理、预约管理', userCount: 3, status: true, permissions: ['members', 'member-levels', 'member-ranking', 'guide-members'] },
-  { id: 4, name: '设备维护', desc: '设备巡检、故障上报', userCount: 1, status: false, permissions: ['devices', 'on-demand-settings', 'on-demand-data', 'on-demand-device-summary'] },
-  { id: 5, name: '财务', desc: '查看报表、对账', userCount: 1, status: true, permissions: ['daily-sales', 'historical-revenue', 'channel-revenue', 'product-sales', 'account-stats', 'shifts', 'film-revenue'] },
+  { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
+  { id: 2, name: '收银员', desc: '收银、退款、查询订单', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'], systems: ['cashier'] },
+  { id: 3, name: '接待员', desc: '会员办理、预约管理', userCount: 3, status: true, permissions: ['members', 'member-levels', 'member-ranking', 'guide-members'], systems: ['shop'] },
+  { id: 4, name: '设备维护', desc: '设备巡检、故障上报', userCount: 1, status: false, permissions: ['devices', 'on-demand-settings', 'on-demand-data', 'on-demand-device-summary'], systems: ['shop'] },
+  { id: 5, name: '财务', desc: '查看报表、对账', userCount: 1, status: true, permissions: ['daily-sales', 'historical-revenue', 'channel-revenue', 'product-sales', 'account-stats', 'shifts', 'film-revenue'], systems: ['shop'] },
 ])
+
+function syncRoleRegistry() {
+  saveShopRoleRegistry(
+    roleData.value.map((r) => ({
+      id: r.id,
+      name: r.name,
+      systems: r.systems?.length ? r.systems : defaultSystemsByRole(r.name),
+      status: r.status,
+    })),
+  )
+}
+
+onMounted(() => {
+  const saved = loadShopRoleRegistry()
+  if (saved.length) {
+    roleData.value = roleData.value.map((r) => {
+      const hit = saved.find((s) => s.id === r.id || s.name === r.name)
+      if (!hit) return r
+      return { ...r, systems: hit.systems?.length ? hit.systems : r.systems }
+    })
+  }
+  syncRoleRegistry()
+})
+
+watch(roleData, () => syncRoleRegistry(), { deep: true })
 
 const columns: DataTableColumns<Role> = [
   { title: '角色名称', key: 'name', minWidth: 120 },
-  { title: '权限描述', key: 'desc', minWidth: 200 },
+  { title: '权限描述', key: 'desc', minWidth: 180 },
+  {
+    title: '可用系统',
+    key: 'systems',
+    width: 180,
+            render: (row) => {
+      const systems = row.systems?.length ? row.systems : defaultSystemsByRole(row.name)
+      return h(NSpace, { size: 4 }, {
+        default: () => systems.map((s) =>
+          h(NTag, {
+            size: 'small',
+            type: s === 'cashier' ? 'warning' : 'info',
+            bordered: false,
+          }, { default: () => s === 'cashier' ? '头号掌柜收银系统' : '商家运营后台' }),
+        ),
+      })
+    },
+  },
   { title: '关联用户', key: 'userCount', width: 100, align: 'center' },
   {
     title: '状态',
@@ -205,14 +269,19 @@ const columns: DataTableColumns<Role> = [
 function openCreate() {
   isEdit.value = false
   editingId.value = null
-  form.value = { name: '', desc: '', status: true }
+  form.value = { name: '', desc: '', status: true, systems: ['shop', 'cashier'] }
   showAddModal.value = true
 }
 
 function openEdit(row: Role) {
   isEdit.value = true
   editingId.value = row.id
-  form.value = { name: row.name, desc: row.desc, status: row.status }
+  form.value = {
+    name: row.name,
+    desc: row.desc,
+    status: row.status,
+    systems: [...(row.systems?.length ? row.systems : defaultSystemsByRole(row.name))],
+  }
   showAddModal.value = true
 }
 
@@ -231,12 +300,22 @@ function handleSubmit() {
     window.$message?.warning('请输入角色名称')
     return
   }
+  if (!form.value.systems?.length) {
+    window.$message?.warning('请至少选择一个可用系统')
+    return
+  }
   if (isEdit.value && editingId.value !== null) {
     const idx = roleData.value.findIndex(r => r.id === editingId.value)
     if (idx > -1) {
-      roleData.value[idx] = { ...roleData.value[idx], ...form.value }
+      roleData.value[idx] = {
+        ...roleData.value[idx],
+        name: form.value.name,
+        desc: form.value.desc,
+        status: form.value.status,
+        systems: [...form.value.systems],
+      }
     }
-    window.$message?.success('修改成功')
+    window.$message?.success(`修改成功（可用系统：${formatSystems(form.value.systems)}）`)
   } else {
     const newId = roleData.value.length > 0 ? Math.max(...roleData.value.map(r => r.id)) + 1 : 1
     roleData.value.push({
@@ -246,13 +325,14 @@ function handleSubmit() {
       status: form.value.status,
       userCount: 0,
       permissions: [],
+      systems: [...form.value.systems],
     })
-    window.$message?.success('添加成功')
+    window.$message?.success(`添加成功（可用系统：${formatSystems(form.value.systems)}）`)
   }
   showAddModal.value = false
   isEdit.value = false
   editingId.value = null
-  form.value = { name: '', desc: '', status: true }
+  form.value = { name: '', desc: '', status: true, systems: ['shop', 'cashier'] }
 }
 
 // ========== 权限设置 ==========
@@ -340,7 +420,6 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
           key: 'cashier-settings-module', label: '收银设置', checked: false, expanded: false,
           children: [
             { key: 'cashier-terminal', label: '收银终端', checked: false, expanded: false },
-            { key: 'cashier-settings', label: '支付设置', checked: false, expanded: false },
             { key: 'cashier-receipt', label: '小票设置', checked: false, expanded: false },
           ]
         },

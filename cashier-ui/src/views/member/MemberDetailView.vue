@@ -952,8 +952,12 @@ const handleGiftIssue = (gift) => {
 
 const handleNewMemberSubmit = (data) => {
   showNewMember.value = false
-  if (data?.name) {
-    ElMessage.success(`已新增会员：${data.name}`)
+  const name = data?.member?.name || data?.name
+  if (!name) return
+  if (data?.mode === 'link_only') {
+    ElMessage.success(`已关联本店：${name}（未修改全局档案）`)
+  } else {
+    ElMessage.success(`已新增会员：${name}`)
   }
 }
 

@@ -263,6 +263,21 @@ const resolveAdminOrigin = async () => {
 }
 
 const handleLogin = () => {
+  if (!form.username.trim()) {
+    ElMessage.warning('请输入店员账号')
+    return
+  }
+  if (!form.password.trim()) {
+    ElMessage.warning('请输入登录密码')
+    return
+  }
+
+  const access = checkCashierLoginAccess(form.username)
+  if (!access.ok) {
+    ElMessage.error(access.message || '无权登录收银系统')
+    return
+  }
+
   router.push('/sale')
 }
 

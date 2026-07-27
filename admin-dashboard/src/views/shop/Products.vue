@@ -13,6 +13,7 @@
             <n-input v-model:value="searchText" placeholder="搜索商品名称..." size="small" style="width: 200px;">
               <template #prefix><n-icon :component="SearchOutline" /></template>
             </n-input>
+            <n-select v-model:value="filterStore" placeholder="所属店铺" :options="storeFilterOptions" size="small" style="width: 160px;" clearable />
             <n-select v-model:value="filterCategory" placeholder="商品分类" :options="categoryFilterOptions" size="small" style="width: 140px;" clearable />
             <n-select v-model:value="filterStock" placeholder="库存状态" :options="stockStatusOptions" size="small" style="width: 120px;" clearable />
             <n-select v-model:value="filterStatus" placeholder="上架状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
@@ -28,25 +29,36 @@
 
       <n-tab-pane name="inventory" tab="📊 库存管理">
         <div class="tab-content">
+          <div class="inventory-filters">
+            <n-select
+              v-model:value="inventoryStoreFilter"
+              placeholder="所属店铺"
+              :options="storeFilterOptions"
+              size="small"
+              style="width: 180px;"
+              clearable
+            />
+          </div>
+
           <div class="stock-overview">
             <div class="stock-card">
               <span class="label">总商品数</span>
-              <span class="value">48件</span>
-              <span class="sub">涉及 12 种商品</span>
+              <span class="value">{{ inventoryStats.skuCount }}件</span>
+              <span class="sub">涉及 {{ inventoryStats.skuCount }} 种商品</span>
             </div>
             <div class="stock-card">
               <span class="label">总库存价值</span>
-              <span class="value">¥23,680</span>
-              <span class="sub">按成本价计算</span>
+              <span class="value">¥{{ inventoryStats.totalValue }}</span>
+              <span class="sub">按售价估算</span>
             </div>
             <div class="stock-card warning">
               <span class="label">⚠ 低库存预警</span>
-              <span class="value">3件</span>
+              <span class="value">{{ inventoryStats.lowStockCount }}件</span>
               <n-button size="tiny" type="error" secondary @click="quickPurchase">立即采购</n-button>
             </div>
             <div class="stock-card">
               <span class="label">今日变动</span>
-              <span class="value green">+15 / -8</span>
+              <span class="value green">+{{ inventoryStats.todayIn }} / -{{ inventoryStats.todayOut }}</span>
               <span class="sub">入库 / 出库</span>
             </div>
           </div>
@@ -57,7 +69,7 @@
             <n-button size="small" secondary @click="openStockModal('check')">📋 库存盘点</n-button>
           </div>
 
-          <n-data-table :columns="stockColumns" :data="stockData" :pagination="{ pageSize: 10 }" striped />
+          <n-data-table :columns="stockColumns" :data="filteredStockData" :pagination="{ pageSize: 10 }" striped />
         </div>
       </n-tab-pane>
     </n-tabs>
@@ -91,8 +103,23 @@
     <!-- 入库弹窗 -->
     <n-modal v-model:show="showStockIn" preset="card" title="商品入库" style="width: 480px;" :bordered="false">
       <n-form label-placement="left" label-width="80">
+        <n-form-item label="所属店铺" required>
+          <n-select
+            v-model:value="stockForm.store"
+            :options="storeFilterOptions"
+            placeholder="请先选择店铺"
+            filterable
+            @update:value="onStockStoreChange"
+          />
+        </n-form-item>
         <n-form-item label="选择商品" required>
-          <n-select v-model:value="stockForm.product" :options="stockProductOptions" placeholder="请选择商品" filterable />
+          <n-select
+            v-model:value="stockForm.productId"
+            :options="stockProductOptions"
+            placeholder="请选择商品"
+            filterable
+            :disabled="!stockForm.store"
+          />
         </n-form-item>
         <n-form-item label="入库数量" required>
           <n-input-number v-model:value="stockForm.qty" :min="1" placeholder="请输入入库数量" style="width: 100%;" />
@@ -112,8 +139,23 @@
     <!-- 出库弹窗 -->
     <n-modal v-model:show="showStockOut" preset="card" title="商品出库" style="width: 480px;" :bordered="false">
       <n-form label-placement="left" label-width="80">
+        <n-form-item label="所属店铺" required>
+          <n-select
+            v-model:value="stockForm.store"
+            :options="storeFilterOptions"
+            placeholder="请先选择店铺"
+            filterable
+            @update:value="onStockStoreChange"
+          />
+        </n-form-item>
         <n-form-item label="选择商品" required>
-          <n-select v-model:value="stockForm.product" :options="stockProductOptions" placeholder="请选择商品" filterable />
+          <n-select
+            v-model:value="stockForm.productId"
+            :options="stockProductOptions"
+            placeholder="请选择商品"
+            filterable
+            :disabled="!stockForm.store"
+          />
         </n-form-item>
         <n-form-item label="出库数量" required>
           <n-input-number v-model:value="stockForm.qty" :min="1" placeholder="请输入出库数量" style="width: 100%;" />
@@ -134,8 +176,19 @@
     </n-modal>
 
     <!-- 库存盘点弹窗 -->
-    <n-modal v-model:show="showStockCheck" preset="card" title="库存盘点" style="width: 600px;" :bordered="false">
-      <div style="margin-bottom:12px;font-size:13px;color:#64748b;">核对实际库存数量，系统将自动记录盘盈/盘亏</div>
+    <n-modal v-model:show="showStockCheck" preset="card" title="库存盘点" style="width: 680px;" :bordered="false">
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:13px;color:#64748b;">核对实际库存数量，系统将自动记录盘盈/盘亏</span>
+        <n-select
+          v-model:value="checkStoreFilter"
+          placeholder="所属店铺"
+          :options="storeFilterOptions"
+          size="small"
+          style="width: 180px;"
+          clearable
+          @update:value="refreshCheckData"
+        />
+      </div>
       <n-data-table :columns="checkColumns" :data="checkData" size="small" :pagination="false" bordered />
       <template #footer>
         <div style="display:flex;justify-content:flex-end;gap:12px;">
@@ -241,9 +294,12 @@ function toggleStatus(row: any) {
 const showStockIn = ref(false)
 const showStockOut = ref(false)
 const showStockCheck = ref(false)
+const inventoryStoreFilter = ref<string | null>(null)
+const checkStoreFilter = ref<string | null>(null)
 
 const stockForm = ref({
-  product: null as string | null,
+  store: null as string | null,
+  productId: null as string | null,
   qty: 1,
   remark: '',
   reason: null as string | null,
@@ -257,84 +313,132 @@ const outReasonOptions = [
 ]
 
 const stockProductOptions = computed(() =>
-  physicalData.map(p => ({ label: `${p.name}（库存: ${p.stock}）`, value: p.name }))
+  physicalData
+    .filter(p => !stockForm.value.store || p.store === stockForm.value.store)
+    .map(p => ({
+      label: `${p.name}（${p.store || '未归属'} · 库存: ${p.stock}）`,
+      value: p.id,
+    }))
 )
 
+function nowTime() {
+  return new Date().toLocaleString('zh-CN', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).replace(/\//g, '-')
+}
+
+function onStockStoreChange() {
+  stockForm.value.productId = null
+}
+
 function quickPurchase() {
-  stockForm.value = { product: null, qty: 50, remark: '低库存紧急采购', reason: null }
+  stockForm.value = {
+    store: inventoryStoreFilter.value,
+    productId: null,
+    qty: 50,
+    remark: '低库存紧急采购',
+    reason: null,
+  }
   showStockIn.value = true
 }
 
 function openStockModal(type: 'in' | 'out' | 'check') {
-  stockForm.value = { product: null, qty: 1, remark: '', reason: null }
+  stockForm.value = {
+    store: inventoryStoreFilter.value,
+    productId: null,
+    qty: 1,
+    remark: '',
+    reason: null,
+  }
   if (type === 'in') showStockIn.value = true
   else if (type === 'out') showStockOut.value = true
   else {
-    // 盘点：初始化每件商品的实际库存为系统库存
-    checkData.value = physicalData.map(p => ({
-      name: p.name,
-      systemStock: parseInt(p.stock),
-      actualStock: parseInt(p.stock),
-    }))
+    checkStoreFilter.value = inventoryStoreFilter.value
+    refreshCheckData()
     showStockCheck.value = true
   }
 }
 
 function confirmStockIn() {
-  if (!stockForm.value.product || stockForm.value.qty <= 0) {
+  if (!stockForm.value.store) {
+    message.warning('请选择所属店铺')
+    return
+  }
+  if (!stockForm.value.productId || stockForm.value.qty <= 0) {
     message.warning('请选择商品并输入入库数量')
     return
   }
-  const product = physicalData.find(p => p.name === stockForm.value.product)
-  if (product) {
-    const before = parseInt(product.stock)
-    product.stock = String(before + stockForm.value.qty)
-    // 新增记录
-    stockData.unshift({
-      time: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-'),
-      action: '入库',
-      product: product.name,
-      qty: `+${stockForm.value.qty}`,
-      before,
-      after: before + stockForm.value.qty,
-      operator: '管理员',
-      remark: stockForm.value.remark || '入库',
-    })
+  const product = physicalData.find(p => p.id === stockForm.value.productId)
+  if (!product) {
+    message.warning('商品不存在')
+    return
   }
-  message.success(`入库成功：${stockForm.value.product} +${stockForm.value.qty}`)
+  if (product.store !== stockForm.value.store) {
+    message.warning('商品与所选店铺不匹配')
+    return
+  }
+  const before = parseInt(product.stock)
+  product.stock = String(before + stockForm.value.qty)
+  stockData.unshift({
+    time: nowTime(),
+    action: '入库',
+    store: product.store,
+    product: product.name,
+    productId: product.id,
+    qty: `+${stockForm.value.qty}`,
+    before,
+    after: before + stockForm.value.qty,
+    operator: '管理员',
+    remark: stockForm.value.remark || '入库',
+  })
+  message.success(`入库成功：${product.store} · ${product.name} +${stockForm.value.qty}`)
   showStockIn.value = false
 }
 
 function confirmStockOut() {
-  if (!stockForm.value.product || stockForm.value.qty <= 0) {
+  if (!stockForm.value.store) {
+    message.warning('请选择所属店铺')
+    return
+  }
+  if (!stockForm.value.productId || stockForm.value.qty <= 0) {
     message.warning('请选择商品并输入出库数量')
     return
   }
-  const product = physicalData.find(p => p.name === stockForm.value.product)
-  if (product) {
-    const before = parseInt(product.stock)
-    if (stockForm.value.qty > before) {
-      message.warning('出库数量不能大于当前库存')
-      return
-    }
-    product.stock = String(before - stockForm.value.qty)
-    stockData.unshift({
-      time: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-'),
-      action: '出库',
-      product: product.name,
-      qty: `-${stockForm.value.qty}`,
-      before,
-      after: before - stockForm.value.qty,
-      operator: '管理员',
-      remark: stockForm.value.remark || '出库',
-    })
+  const product = physicalData.find(p => p.id === stockForm.value.productId)
+  if (!product) {
+    message.warning('商品不存在')
+    return
   }
-  message.success(`出库成功：${stockForm.value.product} -${stockForm.value.qty}`)
+  if (product.store !== stockForm.value.store) {
+    message.warning('商品与所选店铺不匹配')
+    return
+  }
+  const before = parseInt(product.stock)
+  if (stockForm.value.qty > before) {
+    message.warning('出库数量不能大于当前库存')
+    return
+  }
+  product.stock = String(before - stockForm.value.qty)
+  stockData.unshift({
+    time: nowTime(),
+    action: '出库',
+    store: product.store,
+    product: product.name,
+    productId: product.id,
+    qty: `-${stockForm.value.qty}`,
+    before,
+    after: before - stockForm.value.qty,
+    operator: '管理员',
+    remark: stockForm.value.remark || '出库',
+  })
+  message.success(`出库成功：${product.store} · ${product.name} -${stockForm.value.qty}`)
   showStockOut.value = false
 }
 
 // 盘点
 const checkColumns = [
+  { title: '所属店铺', key: 'store', width: 130 },
   { title: '商品', key: 'name' },
   { title: '系统库存', key: 'systemStock', width: 100 },
   { title: '实际库存', key: 'actualStock', width: 140, render(row: any) {
@@ -356,20 +460,34 @@ const checkColumns = [
 
 const checkData = ref<any[]>([])
 
+function refreshCheckData() {
+  checkData.value = physicalData
+    .filter(p => !checkStoreFilter.value || p.store === checkStoreFilter.value)
+    .map(p => ({
+      id: p.id,
+      store: p.store || '-',
+      name: p.name,
+      systemStock: parseInt(p.stock),
+      actualStock: parseInt(p.stock),
+    }))
+}
+
 function confirmStockCheck() {
   let changes = 0
   checkData.value.forEach(item => {
     const diff = item.actualStock - item.systemStock
     if (diff !== 0) {
       changes++
-      const product = physicalData.find(p => p.name.includes(item.name.split(' ').pop()))
+      const product = physicalData.find(p => p.id === item.id)
       if (product) {
         const before = parseInt(product.stock)
         product.stock = String(item.actualStock)
         stockData.unshift({
-          time: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-'),
+          time: nowTime(),
           action: '盘点',
-          product: item.name.split(' ').pop(),
+          store: product.store,
+          product: product.name,
+          productId: product.id,
           qty: diff > 0 ? `+${diff}` : `${diff}`,
           before,
           after: item.actualStock,
@@ -487,10 +605,18 @@ const statusOptions = [
 
 // 筛选条件
 const searchText = ref('')
+const filterStore = ref<string | null>(null)
 const filterCategory = ref<string | null>(null)
 const filterStock = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
 const PRODUCT_STORAGE_KEY = 'shopPhysicalProducts'
+
+const storeFilterOptions = [
+  { label: '卓远亚运城店', value: '卓远亚运城店' },
+  { label: '卓远文桥路店', value: '卓远文桥路店' },
+  { label: '卓远天河路店', value: '卓远天河路店' },
+  { label: '卓远白云路店', value: '卓远白云路店' },
+]
 
 const defaultCover = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" rx="12" fill="#e2e8f0"/><rect x="22" y="20" width="76" height="56" rx="10" fill="#cbd5e1"/><rect x="32" y="34" width="56" height="8" rx="4" fill="#94a3b8"/><rect x="32" y="48" width="38" height="8" rx="4" fill="#94a3b8"/><text x="60" y="98" text-anchor="middle" font-size="11" fill="#64748b">商品封面</text></svg>')}`
 
@@ -500,12 +626,20 @@ function createCover(text: string, from: string, to: string) {
 
 function createDefaultPhysicalData() {
   return [
-    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), category: '消耗品', price: '3.0', stock: '200', sales: 1256, status: 'on' },
-    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), category: '配件', price: '29.0', stock: '15', sales: 328, status: 'on' },
-    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), category: '周边', price: '68.0', stock: '52', sales: 156, status: 'on' },
-    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), category: '周边', price: '18.0', stock: '3', sales: 289, status: 'off' },
-    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), category: '饮品', price: '5.0', stock: '30', sales: 856, status: 'on' },
+    { id: '1', name: '一次性眼罩', coverUrl: createCover('眼罩', '#0ea5e9', '#0284c7'), store: '卓远亚运城店', category: '消耗品', price: '3.0', stock: '200', sales: 1256, status: 'on' },
+    { id: '2', name: 'VR手柄保护套', coverUrl: createCover('手柄', '#14b8a6', '#0f766e'), store: '卓远天河路店', category: '配件', price: '29.0', stock: '15', sales: 328, status: 'on' },
+    { id: '3', name: '恐怖医院限定玩偶', coverUrl: createCover('玩偶', '#8b5cf6', '#6d28d9'), store: '卓远亚运城店', category: '周边', price: '68.0', stock: '52', sales: 156, status: 'on' },
+    { id: '4', name: '恐龙王国钥匙扣', coverUrl: createCover('钥匙扣', '#f97316', '#ea580c'), store: '卓远文桥路店', category: '周边', price: '18.0', stock: '3', sales: 289, status: 'off' },
+    { id: '5', name: '可乐330ml', coverUrl: createCover('饮品', '#ef4444', '#b91c1c'), store: '卓远白云路店', category: '饮品', price: '5.0', stock: '30', sales: 856, status: 'on' },
   ]
+}
+
+/** 兼容旧缓存：无 store 字段时补默认店铺 */
+function normalizeProductStore(list: any[]) {
+  return list.map((item) => ({
+    ...item,
+    store: item.store || '卓远亚运城店',
+  }))
 }
 
 function loadPhysicalData() {
@@ -513,7 +647,7 @@ function loadPhysicalData() {
     const saved = localStorage.getItem(PRODUCT_STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) return normalizeProductStore(parsed)
     }
   } catch {
     // ignore
@@ -529,6 +663,7 @@ const physicalColumns = [
     })
   }},
   { title: '商品名称', key: 'name', render: (row: any) => h('span', { style: 'font-weight:500' }, row.name) },
+  { title: '所属店铺', key: 'store', width: 140, render: (row: any) => row.store || '-' },
   { title: '分类', key: 'category' },
   { title: '售价', key: 'price', render: (row: any) => `¥${row.price}` },
   { title: '库存', key: 'stock', render: (row: any) => h('span', { style: `font-weight:600;` }, row.stock) },
@@ -561,6 +696,7 @@ watch(physicalData, (value) => {
 const filteredData = computed(() => {
   return physicalData.filter(item => {
     if (searchText.value && !item.name.includes(searchText.value)) return false
+    if (filterStore.value && item.store !== filterStore.value) return false
     if (filterCategory.value && item.category !== filterCategory.value) return false
     if (filterStock.value) {
       const num = parseInt(item.stock)
@@ -607,5 +743,6 @@ const stockData = [
 .stock-card.warning { border-color: rgba(239,68,68,0.3); background: linear-gradient(180deg, #fef2f2, white); }
 .stock-card .value.green { color: #10B981; }
 
+.inventory-filters { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
 .inventory-actions { display: flex; gap: 12px; margin-bottom: 16px; }
 </style>

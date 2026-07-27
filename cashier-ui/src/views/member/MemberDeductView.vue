@@ -654,17 +654,21 @@ const handleMemberSelected = (member) => {
 }
 
 const handleNewMember = (data) => {
+  const m = data?.member || data || {}
+  const name = m.name || data.name
   selectedMember.value = {
-    id: Date.now(),
-    name: data.name,
-    phone: data.phone,
-    avatar: createFallbackAvatar(data.name),
-    level: '普通会员',
-    gender: data.gender,
-    birthday: data.birthday,
+    id: m.id || Date.now(),
+    name,
+    phone: m.phone || data.phone,
+    avatar: m.avatar || createFallbackAvatar(name),
+    level: m.level || '普通会员',
+    gender: m.gender || data.gender,
+    birthday: m.birthday || data.birthday,
     balance: data.package && !data.package.name.includes('套票') ? data.package.price : 0,
-    coins: 0,
-    cardNo: data.cardNo || ''
+    coins: m.coins || 0,
+    cardNo: m.cardNo || data.cardNo || '',
+    remark: m.remark || data.remark || '',
+    linkMode: data.mode || 'create',
   }
   showNewMember.value = false
   userCoupons.value = []
