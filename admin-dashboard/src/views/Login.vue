@@ -9,13 +9,16 @@
       <div class="login-form">
         <n-form :model="loginForm" :rules="rules">
           <n-form-item label="用户名" path="username">
-            <n-input v-model:value="loginForm.username" placeholder="请输入用户名" />
+            <n-input
+              v-model:value="loginForm.username"
+              :placeholder="loginRole === 'shop' ? '请输入用户名' : '演示环境可不填'"
+            />
           </n-form-item>
           <n-form-item label="密码" path="password">
             <n-input
               v-model:value="loginForm.password"
               type="password"
-              placeholder="请输入密码"
+              :placeholder="loginRole === 'shop' ? '请输入密码' : '演示环境可不填'"
             />
           </n-form-item>
           <n-form-item v-if="showVerificationCode" label="验证码" path="verificationCode">
@@ -38,6 +41,35 @@
             登录
           </n-button>
         </n-form>
+
+        <section v-if="loginRole === 'shop'" class="demo-accounts" aria-label="演示账号">
+          <div class="demo-accounts-header">
+            <span>演示账号（点击填入）</span>
+            <small>密码均为 123456</small>
+          </div>
+          <div class="demo-accounts-list">
+            <button
+              v-for="item in demoAccounts"
+              :key="item.account"
+              type="button"
+              class="demo-account-card"
+              :class="{
+                'is-dual': item.systems.includes('shop') && item.systems.includes('cashier'),
+                'is-shop-only': item.systems.includes('shop') && !item.systems.includes('cashier'),
+                'is-cashier-only': item.systems.includes('cashier') && !item.systems.includes('shop'),
+              }"
+              @click="fillDemoAccount(item)"
+            >
+              <div class="demo-account-top">
+                <strong>{{ item.role }} · {{ item.name }}</strong>
+                <em>{{ item.note }}</em>
+              </div>
+              <div class="demo-account-row">账号 {{ item.account }}</div>
+              <div class="demo-account-row">密码 {{ item.password }}</div>
+              <div class="demo-account-systems">{{ item.systemsText }}</div>
+            </button>
+          </div>
+        </section>
 
         <section class="system-switcher" aria-label="系统切换入口">
           <div class="system-switcher-header">
@@ -113,7 +145,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal, useMessage } from 'naive-ui'
-import { checkSystemLoginAccess } from '../constants/shopAccessSystems'
+import { checkSystemLoginAccess, DEMO_LOGIN_ACCOUNTS } from '../constants/shopAccessSystems'
 
 const router = useRouter()
 const route = useRoute()
@@ -157,6 +189,14 @@ const systemEntries: SystemEntry[] = [
   { key: 'platform', label: '平台超管', type: 'role', role: 'platform' },
   { key: 'cp', label: '供应商后台', type: 'role', role: 'cp' }
 ]
+
+const demoAccounts = DEMO_LOGIN_ACCOUNTS
+
+function fillDemoAccount(item: (typeof DEMO_LOGIN_ACCOUNTS)[number]) {
+  loginForm.username = item.account
+  loginForm.password = item.password
+  message.info(`已填入：${item.role} ${item.account}（${item.systemsText}）`)
+}
 
 async function probeOrigin(origin: string, path: string) {
   const controller = new AbortController()
@@ -424,8 +464,105 @@ onMounted(() => {
   background: white;
   border-radius: 16px;
   padding: 32px;
-  width: 400px;
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.demo-accounts {
+  margin-top: 4px;
+  padding: 14px 12px 12px;
+  border-radius: 12px;
+  background: #f5f7fc;
+  border: 1px solid #e4e9f5;
+}
+
+.demo-accounts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.demo-accounts-header span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3f4d75;
+}
+
+.demo-accounts-header small {
+  font-size: 12px;
+  color: #8c95ad;
+}
+
+.demo-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.demo-account-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #dce3f3;
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.demo-account-card:hover {
+  border-color: #9eb0ea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
+}
+
+.demo-account-card.is-dual {
+  border-left: 3px solid #6366f1;
+}
+
+.demo-account-card.is-shop-only {
+  border-left: 3px solid #0ea5e9;
+}
+
+.demo-account-card.is-cashier-only {
+  border-left: 3px solid #f59e0b;
+}
+
+.demo-account-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.demo-account-top strong {
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.demo-account-top em {
+  font-style: normal;
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.demo-account-row {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.demo-account-systems {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #667eea;
+  font-weight: 600;
 }
 
 .login-header {

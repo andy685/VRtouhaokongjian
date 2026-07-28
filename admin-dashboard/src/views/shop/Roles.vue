@@ -99,19 +99,32 @@
           <n-input value="幻影星空商家 NO.8088" disabled />
         </n-form-item>
         <n-form-item label="角色名称" required>
-          <n-input v-model:value="form.name" placeholder="请输入角色名称" />
+          <n-input
+            v-model:value="form.name"
+            placeholder="请输入角色名称"
+            :disabled="isEditingAdmin"
+          />
         </n-form-item>
         <n-form-item label="可用系统" required>
-          <n-checkbox-group v-model:value="form.systems">
-            <n-space>
-              <n-checkbox
-                v-for="opt in systemOptions"
-                :key="opt.value"
-                :value="opt.value"
-                :label="opt.label"
-              />
-            </n-space>
-          </n-checkbox-group>
+          <div class="systems-field">
+            <n-checkbox-group :value="form.systems" @update:value="onSystemsChange">
+              <n-space>
+                <n-checkbox
+                  v-for="opt in systemOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                  :label="opt.label"
+                  :disabled="isSystemCheckboxDisabled(opt.value)"
+                />
+              </n-space>
+            </n-checkbox-group>
+            <p v-if="isAdminForm" class="systems-hint">
+              管理员固定开通「商家运营后台」与「头号掌柜收银系统」，不可关闭，避免无法登录后台。
+            </p>
+            <p v-else class="systems-hint">
+              至少保留一个可用系统；取消最后一个时将自动保留。
+            </p>
+          </div>
         </n-form-item>
         <n-form-item label="描述">
           <n-input v-model:value="form.desc" type="textarea" :rows="4" :maxlength="50" show-count placeholder="请描述" />
@@ -140,8 +153,11 @@ import {
 import {
   type ShopAccessSystem,
   SHOP_ACCESS_SYSTEM_OPTIONS,
+  ADMIN_FIXED_SYSTEMS,
   defaultSystemsByRole,
   formatSystems,
+  isAdminRoleName,
+  normalizeRoleSystems,
   saveShopRoleRegistry,
   loadShopRoleRegistry,
 } from '../../constants/shopAccessSystems'
@@ -180,18 +196,20 @@ const pagination = { pageSize: 10 }
 
 const roleData = ref<Role[]>([
   { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
-  { id: 2, name: '收银员', desc: '收银、退款、查询订单', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'], systems: ['cashier'] },
-  { id: 3, name: '接待员', desc: '会员办理、预约管理', userCount: 3, status: true, permissions: ['members', 'member-levels', 'member-ranking', 'guide-members'], systems: ['shop'] },
-  { id: 4, name: '设备维护', desc: '设备巡检、故障上报', userCount: 1, status: false, permissions: ['devices', 'on-demand-settings', 'on-demand-data', 'on-demand-device-summary'], systems: ['shop'] },
-  { id: 5, name: '财务', desc: '查看报表、对账', userCount: 1, status: true, permissions: ['daily-sales', 'historical-revenue', 'channel-revenue', 'product-sales', 'account-stats', 'shifts', 'film-revenue'], systems: ['shop'] },
+  { id: 2, name: '店长', desc: '门店运营、会员与收银管理', userCount: 8, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
+  { id: 3, name: '收银员', desc: '收银、退款、查询订单；不可修改会员等级', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'], systems: ['cashier'] },
 ])
 
 function syncRoleRegistry() {
+  // 落库前规范化：管理员强制双端，其他角色至少 1 个
+  roleData.value.forEach((r) => {
+    r.systems = normalizeRoleSystems(r.name, r.systems)
+  })
   saveShopRoleRegistry(
     roleData.value.map((r) => ({
       id: r.id,
       name: r.name,
-      systems: r.systems?.length ? r.systems : defaultSystemsByRole(r.name),
+      systems: normalizeRoleSystems(r.name, r.systems),
       status: r.status,
     })),
   )
@@ -202,14 +220,71 @@ onMounted(() => {
   if (saved.length) {
     roleData.value = roleData.value.map((r) => {
       const hit = saved.find((s) => s.id === r.id || s.name === r.name)
-      if (!hit) return r
-      return { ...r, systems: hit.systems?.length ? hit.systems : r.systems }
+      if (!hit) {
+        return { ...r, systems: normalizeRoleSystems(r.name, r.systems) }
+      }
+      return {
+        ...r,
+        systems: normalizeRoleSystems(r.name, hit.systems?.length ? hit.systems : r.systems),
+      }
     })
+  } else {
+    roleData.value = roleData.value.map((r) => ({
+      ...r,
+      systems: normalizeRoleSystems(r.name, r.systems),
+    }))
   }
   syncRoleRegistry()
 })
 
 watch(roleData, () => syncRoleRegistry(), { deep: true })
+
+/** 当前表单是否管理员（含编辑中的管理员、或新建时名称写成管理员） */
+const isAdminForm = computed(() => isAdminRoleName(form.value.name))
+const isEditingAdmin = computed(() => {
+  if (!isEdit.value || editingId.value == null) return false
+  const row = roleData.value.find((r) => r.id === editingId.value)
+  return !!row && isAdminRoleName(row.name)
+})
+
+function isSystemCheckboxDisabled(system: string) {
+  // 管理员：两个系统都不可取消
+  if (isAdminForm.value) return true
+  // 其他角色：只剩一个且正是当前项时，禁止取消（至少保留一个）
+  if (form.value.systems.length === 1 && form.value.systems[0] === system) return true
+  return false
+}
+
+function onSystemsChange(next: Array<string | number>) {
+  const values = next.map(String) as ShopAccessSystem[]
+
+  // 管理员始终双端
+  if (isAdminForm.value) {
+    form.value.systems = [...ADMIN_FIXED_SYSTEMS]
+    return
+  }
+
+  // 至少保留一个：若全部取消，回退到变更前或默认
+  if (!values.length) {
+    window.$message?.warning('至少保留一个可用系统')
+    if (!form.value.systems.length) {
+      form.value.systems = defaultSystemsByRole(form.value.name || '收银员')
+    }
+    return
+  }
+
+  form.value.systems = values
+}
+
+// 名称改成「管理员」时，自动锁定双端
+watch(
+  () => form.value.name,
+  (name) => {
+    if (isAdminRoleName(name)) {
+      form.value.systems = [...ADMIN_FIXED_SYSTEMS]
+    }
+  },
+)
 
 const columns: DataTableColumns<Role> = [
   { title: '角色名称', key: 'name', minWidth: 120 },
@@ -257,10 +332,15 @@ const columns: DataTableColumns<Role> = [
             size: 'small', text: true, type: 'info',
             onClick: () => openPermission(row)
           }, { default: () => '权限', icon: () => h(NIcon, { component: KeyOutline, size: 14 }) }),
-          h(NButton, {
-            size: 'small', text: true, type: 'error',
-            onClick: () => handleDelete(row)
-          }, { default: () => '删除', icon: () => h(NIcon, { component: TrashOutline, size: 14 }) })
+          // 管理员角色不可删除
+          ...(isAdminRoleName(row.name)
+            ? []
+            : [
+                h(NButton, {
+                  size: 'small', text: true, type: 'error',
+                  onClick: () => handleDelete(row)
+                }, { default: () => '删除', icon: () => h(NIcon, { component: TrashOutline, size: 14 }) }),
+              ]),
         ]
       })
   }
@@ -269,7 +349,7 @@ const columns: DataTableColumns<Role> = [
 function openCreate() {
   isEdit.value = false
   editingId.value = null
-  form.value = { name: '', desc: '', status: true, systems: ['shop', 'cashier'] }
+  form.value = { name: '', desc: '', status: true, systems: ['shop'] as ShopAccessSystem[] }
   showAddModal.value = true
 }
 
@@ -280,12 +360,16 @@ function openEdit(row: Role) {
     name: row.name,
     desc: row.desc,
     status: row.status,
-    systems: [...(row.systems?.length ? row.systems : defaultSystemsByRole(row.name))],
+    systems: normalizeRoleSystems(row.name, row.systems),
   }
   showAddModal.value = true
 }
 
 function handleDelete(row: Role) {
+  if (isAdminRoleName(row.name)) {
+    window.$message?.warning('管理员角色不可删除')
+    return
+  }
   const d = window.confirm(`确认删除角色「${row.name}」吗？`)
   if (!d) return
   const idx = roleData.value.findIndex(r => r.id === row.id)
@@ -300,23 +384,36 @@ function handleSubmit() {
     window.$message?.warning('请输入角色名称')
     return
   }
-  if (!form.value.systems?.length) {
+
+  // 保存前强制规范化
+  const systems = normalizeRoleSystems(form.value.name, form.value.systems)
+  if (!systems.length) {
     window.$message?.warning('请至少选择一个可用系统')
     return
   }
+  form.value.systems = systems
+
   if (isEdit.value && editingId.value !== null) {
     const idx = roleData.value.findIndex(r => r.id === editingId.value)
     if (idx > -1) {
+      const prev = roleData.value[idx]
+      // 管理员不允许改名，避免绕过锁定
+      const name = isAdminRoleName(prev.name) ? prev.name : form.value.name
       roleData.value[idx] = {
-        ...roleData.value[idx],
-        name: form.value.name,
+        ...prev,
+        name,
         desc: form.value.desc,
         status: form.value.status,
-        systems: [...form.value.systems],
+        systems: normalizeRoleSystems(name, systems),
       }
     }
-    window.$message?.success(`修改成功（可用系统：${formatSystems(form.value.systems)}）`)
+    window.$message?.success(`修改成功（可用系统：${formatSystems(systems)}）`)
   } else {
+    // 禁止再建一个「管理员」
+    if (isAdminRoleName(form.value.name) && roleData.value.some((r) => isAdminRoleName(r.name))) {
+      window.$message?.warning('管理员角色已存在，不可重复创建')
+      return
+    }
     const newId = roleData.value.length > 0 ? Math.max(...roleData.value.map(r => r.id)) + 1 : 1
     roleData.value.push({
       id: newId,
@@ -325,14 +422,14 @@ function handleSubmit() {
       status: form.value.status,
       userCount: 0,
       permissions: [],
-      systems: [...form.value.systems],
+      systems: normalizeRoleSystems(form.value.name, systems),
     })
-    window.$message?.success(`添加成功（可用系统：${formatSystems(form.value.systems)}）`)
+    window.$message?.success(`添加成功（可用系统：${formatSystems(systems)}）`)
   }
   showAddModal.value = false
   isEdit.value = false
   editingId.value = null
-  form.value = { name: '', desc: '', status: true, systems: ['shop', 'cashier'] }
+  form.value = { name: '', desc: '', status: true, systems: ['shop'] }
 }
 
 // ========== 权限设置 ==========
@@ -541,6 +638,8 @@ function savePermissions() {
 
 <style scoped>
 .page-container { padding: 24px; }
+.systems-field { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.systems-hint { margin: 0; font-size: 12px; line-height: 1.5; color: #64748b; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-header h1 { font-size: 20px; font-weight: 600; color: #333; margin: 0; }
 .table-card { border-radius: 12px; }

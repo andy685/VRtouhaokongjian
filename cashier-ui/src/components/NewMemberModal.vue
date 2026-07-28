@@ -13,9 +13,6 @@
         <header class="nmm-header">
           <h2>新增会员</h2>
           <div class="nmm-header-actions">
-            <button type="button" class="nmm-refresh" aria-label="刷新" @click="$emit('refresh')">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-            </button>
             <button type="button" class="nmm-close" aria-label="关闭" @click="$emit('close')">
               <el-icon><Close /></el-icon>
             </button>

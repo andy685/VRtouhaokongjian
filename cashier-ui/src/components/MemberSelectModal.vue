@@ -13,7 +13,6 @@
         <header class="msm-header">
           <h2>选择会员</h2>
           <div class="msm-header-actions">
-            <button type="button" class="msm-refresh" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
             <button type="button" class="msm-close" aria-label="关闭" @click="$emit('close')">
               <el-icon><Close /></el-icon>
             </button>
@@ -137,6 +136,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Close, Search } from '@element-plus/icons-vue'
+import { FEATURE_IC_CARD_ENABLED } from '../utils/featureFlags'
 
 const BASE_URL = import.meta.env.BASE_URL
 
@@ -147,10 +147,11 @@ defineProps({
 
 defineEmits(['close', 'select', 'refresh'])
 
+// IC卡刷卡入口暂隐：FEATURE_IC_CARD_ENABLED=false 时不展示「点击刷卡」
 const tabs = [
   { id: 'search', label: '模糊搜索' },
-  { id: 'swipe', label: '点击刷卡' },
-  { id: 'scan', label: '点击扫码' }
+  ...(FEATURE_IC_CARD_ENABLED ? [{ id: 'swipe', label: '点击刷卡' }] : []),
+  { id: 'scan', label: '点击扫码' },
 ]
 
 const activeTab = ref('search')

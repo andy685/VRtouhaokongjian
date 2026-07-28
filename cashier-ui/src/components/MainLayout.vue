@@ -129,9 +129,6 @@
           <header class="shift-modal-header">
             <strong>当班营收交班</strong>
             <div class="shift-modal-actions">
-              <button type="button" class="shift-header-btn" aria-label="刷新">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-              </button>
               <button type="button" class="shift-header-btn" aria-label="关闭交班结算" @click="closeShiftModal">
                 <el-icon><Close /></el-icon>
               </button>
@@ -265,8 +262,8 @@
                 </div>
               </div>
 
-              <!-- 员工卡设置 - 列表视图 -->
-              <div v-if="activeSettingTab === 'staff'" class="settings-panel">
+              <!-- 员工卡设置：功能暂隐（FEATURE_STAFF_CARD_ENABLED=false），代码保留便于恢复 -->
+              <div v-if="FEATURE_STAFF_CARD_ENABLED && activeSettingTab === 'staff'" class="settings-panel">
                 <h3 class="settings-panel-title">员工卡设置</h3>
                 <!-- 绑定账号表单 -->
                 <div v-if="staffView === 'bind'" class="staff-bind-form">
@@ -330,31 +327,83 @@
                 </div>
               </div>
 
-              <!-- 基础设置 / Token 设置 -->
+              <!-- 基础设置 / 设备绑定 -->
               <div v-if="activeSettingTab === 'basic'" class="settings-panel">
-                <h3 class="settings-panel-title">Token 设置</h3>
-                <div class="token-row">
-                  <label class="token-label" for="sm-cashier-token">收银 Token：</label>
-                  <div class="token-panel" :class="{ editing: tokenEditing }">
-                    <template v-if="tokenEditing">
-                      <div class="token-edit-block">
-                        <input
-                          id="sm-cashier-token"
-                          v-model="draftCashierToken"
-                          class="token-input"
-                          type="text"
-                        />
-                        <div class="token-actions">
-                          <button type="button" class="token-action primary" @click="saveTokenEdit">保存</button>
-                          <button type="button" class="token-action secondary" @click="cancelTokenEdit">取消</button>
-                        </div>
-                      </div>
-                    </template>
-                    <template v-else>
-                      <div class="token-value" :title="cashierToken">{{ cashierToken }}</div>
-                      <button type="button" class="token-action ghost" @click="startTokenEdit">编辑</button>
-                    </template>
+                <h3 class="settings-panel-title">设备绑定</h3>
+
+                <div class="device-status-card" :class="tokenDebug.bindingOk ? 'is-ok' : 'is-warn'">
+                  <div class="device-status-top">
+                    <strong>{{ tokenDebug.bindingOk ? '收银设备已绑定' : '收银设备未绑定' }}</strong>
+                    <em>{{ tokenDebug.bindingOk ? '可正常登录收银' : '无法登录收银' }}</em>
                   </div>
+                  <div v-if="tokenDebug.bindingOk" class="device-status-meta">
+                    <span>设备：{{ tokenDebug.device?.deviceName || '—' }}</span>
+                    <span>门店：{{ tokenDebug.device?.storeName || '—' }}</span>
+                    <span>Token：{{ maskedBoundToken }}</span>
+                  </div>
+                  <p class="device-status-tip">
+                    {{ bindingStatusHint }}
+                  </p>
+                </div>
+
+                <div v-if="!tokenDebug.bindingOk" class="token-row activate-row">
+                  <label class="token-label" for="sm-token-input">Token：</label>
+                  <div class="token-panel">
+                    <div class="token-edit-block">
+                      <input
+                        id="sm-token-input"
+                        v-model="tokenInput"
+                        class="token-input"
+                        type="text"
+                        placeholder="粘贴商家后台的 Token"
+                        autocomplete="off"
+                      />
+                      <div class="token-actions">
+                        <button type="button" class="token-action primary" @click="handleBindToken">绑定本机</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="device-test-panel">
+                  <div class="device-test-panel__header">
+                    <strong>仅供测试</strong>
+                    <span>不要用于正式演示</span>
+                  </div>
+                  <p class="device-test-note">
+                    可直接切换测试场景，验证“可绑定 / 已被其他设备绑定 / 已禁用”等提示。
+                  </p>
+                  <div class="device-test-list">
+                    <div v-for="item in testTokenOptions" :key="item.token" class="device-test-item">
+                      <div class="device-test-item__info">
+                        <strong>{{ item.name }} <em>{{ item.statusText }}</em></strong>
+                        <span>{{ item.shop }}</span>
+                        <code>{{ item.token }}</code>
+                      </div>
+                      <div class="device-test-item__actions">
+                        <button type="button" class="token-action secondary" @click="fillTestToken(item.token)">
+                          填入
+                        </button>
+                        <button type="button" class="token-action ghost" @click="setTestScenario(item.token, 'available')">
+                          设为未使用
+                        </button>
+                        <button type="button" class="token-action ghost" @click="setTestScenario(item.token, 'bound-other')">
+                          设为别机已绑定
+                        </button>
+                        <button type="button" class="token-action ghost" @click="setTestScenario(item.token, 'disabled')">
+                          设为禁用
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="device-test-tools">
+                    <button type="button" class="token-action secondary" @click="handleClearTokenTest">
+                      清除 Token
+                    </button>
+                  </div>
+                  <p class="device-test-note device-test-note--subtle">
+                    存储位置：`localStorage.{{ tokenCatalogKey }}`
+                  </p>
                 </div>
               </div>
             </div>
@@ -374,6 +423,23 @@ import {
   Document,
   Minus,
 } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { FEATURE_STAFF_CARD_ENABLED } from '../utils/featureFlags'
+import { clearCashierSession } from '../utils/shopAccessSystems'
+import {
+  bindTokenToThisMachine,
+  CASHIER_DEVICE_CATALOG_KEY,
+  clearLocalTokenSession,
+  getKickMessage,
+  getTokenSessionDebugInfo,
+  getTokenTestStatus,
+  loadDeviceCatalog,
+  releaseTokenSession,
+  setTokenTestScenario,
+  setKickHint,
+  startTokenSessionWatch,
+  unbindLocalDevice,
+} from '../utils/tokenSession'
 
 const BASE_URL = import.meta.env.BASE_URL
 
@@ -385,24 +451,34 @@ const shiftModalOpen = ref(false)
 const settingModalOpen = ref(false)
 const activeSettingTab = ref('member')
 const staffView = ref('list')
-const tokenEditing = ref(false)
 const printReceipt = ref(true)
 const reserveCash = ref('')
 const shiftRemark = ref('')
+const tokenInput = ref('')
+const testDeviceCatalog = ref(loadDeviceCatalog())
 
 /* ===== 系统设置弹窗 ===== */
+// 员工卡设置 Tab 暂隐：FEATURE_STAFF_CARD_ENABLED=false
 const settingTabs = [
   { key: 'member', label: '会员设置' },
-  { key: 'staff',   label: '员工卡设置' },
-  { key: 'basic',   label: '基础设置' },
+  ...(FEATURE_STAFF_CARD_ENABLED ? [{ key: 'staff', label: '员工卡设置' }] : []),
+  { key: 'basic', label: '基础设置' },
 ]
 
 const settingForm = reactive({
   logoutAfterCheckout: true,
 })
 
-const cashierToken = ref('REGRTRHRT2434534554645adFFF')
-const draftCashierToken = ref(cashierToken.value)
+const tokenDebug = ref(getTokenSessionDebugInfo())
+const tokenCatalogKey = CASHIER_DEVICE_CATALOG_KEY
+const testTokenOptions = computed(() => testDeviceCatalog.value.map((item) => ({
+  name: item.name || '未命名设备',
+  shop: item.shop || '未分配门店',
+  token: item.token || '',
+  statusText: getTokenTestStatus(item),
+})))
+let stopTokenWatch = null
+let kickHandling = false
 
 const staffBindForm = reactive({
   account: '',
@@ -418,31 +494,107 @@ const staffCards = ref([
   { name: '雯雯', monthTotal: 9999, remaining: 9999, editing: false, remainingDraft: 9999 },
 ])
 
+const refreshTokenDebug = () => {
+  tokenDebug.value = getTokenSessionDebugInfo()
+}
+
+const refreshTestDeviceCatalog = () => {
+  testDeviceCatalog.value = loadDeviceCatalog()
+}
+
+const maskToken = (token) => {
+  const value = String(token || '').trim()
+  if (!value) return '—'
+  if (value.length <= 8) return value
+  return `${value.slice(0, 6)}...${value.slice(-4)}`
+}
+
+const maskedBoundToken = computed(() => maskToken(tokenDebug.value?.device?.token))
+const bindingStatusHint = computed(() => (
+  tokenDebug.value?.bindingOk
+    ? '设备名称由门店自定义，仅作备注；设备身份以 Token 为准。如需更换设备，请在商家后台换发 Token 后重新绑定。'
+    : (tokenDebug.value?.bindingMessage || '请粘贴商家后台 Token 绑定本机。设备名称由门店自定义，仅作备注；设备身份以 Token 为准。')
+))
+
 const openSettingModal = () => {
+  refreshTokenDebug()
+  refreshTestDeviceCatalog()
   settingModalOpen.value = true
 }
 
 const closeSettingModal = () => {
   settingModalOpen.value = false
-  tokenEditing.value = false
-  draftCashierToken.value = cashierToken.value
   // 重置编辑状态
   staffCards.value.forEach(c => { c.editing = false; c.remainingDraft = c.remaining })
 }
 
-const startTokenEdit = () => {
-  draftCashierToken.value = cashierToken.value
-  tokenEditing.value = true
+const handleBindToken = () => {
+  const result = bindTokenToThisMachine(tokenInput.value)
+  refreshTokenDebug()
+  if (!result.ok) {
+    ElMessage.error(result.message)
+    return
+  }
+  tokenInput.value = ''
+  ElMessage.success(result.message)
 }
 
-const saveTokenEdit = () => {
-  cashierToken.value = draftCashierToken.value.trim() || cashierToken.value
-  tokenEditing.value = false
+const fillTestToken = (token) => {
+  tokenInput.value = token || ''
+  ElMessage.info('已填入测试 Token')
 }
 
-const cancelTokenEdit = () => {
-  tokenEditing.value = false
-  draftCashierToken.value = cashierToken.value
+const setTestScenario = (token, scenario) => {
+  const result = setTokenTestScenario(token, scenario)
+  refreshTokenDebug()
+  refreshTestDeviceCatalog()
+  if (!result.ok) {
+    ElMessage.error(result.message || '设置测试场景失败')
+    return
+  }
+  ElMessage.success(result.message)
+}
+
+const handleClearTokenTest = () => {
+  const result = unbindLocalDevice()
+  tokenInput.value = ''
+  refreshTokenDebug()
+  refreshTestDeviceCatalog()
+  ElMessage.success(result.message || '已清除本机 Token')
+}
+
+/** 设备被店长禁用 / Token 换发后掉线 */
+const forceLogoutByDevice = async (check) => {
+  if (kickHandling) return
+  kickHandling = true
+  try {
+    stopTokenWatch?.()
+    stopTokenWatch = null
+    const message = check?.message || getKickMessage()
+    setKickHint({
+      message,
+      lastAccount: check?.lastAccount || tokenDebug.value.local?.account || '',
+    })
+    clearLocalTokenSession()
+    clearCashierSession()
+    shiftModalOpen.value = false
+    settingModalOpen.value = false
+    cashierPanelOpen.value = false
+    try {
+      await ElMessageBox.alert(message, '无法继续使用', {
+        confirmButtonText: '返回登录',
+        type: 'warning',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        showClose: false,
+      })
+    } catch {
+      // ignore
+    }
+    router.replace('/login')
+  } finally {
+    kickHandling = false
+  }
 }
 
 const editStaffCard = (idx) => {
@@ -557,6 +709,8 @@ const closeShiftModal = () => {
 const confirmShiftHandover = () => {
   shiftModalOpen.value = false
   cashierPanelOpen.value = false
+  releaseTokenSession()
+  clearCashierSession()
   router.push('/login')
 }
 
@@ -566,11 +720,18 @@ onMounted(() => {
     now.value = new Date()
   }, 1000)
   document.addEventListener('click', closeCashierPanel)
+  refreshTokenDebug()
+  // 监听店长禁用 / 换发 Token（无互踢）
+  stopTokenWatch = startTokenSessionWatch((check) => {
+    forceLogoutByDevice(check)
+  })
 })
 
 onUnmounted(() => {
   if (timer) window.clearInterval(timer)
   document.removeEventListener('click', closeCashierPanel)
+  stopTokenWatch?.()
+  stopTokenWatch = null
 })
 </script>
 
@@ -1797,7 +1958,161 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  margin-bottom: 20px;
 }
+
+.device-status-card {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+
+.device-status-card.is-ok {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(236, 253, 245, 0.9);
+}
+
+.device-status-card.is-warn {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(255, 251, 235, 0.95);
+}
+
+.device-status-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.device-status-top strong {
+  font-size: 14px;
+  color: #111827;
+}
+
+.device-status-top em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.device-status-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.device-status-tip {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #92400e;
+}
+
+.device-test-panel {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(245, 158, 11, 0.45);
+  background: rgba(255, 251, 235, 0.82);
+}
+
+.device-test-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.device-test-panel__header strong {
+  font-size: 13px;
+  color: #92400e;
+}
+
+.device-test-panel__header span {
+  font-size: 11px;
+  color: #b45309;
+}
+
+.device-test-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.device-test-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.device-test-note--subtle {
+  margin-top: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #94a3b8;
+}
+
+.device-test-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.device-test-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+}
+
+.device-test-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.device-test-item__info strong {
+  font-size: 12px;
+  color: #1f2937;
+}
+
+.device-test-item__info strong em {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: 11px;
+  color: #b45309;
+}
+
+.device-test-item__info span,
+.device-test-item__info code {
+  font-size: 12px;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.device-test-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+
 
 .token-label {
   padding-top: 11px;

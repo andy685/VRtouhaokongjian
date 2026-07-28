@@ -53,6 +53,11 @@
             <p class="login-subtitle">WELCOME ALPHA SPACE</p>
           </div>
 
+          <div v-if="kickHint" class="kick-hint" role="alert">
+            <strong>登录已失效</strong>
+            <p>{{ kickHint }}</p>
+          </div>
+
           <el-form :model="form" class="login-form">
             <el-form-item>
               <el-input
@@ -84,6 +89,35 @@
               <el-button type="primary" size="large" class="login-btn" @click="handleLogin">登录</el-button>
             </el-form-item>
           </el-form>
+
+          <section class="demo-accounts" aria-label="演示账号">
+            <div class="demo-accounts-header">
+              <span>演示账号（点击填入）</span>
+              <small>密码均为 123456</small>
+            </div>
+            <div class="demo-accounts-list">
+              <button
+                v-for="item in demoAccounts"
+                :key="item.account"
+                type="button"
+                class="demo-account-card"
+                :class="{
+                  'is-dual': item.canCashier && item.canShop,
+                  'is-ok': item.canCashier && !item.canShop,
+                  'is-deny': !item.canCashier,
+                }"
+                @click="fillDemoAccount(item)"
+              >
+                <div class="demo-account-top">
+                  <strong>{{ item.role }} · {{ item.name }}</strong>
+                  <em>{{ item.canCashier ? '可登录收银' : '收银会拒绝' }}</em>
+                </div>
+                <div class="demo-account-row">账号 {{ item.account }}</div>
+                <div class="demo-account-row">密码 {{ item.password }}</div>
+                <div class="demo-account-systems">{{ item.systemsText }}</div>
+              </button>
+            </div>
+          </section>
 
           <section class="system-portal" aria-label="系统切换入口">
             <div class="system-portal-header">
@@ -130,30 +164,83 @@
             </aside>
 
             <div class="settings-content">
-              <h3 class="settings-panel-title">Token 设置</h3>
-              <div class="token-row">
-                <label class="token-label" for="cashier-token">收银 Token：</label>
-                <div class="token-panel" :class="{ editing: tokenEditing }">
-                  <template v-if="tokenEditing">
-                    <div class="token-edit-block">
-                      <input
-                        id="cashier-token"
-                        v-model="draftCashierToken"
-                        class="token-input"
-                        type="text"
-                      />
-                      <div class="token-actions">
-                        <button type="button" class="token-action primary" @click="saveTokenEdit">保存</button>
-                        <button type="button" class="token-action secondary" @click="cancelTokenEdit">取消</button>
-                      </div>
+              <h3 class="settings-panel-title">设备绑定</h3>
+
+              <div class="device-status-card" :class="deviceBound ? 'is-ok' : 'is-warn'">
+                <div class="device-status-top">
+                  <strong>{{ deviceBound ? '收银设备已绑定' : '收银设备未绑定' }}</strong>
+                  <em>{{ deviceBound ? '可正常登录收银' : '无法登录收银' }}</em>
+                </div>
+                <div v-if="deviceBound" class="device-status-meta">
+                  <span>设备：{{ localDevice?.deviceName || '—' }}</span>
+                  <span>门店：{{ localDevice?.storeName || '—' }}</span>
+                  <span>Token：{{ maskedDeviceToken }}</span>
+                </div>
+                <p class="device-status-tip">
+                  {{ deviceStatusHint }}
+                </p>
+              </div>
+
+              <div v-if="!deviceBound" class="token-row activate-row">
+                <label class="token-label" for="cashier-token-input">Token：</label>
+                <div class="token-panel">
+                  <div class="token-edit-block">
+                    <input
+                      id="cashier-token-input"
+                      v-model="tokenInput"
+                      class="token-input"
+                      type="text"
+                      placeholder="粘贴商家后台的 Token"
+                      autocomplete="off"
+                    />
+                    <div class="token-actions">
+                      <button type="button" class="token-action primary" @click="handleBindToken">绑定本机</button>
                     </div>
-                  </template>
-                  <template v-else>
-                    <div class="token-value" :title="cashierToken">{{ cashierToken }}</div>
-                    <button type="button" class="token-action ghost" @click="startTokenEdit">编辑</button>
-                  </template>
+                  </div>
                 </div>
               </div>
+
+              <div class="device-test-panel">
+                <div class="device-test-panel__header">
+                  <strong>仅供测试</strong>
+                  <span>不要用于正式演示</span>
+                </div>
+                <p class="device-test-note">
+                  可直接切换测试场景，验证“可绑定 / 已被其他设备绑定 / 已禁用”等提示。
+                </p>
+                <div class="device-test-list">
+                  <div v-for="item in testTokenOptions" :key="item.token" class="device-test-item">
+                    <div class="device-test-item__info">
+                      <strong>{{ item.name }} <em>{{ item.statusText }}</em></strong>
+                      <span>{{ item.shop }}</span>
+                      <code>{{ item.token }}</code>
+                    </div>
+                    <div class="device-test-item__actions">
+                      <button type="button" class="token-action secondary" @click="fillTestToken(item.token)">
+                        填入
+                      </button>
+                      <button type="button" class="token-action ghost" @click="setTestScenario(item.token, 'available')">
+                        设为未使用
+                      </button>
+                      <button type="button" class="token-action ghost" @click="setTestScenario(item.token, 'bound-other')">
+                        设为别机已绑定
+                      </button>
+                      <button type="button" class="token-action ghost" @click="setTestScenario(item.token, 'disabled')">
+                        设为禁用
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="device-test-tools">
+                  <button type="button" class="token-action secondary" @click="handleClearTokenTest">
+                    清除 Token
+                  </button>
+                </div>
+                <p class="device-test-note device-test-note--subtle">
+                  存储位置：`localStorage.{{ tokenCatalogKey }}`
+                </p>
+              </div>
+
             </div>
           </div>
         </section>
@@ -214,8 +301,26 @@
 
 <script setup>
 import { Close, Lock, MoreFilled, User } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import {
+  checkCashierLoginAccess,
+  DEMO_LOGIN_ACCOUNTS,
+  setCashierSession,
+} from '../../utils/shopAccessSystems'
+import {
+  bindTokenToThisMachine,
+  CASHIER_DEVICE_CATALOG_KEY,
+  checkDeviceBinding,
+  claimTokenSession,
+  consumeKickHint,
+  getLocalDevice,
+  getTokenTestStatus,
+  loadDeviceCatalog,
+  setTokenTestScenario,
+  unbindLocalDevice,
+} from '../../utils/tokenSession'
 
 const BASE_URL = import.meta.env.BASE_URL
 
@@ -229,15 +334,54 @@ const menuOpen = ref(false)
 const menuRef = ref(null)
 const settingDialogVisible = ref(false)
 const upgradeDialogVisible = ref(false)
-const tokenEditing = ref(false)
-const cashierToken = ref('REGRTRHRT2434534554645adFFF')
-const draftCashierToken = ref(cashierToken.value)
+const localDevice = ref(getLocalDevice())
+const testDeviceCatalog = ref(loadDeviceCatalog())
+const tokenInput = ref('')
+const kickHint = ref('')
 const upgradeProgress = ref(31)
 const upgradePaused = ref(false)
 const form = reactive({
   username: '',
   password: ''
 })
+
+const deviceBound = computed(() => !!localDevice.value?.bound)
+const maskedDeviceToken = computed(() => maskToken(localDevice.value?.token))
+const tokenCatalogKey = CASHIER_DEVICE_CATALOG_KEY
+const testTokenOptions = computed(() => testDeviceCatalog.value.map((item) => ({
+  name: item.name || '未命名设备',
+  shop: item.shop || '未分配门店',
+  token: item.token || '',
+  statusText: getTokenTestStatus(item),
+})))
+const deviceStatusHint = computed(() => (
+  deviceBound.value
+    ? '设备名称由门店自定义，仅作备注；设备身份以 Token 为准。如需更换设备，请在商家后台换发 Token 后重新绑定。'
+    : '从商家后台「收银终端」复制 Token，粘贴后绑定本机。设备名称由门店自定义，仅作备注；设备身份以 Token 为准。'
+))
+
+const refreshDevice = () => {
+  localDevice.value = getLocalDevice()
+}
+
+const refreshTestDeviceCatalog = () => {
+  testDeviceCatalog.value = loadDeviceCatalog()
+}
+
+const maskToken = (token) => {
+  const value = String(token || '').trim()
+  if (!value) return '—'
+  if (value.length <= 8) return value
+  return `${value.slice(0, 6)}...${value.slice(-4)}`
+}
+
+const demoAccounts = DEMO_LOGIN_ACCOUNTS
+
+const fillDemoAccount = (item) => {
+  form.username = item.account
+  form.password = item.password
+  ElMessage.info(`已填入：${item.role} ${item.account}（${item.systemsText}）`)
+}
 
 const createOrigin = (port) => {
   const { protocol, hostname } = window.location
@@ -272,14 +416,75 @@ const handleLogin = () => {
     return
   }
 
+  // 1) 本机必须已激活为门店收银设备
+  const binding = checkDeviceBinding()
+  if (!binding.ok) {
+    ElMessage.error(binding.message || '本机未激活，无法登录')
+    settingDialogVisible.value = true
+    return
+  }
+
+  // 2) 账号角色须有收银权限
   const access = checkCashierLoginAccess(form.username)
   if (!access.ok) {
     ElMessage.error(access.message || '无权登录收银系统')
     return
   }
 
-  router.push('/sale')
+  const staff = access.staff || {
+    account: form.username.trim(),
+    name: form.username.trim(),
+    role: '收银员',
+  }
+
+  try {
+    setCashierSession(staff)
+    claimTokenSession(staff)
+    kickHint.value = ''
+    ElMessage.success('登录成功')
+    router.push('/sale')
+  } catch (err) {
+    ElMessage.error(err?.message || '登录失败')
+  }
 }
+
+const handleBindToken = () => {
+  const result = bindTokenToThisMachine(tokenInput.value)
+  if (!result.ok) {
+    ElMessage.error(result.message)
+    return
+  }
+  refreshDevice()
+  refreshTestDeviceCatalog()
+  tokenInput.value = ''
+  ElMessage.success(result.message)
+}
+
+const fillTestToken = (token) => {
+  tokenInput.value = token || ''
+  ElMessage.info('已填入测试 Token')
+}
+
+const setTestScenario = (token, scenario) => {
+  const result = setTokenTestScenario(token, scenario)
+  refreshDevice()
+  refreshTestDeviceCatalog()
+  if (!result.ok) {
+    ElMessage.error(result.message || '设置测试场景失败')
+    return
+  }
+  ElMessage.success(result.message)
+}
+
+const handleClearTokenTest = () => {
+  const result = unbindLocalDevice()
+  refreshDevice()
+  refreshTestDeviceCatalog()
+  tokenInput.value = ''
+  ElMessage.success(result.message || '已清除本机 Token')
+}
+
+
 
 const handleClose = () => {
   if (window.history.length > 1) {
@@ -305,15 +510,13 @@ const toggleMenu = () => {
 
 const openSettingModal = () => {
   menuOpen.value = false
-  tokenEditing.value = false
-  draftCashierToken.value = cashierToken.value
+  refreshDevice()
+  refreshTestDeviceCatalog()
   settingDialogVisible.value = true
 }
 
 const closeSettingModal = () => {
   settingDialogVisible.value = false
-  tokenEditing.value = false
-  draftCashierToken.value = cashierToken.value
 }
 
 const openUpgradeModal = () => {
@@ -329,21 +532,6 @@ const closeUpgradeModal = () => {
 
 const toggleUpgradePause = () => {
   upgradePaused.value = !upgradePaused.value
-}
-
-const startTokenEdit = () => {
-  draftCashierToken.value = cashierToken.value
-  tokenEditing.value = true
-}
-
-const cancelTokenEdit = () => {
-  tokenEditing.value = false
-  draftCashierToken.value = cashierToken.value
-}
-
-const saveTokenEdit = () => {
-  cashierToken.value = draftCashierToken.value.trim() || cashierToken.value
-  tokenEditing.value = false
 }
 
 const handleMenuAction = async (action) => {
@@ -366,6 +554,17 @@ const goBackend = async () => {
 
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
+  refreshDevice()
+  refreshTestDeviceCatalog()
+
+  const hint = consumeKickHint()
+  if (hint?.message) {
+    kickHint.value = hint.message
+    ElMessage.warning(hint.message)
+  }
+  if (hint?.lastAccount && !form.username) {
+    form.username = hint.lastAccount
+  }
 })
 
 onBeforeUnmount(() => {
@@ -448,7 +647,9 @@ onBeforeUnmount(() => {
 }
 
 .login-box {
-  width: 360px;
+  width: 400px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   padding-right: 24px;
 }
 
@@ -480,6 +681,29 @@ onBeforeUnmount(() => {
 
 .login-heading + .login-form {
   margin-top: 0;
+}
+
+.kick-hint {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #f5c2c7;
+  background: #fff5f5;
+  color: #842029;
+}
+
+.kick-hint strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.kick-hint p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #a94452;
 }
 
 .login-form {
@@ -536,9 +760,104 @@ onBeforeUnmount(() => {
   background: linear-gradient(90deg, #2a75ef 0%, #4d9bf6 100%);
 }
 
+.demo-accounts {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f5f8fc;
+  border: 1px solid #e6edf6;
+}
+
+.demo-accounts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.demo-accounts-header span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5b72;
+}
+
+.demo-accounts-header small {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.demo-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.demo-account-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.demo-account-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(47, 126, 255, 0.1);
+}
+
+.demo-account-card.is-dual {
+  border-left: 3px solid #6366f1;
+}
+
+.demo-account-card.is-ok {
+  border-left: 3px solid #10b981;
+}
+
+.demo-account-card.is-deny {
+  border-left: 3px solid #f59e0b;
+}
+
+.demo-account-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.demo-account-top strong {
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.demo-account-top em {
+  font-style: normal;
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.demo-account-row {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.demo-account-systems {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #2f7eff;
+  font-weight: 600;
+}
+
 .system-portal {
-  margin-top: 34px;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
@@ -770,6 +1089,162 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  margin-bottom: 18px;
+}
+
+.device-status-card {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+
+.device-status-card.is-ok {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(236, 253, 245, 0.9);
+}
+
+.device-status-card.is-warn {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(255, 251, 235, 0.95);
+}
+
+.device-status-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.device-status-top strong {
+  font-size: 14px;
+  color: #111827;
+}
+
+.device-status-top em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.device-status-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.device-status-tip {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #92400e;
+}
+
+.device-test-panel {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(245, 158, 11, 0.45);
+  background: rgba(255, 251, 235, 0.82);
+}
+
+.device-test-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.device-test-panel__header strong {
+  font-size: 13px;
+  color: #92400e;
+}
+
+.device-test-panel__header span {
+  font-size: 11px;
+  color: #b45309;
+}
+
+.device-test-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.device-test-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.device-test-note--subtle {
+  margin-top: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #94a3b8;
+}
+
+.device-test-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.device-test-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+}
+
+.device-test-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.device-test-item__info strong {
+  font-size: 12px;
+  color: #1f2937;
+}
+
+.device-test-item__info strong em {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: 11px;
+  color: #b45309;
+}
+
+.device-test-item__info span,
+.device-test-item__info code {
+  font-size: 12px;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.device-test-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.activate-row .token-label {
+  padding-top: 11px;
 }
 
 .token-label {

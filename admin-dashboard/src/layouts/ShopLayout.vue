@@ -307,7 +307,8 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: '收银终端', key: '/shop/cashier-terminal' },
           { label: '小票设置', key: '/shop/cashier-receipt' },
-          { label: 'IC卡管理', key: '/shop/ic-card' },
+          // IC卡管理：功能暂隐（FEATURE_IC_CARD_ENABLED）
+          // { label: 'IC卡管理', key: '/shop/ic-card' },
         ]
       },
       {

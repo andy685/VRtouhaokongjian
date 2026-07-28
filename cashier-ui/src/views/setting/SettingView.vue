@@ -14,7 +14,8 @@
           <el-icon><User /></el-icon>
           <span>会员设置</span>
         </el-menu-item>
-        <el-menu-item index="/setting/staff-card">
+        <!-- 员工卡设置：功能暂隐（FEATURE_STAFF_CARD_ENABLED） -->
+        <el-menu-item v-if="FEATURE_STAFF_CARD_ENABLED" index="/setting/staff-card">
           <el-icon><Postcard /></el-icon>
           <span>员工卡设置</span>
         </el-menu-item>
@@ -30,6 +31,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Setting, User, Postcard } from '@element-plus/icons-vue'
+import { FEATURE_STAFF_CARD_ENABLED } from '../../utils/featureFlags'
 
 const activeMenu = ref('/setting/basic')
 </script>

@@ -65,11 +65,14 @@
             </label>
             <label class="emm-field">
               <span class="emm-label">会员等级：</span>
-              <div class="emm-select-wrap">
+              <div v-if="canEditLevel" class="emm-select-wrap">
                 <select v-model="form.levelKey" class="emm-select">
                   <option v-for="lv in levels" :key="lv.key" :value="lv.key">{{ lv.label }}</option>
                 </select>
                 <svg class="emm-select-arrow" viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div v-else class="emm-readonly-value">
+                {{ levelLabel }}
               </div>
             </label>
           </div>
@@ -108,7 +111,11 @@
               </div>
             </label>
           </div>
-          <p class="emm-global-hint">用户名、性别、生日、备注为全局唯一会员档案，门店侧不可修改；本店仅可调整等级与状态。</p>
+          <p class="emm-global-hint">
+            用户名、性别、生日、备注为全局唯一会员档案，门店侧不可修改。
+            <template v-if="canEditLevel">本店可调整等级与状态。</template>
+            <template v-else>收银员不可修改会员等级，仅可调整状态。</template>
+          </p>
         </div>
 
         <!-- 底部按钮 -->
@@ -126,6 +133,7 @@
 <script setup>
 import { reactive, computed, watch } from 'vue'
 import { Close } from '@element-plus/icons-vue'
+import { canEditMemberLevel, getCashierSession } from '../utils/shopAccessSystems'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -133,6 +141,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'save'])
+
+/** 收银员（店员）不可改等级；管理员/店长可以 */
+const canEditLevel = computed(() => canEditMemberLevel(getCashierSession()?.role))
 
 const levels = [
   { key: 'normal',  label: '普通会员', registerPercent: 100, birthdayPercent: 100 },
@@ -166,6 +177,10 @@ const form = reactive({
   remark: ''
 })
 
+const levelLabel = computed(() =>
+  levels.find((l) => l.key === form.levelKey)?.label || form.levelKey || '-'
+)
+
 // 等级变化时，折扣自动跟随
 watch(() => form.levelKey, (key) => {
   const dm = levelDiscountMap[key]
@@ -195,12 +210,16 @@ const canSubmit = computed(() => true)
 
 const handleSave = () => {
   if (!canSubmit.value) return
-  // 仅提交门店可改字段；全局档案字段原样回传但不允许被本页改写
+  // 收银员不可改等级：强制回写打开时的等级
+  const lockedLevelKey = canEditLevel.value
+    ? form.levelKey
+    : (props.member?.levelKey || form.levelKey)
+  const dm = levelDiscountMap[lockedLevelKey]
   emit('save', {
-    levelKey: form.levelKey,
+    levelKey: lockedLevelKey,
     status: form.status,
-    registerPercent: form.registerPercent,
-    birthdayPercent: form.birthdayPercent,
+    registerPercent: dm?.registerPercent ?? form.registerPercent,
+    birthdayPercent: dm?.birthdayPercent ?? form.birthdayPercent,
     // 只读回显，调用方不得据此覆盖全局档案
     name: form.name,
     phone: form.phone,

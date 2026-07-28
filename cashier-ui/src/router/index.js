@@ -1,4 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { clearCashierSession, getCashierSession } from '../utils/shopAccessSystems'
+import {
+  checkTokenSessionValid,
+  clearLocalTokenSession,
+  setKickHint,
+} from '../utils/tokenSession'
 
 const routes = [
   {
@@ -157,12 +163,14 @@ const routes = [
         component: () => import('../views/setting/SettingMemberView.vue'),
         meta: { title: '会员设置', parent: '设置' }
       },
-      {
-        path: '/setting/staff-card',
-        name: 'SettingStaffCard',
-        component: () => import('../views/setting/SettingStaffCardView.vue'),
-        meta: { title: '员工卡设置', parent: '设置' }
-      },
+      // 员工卡设置：功能暂隐（FEATURE_STAFF_CARD_ENABLED=false），恢复时取消注释
+      // {
+      //   path: '/setting/staff-card',
+      //   name: 'SettingStaffCard',
+      //   component: () => import('../views/setting/SettingStaffCardView.vue'),
+      //   meta: { title: '员工卡设置', parent: '设置' }
+      // },
+
       // 收银结果
       {
         path: '/result/cash',
@@ -220,6 +228,34 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - 头号空间收银系统` : '头号空间收银系统'
+
+  // 登录页放行
+  if (to.path === '/login') {
+    next()
+    return
+  }
+
+  // 业务页：校验账号会话 + Token 在线会话
+  const staffSession = getCashierSession()
+  if (!staffSession) {
+    next({ path: '/login', replace: true })
+    return
+  }
+
+  const tokenCheck = checkTokenSessionValid()
+  if (!tokenCheck.ok) {
+    if (tokenCheck.kicked) {
+      setKickHint({
+        message: tokenCheck.message,
+        lastAccount: tokenCheck.lastAccount || staffSession.account,
+      })
+    }
+    clearLocalTokenSession()
+    clearCashierSession()
+    next({ path: '/login', replace: true })
+    return
+  }
+
   next()
 })
 

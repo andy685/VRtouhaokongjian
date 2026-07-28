@@ -68,8 +68,8 @@
       </div>
     </n-modal>
 
-    <!-- 绑定IC卡 -->
-    <n-modal v-model:show="showBindIcModal" preset="card" title="绑定IC卡" style="width:460px" :bordered="false">
+    <!-- 绑定IC卡（功能暂隐：FEATURE_IC_CARD_ENABLED） -->
+    <n-modal v-if="FEATURE_IC_CARD_ENABLED" v-model:show="showBindIcModal" preset="card" title="绑定IC卡" style="width:460px" :bordered="false">
       <p v-if="currentUser?.icCardNo" style="text-align:center;padding:20px 0;">
         <n-tag type="success" size="large">已绑定 IC卡: {{ currentUser.icCardNo }}</n-tag>
         <div style="margin-top:16px"><n-button type="error" size="small" @click="unbindIc">解除绑定</n-button></div>
@@ -97,6 +97,7 @@ import { ref, computed, h, onMounted, watch } from 'vue'
 import { NDataTable, NButton, NIcon, NSpace, NModal, NForm, NFormItem, NInput, NSelect, NSwitch, NTag, NQrCode, useMessage, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
 import { AddOutline } from '@vicons/ionicons5'
 import { saveShopStaffRegistry, removeShopStaff } from '../../constants/shopAccessSystems'
+import { FEATURE_IC_CARD_ENABLED } from '../../constants/featureFlags'
 
 const message = useMessage()
 
@@ -117,7 +118,11 @@ interface User {
 }
 
 const filter = ref({ role: null as string | null, status: null as boolean | null, keyword: '' })
-const roleFilterOptions = [{ label: '店长', value: '店长' }, { label: '收银员', value: '收银员' }, { label: '导购', value: '导购' }]
+const roleFilterOptions = [
+  { label: '管理员', value: '管理员' },
+  { label: '店长', value: '店长' },
+  { label: '收银员', value: '收银员' },
+]
 const statusFilterOptions = [{ label: '正常', value: true }, { label: '禁用', value: false }]
 const shopOptions = [
   { label: '利民街小展厅', value: '利民街小展厅' },
@@ -130,8 +135,9 @@ const shopOptions = [
 function resetFilter() { filter.value = { role: null, status: null, keyword: '' } }
 
 const allUsers = ref<User[]>([
-  { id: 1, role: '收银员', account: '18998311111', name: '张三', phone: '18998311111', email: 'zhangsan@vr.com', status: true, createTime: '2023-05-19 10:54', wxBound: false, shops: ['利民街小展厅'], icCardNo: 'IC-0001' },
+  { id: 0, role: '管理员', account: 'admin', name: '系统管理员', phone: '13800000000', email: 'admin@vr.com', status: true, createTime: '2023-01-01 00:00', wxBound: false, shops: ['利民街小展厅', '卓远亚运城店'] },
   { id: 2, role: '店长', account: 'hehai', name: 'he', phone: '189989898989', email: 'hehai@vr.com', status: true, createTime: '2023-05-13 17:11', wxBound: true, wxName: '海哥', shops: ['利民街小展厅', '卓远亚运城店'] },
+  { id: 1, role: '收银员', account: '18998311111', name: '张三', phone: '18998311111', email: 'zhangsan@vr.com', status: true, createTime: '2023-05-19 10:54', wxBound: false, shops: ['利民街小展厅'], icCardNo: 'IC-0001' },
   { id: 3, role: '店长', account: 'mxw72304', name: '马小文', phone: '18688872712', email: 'mxw@vr.com', status: true, createTime: '2023-05-13 16:55', wxBound: false, shops: ['卓远萝岗区店'] },
   { id: 4, role: '店长', account: 'luming', name: 'luming', phone: '18602015721', email: 'lm@vr.com', status: true, createTime: '2023-05-13 16:52', wxBound: false, shops: ['卓远萧山区店'] },
   { id: 5, role: '店长', account: '18027136456', name: 'ming', phone: '18027136456', email: 'ming@vr.com', status: true, createTime: '2023-05-13 16:46', wxBound: false, shops: ['卓远亚运城店'] },
@@ -185,24 +191,45 @@ const columns: DataTableColumns<User> = [
     render(row) { return h(NTag, { size: 'small', type: row.status ? 'success' : 'error', bordered: true }, () => row.status ? '正常' : '禁用') },
   },
   { title: '创建时间', key: 'createTime', width: 160 },
+  // IC卡列：功能暂隐（FEATURE_IC_CARD_ENABLED=false 时不展示）
+  ...(FEATURE_IC_CARD_ENABLED
+    ? [{
+        title: 'IC卡',
+        key: 'icCardNo',
+        width: 100,
+        align: 'center' as const,
+        render(row: User) {
+          if (row.icCardNo) return h(NTag, { size: 'small', type: 'success', bordered: false }, () => row.icCardNo)
+          return h(NTag, { size: 'small', type: 'default', bordered: false }, () => '未绑定')
+        },
+      }]
+    : []),
   {
-    title: 'IC卡', key: 'icCardNo', width: 100, align: 'center',
-    render(row) {
-      if (row.icCardNo) return h(NTag, { size: 'small', type: 'success', bordered: false }, () => row.icCardNo)
-      return h(NTag, { size: 'small', type: 'default', bordered: false }, () => '未绑定')
-    },
-  },
-  {
-    title: '操作', key: 'actions', width: 240, fixed: 'right', align: 'center',
-    render(row) {
-      return h(NSpace, { justify: 'center', size: 4 }, {
-        default: () => [
-          h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),
-          h(NButton, { size: 'tiny', text: true, type: 'info', onClick: () => openBindWx(row) }, { default: () => '微信' }),
-          h(NButton, { size: 'tiny', text: true, type: row.icCardNo ? 'default' : 'warning', onClick: () => openBindIc(row) }, { default: () => row.icCardNo ? 'IC卡' : '绑定IC卡' }),
-          h(NButton, { size: 'tiny', text: true, type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }),
-        ],
-      })
+    title: '操作',
+    key: 'actions',
+    width: FEATURE_IC_CARD_ENABLED ? 240 : 160,
+    fixed: 'right' as const,
+    align: 'center' as const,
+    render(row: User) {
+      const actions = [
+        h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),
+        h(NButton, { size: 'tiny', text: true, type: 'info', onClick: () => openBindWx(row) }, { default: () => '微信' }),
+      ]
+      // 绑定IC卡按钮：功能暂隐
+      if (FEATURE_IC_CARD_ENABLED) {
+        actions.push(
+          h(NButton, {
+            size: 'tiny',
+            text: true,
+            type: row.icCardNo ? 'default' : 'warning',
+            onClick: () => openBindIc(row),
+          }, { default: () => row.icCardNo ? 'IC卡' : '绑定IC卡' }),
+        )
+      }
+      actions.push(
+        h(NButton, { size: 'tiny', text: true, type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }),
+      )
+      return h(NSpace, { justify: 'center', size: 4 }, { default: () => actions })
     },
   },
 ]
@@ -227,7 +254,11 @@ const userForm = ref({
   newPassword: '',
   newConfirmPassword: '',
 })
-const roleOptions = [{ label: '导购', value: '导购' }, { label: '店长', value: '店长' }, { label: '收银员', value: '收银员' }]
+const roleOptions = [
+  { label: '管理员', value: '管理员' },
+  { label: '店长', value: '店长' },
+  { label: '收银员', value: '收银员' },
+]
 
 const userRules: FormRules = {
   role: { required: true, message: '请选择角色', trigger: 'change' },

@@ -13,7 +13,6 @@
         <header class="rcm-header">
           <h2>会员扫码注册</h2>
           <div class="rcm-header-actions">
-            <button type="button" class="rcm-refresh" aria-label="刷新" @click="$emit('refresh')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
             <button type="button" class="rcm-close" aria-label="关闭" @click="$emit('close')">
               <el-icon><Close /></el-icon>
             </button>
