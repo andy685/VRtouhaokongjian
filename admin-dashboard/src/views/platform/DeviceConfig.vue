@@ -433,7 +433,7 @@ const hostColumns = [
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: HostDevice) => hostStatusRender(getHostStatus(row)) },
   { title: '绑定头显', key: 'boundHeadsets', width: 80, align:'center' as const, render: (row: HostDevice) => h(NTag, { size:'small', type:'info' }, { default: () => `${row.boundHeadsets.length}台` }) },
   {
-    title: 'Token', key: 'token', minWidth: 140,
+    title: '点播系统 Token', key: 'token', minWidth: 140,
     render: (row: HostDevice) => {
       if (row.tokenStatus === 'none' || !row.token) return h(NTag, { size:'small', type:'default' }, { default: () => '未分配' })
       // 用 div 替代 NSpace，避免循环引用

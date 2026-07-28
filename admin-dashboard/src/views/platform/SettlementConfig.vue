@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>商家结算配置</h1>
-        <p class="header-desc">统一设置商家的结算周期、提现手续费和打款通知规则</p>
+        <p class="header-desc">统一设置商家的结算周期、手续费和打款通知规则</p>
       </div>
     </div>
 
@@ -30,34 +30,34 @@
       </n-card>
     </div>
 
-    <!-- 提现手续费配置 -->
+    <!-- 手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title">提现手续费</h3>
+      <h3 class="section-title">手续费</h3>
       <n-card class="config-card">
         <n-alert type="info" :bordered="false" style="margin-bottom: 16px;">
-          商家提现手续费率在<strong>创建/编辑商家时单独设置</strong>（商家管理 → 提现手续费率）。此处配置的是全局手续费上下限和说明文案。
+          商家手续费率在<strong>创建/编辑商家时单独设置</strong>（商家管理 → 手续费率）。此处配置的是全局手续费上下限和说明文案。
         </n-alert>
         <n-form label-placement="left" label-width="140">
-          <n-form-item label="提现手续费说明">
+          <n-form-item label="手续费说明">
             <n-input
               v-model:value="feeConfig.description"
               type="textarea"
-              placeholder="提现手续费说明，将在结算单中显示"
+              placeholder="手续费说明，将在结算单中显示"
               :autosize="{ minRows: 2, maxRows: 4 }"
             />
           </n-form-item>
 
-          <n-form-item label="最低提现手续费">
+          <n-form-item label="最低手续费">
             <n-input-number
               v-model:value="feeConfig.minFee"
               :min="0"
               :step="1"
               style="width: 200px;"
             />
-            <span style="margin-left: 8px;">元（结算金额提现手续费低于此值时，按此值收取）</span>
+            <span style="margin-left: 8px;">元（结算金额手续费低于此值时，按此值收取）</span>
           </n-form-item>
 
-          <n-form-item label="最高提现手续费">
+          <n-form-item label="最高手续费">
             <n-input-number
               v-model:value="feeConfig.maxFee"
               :min="0"
@@ -144,9 +144,9 @@ const dayOptions = computed(() => {
   ]
 })
 
-// 提现手续费配置
+// 手续费配置
 const feeConfig = ref({
-  description: '结算金额将扣除提现手续费后打款',
+  description: '结算金额将扣除手续费后打款',
   minFee: 1,
   maxFee: 0
 })

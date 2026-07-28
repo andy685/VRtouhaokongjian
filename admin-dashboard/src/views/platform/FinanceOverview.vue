@@ -103,7 +103,7 @@
         <div class="sub-metric-card">
           <span class="sub-label">待结算总额</span>
           <span class="sub-value warning">¥456,180</span>
-          <span class="sub-detail">商家待结算金额（含提现手续费）</span>
+          <span class="sub-detail">商家待结算金额（含手续费）</span>
         </div>
       </div>
 
@@ -135,9 +135,9 @@
           <span class="sub-detail">省级 8 / 区域 24 / 城市 96</span>
         </div>
         <div class="sub-metric-card">
-          <span class="sub-label">本月提现手续费</span>
+          <span class="sub-label">本月手续费</span>
           <span class="sub-value">¥2,268</span>
-          <span class="sub-detail">拉卡拉提现手续费（约 0.3%）</span>
+          <span class="sub-detail">拉卡拉手续费（约 0.3%）</span>
         </div>
       </div>
 
@@ -169,9 +169,9 @@
           <span class="sub-detail">18 笔，拉卡拉代付成功</span>
         </div>
         <div class="sub-metric-card">
-          <span class="sub-label">本月提现手续费</span>
+          <span class="sub-label">本月手续费</span>
           <span class="sub-value">¥1,028</span>
-          <span class="sub-detail">拉卡拉提现手续费（约 0.3%）</span>
+          <span class="sub-detail">拉卡拉手续费（约 0.3%）</span>
         </div>
         <div class="sub-metric-card">
           <span class="sub-label">异常 / 失败</span>
@@ -220,7 +220,7 @@ const settlementColumns = [
   { title: '单号', key: 'settlementNo', width: 130, ellipsis: { tooltip: true } },
   { title: '商家', key: 'merchant' },
   { title: '金额', key: 'amount', width: 100, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '提现手续费', key: 'fee', width: 80, render: (row: any) => `¥${row.fee.toLocaleString()}` },
+  { title: '手续费', key: 'fee', width: 80, render: (row: any) => `¥${row.fee.toLocaleString()}` },
   {
     title: '状态', key: 'status', width: 75, align: 'center',
     render: (row: any) => h(NTag, {
@@ -249,7 +249,7 @@ const agentRankColumns = [
   }, () => row.level) },
   { title: '游戏豆采购额', key: 'monthlyFlow', width: 110, render: (row: any) => `¥${row.monthlyFlow.toLocaleString()}` },
   { title: '应发分润', key: 'commission', width: 115, render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.commission.toLocaleString()}`) },
-  { title: '提现手续费', key: 'payoutFee', width: 90, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.commission * 0.003)).toLocaleString()}` },
+  { title: '手续费', key: 'payoutFee', width: 90, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.commission * 0.003)).toLocaleString()}` },
   { title: '实际分润率', key: 'effectiveRate', width: 85, align: 'center', render: (row: any) => `${row.effectiveRate}%` },
 ]
 
@@ -272,7 +272,7 @@ const cpSettleColumns = [
   { title: '应结金额', key: 'cpSettleAmount', width: 110, render: (row: any) => `¥${row.cpSettleAmount.toLocaleString()}` },
   { title: '退款冲减', key: 'refundAdjustment', width: 90, render: (row: any) => row.refundAdjustment > 0 ? `-¥${row.refundAdjustment.toLocaleString()}` : '-' },
   { title: '实发金额', key: 'actualPayout', width: 110, render: (row: any) => `¥${row.actualPayout.toLocaleString()}` },
-  { title: '提现手续费', key: 'payoutFee', width: 95, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.cpSettleAmount * 0.003)).toLocaleString()}` },
+  { title: '手续费', key: 'payoutFee', width: 95, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.cpSettleAmount * 0.003)).toLocaleString()}` },
   {
     title: '拉卡拉流水', key: 'lakalaSplitNo', width: 150,
     render: (row: any) => row.lakalaSplitNo

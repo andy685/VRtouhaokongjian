@@ -80,7 +80,7 @@
               <n-input-number v-model:value="addForm.commissionRate" :min="0" :max="50" style="width: 200px;" />
               <span style="margin-left: 8px; color: var(--text-muted);">（%，按扣除供应商成本后的采购额计算分润）</span>
             </n-form-item>
-            <n-form-item label="提现手续费率">
+            <n-form-item label="手续费率">
               <n-input-number v-model:value="addForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
               <span style="margin-left: 8px; color: var(--text-muted);">（例：0.005 = 0.5%，提现时扣除）</span>
             </n-form-item>
@@ -150,7 +150,7 @@
               <n-input-number v-model:value="editForm.commissionRate" :min="0" :max="50" style="width: 200px;" />
               <span style="margin-left: 8px; color: var(--text-muted);">（%，按扣除供应商成本后的采购额计算分润）</span>
             </n-form-item>
-            <n-form-item label="提现手续费率">
+            <n-form-item label="手续费率">
               <n-input-number v-model:value="editForm.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
               <span style="margin-left: 8px; color: var(--text-muted);">（例：0.005 = 0.5%，提现时扣除）</span>
             </n-form-item>
@@ -199,7 +199,7 @@
             <n-descriptions-item label="联系电话">{{ currentAgent.phone }}</n-descriptions-item>
             <n-descriptions-item label="省/城市">{{ currentAgent.region || '-' }}</n-descriptions-item>
             <n-descriptions-item label="分润比例">{{ currentAgent.commissionRate }}%</n-descriptions-item>
-            <n-descriptions-item label="提现手续费率">{{ (currentAgent.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
+            <n-descriptions-item label="手续费率">{{ (currentAgent.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
             <n-descriptions-item label="旗下商家">{{ currentAgent.merchantCount }} 家</n-descriptions-item>
             <n-descriptions-item label="管辖店铺">{{ currentAgent.storeCount }} 家</n-descriptions-item>
             <n-descriptions-item label="本月游戏豆充值">{{ currentAgent.monthRecharge }}</n-descriptions-item>
@@ -375,7 +375,7 @@ const columns = [
   { title: '省/城市', key: 'region', width: 140 },
   { title: '旗下商家', key: 'merchantCount', width: 100 },
   { title: '分润比例', key: 'commissionRate', width: 100, render: (row: any) => `${row.commissionRate}%` },
-  { title: '提现手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
+  { title: '手续费率', key: 'feeRate', width: 90, render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%` },
   { title: '管辖店铺', key: 'storeCount', width: 100 },
   { title: '本月游戏豆充值', key: 'monthRecharge', width: 150 },
   { title: '上月分润', key: 'monthCommission', width: 120 },

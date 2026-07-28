@@ -6,7 +6,7 @@
         <h1>游戏供应商结算</h1>
         <p class="header-desc">
           结算公式：<strong class="highlight">游戏供应商按月结算</strong>，
-          拉卡拉扣2%提现手续费后为到账金额。CP结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，
+          拉卡拉扣2%手续费后为到账金额。CP结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，
           平台仅<strong>定时同步</strong>拉卡拉结算状态。
         </p>
       </div>
@@ -119,7 +119,7 @@
               <n-descriptions-item label="结算额">
                 <span style="font-weight:700;color:#4F46E5;">¥{{ currentRecord.settledAmount.toLocaleString() }}</span>
               </n-descriptions-item>
-              <n-descriptions-item label="提现手续费（2%）">
+              <n-descriptions-item label="手续费（2%）">
                 <span style="color:#9CA3AF;">-¥{{ currentRecord.feeAmount.toLocaleString() }}</span>
               </n-descriptions-item>
               <n-descriptions-item label="到账金额">
@@ -428,7 +428,7 @@ const columns = [
     render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.settledAmount.toLocaleString()}`)
   },
   {
-    title: '提现手续费(¥)', key: 'feeAmount', width: 90, align: 'right',
+    title: '手续费(¥)', key: 'feeAmount', width: 90, align: 'right',
     render: (row: any) => h('span', { style: 'color:#9CA3AF;font-size:12px;' }, `-¥${row.feeAmount.toLocaleString()}`)
   },
   {

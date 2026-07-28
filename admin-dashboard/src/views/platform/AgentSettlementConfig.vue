@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>代理商结算配置</h1>
-        <p class="header-desc">统一设置代理商分润的结算周期、提现手续费和打款通知规则</p>
+        <p class="header-desc">统一设置代理商分润的结算周期、手续费和打款通知规则</p>
       </div>
     </div>
 
@@ -30,29 +30,29 @@
       </n-card>
     </div>
 
-    <!-- 提现手续费配置 -->
+    <!-- 手续费配置 -->
     <div class="config-section">
-      <h3 class="section-title">提现手续费</h3>
+      <h3 class="section-title">手续费</h3>
       <n-card class="config-card">
         <n-alert type="info" :bordered="false" style="margin-bottom: 16px;">
-          代理商提现手续费率在<strong>创建/编辑代理商时单独设置</strong>（代理商管理 → 提现手续费率）。此处配置的是全局手续费上下限和说明文案。
+          代理商手续费率在<strong>创建/编辑代理商时单独设置</strong>（代理商管理 → 手续费率）。此处配置的是全局手续费上下限和说明文案。
         </n-alert>
         <n-form label-placement="left" label-width="150">
-          <n-form-item label="提现手续费说明">
+          <n-form-item label="手续费说明">
             <n-input
               v-model:value="feeConfig.description"
               type="textarea"
-              placeholder="将在代理商结算单中显示的提现手续费说明"
+              placeholder="将在代理商结算单中显示的手续费说明"
               :autosize="{ minRows: 2, maxRows: 4 }"
             />
           </n-form-item>
 
-          <n-form-item label="最低提现手续费">
+          <n-form-item label="最低手续费">
             <n-input-number v-model:value="feeConfig.minFee" :min="0" :step="1" style="width: 200px;" />
             <span style="margin-left: 8px;">元（低于此值按此标准收取）</span>
           </n-form-item>
 
-          <n-form-item label="最高提现手续费">
+          <n-form-item label="最高手续费">
             <n-input-number v-model:value="feeConfig.maxFee" :min="0" :step="1" style="width: 200px;" />
             <span style="margin-left: 8px;">元（0表示不封顶）</span>
           </n-form-item>
@@ -132,9 +132,9 @@ const dayOptions = computed(() => {
   ]
 })
 
-// 提现手续费配置
+// 手续费配置
 const feeConfig = ref({
-  description: '分润结算金额将扣除提现手续费后打款到银行卡',
+  description: '分润结算金额将扣除手续费后打款到银行卡',
   minFee: 1,
   maxFee: 0,
 })

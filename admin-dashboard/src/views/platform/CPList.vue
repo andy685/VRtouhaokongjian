@@ -93,7 +93,7 @@
             <n-form-item label="身份证号">
               <n-input v-model:value="form.idCard" placeholder="请输入身份证号" maxlength="18" />
             </n-form-item>
-            <n-form-item label="提现手续费比例">
+            <n-form-item label="手续费比例">
               <n-input-number v-model:value="form.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
               <span class="form-hint">例：0.005 = 0.5%，提现时扣除</span>
             </n-form-item>
@@ -133,7 +133,7 @@
             <n-descriptions-item label="银行卡号">{{ detailCp.bankAccount }}</n-descriptions-item>
             <n-descriptions-item label="开户人姓名">{{ detailCp.accountName }}</n-descriptions-item>
             <n-descriptions-item label="身份证号">{{ detailCp.idCard ? detailCp.idCard.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
-            <n-descriptions-item label="提现手续费比例">{{ detailCp.feeRate ? `${(detailCp.feeRate * 100).toFixed(1)}%` : '0.5%' }}</n-descriptions-item>
+            <n-descriptions-item label="手续费比例">{{ detailCp.feeRate ? `${(detailCp.feeRate * 100).toFixed(1)}%` : '0.5%' }}</n-descriptions-item>
             <n-descriptions-item label="账户状态">
               <n-tag type="success" size="small">已绑定</n-tag>
             </n-descriptions-item>
