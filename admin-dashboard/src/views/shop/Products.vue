@@ -709,9 +709,45 @@ const filteredData = computed(() => {
   })
 })
 
+const filteredStockData = computed(() => {
+  return stockData.filter((item: any) => {
+    if (inventoryStoreFilter.value && item.store !== inventoryStoreFilter.value) return false
+    return true
+  })
+})
+
+const inventoryStats = computed(() => {
+  const products = physicalData.filter((item) => {
+    if (inventoryStoreFilter.value && item.store !== inventoryStoreFilter.value) return false
+    return true
+  })
+
+  const skuCount = products.length
+  const totalValue = products
+    .reduce((sum, item) => sum + Number(item.price || 0) * Number(item.stock || 0), 0)
+    .toFixed(2)
+  const lowStockCount = products.filter((item) => Number(item.stock || 0) <= 10).length
+
+  const todayIn = filteredStockData.value
+    .filter((item: any) => item.action === '入库')
+    .reduce((sum: number, item: any) => sum + Math.abs(Number(item.qty || 0)), 0)
+  const todayOut = filteredStockData.value
+    .filter((item: any) => item.action !== '入库')
+    .reduce((sum: number, item: any) => sum + Math.abs(Number(item.qty || 0)), 0)
+
+  return {
+    skuCount,
+    totalValue,
+    lowStockCount,
+    todayIn,
+    todayOut,
+  }
+})
+
 const stockColumns = [
   { title: '时间', key: 'time', width: 160 },
   { title: '操作类型', key: 'action', width: 100, render: (row: any) => h(NTag, { type: row.action === '入库' ? 'success' : 'error', size: 'tiny' }, () => row.action) },
+  { title: '所属店铺', key: 'store', width: 140, render: (row: any) => row.store || '-' },
   { title: '商品', key: 'product' },
   { title: '数量', key: 'qty', render: (row: any) => h('span', { style: `font-weight:600;color:${row.action === '入库' ? '#10B981' : '#EF4444'};` }, row.qty) },
   { title: '前后库存', key: 'beforeAfter', render: (row: any) => `${row.before} → ${row.after}` },
@@ -719,12 +755,12 @@ const stockColumns = [
   { title: '备注', key: 'remark' },
 ]
 
-const stockData = [
-  { time: '2026-04-20 14:32:05', action: '入库', product: '一次性眼罩', qty: '+200', before: 20, after: 220, operator: '管理员', remark: '批量采购入库' },
-  { time: '2026-04-20 13:20:18', action: '出库', product: '恐龙钥匙扣', qty: '-7', before: 10, after: 3, operator: '销售', remark: '顾客购买' },
-  { time: '2026-04-20 11:05:42', action: '盘点', product: 'VR手柄保护套', qty: '+2', before: 13, after: 15, operator: '店长', remark: '库存盘点调整' },
-  { time: '2026-04-19 16:30:00', action: '入库', product: '恐怖医院限定玩偶', qty: '+50', before: 2, after: 52, operator: '管理员', remark: '供应商补货' },
-]
+const stockData = reactive([
+  { time: '2026-04-20 14:32:05', action: '入库', store: '卓远亚运城店', product: '一次性眼罩', productId: '1', qty: '+200', before: 20, after: 220, operator: '管理员', remark: '批量采购入库' },
+  { time: '2026-04-20 13:20:18', action: '出库', store: '卓远文桥路店', product: '恐龙钥匙扣', productId: '4', qty: '-7', before: 10, after: 3, operator: '销售', remark: '顾客购买' },
+  { time: '2026-04-20 11:05:42', action: '盘点', store: '卓远天河路店', product: 'VR手柄保护套', productId: '2', qty: '+2', before: 13, after: 15, operator: '店长', remark: '库存盘点调整' },
+  { time: '2026-04-19 16:30:00', action: '入库', store: '卓远亚运城店', product: '恐怖医院限定玩偶', productId: '3', qty: '+50', before: 2, after: 52, operator: '管理员', remark: '供应商补货' },
+])
 </script>
 
 <style scoped>
