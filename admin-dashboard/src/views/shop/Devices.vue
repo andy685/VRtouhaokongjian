@@ -7,7 +7,7 @@
     <n-tabs type="line" animated style="overflow:visible;">
       <!-- Tab 1: 主机设备 -->
       <n-tab-pane name="hosts" tab="🖥️ 主机设备" style="overflow:visible;">
-        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下主机由总运营平台分配。可在此绑定头显设备，输入头显 SN 码即可完成绑定。</n-alert>
+        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下主机由总运营平台分配。可在此绑定头显设备，输入头显 SN 码即可完成绑定。主机 Token 用于点播系统配置，不用于店员登录。</n-alert>
         <div class="filter-bar">
           <n-select v-model:value="hostFilterStore" :options="hostStoreOpts" placeholder="全部店铺" style="width:150px;" clearable size="small" />
           <n-select v-model:value="hostFilterStatus" :options="hostStatusOpts" placeholder="全部状态" style="width:120px;" clearable size="small" />
@@ -27,7 +27,8 @@
         <n-data-table :columns="headsetColumns" :data="filteredHsDevices" :pagination="{pageSize:10}" :bordered="false" striped size="small" />
       </n-tab-pane>
 
-      <!-- Tab 3: 第三方外围设备 -->
+      <!-- Tab 3: 第三方外围设备（按游戏收费阶段暂隐，非按设备收费） -->
+      <!--
       <n-tab-pane name="thirdparty" tab="🔌 第三方外围设备">
         <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
           <n-button type="primary" size="small" @click="openAddThirdParty"><template #icon><n-icon :component="AddOutline" /></template>添加第三方设备</n-button>
@@ -35,6 +36,7 @@
         <n-alert type="warning" :bordered="false" style="margin-bottom:16px;">第三方外围设备由商家自行管理，如扭蛋机、体感机等非核心VR设备。</n-alert>
         <n-data-table :columns="thirdPartyColumns" :data="filteredThirdParty" :pagination="{pageSize:10}" :bordered="false" striped size="small" />
       </n-tab-pane>
+      -->
     </n-tabs>
 
     <!-- 主机绑定头显弹窗 -->
@@ -178,18 +180,46 @@ const filteredHostDevices = computed(() => {
   return list
 })
 
-interface ShopHost { id: number; serialNo: string; name: string; specs: string; osVersion: string; status: string; merchant: string; store: string; macAddress: string; boundHeadsetCount: number; boundHeadsetIds: number[]; createdAt: string; vodPassword: string }
+interface ShopHost { id: number; serialNo: string; name: string; specs: string; osVersion: string; status: string; merchant: string; store: string; macAddress: string; token: string; boundHeadsetCount: number; boundHeadsetIds: number[]; createdAt: string; vodPassword: string }
 const hostDevices = ref<ShopHost[]>([
-  { id: 1, serialNo: 'PCT-001', name: '主机 #01', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', macAddress: '00:1A:2B:01:07:0D', boundHeadsetCount: 3, boundHeadsetIds: [101, 102, 103], createdAt: '2026-03-10', vodPassword: '' },
-  { id: 2, serialNo: 'PCT-002', name: '主机 #02', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', macAddress: '00:1A:2B:02:0E:1A', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-10', vodPassword: '' },
-  { id: 3, serialNo: 'PCT-003', name: '主机 #03', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然分部展厅', macAddress: '00:1A:2B:03:15:27', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-15', vodPassword: '' },
-  { id: 4, serialNo: 'PCT-004', name: '主机 #04', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'offline', merchant: '利民街商家', store: '利民街小展厅', macAddress: '00:1A:2B:04:1C:34', boundHeadsetCount: 0, boundHeadsetIds: [], createdAt: '2026-03-20', vodPassword: '' },
-  { id: 5, serialNo: 'PCT-005', name: '主机 #05', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '利民街商家', store: '利民街小展厅', macAddress: '00:1A:2B:05:23:41', boundHeadsetCount: 1, boundHeadsetIds: [], createdAt: '2026-04-01', vodPassword: '123456' },
+  { id: 1, serialNo: 'PCT-001', name: '主机 #01', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', macAddress: '00:1A:2B:01:07:0D', token: 'VODHOST-001-HENGRAN-A1B2', boundHeadsetCount: 3, boundHeadsetIds: [101, 102, 103], createdAt: '2026-03-10', vodPassword: '' },
+  { id: 2, serialNo: 'PCT-002', name: '主机 #02', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然科技园店', macAddress: '00:1A:2B:02:0E:1A', token: 'VODHOST-002-HENGRAN-C3D4', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-10', vodPassword: '' },
+  { id: 3, serialNo: 'PCT-003', name: '主机 #03', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '恒然集团', store: '恒然分部展厅', macAddress: '00:1A:2B:03:15:27', token: 'VODHOST-003-HENGRAN-E5F6', boundHeadsetCount: 2, boundHeadsetIds: [], createdAt: '2026-03-15', vodPassword: '' },
+  { id: 4, serialNo: 'PCT-004', name: '主机 #04', specs: 'i7-12700/32GB/1TB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'offline', merchant: '利民街商家', store: '利民街小展厅', macAddress: '00:1A:2B:04:1C:34', token: 'VODHOST-004-LIMINJIE-G7H8', boundHeadsetCount: 0, boundHeadsetIds: [], createdAt: '2026-03-20', vodPassword: '' },
+  { id: 5, serialNo: 'PCT-005', name: '主机 #05', specs: 'i5-12400/16GB/512GB SSD', osVersion: 'Windows 11 Kiosk v2.1', status: 'online', merchant: '利民街商家', store: '利民街小展厅', macAddress: '00:1A:2B:05:23:41', token: 'VODHOST-005-LIMINJIE-J9K0', boundHeadsetCount: 1, boundHeadsetIds: [], createdAt: '2026-04-01', vodPassword: '123456' },
 ])
+
+function maskHostToken(token: string) {
+  if (!token) return '--'
+  return token.length <= 12 ? token : `${token.slice(0, 8)}...${token.slice(-4)}`
+}
+
+async function copyText(text: string, successMessage: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    ;(window as any).$message?.success(successMessage)
+  } catch {
+    ;(window as any).$message?.error('复制失败，请手动复制')
+  }
+}
 
 const hostColumns: DataTableColumns<ShopHost> = [
   { title: '主机编号', key: 'serialNo', width: 100 }, { title: '名称', key: 'name', minWidth: 100 },
   { title: 'MAC 地址', key: 'macAddress', width: 140, render: (row: ShopHost) => h('span', { style: 'font-family:monospace;font-size:11px;color:#6366f1;' }, row.macAddress) },
+  {
+    title: '点播系统 Token',
+    key: 'token',
+    minWidth: 190,
+    render: (row: ShopHost) => h('div', { style: 'display:flex;align-items:center;gap:8px;' }, [
+      h('code', { style: 'font-size:11px;color:#475569;background:#f8fafc;padding:2px 6px;border-radius:6px;' }, maskHostToken(row.token)),
+      h(NButton, {
+        size: 'tiny',
+        quaternary: true,
+        type: 'primary',
+        onClick: () => copyText(row.token, `已复制 ${row.name} 的点播系统 Token`),
+      }, { default: () => '复制' }),
+    ]),
+  },
   { title: '硬件配置', key: 'specs', minWidth: 180 }, { title: '系统版本', key: 'osVersion', minWidth: 150 },
   { title: '所属商家', key: 'merchant', minWidth: 100 }, { title: '所属门店', key: 'store', minWidth: 120 },
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: ShopHost) => h(NTag, { size:'small', type: row.status === 'online' ? 'success' : 'default' }, { default: () => row.status === 'online' ? '在线' : '离线' }) },
