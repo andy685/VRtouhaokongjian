@@ -37,7 +37,7 @@
           <n-icon :component="HardwareChipOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">在线设备</span>
+          <span class="label">在线主机</span>
           <span class="value">298</span>
         </div>
       </div>
@@ -81,8 +81,8 @@ const columns = [
     render: (row: any) => h(NTag, { type: row.status === 'online' ? 'success' : row.status === 'maintain' ? 'warning' : 'default', size: 'small' },
       () => row.status === 'online' ? '营业中' : row.status === 'maintain' ? '维护中' : '已关闭')
   },
-  { title: '设备数', key: 'devices', width: 80 },
-  { title: '在线设备', key: 'onlineDevices', width: 100 },
+  { title: '主机数', key: 'devices', width: 80 },
+  { title: '在线主机', key: 'onlineDevices', width: 100 },
   { title: '店长', key: 'manager', width: 100 },
   { title: '今日营收', key: 'todayRevenue', width: 120 },
   { title: '本月营收', key: 'monthRevenue', width: 120 },

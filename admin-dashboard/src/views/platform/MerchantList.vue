@@ -188,6 +188,8 @@
             <n-descriptions-item label="联系电话">{{ currentMerchant.phone }}</n-descriptions-item>
             <n-descriptions-item label="负责区域">{{ currentMerchant.region }}</n-descriptions-item>
             <n-descriptions-item label="对应代理商">{{ currentMerchant.agentName || '无' }}</n-descriptions-item>
+            <n-descriptions-item label="管理员账号">{{ currentMerchant.username || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="管理员密码">{{ currentMerchant.password ? '已设置' : '未设置' }}</n-descriptions-item>
             <n-descriptions-item label="旗下店铺">{{ currentMerchant.storeCount }} 家</n-descriptions-item>
             <n-descriptions-item label="会员总数">{{ currentMerchant.memberCount }} 人</n-descriptions-item>
             <n-descriptions-item label="上月营收">{{ currentMerchant.lastMonthRevenue }}</n-descriptions-item>

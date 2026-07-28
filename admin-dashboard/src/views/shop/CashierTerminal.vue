@@ -178,7 +178,16 @@
           require-mark-placement="right-hanging"
         >
           <n-form-item label="店铺">
-            <n-select v-model:value="editForm.shop" :options="shopOptions" />
+            <div class="locked-field">
+              <n-select
+                v-model:value="editForm.shop"
+                :options="shopOptions"
+                :disabled="editForm.used"
+              />
+              <span class="field-hint">
+                {{ editForm.used ? '设备已绑定后不允许直接改店铺；如需跨店迁移，请换发 Token 或新建设备。' : '未使用设备可直接调整所属店铺。' }}
+              </span>
+            </div>
           </n-form-item>
           <n-form-item label="终端名称" required>
             <n-input v-model:value="editForm.name" maxlength="30" show-count />
@@ -473,9 +482,14 @@ function handleEdit() {
     message.warning('请输入终端名称')
     return
   }
+  const current = terminalData.value.find((item) => item.id === editingId.value)
+  if (!current) {
+    message.error('设备不存在')
+    return
+  }
   updateCashierDevice(editingId.value, {
     name: editForm.value.name.trim(),
-    shop: editForm.value.shop,
+    shop: current.used ? current.shop : editForm.value.shop,
     enabled: editForm.value.enabled,
   })
   refresh()
@@ -726,6 +740,13 @@ onMounted(() => {
   color: #94a3b8;
   font-size: 12px;
   line-height: 1.5;
+}
+
+.locked-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
 }
 
 .switch-row {
