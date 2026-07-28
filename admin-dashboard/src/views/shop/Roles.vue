@@ -194,23 +194,31 @@ const systemOptions = SHOP_ACCESS_SYSTEM_OPTIONS
 const form = ref({ name: '', desc: '', status: true, systems: ['shop', 'cashier'] as ShopAccessSystem[] })
 const pagination = { pageSize: 10 }
 
-const roleData = ref<Role[]>([
-  { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
-  { id: 2, name: '店长', desc: '门店运营、会员与收银管理', userCount: 8, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
-  { id: 3, name: '收银员', desc: '收银、退款、查询订单；不可修改会员等级', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'], systems: ['cashier'] },
-])
+function createInitialRoles(): Role[] {
+  return [
+    { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
+    { id: 2, name: '店长', desc: '门店运营、会员与收银管理', userCount: 8, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
+    { id: 3, name: '收银员', desc: '收银、退款、查询订单；不可修改会员等级', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'], systems: ['cashier'] },
+  ]
+}
+
+const roleData = ref<Role[]>(createInitialRoles())
+
+function normalizeRolesForView(list: Role[]): Role[] {
+  return list.map((role) => ({
+    ...role,
+    systems: normalizeRoleSystems(role.name, role.systems),
+  }))
+}
 
 function syncRoleRegistry() {
-  // 落库前规范化：管理员强制双端，其他角色至少 1 个
-  roleData.value.forEach((r) => {
-    r.systems = normalizeRoleSystems(r.name, r.systems)
-  })
+  roleData.value = normalizeRolesForView(roleData.value)
   saveShopRoleRegistry(
-    roleData.value.map((r) => ({
-      id: r.id,
-      name: r.name,
-      systems: normalizeRoleSystems(r.name, r.systems),
-      status: r.status,
+    roleData.value.map((role) => ({
+      id: role.id,
+      name: role.name,
+      systems: role.systems,
+      status: role.status,
     })),
   )
 }
@@ -218,26 +226,21 @@ function syncRoleRegistry() {
 onMounted(() => {
   const saved = loadShopRoleRegistry()
   if (saved.length) {
-    roleData.value = roleData.value.map((r) => {
+    roleData.value = normalizeRolesForView(roleData.value.map((r) => {
       const hit = saved.find((s) => s.id === r.id || s.name === r.name)
       if (!hit) {
-        return { ...r, systems: normalizeRoleSystems(r.name, r.systems) }
+        return r
       }
       return {
         ...r,
-        systems: normalizeRoleSystems(r.name, hit.systems?.length ? hit.systems : r.systems),
+        systems: hit.systems?.length ? hit.systems : r.systems,
       }
-    })
-  } else {
-    roleData.value = roleData.value.map((r) => ({
-      ...r,
-      systems: normalizeRoleSystems(r.name, r.systems),
     }))
+  } else {
+    roleData.value = normalizeRolesForView(roleData.value)
   }
   syncRoleRegistry()
 })
-
-watch(roleData, () => syncRoleRegistry(), { deep: true })
 
 /** 当前表单是否管理员（含编辑中的管理员、或新建时名称写成管理员） */
 const isAdminForm = computed(() => isAdminRoleName(form.value.name))
@@ -375,6 +378,7 @@ function handleDelete(row: Role) {
   const idx = roleData.value.findIndex(r => r.id === row.id)
   if (idx > -1) {
     roleData.value.splice(idx, 1)
+    syncRoleRegistry()
     window.$message?.success('删除成功')
   }
 }
@@ -407,6 +411,7 @@ function handleSubmit() {
         systems: normalizeRoleSystems(name, systems),
       }
     }
+    syncRoleRegistry()
     window.$message?.success(`修改成功（可用系统：${formatSystems(systems)}）`)
   } else {
     // 禁止再建一个「管理员」
@@ -424,6 +429,7 @@ function handleSubmit() {
       permissions: [],
       systems: normalizeRoleSystems(form.value.name, systems),
     })
+    syncRoleRegistry()
     window.$message?.success(`添加成功（可用系统：${formatSystems(systems)}）`)
   }
   showAddModal.value = false
@@ -562,14 +568,27 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
   ]
 }
 
-const terminalPerms = ref<TerminalPerm[]>(JSON.parse(JSON.stringify(createDefaultTerminalPerms())))
+function cloneTerminalPerms(): TerminalPerm[] {
+  return JSON.parse(JSON.stringify(createDefaultTerminalPerms()))
+}
+
+const terminalPerms = ref<TerminalPerm[]>([])
+const emptyTerminalNodes: PermNode[] = []
+
+function ensureTerminalPerms() {
+  if (!terminalPerms.value.length) {
+    terminalPerms.value = cloneTerminalPerms()
+  }
+}
 
 const currentTerminalNodes = computed<PermNode[]>(() => {
+  if (!terminalPerms.value.length) return emptyTerminalNodes
   const t = terminalPerms.value.find(x => x.key === selectedTerminal.value)
-  return t ? t.nodes : []
+  return t?.nodes || emptyTerminalNodes
 })
 
 function applyRolePermissions(role: Role) {
+  ensureTerminalPerms()
   const perms = role.permissions || []
   const all = perms.includes('*')
   terminalPerms.value.forEach(tp => {
@@ -609,6 +628,7 @@ function onChildCheck(node: PermNode, val: boolean) {
 }
 
 function savePermissions() {
+  ensureTerminalPerms()
   const role = roleData.value.find(r => r.id === selectedRoleId.value)
   if (!role) return
   const selected: string[] = []
@@ -631,6 +651,7 @@ function savePermissions() {
     })
   })
   role.permissions = checkedCount === allCount ? ['*'] : selected
+  syncRoleRegistry()
   window.$message?.success('权限已保存')
   viewMode.value = 'list'
 }
