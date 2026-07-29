@@ -66,6 +66,10 @@
       <span class="rule-chip"><b>换机</b> 新建/换发 Token；旧机可继续用至禁用</span>
       <span class="rule-chip"><b>互踢</b> 不做</span>
     </div>
+    <div class="rule-note">
+      <strong>使用提醒：</strong>仅“禁用后在原电脑重新启用”时，原 Token 通常还能继续用；
+      如已卸载重装、清空本地数据、更换电脑，或无法确认还是原设备，请直接换发 Token，避免误以为旧 Token 还能重新绑定。
+    </div>
 
     <!-- 表格 -->
     <n-card class="table-card" :bordered="false">
@@ -218,6 +222,9 @@
           <p class="tip-text">
             「换发 Token」会生成新 Token 并回到未使用，原 Token 立即失效（含已绑定旧机）。
             若只想停用旧机、不换发，关闭上方「启用」即可。
+          </p>
+          <p class="tip-text" style="margin-top: 8px;">
+            如果设备已经卸载重装、清空浏览器/本地缓存，或门店无法确认还是原电脑，建议直接换发 Token，不要继续尝试旧 Token。
           </p>
         </div>
       </div>
@@ -605,6 +612,20 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.rule-note {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rule-note strong {
+  color: #7c2d12;
 }
 
 .rule-chip {
