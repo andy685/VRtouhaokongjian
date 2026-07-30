@@ -115,8 +115,33 @@
                 <n-select v-model:value="form.category" :options="categoryOptions" placeholder="选择游戏题材" />
               </div>
               <div class="form-group">
-                <label>当前版本</label>
-                <n-input v-model:value="form.version" placeholder="如：v1.0.0" />
+                <label>{{ versionFieldLabel }}</label>
+                <n-input
+                  v-model:value="form.version"
+                  :placeholder="versionInputPlaceholder"
+                  :disabled="versionFieldDisabled"
+                />
+                <div class="version-help">
+                  <div class="version-help-row">
+                    <n-tag size="small" :type="versionTagType" :bordered="false">{{ versionStatusText }}</n-tag>
+                    <span class="version-help-text">{{ versionValidationMessage }}</span>
+                  </div>
+                  <div v-if="baselineVersion" class="version-help-row">
+                    <span class="version-help-text">当前已审核版本：{{ baselineVersion }}</span>
+                  </div>
+                  <div v-if="showVersionSuggestions" class="version-suggestions">
+                    <span class="version-help-text">建议升版：</span>
+                    <n-button
+                      v-for="suggestion in versionSuggestions"
+                      :key="suggestion"
+                      size="tiny"
+                      secondary
+                      @click="applySuggestedVersion(suggestion)"
+                    >
+                      {{ suggestion }}
+                    </n-button>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="form-row-2">
@@ -502,6 +527,7 @@ import {
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
+const baselineVersion = ref('')
 
 const isEdit = computed(() => !!route.params.id)
 const isUpdate = computed(() => route.query.mode === 'update')
@@ -720,6 +746,85 @@ const form = ref({
   technicalNote: '',
 })
 
+function normalizeVersion(version: string) {
+  return version.trim().replace(/^v/i, '')
+}
+
+function parseSemver(version: string) {
+  const normalized = normalizeVersion(version)
+  const matched = normalized.match(/^(\d+)\.(\d+)\.(\d+)$/)
+  if (!matched) return null
+  return {
+    major: Number(matched[1]),
+    minor: Number(matched[2]),
+    patch: Number(matched[3]),
+  }
+}
+
+function compareSemver(a: string, b: string) {
+  const versionA = parseSemver(a)
+  const versionB = parseSemver(b)
+  if (!versionA || !versionB) return 0
+  if (versionA.major !== versionB.major) return versionA.major - versionB.major
+  if (versionA.minor !== versionB.minor) return versionA.minor - versionB.minor
+  return versionA.patch - versionB.patch
+}
+
+function formatVersion(version: string) {
+  const parsed = parseSemver(version)
+  if (!parsed) return version.trim()
+  return `v${parsed.major}.${parsed.minor}.${parsed.patch}`
+}
+
+const versionFieldDisabled = computed(() => isEdit.value && !isUpdate.value)
+const versionFieldLabel = computed(() => (isUpdate.value ? '目标版本' : '当前版本'))
+const versionInputPlaceholder = computed(() => {
+  if (versionFieldDisabled.value) return '编辑资料时版本号不可修改'
+  if (isUpdate.value) return '仅支持升级版本，如：v2.3.3'
+  return '请填写初始版本，如：v1.0.0'
+})
+
+const isVersionFormatValid = computed(() => !form.value.version || !!parseSemver(form.value.version))
+const isVersionUpgradeValid = computed(() => {
+  if (!baselineVersion.value || !form.value.version || !isVersionFormatValid.value) return true
+  return compareSemver(form.value.version, baselineVersion.value) > 0
+})
+
+const versionValidationMessage = computed(() => {
+  if (versionFieldDisabled.value) return '编辑现有游戏资料时版本号锁定，如需发版请走“更新版本”流程。'
+  if (!form.value.version) return isUpdate.value ? '更新时必须填写高于当前已审核版本的新版本号。' : '新游戏需填写初始内容版本。'
+  if (!isVersionFormatValid.value) return '版本号仅支持 SemVer 格式，例如 v1.0.0。'
+  if (!isVersionUpgradeValid.value) return `新版本必须高于当前已审核版本 ${baselineVersion.value}。`
+  return isUpdate.value ? '版本格式正确，且满足只能升版不能降版。' : '版本格式正确。'
+})
+
+const versionStatusText = computed(() => {
+  if (versionFieldDisabled.value) return '版本锁定'
+  if (!form.value.version) return '待填写'
+  if (!isVersionFormatValid.value || !isVersionUpgradeValid.value) return '校验未通过'
+  return '版本有效'
+})
+
+const versionTagType = computed(() => {
+  if (versionFieldDisabled.value) return 'info'
+  if (!form.value.version) return 'warning'
+  if (!isVersionFormatValid.value || !isVersionUpgradeValid.value) return 'error'
+  return 'success'
+})
+
+const versionSuggestions = computed(() => {
+  const sourceVersion = baselineVersion.value || form.value.version
+  const parsed = parseSemver(sourceVersion)
+  if (!parsed) return []
+  return [
+    `v${parsed.major}.${parsed.minor}.${parsed.patch + 1}`,
+    `v${parsed.major}.${parsed.minor + 1}.0`,
+    `v${parsed.major + 1}.0.0`,
+  ]
+})
+
+const showVersionSuggestions = computed(() => isUpdate.value && !!baselineVersion.value)
+
 const selectedRuntimeArchitecture = computed(() => (
   runtimeArchitectureOptions.find(item => item.value === form.value.runtimeArchitecture) || runtimeArchitectureOptions[0]
 ))
@@ -790,6 +895,11 @@ function clearResourceFile(role: ResourceRole) {
   message.info(`${resourceMeta(role).label}文件已删除`)
 }
 
+function applySuggestedVersion(version: string) {
+  if (versionFieldDisabled.value) return
+  form.value.version = version
+}
+
 // 模拟加载已有游戏数据
 function loadGameData(id: string) {
   const mockData: Record<string, any> = {
@@ -849,6 +959,7 @@ function loadGameData(id: string) {
   }
   if (mockData[id]) {
     Object.assign(form.value, mockData[id])
+    baselineVersion.value = mockData[id].version
     syncResourceComponents()
   }
 }
@@ -936,6 +1047,10 @@ function addTagFromSelect(value: string) {
 
 function saveDraft() {
   if (!form.value.name) { message.warning('请填写游戏名称'); return }
+  if (form.value.version && !isVersionFormatValid.value) {
+    message.warning('版本号格式不正确，请使用 v1.0.0 这种格式')
+    return
+  }
   message.success('草稿已保存')
 }
 
@@ -948,6 +1063,15 @@ function submitForReview() {
     message.warning('请填写预设销售金额')
     return
   }
+  if (!isVersionFormatValid.value) {
+    message.warning('版本号格式不正确，请使用 v1.0.0 这种格式')
+    return
+  }
+  if (!isVersionUpgradeValid.value) {
+    message.warning(`新版本必须高于当前已审核版本 ${baselineVersion.value}`)
+    return
+  }
+  form.value.version = formatVersion(form.value.version)
   const missingResources = form.value.resourceComponents.filter(item => item.required && !item.fileName)
   if (missingResources.length) {
     message.warning(`请上传必填资源：${missingResources.map(item => resourceMeta(item.role).label).join('、')}`)
@@ -959,6 +1083,9 @@ function submitForReview() {
 }
 
 onMounted(() => {
+  if (!route.params.id) {
+    form.value.version = 'v1.0.0'
+  }
   if (route.params.id) loadGameData(route.params.id as string)
 })
 </script>
@@ -1015,6 +1142,33 @@ onMounted(() => {
   font-weight: 600;
   color: var(--text-primary, #333);
   margin: 0;
+}
+
+.version-help {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.version-help-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.version-help-text {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.version-suggestions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* ===== 左栏 ===== */

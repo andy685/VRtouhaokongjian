@@ -106,7 +106,15 @@
           </div>
           <div class="game-actions">
             <n-button size="tiny" quaternary @click="$router.push(`/platform/games/${game.id}`)">详情</n-button>
-            <n-button size="tiny" type="primary" secondary @click="$router.push(`/platform/games/${game.id}?edit=1`)">编辑</n-button>
+            <n-button size="tiny" secondary @click="$router.push(`/platform/games/${game.id}?edit=1`)">编辑资料</n-button>
+            <n-button
+              size="tiny"
+              type="primary"
+              :disabled="game.status === 'draft'"
+              @click="$router.push(`/platform/games/${game.id}?mode=update`)"
+            >
+              更新版本
+            </n-button>
           </div>
         </div>
       </div>

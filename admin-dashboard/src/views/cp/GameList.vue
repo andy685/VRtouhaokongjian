@@ -94,24 +94,27 @@ function getActions(status: string) {
   const router = useRouter()
   const actions: Record<string, any[]> = {
     online: [
+      { key: 'detail', label: '详情', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}`) },
       { key: 'data', label: '数据', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}/data`) },
-      { key: 'update', label: '提交更新', type: 'primary' as const, secondary: false, action: (g: any) => router.push(`/cp/games/${g.id}?mode=update`) },
+      { key: 'update', label: '更新版本', type: 'primary' as const, secondary: false, action: (g: any) => router.push(`/cp/games/${g.id}?mode=update`) },
     ],
     pending: [
-      { key: 'view', label: '查看', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}`) },
+      { key: 'detail', label: '详情', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}`) },
       { key: 'revoke', label: '撤回', type: 'error' as const, secondary: true, action: (g: any) => revokeReview(g) },
     ],
     rejected: [
       { key: 'reason', label: '查看原因', type: 'default' as const, secondary: true, action: (g: any) => viewReason(g) },
-      { key: 'edit', label: '重新编辑', type: 'primary' as const, secondary: false, action: (g: any) => router.push(`/cp/games/${g.id}`) },
+      { key: 'edit', label: '编辑资料', type: 'primary' as const, secondary: false, action: (g: any) => router.push(`/cp/games/${g.id}`) },
     ],
     draft: [
-      { key: 'edit', label: '编辑', type: 'primary' as const, secondary: false, action: (g: any) => router.push(`/cp/games/${g.id}`) },
+      { key: 'detail', label: '详情', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}`) },
+      { key: 'edit', label: '编辑资料', type: 'primary' as const, secondary: false, action: (g: any) => router.push(`/cp/games/${g.id}`) },
       { key: 'submit', label: '提交审核', type: 'success' as const, secondary: false, action: (g: any) => submitReview(g) },
       { key: 'delete', label: '删除', type: 'error' as const, secondary: true, action: (g: any) => openDelete(g) },
     ],
     offline: [
-      { key: 'data', label: '查看', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}/data`) },
+      { key: 'detail', label: '详情', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}`) },
+      { key: 'data', label: '数据', type: 'default' as const, secondary: true, action: (g: any) => router.push(`/cp/games/${g.id}/data`) },
       { key: 'resubmit', label: '重新提交', type: 'warning' as const, secondary: false, action: (g: any) => resubmit(g) },
     ],
   }

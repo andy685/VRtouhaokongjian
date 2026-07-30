@@ -93,8 +93,9 @@
         <n-form-item label="目标店铺" required>
           <n-select v-model:value="batchForm.stores" :options="storeOptions" multiple placeholder="请选择目标店铺" />
         </n-form-item>
-        <n-form-item label="分发版本">
-          <n-input v-model:value="batchForm.version" placeholder="如：v2.3.1" />
+        <n-form-item :label="batchForm.games.length <= 1 ? '可分发版本' : '分发版本策略'">
+          <n-input :value="batchVersionDisplay" readonly />
+          <span class="release-hint">{{ batchVersionHint }}</span>
         </n-form-item>
         <n-form-item label="分发方式" required>
           <n-radio-group v-model:value="batchForm.distributeMode" name="distributeMode">
@@ -167,18 +168,30 @@ import {
 } from 'naive-ui'
 import {
   CloudUploadOutline, CheckmarkCircleOutline, TimeOutline, CloseCircleOutline,
-  ReloadCircleOutline, SendOutline, EyeOutline
 } from '@vicons/ionicons5'
 
 const message = useMessage()
 const dialog = useDialog()
+
+type GameDistributionRow = {
+  id: number
+  gameName: string
+  cover: string
+  currentVersion: string
+  latestReleaseVersion: string
+  distributedVersion: string
+  distributeStatus: DistributeStatus | string
+  storeCount: number
+  lastDistributeTime: string
+  lastRecordId: number | null
+}
 
 // 当前标签页
 const activeTab = ref('games')
 
 // 状态类型映射函数
 function statusType(status: string) {
-  const map: Record<string, string> = { done: 'success', pending: 'warning', failed: 'error', revoking: 'warning', revoked: 'default' }
+  const map: Record<string, 'success' | 'warning' | 'error' | 'default'> = { done: 'success', pending: 'warning', failed: 'error', revoking: 'warning', revoked: 'default' }
   return map[status] || 'default'
 }
 const filterGame = ref<string | null>(null)
@@ -188,12 +201,13 @@ const filterStatus = ref<string | null>(null)
 type DistributeStatus = '未分发' | '已分发' | '有更新' | '已撤回'
 
 // 游戏列表数据（游戏中心视角）
-const gameList = ref([
+const gameList = ref<GameDistributionRow[]>([
   {
     id: 1,
     gameName: '过山车VR',
     cover: 'https://picsum.photos/seed/coaster/90/120',
     currentVersion: 'v2.3.2',
+    latestReleaseVersion: 'v2.3.2',
     distributedVersion: 'v2.3.1',
     distributeStatus: '有更新' as DistributeStatus,
     storeCount: 156,
@@ -205,6 +219,7 @@ const gameList = ref([
     gameName: '恐怖医院',
     cover: 'https://picsum.photos/seed/hospital/90/120',
     currentVersion: 'v1.8.5',
+    latestReleaseVersion: 'v1.8.5',
     distributedVersion: 'v1.8.5',
     distributeStatus: '已分发' as DistributeStatus,
     storeCount: 148,
@@ -216,6 +231,7 @@ const gameList = ref([
     gameName: '极速赛车',
     cover: 'https://picsum.photos/seed/racing/90/120',
     currentVersion: 'v3.1.0',
+    latestReleaseVersion: 'v3.1.0',
     distributedVersion: 'v3.1.0',
     distributeStatus: '分发中' as any,
     storeCount: 142,
@@ -227,6 +243,7 @@ const gameList = ref([
     gameName: '海洋世界',
     cover: 'https://picsum.photos/seed/ocean/90/120',
     currentVersion: 'v2.0.2',
+    latestReleaseVersion: 'v2.0.2',
     distributedVersion: '',
     distributeStatus: '失败' as any,
     storeCount: 138,
@@ -238,6 +255,7 @@ const gameList = ref([
     gameName: '恐龙王国',
     cover: 'https://picsum.photos/seed/dino/90/120',
     currentVersion: 'v1.5.0',
+    latestReleaseVersion: 'v1.5.0',
     distributedVersion: 'v1.5.0',
     distributeStatus: '已撤回' as DistributeStatus,
     storeCount: 130,
@@ -249,6 +267,7 @@ const gameList = ref([
     gameName: '太空探险',
     cover: 'https://picsum.photos/seed/space/90/120',
     currentVersion: 'v2.1.0',
+    latestReleaseVersion: 'v2.1.0',
     distributedVersion: '',
     distributeStatus: '未分发' as DistributeStatus,
     storeCount: 0,
@@ -263,7 +282,7 @@ const gameColumns = [
     title: '游戏',
     key: 'gameName',
     width: 200,
-    fixed: 'left',
+    fixed: 'left' as const,
     render(row: any) {
       return h('div', { style: 'display:flex;align-items:center;gap:10px;' }, [
         h('img', {
@@ -275,9 +294,14 @@ const gameColumns = [
     },
   },
   {
-    title: '当前版本',
+    title: '内容版本',
     key: 'currentVersion',
     width: 100,
+  },
+  {
+    title: '可分发版本',
+    key: 'latestReleaseVersion',
+    width: 110,
   },
   {
     title: '已分发版本',
@@ -290,7 +314,7 @@ const gameColumns = [
     key: 'distributeStatus',
     width: 100,
     render(row: any) {
-      const typeMap: Record<string, string> = {
+      const typeMap: Record<string, 'default' | 'success' | 'warning' | 'error'> = {
         '未分发': 'default',
         '已分发': 'success',
         '有更新': 'warning',
@@ -317,9 +341,9 @@ const gameColumns = [
     title: '操作',
     key: 'action',
     width: 200,
-    fixed: 'right',
+    fixed: 'right' as const,
     render(row: any) {
-      const buttons = []
+      const buttons: any[] = []
       // 未分发 -> 分发
       if (row.distributeStatus === '未分发') {
         buttons.push(
@@ -358,6 +382,8 @@ const gameOptions = [
   { label: '恐怖医院', value: '恐怖医院' },
   { label: '极速赛车', value: '极速赛车' },
   { label: '海洋世界', value: '海洋世界' },
+  { label: '恐龙王国', value: '恐龙王国' },
+  { label: '太空探险', value: '太空探险' },
 ]
 
 const statusOptions = [
@@ -385,8 +411,8 @@ const columns = [
     key: 'status',
     width: 120,
     render(row: any) {
-      const typeMap: Record<string, string> = { done: 'success', pending: 'warning', failed: 'error', revoking: 'warning', revoked: 'default' }
-      return h(NTag, { type: typeMap[row.status] as any, size: 'small', bordered: true }, () => row.statusText)
+      const typeMap: Record<string, 'success' | 'warning' | 'error' | 'default'> = { done: 'success', pending: 'warning', failed: 'error', revoking: 'warning', revoked: 'default' }
+      return h(NTag, { type: typeMap[row.status] || 'default', size: 'small', bordered: true }, () => row.statusText)
     }
   },
   { title: '分发时间', key: 'time', width: 160 },
@@ -395,9 +421,9 @@ const columns = [
     title: '操作',
     key: 'action',
     width: 200,
-    fixed: 'right',
+    fixed: 'right' as const,
     render(row: any) {
-      const buttons = []
+      const buttons: any[] = []
       if (row.status === 'done') {
         buttons.push(
           h(NButton, { size: 'tiny', type: 'error', secondary: true, onClick: () => revokeDistribute(row) }, () => '撤销')
@@ -424,9 +450,9 @@ const storeColumns = [
     key: 'status',
     width: 100,
     render(row: any) {
-      const typeMap: Record<string, string> = { done: 'success', pending: 'warning', failed: 'error', revoking: 'warning', revoked: 'default' }
+      const typeMap: Record<string, 'success' | 'warning' | 'error' | 'default'> = { done: 'success', pending: 'warning', failed: 'error', revoking: 'warning', revoked: 'default' }
       const labelMap: Record<string, string> = { done: '已完成', pending: '分发中', failed: '失败', revoking: '撤回中', revoked: '已撤回' }
-      return h(NTag, { type: typeMap[row.status] as any, size: 'small' }, () => labelMap[row.status] || row.statusText)
+      return h(NTag, { type: typeMap[row.status] || 'default', size: 'small' }, () => labelMap[row.status] || row.statusText)
     }
   },
   { title: '完成时间', key: 'finishTime', width: 160 },
@@ -558,13 +584,35 @@ function refreshData() {
 const showBatchModal = ref(false)
 const batchForm = ref({ games: [] as string[], stores: [] as string[], version: '', distributeMode: 'smart' as 'smart' | 'full' })
 
+const selectedGames = computed(() => gameList.value.filter(game => batchForm.value.games.includes(game.gameName)))
+
+const batchVersionDisplay = computed(() => {
+  if (selectedGames.value.length === 0) return '请先选择游戏'
+  if (selectedGames.value.length === 1) return selectedGames.value[0].latestReleaseVersion || '暂无可分发版本'
+  const details = selectedGames.value.map(game => `${game.gameName} ${game.latestReleaseVersion || '待审核'}`)
+  return details.join(' / ')
+})
+
+const batchVersionHint = computed(() => {
+  if (selectedGames.value.length === 0) return '分发版本由系统根据已审核通过的发布版本自动带出。'
+  if (selectedGames.value.length === 1) return '分发页不再手填版本号，只能分发该游戏当前已审核通过的发布版本。'
+  return '批量分发时，系统会按每个游戏各自最新已审核通过的发布版本执行分发。'
+})
+
 function confirmBatch() {
   if (batchForm.value.games.length === 0 || batchForm.value.stores.length === 0) {
     message.warning('请选择游戏和目标店铺')
     return
   }
+  if (selectedGames.value.some(game => !game.latestReleaseVersion)) {
+    message.warning('存在尚未审核通过的游戏，当前不可分发')
+    return
+  }
+  const versionSummary = selectedGames.value.length === 1
+    ? `版本 ${selectedGames.value[0].latestReleaseVersion}`
+    : '各游戏最新已审核版本'
   const modeText = batchForm.value.distributeMode === 'smart' ? '智能分发（仅变更部分）' : '全量分发'
-  message.success(`已成功${modeText} ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家店铺`)
+  message.success(`已成功${modeText} ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家店铺，分发版本：${versionSummary}`)
   showBatchModal.value = false
   batchForm.value = { games: [], stores: [], version: '', distributeMode: 'smart' }
 }
@@ -578,17 +626,6 @@ function openDetail(row: any) {
   showDetailModal.value = true
 }
 
-// 单个游戏分发
-function openDistribute(row: any) {
-  batchForm.value = {
-    games: [row.gameName],
-    stores: [],
-    version: row.version || '',
-    distributeMode: 'smart',
-  }
-  showBatchModal.value = true
-}
-
 // 重试分发（从列表）
 function retryDistribute(row: any) {
   // 将失败的店铺名称映射到 storeOptions 的 value
@@ -599,7 +636,7 @@ function retryDistribute(row: any) {
   batchForm.value = {
     games: [row.gameName],
     stores: failedStoreValues,
-    version: row.version || '',
+    version: row.latestReleaseVersion || row.version || '',
     distributeMode: 'full',
   }
   showBatchModal.value = true
@@ -676,7 +713,7 @@ function openGameDistribute(row: any) {
   batchForm.value = {
     games: [row.gameName],
     stores: [],
-    version: row.currentVersion || '',
+    version: row.latestReleaseVersion || row.currentVersion || '',
     distributeMode: mode,
   }
   showBatchModal.value = true
@@ -743,6 +780,14 @@ function revokeByGame(row: any) {
   display: block;
   margin-top: 2px;
   font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.release-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
   color: var(--text-muted);
   line-height: 1.5;
 }
