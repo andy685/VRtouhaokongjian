@@ -3,7 +3,8 @@
     <div class="page-header">
       <div>
         <h2>会员等级</h2>
-        <p class="header-desc">系统预设 5 个固定等级，名称和数量固定，可调整升级门槛和权益</p>
+        <p class="header-desc">系统预设 5 个固定等级，名称和数量固定，可调整单次充值门槛和权益</p>
+        <p class="header-desc secondary">示例规则：单次充值满 500 升青铜，满 1000 升白银，满 3000 升黄金，满 8000 升钻石。</p>
       </div>
       <n-button secondary @click="handleApply">
         <template #icon><n-icon :component="RefreshOutline" /></template>
@@ -24,13 +25,13 @@
     </div>
 
     <!-- 编辑弹窗 -->
-    <n-modal v-model:show="showModal" preset="card" :title="`编辑 - ${editTarget?.displayName}`" style="width: 520px;" :bordered="false">
+    <n-modal v-model:show="showModal" preset="card" :title="memberLevelModalTitle" style="width: 520px;" :bordered="false">
       <n-form ref="formRef" :model="formData" :rules="formRules" label-placement="left" :label-width="120">
-        <n-form-item label="累计消费门槛" path="consumeAmount">
-          <n-input-number v-model:value="formData.consumeAmount" :min="0" style="flex:1;">
+        <n-form-item label="单次充值门槛" path="rechargeAmount">
+          <n-input-number v-model:value="formData.rechargeAmount" :min="0" style="flex:1;">
             <template #prefix>¥</template>
           </n-input-number>
-          <span class="form-hint">达到此消费金额自动升级</span>
+          <span class="form-hint">单次充值达到此金额自动升级</span>
         </n-form-item>
         <n-form-item label="消费折扣" path="consumeDiscount">
           <n-input-number v-model:value="formData.consumeDiscount" :min="0" :max="100" style="flex:1;">
@@ -56,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { ref, h, computed } from 'vue'
 import {
   NButton, NIcon, NDataTable, NTag,
   NModal, NForm, NFormItem, NInputNumber, NSpace,
@@ -70,35 +71,40 @@ const editTarget = ref<any>(null)
 
 // 固定 5 个等级
 const PRESET_LEVELS = [
-  { id: 1, name: 'regular',    displayName: '普通会员', icon: '⭐', minConsume: 0,     color: '#999' },
-  { id: 2, name: 'bronze',     displayName: '青铜会员', icon: '🥉', minConsume: 500,   color: '#CD7F32' },
-  { id: 3, name: 'silver',     displayName: '白银会员', icon: '🥈', minConsume: 1000,  color: '#C0C0C0' },
-  { id: 4, name: 'gold',       displayName: '黄金会员', icon: '🥇', minConsume: 3000,  color: '#FFD700' },
-  { id: 5, name: 'diamond',    displayName: '钻石会员', icon: '💎', minConsume: 8000,  color: '#B9F2FF' },
+  { id: 1, name: 'regular',    displayName: '普通会员', icon: '⭐', minRecharge: 0,     color: '#999' },
+  { id: 2, name: 'bronze',     displayName: '青铜会员', icon: '🥉', minRecharge: 500,   color: '#CD7F32' },
+  { id: 3, name: 'silver',     displayName: '白银会员', icon: '🥈', minRecharge: 1000,  color: '#C0C0C0' },
+  { id: 4, name: 'gold',       displayName: '黄金会员', icon: '🥇', minRecharge: 3000,  color: '#FFD700' },
+  { id: 5, name: 'diamond',    displayName: '钻石会员', icon: '💎', minRecharge: 8000,  color: '#B9F2FF' },
 ]
 
 const formData = ref({
-  consumeAmount: 0,
+  rechargeAmount: 0,
   consumeDiscount: 100,
   status: 'enabled',
 })
 
 const formRules = {
-  consumeAmount: { required: true, type: 'number' as const, message: '请输入累计消费金额', trigger: 'blur' },
+  rechargeAmount: { required: true, type: 'number' as const, message: '请输入单次充值金额', trigger: 'blur' },
   consumeDiscount: { required: true, type: 'number' as const, message: '请输入消费折扣', trigger: 'blur' },
 }
 
 const tableData = ref([
-  { id: 1, name: 'regular',  consumeAmount: 0,    consumeDiscount: 100, createTime: '2021-11-27 17:27', status: 'enabled' },
-  { id: 2, name: 'bronze',   consumeAmount: 500,  consumeDiscount: 95,  createTime: '2021-11-27 17:27', status: 'enabled' },
-  { id: 3, name: 'silver',   consumeAmount: 1000, consumeDiscount: 90,  createTime: '2021-11-27 17:26', status: 'enabled' },
-  { id: 4, name: 'gold',     consumeAmount: 3000, consumeDiscount: 85,  createTime: '2021-11-27 17:25', status: 'enabled' },
-  { id: 5, name: 'diamond',  consumeAmount: 8000, consumeDiscount: 80,  createTime: '2021-11-27 17:24', status: 'enabled' },
+  { id: 1, name: 'regular',  rechargeAmount: 0,    consumeDiscount: 100, createTime: '2021-11-27 17:27', status: 'enabled' },
+  { id: 2, name: 'bronze',   rechargeAmount: 500,  consumeDiscount: 95,  createTime: '2021-11-27 17:27', status: 'enabled' },
+  { id: 3, name: 'silver',   rechargeAmount: 1000, consumeDiscount: 90,  createTime: '2021-11-27 17:26', status: 'enabled' },
+  { id: 4, name: 'gold',     rechargeAmount: 3000, consumeDiscount: 85,  createTime: '2021-11-27 17:25', status: 'enabled' },
+  { id: 5, name: 'diamond',  rechargeAmount: 8000, consumeDiscount: 80,  createTime: '2021-11-27 17:24', status: 'enabled' },
 ])
 
 function getPreset(name: string) {
   return PRESET_LEVELS.find(p => p.name === name)!
 }
+
+const memberLevelModalTitle = computed(() => {
+  if (!editTarget.value) return '编辑会员等级'
+  return `编辑 - ${getPreset(editTarget.value.name).displayName}`
+})
 
 const columns = [
   {
@@ -111,12 +117,11 @@ const columns = [
     },
   },
   {
-    title: '累计消费门槛（¥）',
-    key: 'consumeAmount',
+    title: '单次充值门槛（¥）',
+    key: 'rechargeAmount',
     width: 160,
     render(row: any) {
-      const preset = getPreset(row.name)
-      return row.consumeAmount !== null ? `¥${row.consumeAmount.toLocaleString()}` : '¥0'
+      return row.rechargeAmount !== null ? `¥${row.rechargeAmount.toLocaleString()}` : '¥0'
     },
   },
   {
@@ -160,7 +165,7 @@ const columns = [
 function handleEdit(row: any) {
   editTarget.value = row
   formData.value = {
-    consumeAmount: row.consumeAmount,
+    rechargeAmount: row.rechargeAmount,
     consumeDiscount: row.consumeDiscount,
     status: row.status || 'enabled',
   }
@@ -187,6 +192,7 @@ function handleApply() {
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .page-header h2 { font-size: 18px; font-weight: 600; color: var(--text-primary); margin: 0 0 4px 0; }
 .header-desc { font-size: 13px; color: #999; margin: 0; }
+.header-desc.secondary { margin-top: 4px; color: #64748b; }
 .table-wrapper { background: white; border-radius: 8px; border: 1px solid var(--border-color); }
 .form-hint { margin-left: 10px; font-size: 12px; color: #999; white-space: nowrap; }
 </style>

@@ -139,8 +139,8 @@ function viewReason(game: any) { message.warning(`「${game.name}」审核不通
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
 .header-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
-.game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-.game-card { background: white; border-radius: 14px; border: 1px solid var(--border-color); overflow: hidden; transition: all 0.25s; }
+.game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start; }
+.game-card { background: white; border-radius: 14px; border: 1px solid var(--border-color); overflow: hidden; transition: all 0.25s; min-width: 0; }
 .game-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
 .game-card.dimmed { opacity: 0.6; }
 
@@ -151,11 +151,21 @@ function viewReason(game: any) { message.warning(`「${game.name}」审核不通
 .game-icon { font-size: 48px; }
 .status-badge { position: absolute; top: 10px; right: 10px; }
 
-.game-info { padding: 16px; }
+.game-info { padding: 14px; }
 .game-name { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0 0 8px; }
-.game-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.game-meta { display: flex; gap: 10px; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; flex-wrap: wrap; }
 .game-update { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 .game-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .empty-state { text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 14px; grid-column: 1 / -1; }
+
+@media (max-width: 1280px) {
+  .game-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .game-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .game-info { padding: 12px; }
+  .game-name { font-size: 14px; }
+}
 </style>

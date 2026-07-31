@@ -9,6 +9,13 @@ import CPLayout from '../layouts/CPLayout.vue'
 import Login from '../views/Login.vue'
 
 const routes: RouteRecordRaw[] = [
+  // 官网下载页，业务后台路由保持独立
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('../views/Home.vue'),
+    meta: { title: '头号空间 - 客户端下载' }
+  },
   // ===== 登录页面 =====
   {
     path: '/login',
@@ -75,7 +82,10 @@ const routes: RouteRecordRaw[] = [
       { path: 'finance/cp-settlement', name: 'PlatformCPSettlement', component: () => import('../views/platform/CPSettlement.vue'), meta: { title: '游戏供应商结算' } },
       { path: 'finance/cp-settlement-config', name: 'PlatformCPSettlementConfig', component: () => import('../views/platform/CPSettlementConfig.vue'), meta: { title: 'CP结算配置' } },
       { path: 'finance/cp-reconciliation', redirect: '/platform/finance/cp-settlement' },
-      { path: 'finance/lakala-config', name: 'PlatformLakalaConfig', component: () => import('../views/platform/LakalaConfig.vue'), meta: { title: '拉卡拉配置' } },
+      { path: 'finance/lakala-config', name: 'PlatformLakalaConfig', component: () => import('../views/platform/LakalaConfig.vue'), meta: { title: '拉卡拉支付参数' } },
+      { path: 'finance/lakala-split', redirect: '/platform/finance/lakala-platform-split' },
+      { path: 'finance/lakala-platform-split', name: 'PlatformLakalaPlatformSplit', component: () => import('../views/platform/LakalaSplitConfig.vue'), meta: { title: '分账主体开通', lakalaScope: 'platform' } },
+      { path: 'finance/lakala-merchant-split', name: 'PlatformLakalaMerchantSplit', component: () => import('../views/platform/LakalaSplitConfig.vue'), meta: { title: '接收方与分账关系', lakalaScope: 'merchant' } },
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: () => import('../views/platform/System.vue'), meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: () => import('../views/platform/System.vue'), meta: { title: '告警中心' } },
@@ -228,8 +238,6 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
-  // 默认重定向
-  { path: '/', redirect: '/login' },
   { path: '/:pathMatch(.*)*', redirect: '/login' }
 ]
 

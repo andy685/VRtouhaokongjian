@@ -2,8 +2,8 @@
   <div class="page-container animate-fade-in">
     <div class="page-header">
       <div>
-        <h1>拉卡拉配置</h1>
-        <p class="header-desc">配置拉卡拉分账账户信息，支持平台、商家、门店、代理商、游戏供应商五种归属类型</p>
+        <h1>拉卡拉支付参数</h1>
+        <p class="header-desc">配置拉卡拉收银商户、终端、机构等支付参数，供收银和后续分账开通引用</p>
       </div>
       <n-space>
         <n-button type="primary" size="small" @click="openAdd">

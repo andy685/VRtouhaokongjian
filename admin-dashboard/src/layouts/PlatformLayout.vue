@@ -400,7 +400,9 @@ const menuOptions: MenuOption[] = [
           { label: 'CP结算配置', key: '/platform/finance/cp-settlement-config' },
         ]
       },
-      { label: '拉卡拉配置', key: '/platform/finance/lakala-config' },
+      { label: '拉卡拉支付参数', key: '/platform/finance/lakala-config' },
+      { label: '分账主体开通', key: '/platform/finance/lakala-platform-split' },
+      { label: '接收方与分账关系', key: '/platform/finance/lakala-merchant-split' },
     ],
   },
   {
