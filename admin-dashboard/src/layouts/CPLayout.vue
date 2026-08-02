@@ -220,7 +220,7 @@ const breadcrumbs = computed(() => {
 })
 
 const userMenuOptions = [
-  { label: '供应商资料', key: 'profile' },
+      { label: '供应商信息', key: 'profile' },
   { label: '安全设置', key: 'security' },
   { label: '消息通知', key: 'message' },
   { type: 'divider', key: 'd1' },

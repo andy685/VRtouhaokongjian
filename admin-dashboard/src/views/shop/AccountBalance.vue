@@ -4,6 +4,13 @@
       <h2 class="page-title">账户</h2>
     </div>
 
+    <n-alert type="info" :bordered="false" style="margin-bottom: 16px;">
+      结算账户资料已统一到拉卡拉分账通流程，请在“结算账户”中查看资料状态、附件和待平台处理进度。
+      <n-button text type="primary" size="small" style="margin-left: 8px;" @click="activeTab = 'bank'">
+        去结算账户
+      </n-button>
+    </n-alert>
+
     <n-tabs v-model:value="activeTab" type="line" class="account-tabs">
       <!-- 运营账户暂不启用（与短信管理关联） -->
       <!-- <n-tab-pane name="operating" tab="运营账户">
@@ -79,29 +86,82 @@
         </div>
       </n-tab-pane>
 
-      <n-tab-pane name="bank" tab="提现账户">
+      <n-tab-pane name="bank" tab="结算账户">
         <div class="bank-card">
-          <!-- 冷却期提示 -->
+          <n-alert type="info" :bordered="false" style="margin-bottom: 20px;">
+            <template #header>分账通结算账户</template>
+            这里用于补充拉卡拉分账接收方资料。提交后由平台统一提交拉卡拉审核，审核中和已生效资料不能自行直接修改。
+            <n-space size="small" style="margin-top: 12px;">
+              <n-button size="small" secondary type="warning" @click="resetFirstSettlementSubmissionTest">测试首次提交</n-button>
+              <n-button size="small" quaternary @click="restoreSettlementDemo">恢复已生效演示</n-button>
+            </n-space>
+          </n-alert>
+
+          <div class="settlement-summary">
+            <div class="summary-item">
+              <span class="summary-label">资料状态</span>
+              <n-tag :type="settlementProfileStatusType" size="small">{{ settlementProfileStatus }}</n-tag>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">账户类型</span>
+              <strong>{{ getAccountKindLabel(bankInfo?.accountKind || bankForm.accountKind) }}</strong>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">平台处理</span>
+              <strong>{{ pendingChange ? '待平台提交拉卡拉审核' : '无需处理' }}</strong>
+            </div>
+          </div>
+
+          <!-- 待平台处理提示 -->
           <div v-if="pendingChange" class="cooling-alert" style="margin-bottom: 20px; padding: 16px; background: #fff7e6; border: 1px solid #ffd591; border-radius: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h4 style="margin: 0; color: #d46b08;">⏰ 提现账户修改冷却期中</h4>
+              <h4 style="margin: 0; color: #d46b08;">结算账户资料待平台处理</h4>
               <n-button type="warning" size="small" @click="handleRevoke" :loading="revoking">
-                撤销修改
+                撤销申请
               </n-button>
             </div>
             <div style="font-size: 14px; color: #666;">
               <p style="margin: 6px 0;">新账户：{{ pendingChange.bankNameText }} - {{ formatCardNo(pendingChange.cardNo) }}</p>
-              <p style="margin: 6px 0;">预计生效时间：{{ pendingChange.effectiveTime }}</p>
-              <p style="margin: 6px 0;">冷却期剩余：{{ formatRemainingTime(pendingChange.remainingSeconds) }}</p>
+              <p style="margin: 6px 0;">提交时间：{{ pendingChange.effectiveTime }}</p>
+              <p style="margin: 6px 0;">平台确认后会提交拉卡拉审核，审核通过后才会生效。</p>
             </div>
           </div>
 
+          <n-descriptions v-if="pendingChange" label-placement="left" :column="1" bordered style="margin-bottom: 20px;">
+            <n-descriptions-item label="提交状态">
+              <n-tag type="warning" size="small">待平台处理</n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item label="账户类型">{{ getAccountKindLabel(pendingChange.accountKind) }}</n-descriptions-item>
+            <n-descriptions-item label="开户银行">{{ pendingChange.bankNameText }}</n-descriptions-item>
+            <n-descriptions-item label="银行卡号">{{ formatCardNo(pendingChange.cardNo) }}</n-descriptions-item>
+            <n-descriptions-item label="开户人">{{ pendingChange.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="身份证号">{{ formatIDCard(pendingChange.idCard) }}</n-descriptions-item>
+            <n-descriptions-item v-if="pendingChange.accountKind === 'public'" label="营业执照号">{{ pendingChange.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="pendingChange.accountKind === 'public'" label="营业执照名称">{{ pendingChange.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="pendingChange.accountKind === 'public'" label="法人姓名">{{ pendingChange.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="pendingChange.accountKind === 'public'" label="法人证件号">{{ formatIDCard(pendingChange.legalPersonCertificateNo || '') }}</n-descriptions-item>
+            <n-descriptions-item label="附件资料">
+              <n-space>
+                <n-tag v-for="item in getAttachmentDisplayList(pendingChange)" :key="item" size="small">{{ item }}</n-tag>
+              </n-space>
+            </n-descriptions-item>
+          </n-descriptions>
+
           <div class="bank-header">
-            <h4>提现账户信息</h4>
-            <n-button v-if="!isEditingBank && !pendingChange" text type="primary" @click="startEditBank">编辑</n-button>
+            <h4>结算账户信息</h4>
+            <n-button v-if="!isEditingBank && !pendingChange && canEditSettlementAccount" text type="primary" @click="startEditBank">完善资料</n-button>
           </div>
           
           <n-form v-if="isEditingBank" label-placement="left" label-width="100">
+            <n-alert type="warning" :bordered="false" style="margin-bottom: 16px;">
+              提交后不会直接覆盖当前生效账户，平台确认并通过拉卡拉审核后才会生效。
+            </n-alert>
+            <n-form-item label="账户类型" required>
+              <n-radio-group v-model:value="bankForm.accountKind" @update:value="refreshReceiverAttachmentStatus">
+                <n-radio value="public">对公账户</n-radio>
+                <n-radio value="private">对私账户</n-radio>
+              </n-radio-group>
+            </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="bankForm.bankName" :options="bankOptions" placeholder="请选择开户银行" />
             </n-form-item>
@@ -114,25 +174,79 @@
             <n-form-item label="身份证号">
               <n-input v-model:value="bankForm.idCard" placeholder="请输入身份证号" maxlength="18" />
             </n-form-item>
+            <template v-if="bankForm.accountKind === 'public'">
+              <n-form-item label="营业执照号">
+                <n-input v-model:value="bankForm.licenseNo" placeholder="请输入营业执照号码" />
+              </n-form-item>
+              <n-form-item label="营业执照名称">
+                <n-input v-model:value="bankForm.licenseName" placeholder="请输入营业执照名称" />
+              </n-form-item>
+              <n-form-item label="法人姓名">
+                <n-input v-model:value="bankForm.legalPersonName" placeholder="请输入法人姓名" />
+              </n-form-item>
+              <n-form-item label="法人证件号">
+                <n-input v-model:value="bankForm.legalPersonCertificateNo" placeholder="请输入法人身份证号" maxlength="18" />
+              </n-form-item>
+            </template>
+            <n-form-item label="附件状态">
+              <n-tag :type="bankForm.attachmentsReady ? 'success' : 'warning'" size="small">
+                {{ bankForm.attachmentsReady ? '已收齐' : '待补充' }}
+              </n-tag>
+            </n-form-item>
+            <n-form-item label="分项附件">
+              <div class="receiver-attachment-list">
+                <div v-for="item in getRequiredAttachmentNames(bankForm.accountKind)" :key="item" class="receiver-attachment-row">
+                  <span>{{ item }}</span>
+                  <n-upload
+                    :file-list="getReceiverAttachmentFiles(item)"
+                    :max="1"
+                    :default-upload="false"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    @update:file-list="(files) => handleReceiverAttachmentFiles(item, files)"
+                  >
+                    <n-button size="small">上传</n-button>
+                  </n-upload>
+                </div>
+              </div>
+              <div class="upload-hint">每一项资料单独上传，全部必传项上传后才会标记为已收齐。</div>
+            </n-form-item>
+            <n-form-item label="资料确认">
+              <n-radio-group v-model:value="bankForm.profileConfirmed">
+                <n-radio :value="true">已确认，提交后不可自行修改</n-radio>
+                <n-radio :value="false">暂不提交</n-radio>
+              </n-radio-group>
+            </n-form-item>
             <n-form-item>
               <n-space>
-                <n-button type="primary" @click="saveBankInfo">保存</n-button>
+                <n-button type="primary" @click="saveBankInfo">提交资料</n-button>
                 <n-button @click="cancelEditBank">取消</n-button>
               </n-space>
             </n-form-item>
           </n-form>
           
           <n-descriptions v-else-if="bankInfo && !pendingChange" label-placement="left" :column="1" bordered>
+            <n-descriptions-item label="资料来源">商家经营信息 + 结算账户</n-descriptions-item>
+            <n-descriptions-item label="账户类型">{{ getAccountKindLabel(bankInfo.accountKind) }}</n-descriptions-item>
             <n-descriptions-item label="开户银行">{{ bankInfo.bankNameText }}</n-descriptions-item>
             <n-descriptions-item label="银行卡号">{{ formatCardNo(bankInfo.cardNo) }}</n-descriptions-item>
             <n-descriptions-item label="开户人">{{ bankInfo.accountName }}</n-descriptions-item>
             <n-descriptions-item label="身份证号">{{ formatIDCard(bankInfo.idCard) }}</n-descriptions-item>
+            <n-descriptions-item v-if="bankInfo.accountKind === 'public'" label="营业执照号">{{ bankInfo.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="bankInfo.accountKind === 'public'" label="营业执照名称">{{ bankInfo.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="bankInfo.accountKind === 'public'" label="法人姓名">{{ bankInfo.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="bankInfo.accountKind === 'public'" label="法人证件号">{{ formatIDCard(bankInfo.legalPersonCertificateNo || '') }}</n-descriptions-item>
+            <n-descriptions-item label="附件资料">
+              <n-space>
+                <n-tag v-for="item in getAttachmentDisplayList(bankInfo)" :key="item" size="small">{{ item }}</n-tag>
+              </n-space>
+            </n-descriptions-item>
+            <n-descriptions-item label="资料确认">{{ bankInfo.profileConfirmed ? '已确认，提交后不可自行修改' : '未确认' }}</n-descriptions-item>
             <n-descriptions-item label="状态">
-              <n-tag type="success" size="small">已绑定</n-tag>
+              <n-tag type="success" size="small">已生效</n-tag>
             </n-descriptions-item>
           </n-descriptions>
           
-          <n-empty v-else-if="!bankInfo && !pendingChange" description="未绑定提现账户" />
+          <n-empty v-else-if="!bankInfo && !pendingChange" description="未完善结算账户" />
         </div>
 
         <!-- 操作日志 -->
@@ -242,10 +356,10 @@
       </template>
     </n-modal>
 
-    <!-- 冷却期提示弹窗 -->
+    <!-- 提交提示弹窗 -->
     <n-modal
       v-model:show="coolingModalVisible"
-      title="提现账户修改已提交"
+      title="结算账户资料已提交"
       preset="success"
       :closable="false"
       :mask-closable="false"
@@ -254,24 +368,24 @@
       <div class="cooling-content">
         <n-result
           status="success"
-          title="修改申请已提交"
-          description="您的提现账户修改申请已进入24小时冷却期"
+          title="资料已提交"
+          description="平台确认后会统一提交拉卡拉审核，审核通过后才会生效"
         >
           <template #footer>
             <div class="cooling-info">
               <n-alert type="warning" style="margin-bottom: 16px;">
                 <template #header>
-                  <span>⏰ 冷却期说明</span>
+                  <span>处理说明</span>
                 </template>
                 <ul style="margin: 8px 0; padding-left: 20px;">
-                  <li>冷却期时长：24小时</li>
-                  <li>冷却期内可撤销修改</li>
-                  <li>冷却期结束后，新账户自动生效</li>
-                  <li>修改期间会发送邮件和短信通知</li>
+                  <li>平台会核对资料完整性</li>
+                  <li>需要变更已生效资料时，由平台提交拉卡拉接收方信息变更</li>
+                  <li>拉卡拉审核通过前，原结算账户保持不变</li>
+                  <li>如资料有误，可在平台处理前撤销后重新提交</li>
                 </ul>
               </n-alert>
               <div class="cooling-timer">
-                <n-statistic label="距离生效还剩" :value="coolingTimeRemaining" />
+                <n-statistic label="当前状态" value="待平台处理" />
               </div>
             </div>
           </template>
@@ -280,7 +394,7 @@
       <template #footer>
         <div class="modal-footer">
           <n-button @click="revokeChange" :loading="revoking">
-            撤销修改
+            撤销申请
           </n-button>
           <n-button type="primary" @click="coolingModalVisible = false">
             我知道了
@@ -297,9 +411,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   NTabs, NTabPane, NButton, NTag, NDataTable, 
-  NModal, NSelect, NInput, NForm, NFormItem, NEmpty, NDescriptions, 
+  NModal, NSelect, NInput, NForm, NFormItem, NEmpty, NDescriptions, NSpace,
   NDescriptionsItem, NInputGroup, NAlert, NResult, NStatistic, NCountdown,
-  NTimeline, NTimelineItem, NCollapse, NCollapseItem,
+  NTimeline, NTimelineItem, NCollapse, NCollapseItem, NRadioGroup, NRadio, NUpload,
   useMessage, type FormInst
 } from 'naive-ui'
 
@@ -307,17 +421,57 @@ const message = useMessage()
 const router = useRouter()
 const activeTab = ref('basic')
 
-// 提现账户相关
-const bankInfo = ref<{ bankName: string; bankNameText: string; cardNo: string; accountName: string; idCard: string } | null>({
+// 结算账户相关
+type SettlementAccountKind = 'public' | 'private'
+interface ShopSettlementAccount {
+  accountKind: SettlementAccountKind
+  bankName: string
+  bankNameText: string
+  cardNo: string
+  accountName: string
+  idCard: string
+  licenseNo?: string
+  licenseName?: string
+  legalPersonName?: string
+  legalPersonCertificateNo?: string
+  attachmentsReady?: boolean
+  attachmentNames?: string[]
+  profileConfirmed?: boolean
+}
+
+const bankInfo = ref<ShopSettlementAccount | null>({
+  accountKind: 'public',
   bankName: 'ICBC',
   bankNameText: '中国工商银行',
   cardNo: '6222021234567890123',
-  accountName: '张三',
-  idCard: '440301199001011234'
+  accountName: '恒然集团有限公司',
+  idCard: '91440300MA5HR0001X',
+  licenseNo: '91440300MA5HR0001X',
+  licenseName: '恒然集团有限公司',
+  legalPersonName: '陈总',
+  legalPersonCertificateNo: '440301198001011234',
+  attachmentsReady: true,
+  attachmentNames: ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照'],
+  profileConfirmed: true,
 })
 
 const isEditingBank = ref(false)
-const bankForm = ref({ bankName: '', cardNo: '', accountName: '', idCard: '' })
+const bankForm = ref<ShopSettlementAccount>({
+  accountKind: 'public',
+  bankName: '',
+  bankNameText: '',
+  cardNo: '',
+  accountName: '',
+  idCard: '',
+  licenseNo: '',
+  licenseName: '',
+  legalPersonName: '',
+  legalPersonCertificateNo: '',
+  attachmentsReady: false,
+  attachmentNames: [],
+  profileConfirmed: false,
+})
+const receiverAttachmentFiles = ref<Record<string, any[]>>({})
 
 // 验证相关
 const verifyModalVisible = ref(false)
@@ -326,20 +480,38 @@ const cooldown = ref(0)
 const verifying = ref(false)
 const maskedPhone = ref('138****8000') // 模拟手机号
 
-// 冷却期相关
+// 待平台处理的结算账户变更
 const coolingModalVisible = ref(false)
 const pendingChange = ref<{
+  accountKind: SettlementAccountKind;
   bankName: string;
   bankNameText: string;
   cardNo: string;
   accountName: string;
   idCard: string;
+  licenseNo?: string;
+  licenseName?: string;
+  legalPersonName?: string;
+  legalPersonCertificateNo?: string;
+  attachmentsReady?: boolean;
+  attachmentNames?: string[];
+  profileConfirmed?: boolean;
   effectiveTime: string;
   remainingSeconds: number;
 } | null>(null)
 const coolingTimeRemaining = ref('')
 const revoking = ref(false)
 let coolingTimer: number | null = null
+
+const settlementProfileStatus = computed(() => {
+  if (pendingChange.value) return '待平台处理'
+  return bankInfo.value ? '已生效' : '待完善资料'
+})
+const settlementProfileStatusType = computed(() => {
+  if (pendingChange.value) return 'warning'
+  return bankInfo.value ? 'success' : 'default'
+})
+const canEditSettlementAccount = computed(() => !bankInfo.value || !bankInfo.value.profileConfirmed || !bankInfo.value.attachmentsReady)
 
 // 操作日志
 const operationLogs = ref<Array<{
@@ -369,11 +541,68 @@ function formatIDCard(idCard: string) {
   return idCard.replace(/(\d{4})\d+(\d{4})/, '$1********$2')
 }
 
+function getAccountKindLabel(accountKind?: SettlementAccountKind) {
+  return accountKind === 'public' ? '对公账户' : '对私账户'
+}
+
+function getRequiredAttachmentNames(accountKind: SettlementAccountKind = 'private') {
+  return accountKind === 'public'
+    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+    : ['身份证正面', '身份证反面', '银行卡']
+}
+
+function getAttachmentDisplayList(account: ShopSettlementAccount) {
+  if (account.attachmentNames?.length) return account.attachmentNames
+  return account.attachmentsReady ? getRequiredAttachmentNames(account.accountKind) : ['待补充']
+}
+
+function getReceiverAttachmentFiles(type: string) {
+  return receiverAttachmentFiles.value[type] || []
+}
+
+function handleReceiverAttachmentFiles(type: string, files: any[]) {
+  receiverAttachmentFiles.value = { ...receiverAttachmentFiles.value, [type]: files }
+  refreshReceiverAttachmentStatus()
+}
+
+function refreshReceiverAttachmentStatus() {
+  const required = getRequiredAttachmentNames(bankForm.value.accountKind)
+  bankForm.value.attachmentsReady = required.every((type) => Boolean(receiverAttachmentFiles.value[type]?.length))
+  bankForm.value.attachmentNames = required.filter((type) => Boolean(receiverAttachmentFiles.value[type]?.length))
+}
+
+function seedReceiverAttachmentFiles(account: ShopSettlementAccount | null) {
+  receiverAttachmentFiles.value = {}
+  if (!account?.attachmentsReady) return
+  receiverAttachmentFiles.value = Object.fromEntries(
+    getRequiredAttachmentNames(account.accountKind).map((type) => [
+      type,
+      [{ id: type, name: `${type}.${type === '营业执照' ? 'pdf' : 'jpg'}`, status: 'finished' }],
+    ])
+  )
+}
+
 function startEditBank() {
   if (bankInfo.value) {
-    bankForm.value = { ...bankInfo.value, bankNameText: '' }
+    bankForm.value = { ...bankInfo.value }
+    seedReceiverAttachmentFiles(bankInfo.value)
   } else {
-    bankForm.value = { bankName: '', cardNo: '', accountName: '', idCard: '' }
+    bankForm.value = {
+      accountKind: 'public',
+      bankName: '',
+      bankNameText: '',
+      cardNo: '',
+      accountName: '',
+      idCard: '',
+      licenseNo: '',
+      licenseName: '',
+      legalPersonName: '',
+      legalPersonCertificateNo: '',
+      attachmentsReady: false,
+      attachmentNames: [],
+      profileConfirmed: false,
+    }
+    receiverAttachmentFiles.value = {}
   }
   isEditingBank.value = true
 }
@@ -382,6 +611,18 @@ function saveBankInfo() {
   // 先验证表单
   if (!bankForm.value.bankName || !bankForm.value.cardNo || !bankForm.value.accountName || !bankForm.value.idCard) {
     message.warning('请填写完整信息')
+    return
+  }
+  if (bankForm.value.accountKind === 'public' && (!bankForm.value.licenseNo || !bankForm.value.licenseName || !bankForm.value.legalPersonName || !bankForm.value.legalPersonCertificateNo)) {
+    message.warning('请填写完整的营业执照和法人信息')
+    return
+  }
+  if (!bankForm.value.attachmentsReady) {
+    message.warning(`请上传必传附件：${getRequiredAttachmentNames(bankForm.value.accountKind).join('、')}`)
+    return
+  }
+  if (!bankForm.value.profileConfirmed) {
+    message.warning('请确认资料提交后不可自行修改')
     return
   }
   
@@ -420,15 +661,13 @@ async function confirmVerifyCode() {
       verifyModalVisible.value = false
       message.success('验证成功')
       
-      // 创建待生效的修改（冷却期）- 改为10分钟方便测试
-      const effectiveTime = new Date(Date.now() + 10 * 60 * 1000) // 10分钟后生效
-      const remainingSeconds = 10 * 60 // 10分钟 = 600秒
+      const submittedAt = new Date()
       
       pendingChange.value = {
         ...bankForm.value,
         bankNameText: bankOptions.find(b => b.value === bankForm.value.bankName)?.label || '',
-        effectiveTime: effectiveTime.toLocaleString('zh-CN'),
-        remainingSeconds
+        effectiveTime: submittedAt.toLocaleString('zh-CN'),
+        remainingSeconds: 0,
       }
       
       isEditingBank.value = false
@@ -436,15 +675,11 @@ async function confirmVerifyCode() {
       // 保存到localStorage（模拟后端存储）
       localStorage.setItem('pendingBankChange', JSON.stringify(pendingChange.value))
       
-      // 添加操作日志
-      addOperationLog('warning', '提现账户修改申请已提交', `新账户：${pendingChange.value.bankNameText} - ${formatCardNo(bankForm.value.cardNo)}，进入10分钟冷却期`)
+      addOperationLog('warning', '结算账户资料已提交', `提交账户：${pendingChange.value.bankNameText} - ${formatCardNo(bankForm.value.cardNo)}，等待平台提交拉卡拉审核`)
       
-      // 发送通知（模拟）
-      message.info('已发送邮件和短信通知')
-      message.success('修改已进入冷却期，10分钟后生效')
-      
-      // 开始倒计时
-      startCoolingTimer()
+      message.info('已通知平台处理')
+      message.success('结算账户资料已提交，等待平台处理')
+      coolingModalVisible.value = true
     } else {
       message.error('验证码错误，请输入123456')
     }
@@ -468,27 +703,9 @@ function startCoolingTimer() {
 }
 
 function handleCoolingFinish() {
-  // 冷却期结束，应用修改
+  // 分账通场景不在用户侧自动生效；真实生效由平台提交拉卡拉审核通过后回写。
   if (pendingChange.value) {
-    bankInfo.value = {
-      bankName: pendingChange.value.bankName,
-      bankNameText: pendingChange.value.bankNameText,
-      cardNo: pendingChange.value.cardNo,
-      accountName: pendingChange.value.accountName,
-      idCard: pendingChange.value.idCard
-    }
-    
-    addOperationLog('success', '提现账户修改已生效', `新账户：${pendingChange.value.bankNameText} - ${formatCardNo(pendingChange.value.cardNo)}`)
-    
-    pendingChange.value = null
-    localStorage.removeItem('pendingBankChange')
-    
-    message.success('提现账户修改已生效')
-    
-    if (coolingTimer) {
-      clearInterval(coolingTimer)
-      coolingTimer = null
-    }
+    message.info('结算账户资料需由平台提交拉卡拉审核后生效')
   }
 }
 
@@ -500,7 +717,7 @@ async function revokeChange() {
     revoking.value = false
     
     if (pendingChange.value) {
-      addOperationLog('info', '提现账户修改已撤销', '用户主动撤销修改申请')
+      addOperationLog('info', '结算账户资料提交已撤销', '用户主动撤销待平台处理的资料')
     }
     
     pendingChange.value = null
@@ -513,12 +730,50 @@ async function revokeChange() {
       coolingTimer = null
     }
     
-    message.success('修改已撤销')
+    message.success('申请已撤销')
   }, 1000)
 }
 
 function cancelEditBank() {
   isEditingBank.value = false
+}
+
+function resetFirstSettlementSubmissionTest() {
+  activeTab.value = 'bank'
+  bankInfo.value = null
+  pendingChange.value = null
+  receiverAttachmentFiles.value = {}
+  isEditingBank.value = false
+  localStorage.removeItem('pendingBankChange')
+  operationLogs.value = []
+  addOperationLog('info', '进入首次提交测试', '当前演示账号已切换为未完善结算账户，可点击“完善资料”测试首次提交')
+  message.success('已切换到首次提交测试，请点击“完善资料”')
+}
+
+function restoreSettlementDemo() {
+  activeTab.value = 'bank'
+  pendingChange.value = null
+  receiverAttachmentFiles.value = {}
+  bankInfo.value = {
+    accountKind: 'public',
+    bankName: 'ICBC',
+    bankNameText: '中国工商银行',
+    cardNo: '6222021234567890123',
+    accountName: '恒然集团有限公司',
+    idCard: '91440300MA5HR0001X',
+    licenseNo: '91440300MA5HR0001X',
+    licenseName: '恒然集团有限公司',
+    legalPersonName: '陈总',
+    legalPersonCertificateNo: '440301198001011234',
+    attachmentsReady: true,
+    attachmentNames: ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照'],
+    profileConfirmed: true,
+  }
+  isEditingBank.value = false
+  localStorage.removeItem('pendingBankChange')
+  operationLogs.value = []
+  addOperationLog('success', '结算账户已生效', `${bankInfo.value.bankNameText} - ${formatCardNo(bankInfo.value.cardNo)}`)
+  message.success('已恢复已生效演示数据')
 }
 
 function formatRemainingTime(seconds: number): string {
@@ -560,7 +815,6 @@ function loadPendingChange() {
   if (saved) {
     try {
       pendingChange.value = JSON.parse(saved)
-      startCoolingTimer()
     } catch (e) {
       localStorage.removeItem('pendingBankChange')
     }
@@ -579,7 +833,7 @@ function loadOperationLogs() {
   
   // 添加初始日志（如果为空）
   if (operationLogs.value.length === 0 && bankInfo.value) {
-    addOperationLog('success', '提现账户已绑定', `${bankInfo.value.bankNameText} - ${formatCardNo(bankInfo.value.cardNo)}`)
+    addOperationLog('success', '结算账户已生效', `${bankInfo.value.bankNameText} - ${formatCardNo(bankInfo.value.cardNo)}`)
   }
 }
 
@@ -881,12 +1135,56 @@ function handleFromChange(value: string) {
 
 
 
-/* 提现账户 */
+/* 结算账户 */
 .bank-card {
   background: white;
   border-radius: 12px;
   padding: 24px;
   max-width: 600px;
+}
+
+.settlement-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.summary-label {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.receiver-attachment-list {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.receiver-attachment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.upload-hint {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 12px;
 }
 
 .bank-header {
@@ -903,7 +1201,7 @@ function handleFromChange(value: string) {
   color: var(--text-primary);
 }
 
-/* 冷却期相关样式 */
+/* 待平台处理提示样式 */
 .cooling-content {
   text-align: center;
 }

@@ -14,7 +14,7 @@
     </div>
 
     <n-alert type="info" :bordered="false" class="relation-prerequisite">
-      分账比例入口：代理商分润比例在“代理商管理”，CP 手续费比例在“游戏供应商管理”。本页只维护拉卡拉分账主体、接收方和关系；拉卡拉通道最低比例仅在多入账主体模式下开通分账商户时使用。
+      基础数据入口：商家手续费率在“商家管理”，代理商分润比例和手续费率在“代理商管理”，CP 手续费比例在“游戏供应商管理”。本页只维护拉卡拉分账主体、接收方和关系；拉卡拉通道最低比例仅在多入账主体模式下开通分账商户时使用。
     </n-alert>
 
     <template v-if="managementScope === 'merchant'">
@@ -39,6 +39,31 @@
       </button>
       </div>
 
+      <div class="test-guide-card">
+        <div class="test-guide-card__head">
+          <strong>测试指引</strong>
+          <span>用于演示拉卡拉回执前后的状态流转</span>
+        </div>
+        <div class="test-guide-grid">
+          <div class="test-guide-item">
+            <b>1. 用户侧补资料</b>
+            <span>到商家/代理商/CP的结算账户页编辑资料，上传分项附件并提交，状态应变为“待平台处理”。</span>
+          </div>
+          <div class="test-guide-item">
+            <b>2. 新建接收方</b>
+            <span>点击“新建接收方”，选择主体后资料和附件应自动带入；提交后状态为“审核中”。</span>
+          </div>
+          <div class="test-guide-item">
+            <b>3. 信息变更回执</b>
+            <span>对已生效接收方点击“信息变更”，提交后表格会出现“模拟通过/模拟驳回”。通过后新资料生效，驳回后旧资料保持不变。</span>
+          </div>
+          <div class="test-guide-item">
+            <b>4. 关系绑定/解绑</b>
+            <span>接收方生效且平台主体通过后，可绑定分账关系；解绑需要填写说明和附件，提交后进入“解绑中”。</span>
+          </div>
+        </div>
+      </div>
+
       <n-tabs v-model:value="activeTab" type="line" animated>
       <n-tab-pane name="receivers" tab="分账接收方">
         <div class="table-toolbar">
@@ -61,7 +86,7 @@
           :columns="receiverColumns"
           :data="filteredReceivers"
           :pagination="{ pageSize: 8 }"
-          :scroll-x="1260"
+          :scroll-x="1480"
         />
       </n-tab-pane>
 
@@ -94,6 +119,31 @@
     </template>
 
     <template v-else>
+      <div class="test-guide-card">
+        <div class="test-guide-card__head">
+          <strong>测试指引</strong>
+          <span>用于验证平台分账主体开通和变更回执</span>
+        </div>
+        <div class="test-guide-grid">
+          <div class="test-guide-item">
+            <b>1. 提交平台主体申请</b>
+            <span>点击右上角“提交平台申请”，填写资料并提交，状态应从“草稿”进入“审核中”。</span>
+          </div>
+          <div class="test-guide-item">
+            <b>2. 模拟审核通过</b>
+            <span>点击“模拟审核通过”，页面应回写 platformId，状态变为“审核通过”。</span>
+          </div>
+          <div class="test-guide-item">
+            <b>3. 主体信息变更</b>
+            <span>审核通过后点击“主体信息变更”，提交变更申请，再点“模拟审核通过”验证变更回执。</span>
+          </div>
+          <div class="test-guide-item">
+            <b>4. 重置测试</b>
+            <span>点击“重置测试”可清空平台主体演示状态，重新跑完整流程。</span>
+          </div>
+        </div>
+      </div>
+
       <div class="single-platform-card platform-application-card">
         <div class="single-platform-card__head">
           <div>
@@ -331,7 +381,7 @@
                 clearable
                 placeholder="变更比例时需上传委托书"
               />
-              <span class="field-hint">只在需要变更拉卡拉通道约束时填写；代理商/CP分润比例仍以业务资料中的规则为准。</span>
+              <span class="field-hint">只在需要变更拉卡拉通道约束时填写；代理商分润比例、代理商手续费率和 CP 手续费比例都属于基础数据。</span>
             </n-form-item>
             <n-form-item label="分账范围（splitRange）">
               <n-select v-model:value="merchantChangeForm.splitRange" clearable :options="splitRangeOptions" />
@@ -480,12 +530,38 @@
             </n-tag>
           </div>
           <n-descriptions :column="3" bordered size="small">
+            <n-descriptions-item label="资料状态">
+              <n-tag
+                :type="getReceiverProfileStatusTagType(getPlatformOwnerReceiverStatus(selectedPlatformOwner))"
+                size="small"
+                :bordered="false"
+              >
+                {{ getReceiverProfileStatusLabel(getPlatformOwnerReceiverStatus(selectedPlatformOwner)) }}
+              </n-tag>
+            </n-descriptions-item>
             <n-descriptions-item label="联系人">{{ selectedPlatformOwner.contactMobile }}</n-descriptions-item>
             <n-descriptions-item label="业务规则">{{ selectedPlatformOwner.businessRule }}</n-descriptions-item>
             <n-descriptions-item label="结算账户">
               {{ selectedPlatformOwner.acctNo ? `尾号 ${selectedPlatformOwner.acctNo.slice(-4)}` : '未维护' }}
             </n-descriptions-item>
+            <n-descriptions-item label="附件资料">
+              {{ selectedPlatformOwner.attachmentsReady ? '已收齐' : '待补充' }}
+            </n-descriptions-item>
+            <n-descriptions-item label="提交确认">
+              {{ selectedPlatformOwner.profileConfirmed ? '已确认，结算账户不可自行修改' : '未确认' }}
+            </n-descriptions-item>
+            <n-descriptions-item label="资料入口">
+              {{ receiverTypeLabel[selectedPlatformOwner.type] }}管理
+            </n-descriptions-item>
           </n-descriptions>
+          <n-alert
+            v-if="getPlatformOwnerReceiverStatus(selectedPlatformOwner) === 'incomplete'"
+            type="warning"
+            :bordered="false"
+            class="sync-result"
+          >
+            该主体结算账户资料未完善或未确认“提交后不可修改”，请先到{{ receiverTypeLabel[selectedPlatformOwner.type] }}管理补齐并确认后再提交拉卡拉接收方申请。
+          </n-alert>
           <n-alert v-if="selectedExistingReceiver" type="success" :bordered="false" class="sync-result">
             已同步接收方编号 {{ selectedExistingReceiver.receiverNo }}，无需重复创建。
           </n-alert>
@@ -494,46 +570,51 @@
         <div class="form-section">
           <div class="section-heading">
             <h3>拉卡拉申请信息</h3>
-            <span>version、orderNo、reqId、reqTime 由系统自动生成</span>
+            <span>接口版本、申请流水号、请求编号、请求时间由系统自动生成</span>
           </div>
           <div class="form-grid">
-          <n-form-item label="机构代码（orgCode）" required>
+          <n-form-item label="机构代码" required>
             <n-input v-model:value="receiverForm.orgCode" maxlength="32" placeholder="接收方所属机构代码" />
           </n-form-item>
-          <n-form-item label="接收方名称（receiverName）" required>
+          <n-form-item label="接收方名称" required>
             <n-input v-model:value="receiverForm.receiverName" maxlength="64" readonly />
           </n-form-item>
-          <n-form-item label="联系手机号（contactMobile）" required>
+          <n-form-item label="联系手机号" required>
             <n-input v-model:value="receiverForm.contactMobile" maxlength="16" readonly placeholder="请先在主体资料中维护" />
           </n-form-item>
-          <n-form-item label="账户类型（acctTypeCode）" required>
+          <n-form-item label="账户类型" required>
             <n-select v-model:value="receiverForm.acctTypeCode" :options="accountTypeOptions" disabled />
           </n-form-item>
-          <n-form-item label="收款账户名称（acctName）" required>
+          <n-form-item label="收款账户名称" required>
             <n-input v-model:value="receiverForm.acctName" maxlength="32" readonly placeholder="请先在结算账户中维护" />
           </n-form-item>
-          <n-form-item label="收款账户卡号（acctNo）" required>
+          <n-form-item label="收款账户卡号" required>
             <n-input v-model:value="receiverForm.acctNo" maxlength="32" readonly placeholder="请先在结算账户中维护" />
           </n-form-item>
-          <n-form-item label="账户证件类型（acctCertificateType）" required>
+          <n-form-item label="账户证件类型" required>
             <n-select v-model:value="receiverForm.acctCertificateType" :options="certificateTypeOptions" disabled />
           </n-form-item>
-          <n-form-item label="账户证件号（acctCertificateNo）" required>
+          <n-form-item label="账户证件号" required>
             <n-input v-model:value="receiverForm.acctCertificateNo" maxlength="32" readonly placeholder="请先在主体资料中维护" />
           </n-form-item>
-          <n-form-item label="开户行号（acctOpenBankCode）" required>
-            <n-input v-model:value="receiverForm.acctOpenBankCode" maxlength="32" placeholder="按卡 BIN 查询结果填写" />
-          </n-form-item>
-          <n-form-item label="开户行名称（acctOpenBankName）" required>
+          <n-form-item label="开户行名称" required>
             <n-input v-model:value="receiverForm.acctOpenBankName" maxlength="64" />
           </n-form-item>
-          <n-form-item label="清算行行号（acctClearBankCode）" required>
-            <n-input v-model:value="receiverForm.acctClearBankCode" maxlength="32" placeholder="按卡 BIN 查询结果填写" />
-          </n-form-item>
-          <n-form-item label="提款类型（settleType）">
+          <n-form-item label="提款类型">
             <n-select v-model:value="receiverForm.settleType" :options="settleTypeOptions" />
           </n-form-item>
           </div>
+          <n-alert
+            :type="receiverForm.acctOpenBankCode && receiverForm.acctClearBankCode ? 'success' : 'warning'"
+            :bordered="false"
+            class="bank-code-alert"
+          >
+            {{
+              receiverForm.acctOpenBankCode && receiverForm.acctClearBankCode
+                ? '系统已匹配开户行号和清算行行号，提交时会随接口报文一起上送。'
+                : '开户行号和清算行行号为拉卡拉必传字段，请先完善结算账户银行信息或接入银行卡信息查询自动生成。'
+            }}
+          </n-alert>
         </div>
 
         <div v-if="receiverForm.acctTypeCode === '57'" class="form-section conditional-section">
@@ -542,19 +623,19 @@
             <span>官方文档标注为对公账户条件必传</span>
           </div>
           <div class="form-grid">
-            <n-form-item label="营业执照号码（licenseNo）" required>
+            <n-form-item label="营业执照号码" required>
               <n-input v-model:value="receiverForm.licenseNo" maxlength="32" />
             </n-form-item>
-            <n-form-item label="营业执照名称（licenseName）" required>
+            <n-form-item label="营业执照名称" required>
               <n-input v-model:value="receiverForm.licenseName" maxlength="128" />
             </n-form-item>
-            <n-form-item label="法人姓名（legalPersonName）" required>
+            <n-form-item label="法人姓名" required>
               <n-input v-model:value="receiverForm.legalPersonName" maxlength="32" />
             </n-form-item>
-            <n-form-item label="法人证件类型（legalPersonCertificateType）" required>
+            <n-form-item label="法人证件类型" required>
               <n-select v-model:value="receiverForm.legalPersonCertificateType" :options="certificateTypeOptions" />
             </n-form-item>
-            <n-form-item label="法人证件号（legalPersonCertificateNo）" required>
+            <n-form-item label="法人证件号" required>
               <n-input v-model:value="receiverForm.legalPersonCertificateNo" maxlength="32" />
             </n-form-item>
           </div>
@@ -562,17 +643,37 @@
 
         <div class="form-section compact">
           <div class="section-heading">
-            <h3>附加资料（attachList）</h3>
-            <span>接口为可选；特殊项目按拉卡拉审核要求补充</span>
+            <div>
+              <h3>附加资料</h3>
+              <span>从主体结算资料自动带入；如需更换，请回到主体资料页变更</span>
+            </div>
+            <n-button
+              v-if="selectedPlatformOwner"
+              size="tiny"
+              secondary
+              type="primary"
+              @click="openOwnerProfilePage"
+            >
+              去修改资料
+            </n-button>
           </div>
-          <n-upload
-            v-model:file-list="receiverFiles"
-            multiple
-            :default-upload="false"
-            accept=".jpg,.jpeg,.png,.pdf"
-          >
-            <n-button>选择资料</n-button>
-          </n-upload>
+          <div class="attachment-checklist">
+            <div
+              v-for="item in receiverRequiredAttachments"
+              :key="item.value"
+              class="attachment-row"
+            >
+              <div class="attachment-row__meta">
+                <strong>{{ item.label }}</strong>
+                <span>
+                  {{ getReceiverAttachmentFiles(item.value).length ? '已从主体资料带入' : '主体资料缺失，请回原页面补齐' }}
+                </span>
+              </div>
+              <div class="attachment-readonly-file">
+                {{ getReceiverAttachmentName(item.value) || '未带入' }}
+              </div>
+            </div>
+          </div>
         </div>
       </n-form>
       <template #footer>
@@ -586,6 +687,116 @@
     </n-modal>
 
     <n-modal
+      v-model:show="showReceiverChangeModal"
+      preset="card"
+      title="分账接收方信息变更"
+      class="business-modal"
+      :bordered="false"
+    >
+      <n-alert type="info" :bordered="false" class="modal-alert">
+        这里对应拉卡拉“分账接收方信息变更”接口。变更资料从商家/代理商/CP 的结算账户自动带入，本弹窗不重新上传附件。
+      </n-alert>
+      <n-form label-placement="top">
+        <n-descriptions v-if="receiverChangeTarget" :column="3" bordered size="small" class="system-fields">
+          <n-descriptions-item label="version">1.0</n-descriptions-item>
+          <n-descriptions-item label="变更流水">{{ requestOrderNo }}</n-descriptions-item>
+          <n-descriptions-item label="接收方编号">{{ receiverChangeTarget.receiverNo }}</n-descriptions-item>
+        </n-descriptions>
+
+        <div v-if="receiverChangeTarget && receiverChangeOwner" class="source-summary">
+          <div class="source-summary__head">
+            <div>
+              <strong>{{ receiverChangeOwner.label }}</strong>
+              <span>资料来源：{{ receiverTypeLabel[receiverChangeOwner.type] }}管理 / 结算账户</span>
+            </div>
+            <n-space>
+              <n-button size="tiny" secondary type="primary" @click="openReceiverChangeOwnerProfilePage">
+                去修改资料
+              </n-button>
+              <n-tag
+                size="small"
+                :type="getReceiverProfileStatusTagType(getPlatformOwnerReceiverStatus(receiverChangeOwner))"
+                :bordered="false"
+              >
+                {{ getReceiverProfileStatusLabel(getPlatformOwnerReceiverStatus(receiverChangeOwner)) }}
+              </n-tag>
+            </n-space>
+          </div>
+          <n-descriptions :column="2" bordered size="small">
+            <n-descriptions-item label="当前生效账户">{{ receiverChangeTarget.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="当前开户银行">{{ receiverChangeTarget.bankName }}</n-descriptions-item>
+            <n-descriptions-item label="拟变更账户">{{ receiverChangeOwner.acctName || '源资料未维护' }}</n-descriptions-item>
+            <n-descriptions-item label="拟变更开户银行">{{ receiverChangeOwner.acctOpenBankName || '源资料未维护' }}</n-descriptions-item>
+            <n-descriptions-item label="账户类型">
+              {{ receiverChangeOwner.acctTypeCode === '57' ? '对公账户' : '对私账户' }}
+            </n-descriptions-item>
+            <n-descriptions-item label="账户尾号">
+              {{ receiverChangeOwner.acctNo ? receiverChangeOwner.acctNo.slice(-4) : '源资料未维护' }}
+            </n-descriptions-item>
+          </n-descriptions>
+        </div>
+
+        <div class="form-grid">
+          <n-form-item label="机构代码" required>
+            <n-input v-model:value="receiverChangeForm.orgCode" maxlength="32" readonly />
+          </n-form-item>
+          <n-form-item label="变更回调地址" required>
+            <n-input v-model:value="receiverChangeForm.retUrl" maxlength="128" />
+          </n-form-item>
+          <n-form-item label="变更原因" required class="grid-wide">
+            <n-input
+              v-model:value="receiverChangeForm.changeReason"
+              type="textarea"
+              maxlength="128"
+              placeholder="例如结算银行卡换绑、开户行信息更新、证照资料更新"
+            />
+          </n-form-item>
+        </div>
+
+        <div class="form-section compact">
+          <div class="section-heading">
+            <div>
+              <h3>变更附件</h3>
+              <span>从主体资料页带入，缺失时请返回源页面补齐</span>
+            </div>
+            <n-button
+              v-if="receiverChangeOwner"
+              size="tiny"
+              secondary
+              type="primary"
+              @click="openReceiverChangeOwnerProfilePage"
+            >
+              去修改资料
+            </n-button>
+          </div>
+          <div class="attachment-checklist">
+            <div
+              v-for="item in receiverChangeRequiredAttachments"
+              :key="item.value"
+              class="attachment-row"
+            >
+              <div class="attachment-row__meta">
+                <strong>{{ item.label }}</strong>
+                <span>
+                  {{ getReceiverChangeAttachmentName(item.value) ? '已从主体资料带入' : '主体资料缺失，请回原页面补齐' }}
+                </span>
+              </div>
+              <div class="attachment-readonly-file">
+                {{ getReceiverChangeAttachmentName(item.value) || '未带入' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </n-form>
+      <template #footer>
+        <div class="modal-footer">
+          <n-button @click="showReceiverChangeModal = false">取消</n-button>
+          <n-button type="primary" @click="submitReceiverChange">提交变更申请</n-button>
+        </div>
+      </template>
+    </n-modal>
+
+    <n-modal
       v-model:show="showRelationModal"
       preset="card"
       title="绑定分账关系"
@@ -593,17 +804,29 @@
       :bordered="false"
     >
       <n-alert type="info" :bordered="false" class="modal-alert">
-        字段已按官方“分账关系绑定申请”整理；合作协议附件和回调地址为必填。
+        当前业务按唯一平台分账主体绑定接收方，字段对应官方“平台分账关系绑定申请”。
       </n-alert>
       <n-form label-placement="top">
+        <div class="form-section">
+          <div class="section-heading">
+            <h3>系统自动生成</h3>
+            <span>接口版本、申请流水号、请求编号、请求时间由系统生成</span>
+          </div>
+          <n-descriptions :column="4" bordered size="small" class="system-fields">
+            <n-descriptions-item label="接口版本">1.0</n-descriptions-item>
+            <n-descriptions-item label="申请流水号">{{ requestOrderNo }}</n-descriptions-item>
+            <n-descriptions-item label="请求编号">{{ requestOrderNo }}</n-descriptions-item>
+            <n-descriptions-item label="请求时间">{{ requestTime }}</n-descriptions-item>
+          </n-descriptions>
+        </div>
         <div class="form-grid">
-          <n-form-item label="机构代码（orgCode）" required>
-            <n-input v-model:value="relationForm.orgCode" maxlength="32" placeholder="接收方所属机构代码" />
+          <n-form-item label="机构代码" required>
+            <n-input v-model:value="relationForm.orgCode" maxlength="32" placeholder="分账平台所属机构代码" />
           </n-form-item>
-          <n-form-item label="分账主体">
+          <n-form-item label="分账平台">
             <n-input :value="platformApplication.platformName" readonly />
           </n-form-item>
-          <n-form-item label="平台 ID">
+          <n-form-item label="分账平台编号" required>
             <n-input :value="platformApplication.platformId || '平台主体审核通过后返回'" readonly />
           </n-form-item>
           <n-form-item label="已生效接收方" required>
@@ -613,20 +836,23 @@
               placeholder="选择接收方"
             />
           </n-form-item>
-          <n-form-item label="接收方编号（receiverNo）" required>
+          <n-form-item label="绑定对象类型" required>
+            <n-input value="分账接收方" readonly />
+          </n-form-item>
+          <n-form-item label="绑定对象编号" required>
             <n-input :value="selectedRelationReceiver?.receiverNo || ''" readonly />
           </n-form-item>
-          <n-form-item label="结算场景" required>
-            <n-select v-model:value="relationForm.scene" :options="sceneOptions" placeholder="选择业务场景" />
+          <n-form-item label="业务用途（本系统）">
+            <n-select v-model:value="relationForm.scene" clearable :options="sceneOptions" placeholder="仅用于后台识别，不提交拉卡拉" />
           </n-form-item>
-          <n-form-item label="审核回调地址（retUrl）" required class="grid-wide">
+          <n-form-item label="审核回调地址" required class="grid-wide">
             <n-input v-model:value="relationForm.retUrl" maxlength="128" placeholder="https://.../lakala/split/relation/callback" />
           </n-form-item>
         </div>
         <div class="form-section compact">
           <div class="section-heading">
-            <h3>合作协议附件</h3>
-            <span>上传后回填 entrustFileName、entrustFilePath</span>
+            <h3>合作协议</h3>
+            <span>至少上传 1 份，系统会保存附件名称和路径并随申请提交</span>
           </div>
           <n-upload
             v-model:file-list="relationFiles"
@@ -637,14 +863,6 @@
           >
             <n-button>上传合作协议 *</n-button>
           </n-upload>
-          <div class="form-grid upload-result">
-            <n-form-item label="附件名称（entrustFileName）" required>
-              <n-input v-model:value="relationForm.entrustFileName" readonly />
-            </n-form-item>
-            <n-form-item label="附件路径（entrustFilePath）" required>
-              <n-input v-model:value="relationForm.entrustFilePath" readonly placeholder="上传成功后自动回填" />
-            </n-form-item>
-          </div>
         </div>
       </n-form>
       <template #footer>
@@ -712,17 +930,32 @@
         <div class="form-section compact">
           <div class="section-heading">
             <h3>平台签约资料</h3>
-            <span>营业执照、法人证件及平台合作协议</span>
+            <span>按资料项分开上传，全部收齐后才能提交</span>
           </div>
-          <n-upload
-            v-model:file-list="platformApplicationFiles"
-            multiple
-            :default-upload="false"
-            accept=".jpg,.jpeg,.png,.pdf"
-            :disabled="platformApplication.status !== 'draft'"
-          >
-            <n-button :disabled="platformApplication.status !== 'draft'">选择申请资料 *</n-button>
-          </n-upload>
+          <div class="attachment-checklist">
+            <div
+              v-for="item in platformApplicationAttachmentItems"
+              :key="item.value"
+              class="attachment-row"
+            >
+              <div class="attachment-row__meta">
+                <strong>{{ item.label }}</strong>
+                <span>{{ getPlatformApplicationAttachmentPath(item.value) || '待上传' }}</span>
+              </div>
+              <n-upload
+                :file-list="getPlatformApplicationAttachmentFiles(item.value)"
+                :max="1"
+                :default-upload="false"
+                accept=".jpg,.jpeg,.png,.pdf"
+                :disabled="platformApplication.status !== 'draft'"
+                @update:file-list="(files) => handlePlatformApplicationAttachmentFiles(item.value, files)"
+              >
+                <n-button size="small" :disabled="platformApplication.status !== 'draft'">
+                  {{ getPlatformApplicationAttachmentName(item.value) ? '重新选择' : '上传' }}
+                </n-button>
+              </n-upload>
+            </div>
+          </div>
         </div>
       </n-form>
       <template #footer>
@@ -787,16 +1020,31 @@
         <div class="form-section compact">
           <div class="section-heading">
             <h3>变更证明资料</h3>
-            <span>上传变更后的营业执照、法人证件或平台补充协议</span>
+            <span>按资料项分开上传，便于和拉卡拉附件接口回传字段对应</span>
           </div>
-          <n-upload
-            v-model:file-list="platformChangeFiles"
-            multiple
-            :default-upload="false"
-            accept=".jpg,.jpeg,.png,.pdf"
-          >
-            <n-button>选择变更资料 *</n-button>
-          </n-upload>
+          <div class="attachment-checklist">
+            <div
+              v-for="item in platformChangeAttachmentItems"
+              :key="item.value"
+              class="attachment-row"
+            >
+              <div class="attachment-row__meta">
+                <strong>{{ item.label }}</strong>
+                <span>{{ getPlatformChangeAttachmentPath(item.value) || '待上传' }}</span>
+              </div>
+              <n-upload
+                :file-list="getPlatformChangeAttachmentFiles(item.value)"
+                :max="1"
+                :default-upload="false"
+                accept=".jpg,.jpeg,.png,.pdf"
+                @update:file-list="(files) => handlePlatformChangeAttachmentFiles(item.value, files)"
+              >
+                <n-button size="small">
+                  {{ getPlatformChangeAttachmentName(item.value) ? '重新选择' : '上传' }}
+                </n-button>
+              </n-upload>
+            </div>
+          </div>
         </div>
       </n-form>
       <template #footer>
@@ -988,7 +1236,7 @@
 
 <script setup lang="ts">
 import { computed, h, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   NAlert,
   NButton,
@@ -1010,6 +1258,13 @@ import {
   useMessage,
 } from 'naive-ui'
 import type { DataTableColumns, SelectOption, UploadFileInfo } from 'naive-ui'
+import {
+  getReceiverProfileStatus,
+  getReceiverProfileStatusLabel,
+  getReceiverProfileStatusTagType,
+  getReceiverSettlementChangeStorageKey,
+  resolveBankCodes,
+} from './lakalaReceiverProfile'
 
 type ApplicationStatus = 'draft' | 'reviewing' | 'supplement' | 'approved' | 'rejected'
 type ReceiverType = 'merchant' | 'agent' | 'cp'
@@ -1019,6 +1274,19 @@ type ManagementScope = 'platform' | 'merchant'
 type LedgerNoType = 'MER' | 'RECEIVER'
 type PlatformApplicationStatus = 'draft' | 'reviewing' | 'supplement' | 'approved' | 'rejected'
 type PlatformChangeStatus = 'none' | 'reviewing' | 'supplement' | 'approved' | 'rejected'
+type ReceiverChangeStatus = 'none' | 'reviewing' | 'supplement' | 'approved' | 'rejected'
+type PlatformAttachmentType =
+  | 'BUSINESS_LICENCE'
+  | 'LEGAL_ID_CARD_FRONT'
+  | 'LEGAL_ID_CARD_BEHIND'
+  | 'PLATFORM_COOPERATION_FILE'
+type ReceiverAttachmentType =
+  | 'FR_ID_CARD_FRONT'
+  | 'FR_ID_CARD_BEHIND'
+  | 'ID_CARD_FRONT'
+  | 'ID_CARD_BEHIND'
+  | 'BANK_CARD'
+  | 'BUSINESS_LICENCE'
 
 interface ApplicationRecord {
   id: number
@@ -1041,6 +1309,14 @@ interface ReceiverRecord {
   status: ReceiverStatus
   auditRemark: string
   updatedAt: string
+  changeStatus?: ReceiverChangeStatus
+  changeApplicationNo?: string
+  changeRemark?: string
+  changeUpdatedAt?: string
+  pendingAccountName?: string
+  pendingBankName?: string
+  lastChangeAccountName?: string
+  lastChangeBankName?: string
 }
 
 interface RelationRecord {
@@ -1071,6 +1347,10 @@ interface PlatformOwner {
   licenseNo?: string
   legalPersonName?: string
   legalPersonCertificateNo?: string
+  attachmentsReady?: boolean
+  profileConfirmed?: boolean
+  attachmentNames?: Partial<Record<ReceiverAttachmentType, string>>
+  receiverStatus?: 'ready' | 'incomplete' | 'reviewing' | 'active'
 }
 
 interface PlatformRelationRecord {
@@ -1105,6 +1385,7 @@ interface PlatformChangeApplicationRecord {
 
 const message = useMessage()
 const route = useRoute()
+const router = useRouter()
 const managementScope = computed<ManagementScope>(() =>
   route.meta.lakalaScope === 'merchant' ? 'merchant' : 'platform'
 )
@@ -1126,17 +1407,20 @@ const showPlatformApplicationModal = ref(false)
 const showPlatformRelationModal = ref(false)
 const showPlatformChangeModal = ref(false)
 const showMerchantChangeModal = ref(false)
+const showReceiverChangeModal = ref(false)
 const detailTitle = ref('')
 const detailRows = ref<Array<{ label: string; value: string }>>([])
 const supplementTarget = ref<ApplicationRecord | null>(null)
 const unbindTarget = ref<RelationRecord | null>(null)
 const merchantChangeTarget = ref<ApplicationRecord | null>(null)
+const receiverChangeTarget = ref<ReceiverRecord | null>(null)
 const applicationFiles = ref<UploadFileInfo[]>([])
-const receiverFiles = ref<UploadFileInfo[]>([])
 const relationFiles = ref<UploadFileInfo[]>([])
 const unbindFiles = ref<UploadFileInfo[]>([])
 const supplementFiles = ref<UploadFileInfo[]>([])
 const merchantChangeFiles = ref<UploadFileInfo[]>([])
+const receiverAttachmentFiles = reactive<Partial<Record<ReceiverAttachmentType, UploadFileInfo[]>>>({})
+const receiverChangeAttachmentFiles = reactive<Partial<Record<ReceiverAttachmentType, UploadFileInfo[]>>>({})
 const requestOrderNo = ref('')
 const requestTime = ref('')
 
@@ -1159,6 +1443,14 @@ const receiverStatusLabel: Record<ReceiverStatus, string> = {
   supplement: '待补件',
   active: '已生效',
   rejected: '已驳回',
+}
+
+const receiverChangeStatusLabel: Record<ReceiverChangeStatus, string> = {
+  none: '无变更',
+  reviewing: '变更审核中',
+  supplement: '变更待补件',
+  approved: '变更通过',
+  rejected: '变更驳回',
 }
 
 const relationStatusLabel: Record<RelationStatus, string> = {
@@ -1186,14 +1478,14 @@ const applicationStatusOptions: SelectOption[] = Object.entries(applicationStatu
 const receiverTypeOptions: SelectOption[] = Object.entries(receiverTypeLabel).map(([value, label]) => ({ value, label }))
 const relationStatusOptions: SelectOption[] = Object.entries(relationStatusLabel).map(([value, label]) => ({ value, label }))
 const accountTypeOptions: SelectOption[] = [
-  { label: '对公账户（57）', value: '57' },
-  { label: '对私账户（58）', value: '58' },
+  { label: '对公账户', value: '57' },
+  { label: '对私账户', value: '58' },
 ]
 const certificateTypeOptions: SelectOption[] = [
-  { label: '身份证（17）', value: '17' },
-  { label: '护照（18）', value: '18' },
-  { label: '港澳居民来往内地通行证（19）', value: '19' },
-  { label: '台湾居民来往内地通行证（20）', value: '20' },
+  { label: '身份证', value: '17' },
+  { label: '护照', value: '18' },
+  { label: '港澳居民来往内地通行证', value: '19' },
+  { label: '台湾居民来往内地通行证', value: '20' },
 ]
 const splitRangeOptions: SelectOption[] = [
   { label: '标记交易分账（MARK，默认）', value: 'MARK' },
@@ -1213,8 +1505,8 @@ const ruleSourceOptions: SelectOption[] = [
   { label: '平台分账规则（PLATFORM）', value: 'PLATFORM' },
 ]
 const settleTypeOptions: SelectOption[] = [
-  { label: '主动提款（01）', value: '01' },
-  { label: '交易自动结算（03）', value: '03' },
+  { label: '主动提款', value: '01' },
+  { label: '交易自动结算', value: '03' },
 ]
 const returnAccountOptions: SelectOption[] = [
   { label: '收款账户（01）', value: '01' },
@@ -1251,7 +1543,28 @@ const attachmentTypeOptions: SelectOption[] = [
   { label: '租赁协议（RENTAL_AGREEMENT）', value: 'RENTAL_AGREEMENT' },
   { label: '其他（OTHERS）', value: 'OTHERS' },
 ]
-
+const receiverAttachmentOptions: Record<ReceiverAttachmentType, string> = {
+  FR_ID_CARD_FRONT: '法人身份证正面',
+  FR_ID_CARD_BEHIND: '法人身份证反面',
+  ID_CARD_FRONT: '身份证正面',
+  ID_CARD_BEHIND: '身份证反面',
+  BANK_CARD: '银行卡',
+  BUSINESS_LICENCE: '营业执照',
+}
+function mockReceiverAttachments(prefix: string, accountType: '57' | '58'): Partial<Record<ReceiverAttachmentType, string>> {
+  return accountType === '57'
+    ? {
+        FR_ID_CARD_FRONT: `${prefix}-法人身份证正面.jpg`,
+        FR_ID_CARD_BEHIND: `${prefix}-法人身份证反面.jpg`,
+        BANK_CARD: `${prefix}-银行卡.jpg`,
+        BUSINESS_LICENCE: `${prefix}-营业执照.pdf`,
+      }
+    : {
+        ID_CARD_FRONT: `${prefix}-身份证正面.jpg`,
+        ID_CARD_BEHIND: `${prefix}-身份证反面.jpg`,
+        BANK_CARD: `${prefix}-银行卡.jpg`,
+      }
+}
 const cashierMerchants = [
   { label: '未来空间收银 / 822100000000103', value: '822100000000103', innerNo: '4002021033000000103', name: '未来空间收银' },
   { label: '幻影星空收银 / 822100000000108', value: '822100000000108', innerNo: '4002021033000000108', name: '幻影星空收银' },
@@ -1261,18 +1574,19 @@ const cashierMerchantOptions: SelectOption[] = cashierMerchants.map(({ label, va
 
 const platformOwners: Record<ReceiverType, PlatformOwner[]> = {
   merchant: [
-    { label: '未来空间', value: 101, type: 'merchant', contactMobile: '13900001001', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001001', acctName: '上海未来空间娱乐有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00001X', acctOpenBankName: '招商银行上海分行', licenseNo: '91310000MA1K00001X', legalPersonName: '陈未来', legalPersonCertificateNo: '310101198801010011' },
-    { label: '幻影星空', value: 102, type: 'merchant', contactMobile: '13900001002', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001002', acctName: '上海幻影星空科技有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00002X', acctOpenBankName: '浦发银行上海分行', licenseNo: '91310000MA1K00002X', legalPersonName: '周星空', legalPersonCertificateNo: '310101198802020022' },
-    { label: '华东展厅', value: 103, type: 'merchant', contactMobile: '13900001003', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001003', acctName: '华东展厅娱乐有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00003X', acctOpenBankName: '中国银行上海分行', licenseNo: '91310000MA1K00003X', legalPersonName: '吴华东', legalPersonCertificateNo: '310101198803030033' },
+    { label: '恒然集团', value: 1, type: 'merchant', contactMobile: '13800001101', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6222021234567890123', acctName: '恒然集团有限公司', acctCertificateType: '17', acctCertificateNo: '91440300MA5HR0001X', acctOpenBankName: '中国工商银行深圳分行', licenseNo: '91440300MA5HR0001X', legalPersonName: '陈总', legalPersonCertificateNo: '440301198001011234', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('恒然集团', '57') },
+    { label: '未来空间', value: 101, type: 'merchant', contactMobile: '13900001001', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001001', acctName: '上海未来空间娱乐有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00001X', acctOpenBankName: '招商银行上海分行', licenseNo: '91310000MA1K00001X', legalPersonName: '陈未来', legalPersonCertificateNo: '310101198801010011', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('未来空间', '57') },
+    { label: '幻影星空', value: 102, type: 'merchant', contactMobile: '13900001002', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001002', acctName: '上海幻影星空科技有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00002X', acctOpenBankName: '浦发银行上海分行', licenseNo: '91310000MA1K00002X', legalPersonName: '周星空', legalPersonCertificateNo: '310101198802020022', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('幻影星空', '57') },
+    { label: '华东展厅', value: 103, type: 'merchant', contactMobile: '13900001003', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001003', acctName: '华东展厅娱乐有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00003X', acctOpenBankName: '中国银行上海分行', licenseNo: '91310000MA1K00003X', legalPersonName: '吴华东', legalPersonCertificateNo: '310101198803030033', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('华东展厅', '57') },
   ],
   agent: [
-    { label: '深圳未来科技', value: 1, type: 'agent', contactMobile: '13800138001', businessRule: '分润 15% / 手续费 0.5%', acctTypeCode: '58', acctNo: '6222021234567890123', acctName: '张伟', acctCertificateType: '17', acctCertificateNo: '440301199001011234', acctOpenBankName: '中国工商银行深圳分行' },
-    { label: '北京梦想空间', value: 2, type: 'agent', contactMobile: '13800138002', businessRule: '分润 12% / 手续费 0.5%', acctTypeCode: '58', acctNo: '6227001234567890123', acctName: '李娜', acctCertificateType: '17', acctCertificateNo: '110101199002022345', acctOpenBankName: '中国建设银行北京分行' },
-    { label: '上海星际娱乐', value: 3, type: 'agent', contactMobile: '13800138003', businessRule: '分润 18% / 手续费 0.6%', acctTypeCode: '58', acctNo: '', acctName: '', acctCertificateType: '17', acctCertificateNo: '', acctOpenBankName: '' },
+    { label: '深圳未来科技', value: 1, type: 'agent', contactMobile: '13800138001', businessRule: '分润 15% / 手续费 0.5%', acctTypeCode: '58', acctNo: '6222021234567890123', acctName: '张伟', acctCertificateType: '17', acctCertificateNo: '440301199001011234', acctOpenBankName: '中国工商银行深圳分行', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('深圳未来科技', '58') },
+    { label: '北京梦想空间', value: 2, type: 'agent', contactMobile: '13800138002', businessRule: '分润 12% / 手续费 0.5%', acctTypeCode: '58', acctNo: '6227001234567890123', acctName: '李娜', acctCertificateType: '17', acctCertificateNo: '110101199002022345', acctOpenBankName: '中国建设银行北京分行', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('北京梦想空间', '58') },
+    { label: '上海星际娱乐', value: 3, type: 'agent', contactMobile: '13800138003', businessRule: '分润 18% / 手续费 0.6%', acctTypeCode: '58', acctNo: '', acctName: '', acctCertificateType: '17', acctCertificateNo: '', acctOpenBankName: '', attachmentsReady: false, profileConfirmed: false },
   ],
   cp: [
-    { label: '极境互动科技', value: 301, type: 'cp', contactMobile: '13700003001', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000003001', acctName: '深圳极境互动科技有限公司', acctCertificateType: '17', acctCertificateNo: '91440300MA5F00001X', acctOpenBankName: '平安银行深圳分行', licenseNo: '91440300MA5F00001X', legalPersonName: '林极境', legalPersonCertificateNo: '440301198901010011' },
-    { label: '闪耀游戏工作室', value: 302, type: 'cp', contactMobile: '13700003002', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '58', acctNo: '6222020000003002', acctName: '王闪耀', acctCertificateType: '17', acctCertificateNo: '440301199202020022', acctOpenBankName: '中国工商银行深圳分行' },
+    { label: '极境互动科技', value: 301, type: 'cp', contactMobile: '13700003001', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000003001', acctName: '深圳极境互动科技有限公司', acctCertificateType: '17', acctCertificateNo: '91440300MA5F00001X', acctOpenBankName: '平安银行深圳分行', licenseNo: '91440300MA5F00001X', legalPersonName: '林极境', legalPersonCertificateNo: '440301198901010011', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('极境互动科技', '57') },
+    { label: '闪耀游戏工作室', value: 302, type: 'cp', contactMobile: '13700003002', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '58', acctNo: '6222020000003002', acctName: '王闪耀', acctCertificateType: '17', acctCertificateNo: '440301199202020022', acctOpenBankName: '中国工商银行深圳分行', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('闪耀游戏工作室', '58') },
   ],
 }
 
@@ -1331,6 +1645,17 @@ const receiverRecords = ref<ReceiverRecord[]>([
     status: 'active',
     auditRemark: '审核通过',
     updatedAt: '2026-07-29 11:30:00',
+  },
+  {
+    id: 4,
+    ownerType: 'merchant',
+    ownerName: '恒然集团',
+    receiverNo: 'LR-MER-00001',
+    accountName: '恒然集团有限公司',
+    bankName: '中国工商银行深圳分行',
+    status: 'active',
+    auditRemark: '审核通过',
+    updatedAt: '2026-07-30 10:10:00',
   },
   {
     id: 3,
@@ -1505,8 +1830,8 @@ const unbindForm = reactive({
   entrustFilePath: '',
 })
 const platformRelationFiles = ref<UploadFileInfo[]>([])
-const platformApplicationFiles = ref<UploadFileInfo[]>([])
-const platformChangeFiles = ref<UploadFileInfo[]>([])
+const platformApplicationAttachmentFiles = reactive<Partial<Record<PlatformAttachmentType, UploadFileInfo[]>>>({})
+const platformChangeAttachmentFiles = reactive<Partial<Record<PlatformAttachmentType, UploadFileInfo[]>>>({})
 const platformApplicationForm = reactive({
   orgCode: '200669',
   platformName: '头号空间运营平台',
@@ -1526,6 +1851,11 @@ const platformChangeForm = reactive({
   retUrl: 'https://api.touhaokongjian.com/lakala/split/platform-change/callback',
   changeReason: '',
 })
+const receiverChangeForm = reactive({
+  orgCode: '200669',
+  retUrl: 'https://api.touhaokongjian.com/lakala/split/receiver-change/callback',
+  changeReason: '',
+})
 const platformRelationForm = reactive({
   orgCode: '200669',
   platformId: 'PLAT-THKJ-0001',
@@ -1535,6 +1865,14 @@ const platformRelationForm = reactive({
   entrustFileNames: [] as string[],
   entrustFilePaths: [] as string[],
 })
+
+const platformApplicationAttachmentItems: Array<{ label: string; value: PlatformAttachmentType }> = [
+  { label: '营业执照', value: 'BUSINESS_LICENCE' },
+  { label: '法人身份证正面', value: 'LEGAL_ID_CARD_FRONT' },
+  { label: '法人身份证反面', value: 'LEGAL_ID_CARD_BEHIND' },
+  { label: '平台合作协议', value: 'PLATFORM_COOPERATION_FILE' },
+]
+const platformChangeAttachmentItems = platformApplicationAttachmentItems
 
 const filteredApplications = computed(() => applicationRecords.value.filter((item) => {
   const keyword = applicationKeyword.value.trim().toLowerCase()
@@ -1575,15 +1913,34 @@ const selectedExistingReceiver = computed(() => {
   ) || null
 })
 
+const receiverChangeOwner = computed(() => {
+  if (!receiverChangeTarget.value) return null
+  return findPlatformOwnerForReceiver(receiverChangeTarget.value)
+})
+
 const approvedMerchantOptions = computed<SelectOption[]>(() =>
   applicationRecords.value
     .filter((item) => item.status === 'approved')
     .map((item) => ({ label: `${item.merchantName} / ${item.merchantNo}`, value: item.merchantNo }))
 )
 
+const receiverRequiredAttachments = computed<Array<{ label: string; value: ReceiverAttachmentType }>>(() => {
+  const types: ReceiverAttachmentType[] = receiverForm.acctTypeCode === '57'
+    ? ['FR_ID_CARD_FRONT', 'FR_ID_CARD_BEHIND', 'BANK_CARD', 'BUSINESS_LICENCE']
+    : ['ID_CARD_FRONT', 'ID_CARD_BEHIND', 'BANK_CARD']
+  return types.map((value) => ({ value, label: receiverAttachmentOptions[value] }))
+})
+
+const receiverChangeRequiredAttachments = computed<Array<{ label: string; value: ReceiverAttachmentType }>>(() => {
+  const types: ReceiverAttachmentType[] = receiverChangeOwner.value?.acctTypeCode === '58'
+    ? ['ID_CARD_FRONT', 'ID_CARD_BEHIND', 'BANK_CARD']
+    : ['FR_ID_CARD_FRONT', 'FR_ID_CARD_BEHIND', 'BANK_CARD', 'BUSINESS_LICENCE']
+  return types.map((value) => ({ value, label: receiverAttachmentOptions[value] }))
+})
+
 const activeReceiverOptions = computed<SelectOption[]>(() =>
   receiverRecords.value
-    .filter((item) => item.status === 'active')
+    .filter((item) => item.status === 'active' && item.receiverNo !== '申请后生成')
     .map((item) => ({ label: `${item.ownerName} / ${item.receiverNo}`, value: item.id }))
 )
 
@@ -1638,6 +1995,14 @@ function tagType(status: ApplicationStatus | ReceiverStatus | RelationStatus) {
   return 'info' as const
 }
 
+function receiverChangeTagType(status?: ReceiverChangeStatus) {
+  if (!status || status === 'none') return 'default' as const
+  if (status === 'approved') return 'success' as const
+  if (status === 'rejected') return 'error' as const
+  if (status === 'supplement') return 'warning' as const
+  return 'info' as const
+}
+
 function applicationTagType(status: PlatformApplicationStatus) {
   if (status === 'approved') return 'success' as const
   if (status === 'rejected') return 'error' as const
@@ -1674,7 +2039,36 @@ function openPrimaryAction() {
   showReceiverModal.value = true
 }
 
+function isReceiverType(value: unknown): value is ReceiverType {
+  return value === 'merchant' || value === 'agent' || value === 'cp'
+}
+
+function handleReceiverChangeQuery() {
+  if (managementScope.value !== 'merchant' || route.query.action !== 'receiver-change') return
+  const ownerType = route.query.receiverOwnerType
+  if (!isReceiverType(ownerType)) return
+  const ownerId = Number(route.query.receiverOwnerId)
+  const ownerName = String(route.query.receiverOwnerName || '')
+  activeTab.value = 'receivers'
+  receiverTypeFilter.value = ownerType
+  receiverKeyword.value = ownerName
+  const owner = platformOwners[ownerType].find((item) =>
+    item.value === ownerId || (!!ownerName && item.label === ownerName)
+  )
+  const receiver = owner
+    ? receiverRecords.value.find((item) => item.ownerType === owner.type && item.ownerName === owner.label)
+    : null
+  if (receiver) {
+    openReceiverChange(receiver)
+    return
+  }
+  if (ownerName) {
+    message.info(`已进入接收方列表，请先确认「${ownerName}」是否已创建并生效`)
+  }
+}
+
 function submitPlatformApplication() {
+  const missingAttachments = getMissingPlatformApplicationAttachments()
   if (
     !platformApplicationForm.orgCode
     || !platformApplicationForm.platformName
@@ -1683,9 +2077,13 @@ function submitPlatformApplication() {
     || !platformApplicationForm.contactName
     || !platformApplicationForm.contactMobile
     || !platformApplicationForm.retUrl
-    || !platformApplicationFiles.value.length
+    || missingAttachments.length
   ) {
-    message.error('请填写完整的平台申请信息并上传签约资料')
+    message.error(
+      missingAttachments.length
+        ? `请上传平台主体申请资料：${missingAttachments.map((item) => item.label).join('、')}`
+        : '请填写完整的平台申请信息',
+    )
     return
   }
   Object.assign(platformApplication, {
@@ -1717,11 +2115,12 @@ function openPlatformChange() {
     retUrl: 'https://api.touhaokongjian.com/lakala/split/platform-change/callback',
     changeReason: '',
   })
-  platformChangeFiles.value = []
+  clearPlatformChangeAttachmentFiles()
   showPlatformChangeModal.value = true
 }
 
 function submitPlatformChange() {
+  const missingAttachments = getMissingPlatformChangeAttachments()
   if (
     !platformApplication.platformId
     || !platformChangeForm.orgCode
@@ -1732,9 +2131,13 @@ function submitPlatformChange() {
     || !platformChangeForm.contactMobile
     || !platformChangeForm.retUrl
     || !platformChangeForm.changeReason
-    || !platformChangeFiles.value.length
+    || missingAttachments.length
   ) {
-    message.error('请填写完整的平台主体变更信息并上传证明资料')
+    message.error(
+      missingAttachments.length
+        ? `请上传平台主体变更资料：${missingAttachments.map((item) => item.label).join('、')}`
+        : '请填写完整的平台主体变更信息',
+    )
     return
   }
   Object.assign(platformChangeApplication, {
@@ -1797,8 +2200,8 @@ function resetPlatformApplicationTest() {
     auditRemark: '平台资料已创建，等待提交申请',
     updatedAt: now(),
   })
-  platformApplicationFiles.value = []
-  platformChangeFiles.value = []
+  clearPlatformApplicationAttachmentFiles()
+  clearPlatformChangeAttachmentFiles()
   Object.assign(platformApplicationForm, {
     orgCode: '200669',
     platformName: '头号空间运营平台',
@@ -1835,6 +2238,7 @@ onMounted(() => {
       localStorage.removeItem(platformChangeApplicationStorageKey)
     }
   }
+  handleReceiverChangeQuery()
 })
 
 watch(
@@ -1847,6 +2251,11 @@ watch(
   platformChangeApplication,
   (value) => localStorage.setItem(platformChangeApplicationStorageKey, JSON.stringify(value)),
   { deep: true }
+)
+
+watch(
+  () => route.fullPath,
+  () => handleReceiverChangeQuery()
 )
 
 function handlePlatformRelationFiles(files: UploadFileInfo[]) {
@@ -1897,6 +2306,8 @@ function fillCashierMerchant(value: string) {
 function fillReceiverOwner(value: number) {
   if (!receiverForm.ownerType) return
   const owner = platformOwners[receiverForm.ownerType].find((item) => item.value === value)
+  const bankCodes = resolveBankCodes(owner?.acctOpenBankName || '')
+  clearReceiverAttachmentFiles()
   receiverForm.ownerName = owner?.label || ''
   receiverForm.receiverName = owner?.label || ''
   receiverForm.contactMobile = owner?.contactMobile || ''
@@ -1906,14 +2317,36 @@ function fillReceiverOwner(value: number) {
   receiverForm.acctCertificateType = owner?.acctCertificateType || '17'
   receiverForm.acctCertificateNo = owner?.acctCertificateNo || ''
   receiverForm.acctOpenBankName = owner?.acctOpenBankName || ''
+  receiverForm.acctOpenBankCode = bankCodes.openBankCode
+  receiverForm.acctClearBankCode = bankCodes.clearBankCode
   receiverForm.licenseNo = owner?.licenseNo || ''
   receiverForm.licenseName = owner?.acctName || ''
   receiverForm.legalPersonName = owner?.legalPersonName || ''
   receiverForm.legalPersonCertificateNo = owner?.legalPersonCertificateNo || ''
+  prefillReceiverAttachmentFiles(owner)
+}
+
+function getPlatformOwnerReceiverStatus(owner: PlatformOwner) {
+  return getReceiverProfileStatus({
+    accountKind: owner.acctTypeCode === '57' ? 'public' : 'private',
+    accountName: owner.acctName,
+    accountNo: owner.acctNo,
+    bankName: owner.acctOpenBankName,
+    certificateNo: owner.acctCertificateNo,
+    contactMobile: owner.contactMobile,
+    licenseNo: owner.licenseNo,
+    licenseName: owner.acctName,
+    legalPersonName: owner.legalPersonName,
+    legalPersonCertificateNo: owner.legalPersonCertificateNo,
+    attachmentsReady: owner.attachmentsReady,
+    profileConfirmed: owner.profileConfirmed,
+    receiverStatus: owner.receiverStatus,
+  })
 }
 
 function changeReceiverType() {
   resetReceiverSourceFields()
+  clearReceiverAttachmentFiles()
   receiverForm.ownerId = null
 }
 
@@ -1928,6 +2361,8 @@ function resetReceiverSourceFields() {
     acctCertificateType: '17',
     acctCertificateNo: '',
     acctOpenBankName: '',
+    acctOpenBankCode: '',
+    acctClearBankCode: '',
     licenseNo: '',
     licenseName: '',
     legalPersonName: '',
@@ -1939,6 +2374,200 @@ function resetReceiverSourceFields() {
 function uploadedPath(file: UploadFileInfo | undefined, prefix: string) {
   if (!file?.name) return ''
   return `G1/M00/SPLIT/${prefix}/${Date.now()}-${file.name}`
+}
+
+function getPlatformApplicationAttachmentFiles(type: PlatformAttachmentType) {
+  return platformApplicationAttachmentFiles[type] || []
+}
+
+function getPlatformApplicationAttachmentName(type: PlatformAttachmentType) {
+  return platformApplicationAttachmentFiles[type]?.[0]?.name || ''
+}
+
+function getPlatformApplicationAttachmentPath(type: PlatformAttachmentType) {
+  const file = platformApplicationAttachmentFiles[type]?.[0]
+  return file?.name ? `G1/M00/SPLIT/PLATFORM-APPLY-${type}/${file.name}` : ''
+}
+
+function handlePlatformApplicationAttachmentFiles(type: PlatformAttachmentType, files: UploadFileInfo[]) {
+  platformApplicationAttachmentFiles[type] = files.slice(0, 1)
+}
+
+function getPlatformChangeAttachmentFiles(type: PlatformAttachmentType) {
+  return platformChangeAttachmentFiles[type] || []
+}
+
+function getPlatformChangeAttachmentName(type: PlatformAttachmentType) {
+  return platformChangeAttachmentFiles[type]?.[0]?.name || ''
+}
+
+function getPlatformChangeAttachmentPath(type: PlatformAttachmentType) {
+  const file = platformChangeAttachmentFiles[type]?.[0]
+  return file?.name ? `G1/M00/SPLIT/PLATFORM-CHANGE-${type}/${file.name}` : ''
+}
+
+function handlePlatformChangeAttachmentFiles(type: PlatformAttachmentType, files: UploadFileInfo[]) {
+  platformChangeAttachmentFiles[type] = files.slice(0, 1)
+}
+
+function clearPlatformApplicationAttachmentFiles() {
+  Object.keys(platformApplicationAttachmentFiles).forEach((type) => {
+    delete platformApplicationAttachmentFiles[type as PlatformAttachmentType]
+  })
+}
+
+function clearPlatformChangeAttachmentFiles() {
+  Object.keys(platformChangeAttachmentFiles).forEach((type) => {
+    delete platformChangeAttachmentFiles[type as PlatformAttachmentType]
+  })
+}
+
+function getMissingPlatformApplicationAttachments() {
+  return platformApplicationAttachmentItems.filter((item) => !platformApplicationAttachmentFiles[item.value]?.length)
+}
+
+function getMissingPlatformChangeAttachments() {
+  return platformChangeAttachmentItems.filter((item) => !platformChangeAttachmentFiles[item.value]?.length)
+}
+
+function getReceiverAttachmentFiles(type: ReceiverAttachmentType) {
+  return receiverAttachmentFiles[type] || []
+}
+
+function getReceiverAttachmentName(type: ReceiverAttachmentType) {
+  return receiverAttachmentFiles[type]?.[0]?.name || ''
+}
+
+function getOwnerProfileRoute(type: ReceiverType) {
+  const map: Record<ReceiverType, string> = {
+    merchant: '/platform/merchants',
+    agent: '/platform/agents',
+    cp: '/platform/cps',
+  }
+  return map[type]
+}
+
+function openOwnerProfilePage() {
+  if (!selectedPlatformOwner.value) return
+  router.push({
+    path: getOwnerProfileRoute(selectedPlatformOwner.value.type),
+    query: {
+      receiverOwnerId: String(selectedPlatformOwner.value.value),
+      from: 'lakala-receiver',
+    },
+  })
+}
+
+function openReceiverChangeOwnerProfilePage() {
+  if (!receiverChangeOwner.value) return
+  router.push({
+    path: getOwnerProfileRoute(receiverChangeOwner.value.type),
+    query: {
+      receiverOwnerId: String(receiverChangeOwner.value.value),
+      from: 'lakala-receiver-change',
+    },
+  })
+}
+
+function findPlatformOwnerForReceiver(receiver: ReceiverRecord) {
+  return platformOwners[receiver.ownerType].find((owner) => owner.label === receiver.ownerName) || null
+}
+
+function prefillReceiverAttachmentFiles(owner?: PlatformOwner) {
+  if (!owner?.attachmentNames) return
+  Object.entries(owner.attachmentNames).forEach(([type, name]) => {
+    if (!name) return
+    receiverAttachmentFiles[type as ReceiverAttachmentType] = [{
+      id: `${owner.type}-${owner.value}-${type}`,
+      name,
+      status: 'finished',
+    }]
+  })
+}
+
+function clearReceiverAttachmentFiles() {
+  Object.keys(receiverAttachmentFiles).forEach((type) => {
+    delete receiverAttachmentFiles[type as ReceiverAttachmentType]
+  })
+}
+
+function prefillReceiverChangeAttachmentFiles(owner?: PlatformOwner) {
+  clearReceiverChangeAttachmentFiles()
+  if (!owner?.attachmentNames) return
+  Object.entries(owner.attachmentNames).forEach(([type, name]) => {
+    if (!name) return
+    receiverChangeAttachmentFiles[type as ReceiverAttachmentType] = [{
+      id: `change-${owner.type}-${owner.value}-${type}`,
+      name,
+      status: 'finished',
+    }]
+  })
+}
+
+function clearReceiverChangeAttachmentFiles() {
+  Object.keys(receiverChangeAttachmentFiles).forEach((type) => {
+    delete receiverChangeAttachmentFiles[type as ReceiverAttachmentType]
+  })
+}
+
+function getReceiverChangeAttachmentName(type: ReceiverAttachmentType) {
+  return receiverChangeAttachmentFiles[type]?.[0]?.name || ''
+}
+
+function getMissingReceiverChangeAttachments() {
+  return receiverChangeRequiredAttachments.value.filter((item) => !receiverChangeAttachmentFiles[item.value]?.length)
+}
+
+function getMissingReceiverAttachments() {
+  return receiverRequiredAttachments.value.filter((item) => !receiverAttachmentFiles[item.value]?.length)
+}
+
+function buildReceiverAttachList() {
+  const requiredList = receiverRequiredAttachments.value
+    .map((item) => {
+      const file = receiverAttachmentFiles[item.value]?.[0]
+      return file
+        ? {
+            attachType: item.value,
+            attachName: item.label,
+            attachStorePath: uploadedPath(file, item.value),
+          }
+        : null
+    })
+    .filter(Boolean)
+
+  return requiredList
+}
+
+function buildReceiverChangeAttachList() {
+  return receiverChangeRequiredAttachments.value
+    .map((item) => {
+      const file = receiverChangeAttachmentFiles[item.value]?.[0]
+      return file
+        ? {
+            attachType: item.value,
+            attachName: item.label,
+            attachStorePath: uploadedPath(file, `CHANGE-${item.value}`),
+          }
+        : null
+    })
+    .filter(Boolean)
+}
+
+function markReceiverSettlementChangeStatus(
+  receiver: ReceiverRecord,
+  status: ReceiverChangeStatus,
+  remark: string,
+) {
+  localStorage.setItem(
+    getReceiverSettlementChangeStorageKey(receiver.ownerType, receiver.ownerName),
+    JSON.stringify({
+      status,
+      remark,
+      applicationNo: receiver.changeApplicationNo || requestOrderNo.value,
+      updatedAt: now(),
+    })
+  )
 }
 
 function handleApplicationEntrustFiles(files: UploadFileInfo[]) {
@@ -2046,7 +2675,7 @@ function resetReceiverForm() {
     legalPersonCertificateNo: '',
     settleType: '01',
   })
-  receiverFiles.value = []
+  clearReceiverAttachmentFiles()
 }
 
 function submitApplication() {
@@ -2177,6 +2806,10 @@ function submitReceiver() {
     message.info('该主体已创建拉卡拉接收方，无需重复申请')
     return
   }
+  if (selectedPlatformOwner.value && getPlatformOwnerReceiverStatus(selectedPlatformOwner.value) !== 'ready') {
+    message.error(`请先到${receiverTypeLabel[selectedPlatformOwner.value.type]}管理补齐结算账户和附件资料`)
+    return
+  }
   if (
     !receiverForm.ownerType
     || !receiverForm.ownerId
@@ -2208,6 +2841,12 @@ function submitReceiver() {
     message.error('对公账户必须填写营业执照和法人信息')
     return
   }
+  const missingAttachments = getMissingReceiverAttachments()
+  if (missingAttachments.length) {
+    message.error(`请上传接收方必传附件：${missingAttachments.map((item) => item.label).join('、')}`)
+    return
+  }
+  const attachList = buildReceiverAttachList()
   receiverRecords.value.unshift({
     id: Date.now(),
     ownerType: receiverForm.ownerType,
@@ -2221,7 +2860,71 @@ function submitReceiver() {
   })
   showReceiverModal.value = false
   resetReceiverForm()
-  message.success('接收方创建申请已提交')
+  message.success(`接收方创建申请已提交，已生成 ${attachList.length} 条 attachList`)
+}
+
+function openReceiverChange(row: ReceiverRecord) {
+  if (row.status !== 'active' || row.receiverNo === '申请后生成') {
+    message.error('接收方审核通过并返回编号后才能发起信息变更')
+    return
+  }
+  if (row.changeStatus === 'reviewing') {
+    message.warning('该接收方已有变更申请审核中，请先等待拉卡拉回执')
+    return
+  }
+  const owner = findPlatformOwnerForReceiver(row)
+  if (!owner) {
+    message.error('未找到该接收方对应的主体资料')
+    return
+  }
+  if (getPlatformOwnerReceiverStatus(owner) !== 'ready') {
+    message.error(`请先到${receiverTypeLabel[owner.type]}管理补齐并确认结算资料`)
+    return
+  }
+  refreshRequestMeta()
+  receiverChangeTarget.value = row
+  Object.assign(receiverChangeForm, {
+    orgCode: '200669',
+    retUrl: 'https://api.touhaokongjian.com/lakala/split/receiver-change/callback',
+    changeReason: '',
+  })
+  prefillReceiverChangeAttachmentFiles(owner)
+  showReceiverChangeModal.value = true
+}
+
+function submitReceiverChange() {
+  const target = receiverChangeTarget.value
+  const owner = receiverChangeOwner.value
+  if (!target || !owner) {
+    message.error('未选择需要变更的接收方')
+    return
+  }
+  if (!receiverChangeForm.orgCode || !receiverChangeForm.retUrl || !receiverChangeForm.changeReason) {
+    message.error('请填写机构代码、回调地址和变更原因')
+    return
+  }
+  if (getPlatformOwnerReceiverStatus(owner) !== 'ready') {
+    message.error(`请先到${receiverTypeLabel[owner.type]}管理补齐并确认结算资料`)
+    return
+  }
+  const missingAttachments = getMissingReceiverChangeAttachments()
+  if (missingAttachments.length) {
+    message.error(`请先回源页面补齐变更附件：${missingAttachments.map((item) => item.label).join('、')}`)
+    return
+  }
+  const attachList = buildReceiverChangeAttachList()
+  Object.assign(target, {
+    changeStatus: 'reviewing',
+    changeApplicationNo: requestOrderNo.value,
+    changeRemark: `接收方信息变更申请已提交，等待拉卡拉审核；已带入 ${attachList.length} 项附件`,
+    changeUpdatedAt: now(),
+    pendingAccountName: owner.acctName,
+    pendingBankName: owner.acctOpenBankName,
+    updatedAt: now(),
+  })
+  markReceiverSettlementChangeStatus(target, 'reviewing', '拉卡拉接收方信息变更审核中')
+  showReceiverChangeModal.value = false
+  message.success('接收方信息变更申请已提交')
 }
 
 function submitRelation() {
@@ -2230,8 +2933,12 @@ function submitRelation() {
     message.error('请先完成唯一平台分账主体审核')
     return
   }
-  if (!relationForm.orgCode || !receiver || !relationForm.scene || !relationForm.retUrl) {
-    message.error('请填写机构代码、接收方、业务场景和回调地址')
+  if (!relationForm.orgCode || !receiver || !relationForm.retUrl) {
+    message.error('请填写机构代码、接收方和回调地址')
+    return
+  }
+  if (receiver.status !== 'active' || receiver.receiverNo === '申请后生成') {
+    message.error('请选择已生效且已返回接收方编号的接收方')
     return
   }
   if (!relationForm.entrustFileName || !relationForm.entrustFilePath) {
@@ -2244,7 +2951,7 @@ function submitRelation() {
     merchantNo: platformApplication.platformId,
     receiverName: receiver.ownerName,
     receiverNo: receiver.receiverNo,
-    scene: relationForm.scene,
+    scene: relationForm.scene || '未标注',
     splitMode: '动态金额',
     applicationNo: requestOrderNo.value,
     status: 'reviewing',
@@ -2309,10 +3016,56 @@ function showReceiverDetail(row: ReceiverRecord) {
     { label: '账户名称', value: row.accountName },
     { label: '开户银行', value: row.bankName },
     { label: '状态', value: receiverStatusLabel[row.status] },
+    { label: '变更状态', value: receiverChangeStatusLabel[row.changeStatus || 'none'] },
+    { label: '变更申请单号', value: row.changeApplicationNo || '暂无' },
+    { label: '待审核账户', value: row.pendingAccountName || '暂无' },
+    { label: '待审核开户银行', value: row.pendingBankName || '暂无' },
+    { label: '最近变更后账户', value: row.lastChangeAccountName || '暂无' },
+    { label: '最近变更后开户银行', value: row.lastChangeBankName || '暂无' },
     { label: '审核意见', value: row.auditRemark },
+    { label: '变更说明', value: row.changeRemark || '暂无变更申请' },
     { label: '更新时间', value: row.updatedAt },
+    { label: '变更更新时间', value: row.changeUpdatedAt || '暂无' },
   ]
   showDetailModal.value = true
+}
+
+function simulateReceiverChangeApproval(row: ReceiverRecord) {
+  if (row.changeStatus !== 'reviewing') {
+    message.warning('只有变更审核中的接收方才能模拟通过')
+    return
+  }
+  const nextAccountName = row.pendingAccountName || row.accountName
+  const nextBankName = row.pendingBankName || row.bankName
+  Object.assign(row, {
+    accountName: nextAccountName,
+    bankName: nextBankName,
+    changeStatus: 'approved',
+    changeRemark: '模拟回执：接收方信息变更审核通过，待审核资料已更新为当前生效资料',
+    changeUpdatedAt: now(),
+    updatedAt: now(),
+    lastChangeAccountName: nextAccountName,
+    lastChangeBankName: nextBankName,
+    pendingAccountName: '',
+    pendingBankName: '',
+  })
+  markReceiverSettlementChangeStatus(row, 'approved', '拉卡拉接收方信息变更审核通过')
+  message.success('已模拟接收方信息变更审核通过')
+}
+
+function simulateReceiverChangeReject(row: ReceiverRecord) {
+  if (row.changeStatus !== 'reviewing') {
+    message.warning('只有变更审核中的接收方才能模拟驳回')
+    return
+  }
+  Object.assign(row, {
+    changeStatus: 'rejected',
+    changeRemark: '模拟回执：接收方信息变更被驳回，当前生效资料保持不变',
+    changeUpdatedAt: now(),
+    updatedAt: now(),
+  })
+  markReceiverSettlementChangeStatus(row, 'rejected', '拉卡拉接收方信息变更驳回，生效资料保持不变')
+  message.warning('已模拟接收方信息变更驳回')
 }
 
 function showRelationDetail(row: RelationRecord) {
@@ -2433,14 +3186,43 @@ const receiverColumns: DataTableColumns<ReceiverRecord> = [
     width: 100,
     render: (row) => h(NTag, { size: 'small', type: tagType(row.status), bordered: false }, () => receiverStatusLabel[row.status]),
   },
+  {
+    title: '变更状态',
+    key: 'changeStatus',
+    width: 120,
+    render: (row) => h(
+      NTag,
+      { size: 'small', type: receiverChangeTagType(row.changeStatus), bordered: false },
+      () => receiverChangeStatusLabel[row.changeStatus || 'none']
+    ),
+  },
   { title: '更新时间', key: 'updatedAt', width: 170 },
   {
     title: '操作',
     key: 'action',
-    width: 160,
+    width: 330,
     fixed: 'right',
     render: (row) => h(NSpace, { size: 12 }, () => [
       h(NButton, { size: 'tiny', text: true, type: 'primary', onClick: () => showReceiverDetail(row) }, () => '详情'),
+      row.status === 'active'
+        ? h(
+            NButton,
+            {
+              size: 'tiny',
+              text: true,
+              type: 'warning',
+              disabled: row.changeStatus === 'reviewing',
+              onClick: () => openReceiverChange(row),
+            },
+            () => row.changeStatus === 'reviewing' ? '变更中' : '信息变更'
+          )
+        : null,
+      row.changeStatus === 'reviewing'
+        ? h(NButton, { size: 'tiny', text: true, type: 'success', onClick: () => simulateReceiverChangeApproval(row) }, () => '模拟通过')
+        : null,
+      row.changeStatus === 'reviewing'
+        ? h(NButton, { size: 'tiny', text: true, type: 'error', onClick: () => simulateReceiverChangeReject(row) }, () => '模拟驳回')
+        : null,
       h(NButton, { size: 'tiny', text: true, onClick: () => syncStatus('接收方', row) }, () => '同步状态'),
     ]),
   },
@@ -2534,6 +3316,61 @@ const platformRelationColumns: DataTableColumns<PlatformRelationRecord> = [
   border: 1px solid #e8e8e8;
   border-radius: 8px;
   background: #fff;
+}
+
+.test-guide-card {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+}
+
+.test-guide-card__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.test-guide-card__head strong {
+  color: #1f2937;
+  font-size: 15px;
+}
+
+.test-guide-card__head span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.test-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.test-guide-item {
+  padding: 12px;
+  border: 1px solid #e0ecff;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.test-guide-item b,
+.test-guide-item span {
+  display: block;
+}
+
+.test-guide-item b {
+  margin-bottom: 6px;
+  color: #1d4ed8;
+  font-size: 13px;
+}
+
+.test-guide-item span {
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .workspace-subtitle {
@@ -2738,6 +3575,7 @@ const platformRelationColumns: DataTableColumns<PlatformRelationRecord> = [
   display: flex;
   align-items: baseline;
   gap: 10px;
+  justify-content: space-between;
 }
 
 .section-heading span {
@@ -2799,6 +3637,48 @@ const platformRelationColumns: DataTableColumns<PlatformRelationRecord> = [
   margin-top: 12px;
 }
 
+.bank-code-alert {
+  margin-top: 4px;
+}
+
+.attachment-checklist {
+  display: grid;
+  gap: 10px;
+}
+
+.attachment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #e8ecf3;
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.attachment-row__meta strong,
+.attachment-row__meta span {
+  display: block;
+}
+
+.attachment-row__meta span {
+  margin-top: 3px;
+  color: #8a94a6;
+  font-size: 12px;
+}
+
+.attachment-readonly-file {
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: #edf7f2;
+  color: #28784f;
+  font-size: 12px;
+  text-align: right;
+  word-break: break-all;
+}
+
 .electronic-contract {
   max-width: 520px;
   margin-top: 12px;
@@ -2845,7 +3725,27 @@ const platformRelationColumns: DataTableColumns<PlatformRelationRecord> = [
 }
 
 :global(.business-modal) {
-  width: min(860px, calc(100vw - 32px));
+  width: min(920px, calc(100vw - 32px));
+  max-height: min(960px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
+}
+
+:global(.business-modal .n-card-header),
+:global(.business-modal .n-card__footer) {
+  flex-shrink: 0;
+}
+
+:global(.business-modal .n-card-content) {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:global(.business-modal .n-card__footer) {
+  z-index: 1;
+  border-top: 1px solid #edf0f5;
+  background: #fff;
 }
 
 :global(.detail-modal) {
@@ -2861,6 +3761,10 @@ const platformRelationColumns: DataTableColumns<PlatformRelationRecord> = [
 
   .readiness {
     grid-template-columns: 1fr;
+  }
+
+  .test-guide-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .platform-overview {
@@ -2886,8 +3790,17 @@ const platformRelationColumns: DataTableColumns<PlatformRelationRecord> = [
     padding: 16px;
   }
 
+  .test-guide-grid {
+    grid-template-columns: 1fr;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .attachment-row {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .platform-overview {

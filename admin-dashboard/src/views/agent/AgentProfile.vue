@@ -4,132 +4,250 @@
       <h1>代理商信息</h1>
     </div>
 
-    <!-- 基本信息 -->
-    <div class="profile-card">
-      <div class="profile-content">
-        <div class="avatar-section">
-          <n-avatar round :size="100" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
-            代
-          </n-avatar>
-          <n-button size="small" secondary>更换头像</n-button>
-        </div>
-        <div class="info-section">
-          <div class="info-item">
-            <div class="info-label">代理商名称</div>
-            <n-input v-model:value="formData.name" placeholder="请输入代理商名称" style="width: 300px;" />
-          </div>
-          <div class="info-item">
-            <div class="info-label">联系人</div>
-            <n-input v-model:value="formData.contact" placeholder="请输入联系人姓名" style="width: 300px;" />
-          </div>
-          <div class="info-item">
-            <div class="info-label">联系电话</div>
-            <n-input v-model:value="formData.phone" placeholder="请输入联系电话" style="width: 300px;" />
-          </div>
-          <div class="info-item">
-            <div class="info-label">联系邮箱</div>
-            <div class="info-value">
-              <span class="status" :class="{ success: formData.email }">{{ formData.email || '未绑定' }}</span>
-              <n-button v-if="!formData.email" size="small" type="primary" @click="showBindEmailModal = true">绑定</n-button>
-              <n-button v-else size="small" @click="showBindEmailModal = true">修改</n-button>
-            </div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">代理区域</div>
-            <span class="status success">{{ formData.region }}</span>
-          </div>
-          <div class="info-item">
-            <div class="info-label">合作时间</div>
-            <span class="status">{{ formData.sinceDate }}</span>
-          </div>
-          <div class="form-actions">
-            <n-button>取消</n-button>
-            <n-button type="primary" @click="handleSave">保存修改</n-button>
-          </div>
-        </div>
+    <div class="merchant-hero">
+      <div>
+        <span class="hero-label">当前代理商</span>
+        <strong>{{ info.name }}</strong>
+        <p>由总运营后台创建和维护，代理商侧仅维护联系方式。</p>
       </div>
+      <n-tag type="success" size="small">正常</n-tag>
     </div>
 
-    <!-- 绑定邮箱弹窗 -->
-    <n-modal v-model:show="showBindEmailModal" preset="card" title="绑定邮箱" style="width: 450px;">
-      <n-form>
-        <n-form-item label="邮箱地址">
-          <n-input v-model:value="bindEmail" placeholder="请输入邮箱地址" />
+    <div class="section-card">
+      <div class="section-header">
+        <h3>基本信息</h3>
+        <span class="section-badge">平台设定，不可修改</span>
+      </div>
+      <div class="info-grid">
+        <div class="readonly-item">
+          <span>代理商名称</span>
+          <strong>{{ info.name }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>联系人</span>
+          <strong>{{ info.contact }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>联系电话</span>
+          <strong>{{ info.phone }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>省/城市</span>
+          <strong>{{ info.region }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>分润比例</span>
+          <strong>{{ info.commissionRate }}%</strong>
+        </div>
+        <div class="readonly-item">
+          <span>手续费率</span>
+          <strong>{{ info.feeRate }}%</strong>
+        </div>
+        <div class="readonly-item">
+          <span>代理商状态</span>
+          <n-tag type="success" size="small">正常</n-tag>
+        </div>
+      </div>
+      <n-alert type="info" :bordered="false" class="section-hint">
+        基础信息来自总运营后台“新增代理商”的基本信息。结算账户资料请在“结算账户”中补充。
+      </n-alert>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <h3>联系人信息</h3>
+      </div>
+      <n-alert type="info" :bordered="false" class="section-hint contact-hint">
+        联系人、电话和邮箱允许代理商自助维护；代理商名称、区域、分润比例和手续费率仍由总运营后台维护。
+      </n-alert>
+      <n-form label-placement="top" class="contact-form">
+        <div class="form-grid">
+        <n-form-item label="联系人">
+          <n-input v-model:value="contactForm.contact" placeholder="请输入联系人姓名" />
         </n-form-item>
-        <n-form-item label="验证码">
-          <div style="display:flex;gap:8px;width:100%;">
-            <n-input v-model:value="emailCode" placeholder="请输入验证码" style="flex:1;" />
-            <n-button type="primary" :disabled="!bindEmail">发送验证码</n-button>
-          </div>
+        <n-form-item label="联系电话">
+          <n-input v-model:value="contactForm.phone" placeholder="请输入联系电话" />
+        </n-form-item>
+        <n-form-item label="联系邮箱">
+          <n-input v-model:value="contactForm.email" placeholder="请输入联系邮箱" />
+        </n-form-item>
+        </div>
+        <n-form-item class="form-actions">
+          <n-space>
+            <n-button type="primary" @click="handleSave">保存修改</n-button>
+            <n-button @click="resetContact">取消</n-button>
+          </n-space>
         </n-form-item>
       </n-form>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showBindEmailModal = false">取消</n-button>
-          <n-button type="primary" @click="confirmBindEmail">确认绑定</n-button>
-        </n-space>
-      </template>
-    </n-modal>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { NAvatar, NButton, NInput, NModal, NForm, NFormItem, NSpace, useMessage } from 'naive-ui'
+import { reactive, ref } from 'vue'
+import {
+  NAlert,
+  NButton,
+  NForm,
+  NFormItem,
+  NInput,
+  NSpace,
+  NTag,
+  useMessage,
+} from 'naive-ui'
 
 const message = useMessage()
 
-const formData = ref({
+const info = ref({
   name: '深圳未来科技',
+  contact: '张伟',
+  phone: '13800138001',
+  region: '广东省 / 深圳市',
+  commissionRate: 15,
+  feeRate: 0.5,
+})
+
+const initialContact = {
   contact: '张经理',
   phone: '138****6688',
   email: 'agent@touhaokongjian.com',
-  region: '广东省深圳市',
-  sinceDate: '2024-06-15',
-})
-
-const showBindEmailModal = ref(false)
-const bindEmail = ref('')
-const emailCode = ref('')
-
-function handleSave() {
-  message.success('保存成功')
 }
 
-function confirmBindEmail() {
-  if (bindEmail.value) {
-    formData.value.email = bindEmail.value
-    showBindEmailModal.value = false
-    message.success('邮箱绑定成功')
-    bindEmail.value = ''
-    emailCode.value = ''
+const contactForm = reactive({ ...initialContact })
+
+function handleSave() {
+  if (!contactForm.contact || !contactForm.phone) {
+    message.warning('请填写联系人和联系电话')
+    return
   }
+  message.success('联系人信息已保存')
+}
+
+function resetContact() {
+  Object.assign(contactForm, initialContact)
 }
 </script>
 
 <style scoped>
-.page-container { padding: 20px 24px; }
+.page-container { max-width: 960px; padding: 20px 24px; }
 .page-header { margin-bottom: 24px; }
-.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.page-header h1 { margin: 0; color: var(--text-primary); font-size: 22px; font-weight: 700; }
 
-.profile-card { background: white; border-radius: 12px; padding: 32px; border: 1px solid var(--border-color); }
-.profile-content { display: flex; align-items: flex-start; gap: 48px; }
+.merchant-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 22px 24px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 60%);
+}
 
-.avatar-section { display: flex; flex-direction: column; align-items: center; gap: 16px; flex-shrink: 0; }
-.avatar-section .n-button { width: 120px; }
+.merchant-hero strong,
+.merchant-hero p,
+.hero-label {
+  display: block;
+}
 
-.info-section { flex: 1; display: flex; flex-direction: column; gap: 24px; }
-.info-item { display: flex; align-items: center; gap: 24px; }
-.info-label { width: 100px; font-size: 14px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; }
-.info-value { display: flex; align-items: center; gap: 12px; flex: 1; }
-.status { font-size: 14px; color: var(--text-secondary); }
-.status.success { color: #10B981; }
+.hero-label {
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
 
-.form-actions { display: flex; justify-content: flex-start; gap: 12px; margin-top: 16px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+.merchant-hero strong {
+  color: #1e293b;
+  font-size: 20px;
+}
 
-@media (max-width: 768px) {
-  .profile-content { flex-direction: column; align-items: center; }
-  .info-item { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .info-label { width: 100%; }
+.merchant-hero p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.section-card {
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.section-badge {
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: var(--color-bg-elevated);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.info-grid,
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.readonly-item {
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.readonly-item span,
+.readonly-item strong {
+  display: block;
+}
+
+.readonly-item span {
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.readonly-item strong {
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.section-hint {
+  margin-top: 16px;
+}
+
+.contact-form { padding-top: 4px; }
+
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .merchant-hero {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .info-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

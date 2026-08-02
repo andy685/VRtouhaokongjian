@@ -220,7 +220,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '分润明细', key: '/agent/commission' },
       { label: '结算记录', key: '/agent/settlement' },
-      { label: '提现账户', key: '/agent/bank-account' },
+      { label: '结算账户', key: '/agent/bank-account' },
     ]
   },
   {

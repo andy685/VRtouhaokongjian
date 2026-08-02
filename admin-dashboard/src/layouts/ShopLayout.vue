@@ -161,7 +161,7 @@ import {
   SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, NotificationsOutline,
   ServerOutline, StorefrontOutline, BusinessOutline, GameControllerOutline, CashOutline,
-  PersonAddOutline, LogOutOutline, PersonOutline,
+  PersonAddOutline, LogOutOutline,
   HelpCircleOutline, HomeOutline,
   MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
   ChevronDownOutline, ConstructOutline, MusicalNotesOutline
@@ -338,7 +338,6 @@ const breadcrumbs = computed<{ label: string; path?: string }[]>(() => {
 
 const userMenuOptions = [
   { label: '商家信息', key: 'shop-info', icon: renderIcon(StorefrontOutline) },
-  { label: '个人信息', key: 'profile', icon: renderIcon(PersonOutline) },
   { label: '账户余额', key: 'balance', icon: renderIcon(WalletOutline) },
   { label: '安全设置', key: 'security', icon: renderIcon(ShieldCheckmarkOutline) },
   { type: 'divider', key: 'd1' },
@@ -428,11 +427,10 @@ function handleUserAction(key: string) {
   if (key === 'logout') {
     router.push('/login')
   } else if (key === 'balance') router.push('/shop/account/balance')
-  else if (key === 'profile') router.push('/shop/account/profile')
   else if (key === 'security') router.push('/shop/account/security')
   else if (key === 'shop-info') router.push('/shop/account/shop-info')
-  else if (key === 'bind-wechat') router.push('/shop/account/profile')
-  else if (key === 'bind-email') router.push('/shop/account/profile')
+  else if (key === 'bind-wechat') router.push('/shop/account/security')
+  else if (key === 'bind-email') router.push('/shop/account/security')
 }
 
 function goToMessageCenter() {

@@ -186,9 +186,9 @@ const routes: RouteRecordRaw[] = [
       // 用户设置
       { path: 'birthday-theme', name: 'ShopBirthdayTheme', component: () => import('../views/shop/BirthdayTheme.vue'), meta: { title: '奇幻派对主题资源' } },
       { path: 'account/shop-info', name: 'ShopAccountShopInfo', component: () => import('../views/shop/account/ShopInfo.vue'), meta: { title: '商家信息' } },
-      { path: 'account/profile', name: 'ShopAccountProfile', component: () => import('../views/shop/account/Profile.vue'), meta: { title: '个人信息' } },
-      { path: 'account/bind-wechat', redirect: '/shop/account/profile' },
-      { path: 'account/bind-email', redirect: '/shop/account/profile' },
+      { path: 'account/profile', redirect: '/shop/account/shop-info' },
+      { path: 'account/bind-wechat', redirect: '/shop/account/security' },
+      { path: 'account/bind-email', redirect: '/shop/account/security' },
       { path: 'account/security', name: 'ShopAccountSecurity', component: () => import('../views/shop/account/Security.vue'), meta: { title: '账户安全' } },
       { path: 'account/message', name: 'ShopAccountMessage', component: () => import('../views/shop/account/Message.vue'), meta: { title: '消息中心' } },
     ]
@@ -211,7 +211,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'finance', name: 'CPFinance', component: () => import('../views/cp/FinanceOverview.vue'), meta: { title: '收益总览' } },
       { path: 'finance/detail', name: 'CPFinanceDetail', component: () => import('../views/cp/FinanceDetail.vue'), meta: { title: '结算记录' } },
       { path: 'bank-account', name: 'CPBankAccount', component: () => import('../views/cp/BankAccount.vue'), meta: { title: '收款账户' } },
-      { path: 'account/info', name: 'CPAccountInfo', component: () => import('../views/cp/AccountInfo.vue'), meta: { title: '供应商资料' } },
+      { path: 'account/info', name: 'CPAccountInfo', component: () => import('../views/cp/AccountInfo.vue'), meta: { title: '供应商信息' } },
       { path: 'account/security', name: 'CPAccountSecurity', component: () => import('../views/cp/Security.vue'), meta: { title: '安全设置' } },
       { path: 'account/message', name: 'CPMessage', component: () => import('../views/cp/Message.vue'), meta: { title: '消息通知' } },
     ]

@@ -51,7 +51,7 @@
     </div>
 
     <!-- 新增/编辑供应商弹窗 -->
-    <n-modal v-model:show="showModal" preset="card" :title="editingCp ? '编辑供应商' : '新增游戏供应商'" style="width: 680px;" :bordered="false">
+    <n-modal v-model:show="showModal" preset="card" :title="editingCp ? '编辑供应商' : '新增游戏供应商'" class="entity-manage-modal" style="width: 680px;" :bordered="false">
       <n-form ref="formRef" :model="form" :rules="rules" label-placement="left" label-width="100">
         <n-tabs type="line">
           <n-tab-pane name="basic" tab="基本信息">
@@ -63,6 +63,10 @@
             </n-form-item>
             <n-form-item label="联系电话" path="phone">
               <n-input v-model:value="form.phone" placeholder="请输入联系电话" />
+            </n-form-item>
+            <n-form-item label="手续费比例">
+              <n-input-number v-model:value="form.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
+              <span class="form-hint">例：0.005 = 0.5%，属于基础数据</span>
             </n-form-item>
 
           </n-tab-pane>
@@ -77,25 +81,81 @@
           </n-tab-pane>
 
           <n-tab-pane name="bank" tab="结算账户">
-            <div style="margin-bottom: 12px; padding: 12px; background: #EFF6FF; border-radius: 8px; font-size: 13px; color: #3B82F6;">
-              <n-icon :component="InformationCircleOutline" style="vertical-align: middle; margin-right: 4px;" />
-              结算账户用于接收平台定期打款的结算收益，请确保信息准确
-            </div>
+            <n-alert :type="settlementLocked ? 'warning' : 'info'" :bordered="false" class="receiver-profile-alert">
+              {{
+                settlementLocked
+                  ? '该结算账户和附件资料已确认或已提交拉卡拉接收方申请，不能直接修改；基本信息、状态、手续费比例仍可编辑。确需变更结算资料，请到接收方与分账关系发起信息变更申请。'
+                  : '这里维护拉卡拉“分账接收方”的结算账户和附件资料。请一次确认准确，提交拉卡拉后仅结算资料不可自行修改；手续费比例属于基础数据，不在这里维护。'
+              }}
+              <n-space v-if="settlementLocked" inline class="inline-action">
+                <n-button size="tiny" secondary type="warning" @click="startCpSettlementDraft">
+                  {{ settlementDraftMode ? '正在填写草稿' : '填写变更草稿' }}
+                </n-button>
+                <n-button size="tiny" secondary type="primary" @click="goReceiverChangeFromCp">
+                  去提交变更申请
+                </n-button>
+              </n-space>
+            </n-alert>
+            <n-form-item label="账户类型">
+              <n-radio-group v-model:value="form.accountKind" :disabled="settlementFieldsReadonly" @update:value="refreshReceiverAttachmentStatus">
+                <n-radio value="public">对公账户</n-radio>
+                <n-radio value="private">对私账户</n-radio>
+              </n-radio-group>
+            </n-form-item>
             <n-form-item label="开户银行">
-              <n-select v-model:value="form.bankCode" :options="bankOptions" placeholder="请选择开户银行" />
+              <n-select v-model:value="form.bankCode" :options="bankOptions" :disabled="settlementFieldsReadonly" placeholder="请选择开户银行" />
             </n-form-item>
             <n-form-item label="银行卡号">
-              <n-input v-model:value="form.bankAccount" placeholder="请输入银行卡号" maxlength="23" />
+              <n-input v-model:value="form.bankAccount" :disabled="settlementFieldsReadonly" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
             <n-form-item label="开户人姓名">
-              <n-input v-model:value="form.accountName" placeholder="请输入开户人姓名（需与身份证一致）" />
+              <n-input v-model:value="form.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入开户人姓名（需与身份证一致）" />
             </n-form-item>
             <n-form-item label="身份证号">
-              <n-input v-model:value="form.idCard" placeholder="请输入身份证号" maxlength="18" />
+              <n-input v-model:value="form.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入身份证号" maxlength="18" />
             </n-form-item>
-            <n-form-item label="手续费比例">
-              <n-input-number v-model:value="form.feeRate" :min="0" :max="1" :step="0.001" :precision="3" style="width: 200px;" />
-              <span class="form-hint">例：0.005 = 0.5%，提现时扣除</span>
+            <template v-if="form.accountKind === 'public'">
+              <n-form-item label="营业执照号">
+                <n-input v-model:value="form.licenseNo" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照号码" />
+              </n-form-item>
+              <n-form-item label="营业执照名称">
+                <n-input v-model:value="form.licenseName" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照名称" />
+              </n-form-item>
+              <n-form-item label="法人姓名">
+                <n-input v-model:value="form.legalPersonName" :disabled="settlementFieldsReadonly" placeholder="请输入法人姓名" />
+              </n-form-item>
+              <n-form-item label="法人证件号">
+                <n-input v-model:value="form.legalPersonCertificateNo" :disabled="settlementFieldsReadonly" placeholder="请输入法人身份证号" maxlength="18" />
+              </n-form-item>
+            </template>
+            <n-form-item label="附件状态">
+              <n-tag :type="form.attachmentsReady ? 'success' : 'warning'" size="small">
+                {{ form.attachmentsReady ? '已收齐' : '待补充' }}
+              </n-tag>
+            </n-form-item>
+            <n-form-item label="分项附件">
+              <div class="receiver-attachment-list">
+                <div v-for="item in getRequiredAttachmentNames(form.accountKind)" :key="item" class="receiver-attachment-row">
+                  <span>{{ item }}</span>
+                  <n-upload
+                    :file-list="getReceiverAttachmentFiles(item)"
+                    :max="1"
+                    :default-upload="false"
+                    :disabled="settlementFieldsReadonly"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    @update:file-list="(files) => handleReceiverAttachmentFiles(item, files)"
+                  >
+                    <n-button size="small" :disabled="settlementFieldsReadonly">上传</n-button>
+                  </n-upload>
+                </div>
+              </div>
+              <div class="upload-hint">{{ settlementFieldsReadonly ? '当前展示的是生效结算资料；如需更换，请先填写变更草稿。' : '每一项资料单独上传，全部必传项上传后才会标记为已收齐。' }}</div>
+            </n-form-item>
+            <n-form-item label="资料确认">
+              <n-radio-group v-model:value="form.profileConfirmed" :disabled="settlementFieldsReadonly">
+                <n-radio :value="true">已确认，提交后结算账户不可自行修改</n-radio>
+                <n-radio :value="false">暂不提交</n-radio>
+              </n-radio-group>
             </n-form-item>
           </n-tab-pane>
         </n-tabs>
@@ -109,7 +169,7 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetail" preset="card" title="供应商详情" style="width: 720px;" :bordered="false">
+    <n-modal v-model:show="showDetail" preset="card" title="供应商详情" class="entity-manage-modal" style="width: 720px;" :bordered="false">
       <n-tabs v-if="detailCp" type="line">
         <n-tab-pane name="basic" tab="基本信息">
           <n-descriptions label-placement="left" :column="2" bordered>
@@ -121,6 +181,7 @@
             </n-descriptions-item>
             <n-descriptions-item label="联系人">{{ detailCp.contact }}</n-descriptions-item>
             <n-descriptions-item label="联系电话">{{ detailCp.phone }}</n-descriptions-item>
+            <n-descriptions-item label="手续费比例">{{ detailCp.feeRate ? `${(detailCp.feeRate * 100).toFixed(1)}%` : '0.5%' }}</n-descriptions-item>
             <n-descriptions-item label="管理员账号">{{ detailCp.username || '-' }}</n-descriptions-item>
             <n-descriptions-item label="在架游戏">{{ detailCp.gameCount }} 款</n-descriptions-item>
             <n-descriptions-item label="累计结算额" :span="2">¥{{ detailCp.totalSettlement.toLocaleString() }}</n-descriptions-item>
@@ -129,14 +190,42 @@
         </n-tab-pane>
         <n-tab-pane name="bank" tab="结算账户">
           <n-descriptions v-if="detailCp.bankCode" label-placement="left" :column="1" bordered>
+            <n-descriptions-item label="资料状态">
+              <n-tag :type="getReceiverProfileStatusTagType(getCpReceiverStatus(detailCp))" size="small">
+                {{ getReceiverProfileStatusLabel(getCpReceiverStatus(detailCp)) }}
+              </n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item label="变更状态">
+              <n-tag :type="getReceiverSettlementChangeStatusTagType(getCpSettlementChangeState(detailCp).status)" size="small">
+                {{ getReceiverSettlementChangeStatusLabel(getCpSettlementChangeState(detailCp).status) }}
+              </n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item v-if="getCpSettlementChangeState(detailCp).remark" label="变更说明">
+              {{ getCpSettlementChangeState(detailCp).remark }}
+            </n-descriptions-item>
+            <n-descriptions-item label="账户类型">{{ detailCp.accountKind === 'private' ? '对私账户' : '对公账户' }}</n-descriptions-item>
             <n-descriptions-item label="开户银行">{{ getBankName(detailCp.bankCode) }}</n-descriptions-item>
-            <n-descriptions-item label="银行卡号">{{ detailCp.bankAccount }}</n-descriptions-item>
+            <n-descriptions-item label="银行卡号">{{ maskAccountNo(detailCp.bankAccount) }}</n-descriptions-item>
             <n-descriptions-item label="开户人姓名">{{ detailCp.accountName }}</n-descriptions-item>
             <n-descriptions-item label="身份证号">{{ detailCp.idCard ? detailCp.idCard.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
-            <n-descriptions-item label="手续费比例">{{ detailCp.feeRate ? `${(detailCp.feeRate * 100).toFixed(1)}%` : '0.5%' }}</n-descriptions-item>
-            <n-descriptions-item label="账户状态">
-              <n-tag type="success" size="small">已绑定</n-tag>
+            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="营业执照号">{{ detailCp.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="营业执照名称">{{ detailCp.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="法人姓名">{{ detailCp.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="法人证件号">{{ detailCp.legalPersonCertificateNo ? detailCp.legalPersonCertificateNo.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
+            <n-descriptions-item label="必传附件">{{ detailCp.attachmentsReady ? '已收齐' : '待补充' }}</n-descriptions-item>
+            <n-descriptions-item label="附件文件">
+              <div class="attachment-detail-list">
+                <n-tag
+                  v-for="item in getCpAttachmentDisplayList(detailCp)"
+                  :key="item"
+                  size="small"
+                  :type="item === '待补充' ? 'warning' : 'success'"
+                >
+                  {{ item }}
+                </n-tag>
+              </div>
             </n-descriptions-item>
+            <n-descriptions-item label="资料确认">{{ detailCp.profileConfirmed ? '已确认，结算账户不可自行修改' : '未确认' }}</n-descriptions-item>
           </n-descriptions>
           <n-empty v-else description="该供应商尚未绑定结算账户" />
         </n-tab-pane>
@@ -152,19 +241,33 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
+import { useRouter } from 'vue-router'
 import {
-  NButton, NInput, NInputNumber, NSelect, NTag, NIcon, NSpace, NModal, NForm, NFormItem,
+  NAlert, NButton, NInput, NInputNumber, NSelect, NTag, NIcon, NSpace, NModal, NForm, NFormItem,
   NDataTable, NDescriptions, NDescriptionsItem,
-  NTabs, NTabPane, NEmpty,
+  NTabs, NTabPane, NEmpty, NRadioGroup, NRadio, NUpload,
   useMessage
 } from 'naive-ui'
-import type { FormRules, DataTableColumns } from 'naive-ui'
+import type { FormRules, DataTableColumns, UploadFileInfo } from 'naive-ui'
 import {
   SearchOutline, AddOutline, PeopleOutline, CheckmarkCircleOutline,
   GameControllerOutline, CreateOutline, EyeOutline, BanOutline, InformationCircleOutline
 } from '@vicons/ionicons5'
+import {
+  bankNameOptions,
+  getBankDisplayName,
+  getReceiverAttachmentDisplayList,
+  getReceiverProfileStatus,
+  getReceiverProfileStatusLabel,
+  getReceiverProfileStatusTagType,
+  getReceiverSettlementChangeStatusLabel,
+  getReceiverSettlementChangeStatusTagType,
+  getReceiverSettlementChangeStorageKey,
+  maskAccountNo,
+} from './lakalaReceiverProfile'
 
 const message = useMessage()
+const router = useRouter()
 const searchText = ref('')
 const filterStatus = ref<string | null>(null)
 const showModal = ref(false)
@@ -172,6 +275,10 @@ const showDetail = ref(false)
 const editingCp = ref<any>(null)
 const detailCp = ref<any>(null)
 const formRef = ref()
+const receiverAttachmentFiles = ref<Record<string, UploadFileInfo[]>>({})
+const settlementLocked = computed(() => isCpSettlementLocked(editingCp.value))
+const settlementDraftMode = ref(false)
+const settlementFieldsReadonly = computed(() => settlementLocked.value && !settlementDraftMode.value)
 
 const statusOptions = [
   { label: '全部', value: null },
@@ -183,10 +290,17 @@ const form = ref({
   name: '',
   contact: '',
   phone: '',
+  accountKind: 'public',
   bankCode: '',
   bankAccount: '',
   accountName: '',
   idCard: '',
+  licenseNo: '',
+  licenseName: '',
+  legalPersonName: '',
+  legalPersonCertificateNo: '',
+  attachmentsReady: false,
+  profileConfirmed: false,
   feeRate: 0.005,
   status: 'active',
   username: '',
@@ -201,27 +315,16 @@ const rules: FormRules = {
   password: [{ required: true, message: '请输入管理员密码' }],
 }
 
-const bankOptions = [
-  { label: '中国工商银行', value: 'ICBC' },
-  { label: '中国建设银行', value: 'CCB' },
-  { label: '中国农业银行', value: 'ABC' },
-  { label: '中国银行', value: 'BOC' },
-  { label: '交通银行', value: 'BOCOM' },
-  { label: '招商银行', value: 'CMB' },
-  { label: '中国邮政储蓄银行', value: 'PSBC' },
-  { label: '兴业银行', value: 'CIB' },
-  { label: '浦发银行', value: 'SPDB' },
-  { label: '民生银行', value: 'CMBC' },
-]
+const bankOptions = bankNameOptions
 
 const cpList = ref([
-  { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', bankCode: 'CMB', bankAccount: '6222****1234', accountName: '张伟', idCard: '110101199001011234', feeRate: 0.005, bankName: '招商银行北京望京支行', gameCount: 12, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
-  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', bankCode: 'ICBC', bankAccount: '6217****5678', accountName: '李明', idCard: '310101199102022345', feeRate: 0.005, bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
-  { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', bankCode: 'CCB', bankAccount: '6214****9012', accountName: '王芳', idCard: '440301199203033456', feeRate: 0.005, bankName: '建设银行深圳南山支行', gameCount: 10, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
-  { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', bankCode: 'ABC', bankAccount: '6228****3456', accountName: '赵磊', idCard: '330101199304044567', feeRate: 0.006, bankName: '农业银行杭州滨江支行', gameCount: 5, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
-  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', bankCode: 'BOC', bankAccount: '6230****7890', accountName: '陈静', idCard: '510101199405055678', feeRate: 0.005, bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
-  { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', bankCode: 'BOCOM', bankAccount: '6225****2345', accountName: '刘洋', idCard: '320101199506066789', feeRate: 0.004, bankName: '交通银行南京江宁支行', gameCount: 6, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
-  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', bankCode: 'SPDB', bankAccount: '6216****6789', accountName: '周婷', idCard: '420101199607077890', feeRate: 0.005, bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
+  { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', accountKind: 'public', bankCode: 'CMB', bankAccount: '6222123412341234', accountName: '极境互动科技有限公司', idCard: '91440300MA5CP0001X', licenseNo: '91440300MA5CP0001X', licenseName: '极境互动科技有限公司', legalPersonName: '张伟', legalPersonCertificateNo: '110101199001011234', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '招商银行北京望京支行', gameCount: 12, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
+  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', accountKind: 'private', bankCode: 'ICBC', bankAccount: '6217123456785678', accountName: '李明', idCard: '310101199102022345', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
+  { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', accountKind: 'public', bankCode: 'CCB', bankAccount: '6214123490129012', accountName: '乐游网络有限公司', idCard: '91440300MA5CP0003X', licenseNo: '91440300MA5CP0003X', licenseName: '乐游网络有限公司', legalPersonName: '王芳', legalPersonCertificateNo: '440301199203033456', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '建设银行深圳南山支行', gameCount: 10, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
+  { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', accountKind: 'public', bankCode: 'ABC', bankAccount: '6228123434563456', accountName: '星际科技有限公司', idCard: '91330100MA5CP0004X', licenseNo: '91330100MA5CP0004X', licenseName: '星际科技有限公司', legalPersonName: '赵磊', legalPersonCertificateNo: '330101199304044567', attachmentsReady: false, profileConfirmed: false, feeRate: 0.006, bankName: '农业银行杭州滨江支行', gameCount: 5, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
+  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', accountKind: 'private', bankCode: 'BOC', bankAccount: '6230123478907890', accountName: '陈静', idCard: '510101199405055678', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
+  { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', accountKind: 'public', bankCode: 'BOCOM', bankAccount: '6225123423452345', accountName: '幻视科技有限公司', idCard: '91320100MA5CP0006X', licenseNo: '91320100MA5CP0006X', licenseName: '幻视科技有限公司', legalPersonName: '刘洋', legalPersonCertificateNo: '320101199506066789', attachmentsReady: true, profileConfirmed: true, feeRate: 0.004, bankName: '交通银行南京江宁支行', gameCount: 6, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
+  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', accountKind: 'private', bankCode: 'SPDB', bankAccount: '6216123467896789', accountName: '周婷', idCard: '420101199607077890', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
 ])
 
 const pagination = { pageSize: 10 }
@@ -237,10 +340,9 @@ const columns: DataTableColumns<any> = [
   { title: '在架游戏', key: 'gameCount', width: 80, align: 'center' },
   { title: '累计结算额(¥)', key: 'totalSettlement', width: 130, align: 'right', sorter: true, render: (row) => `¥${row.totalSettlement.toLocaleString()}` },
   { title: '创建时间', key: 'joinTime', width: 110, sorter: true },
-  { title: '结算账户', key: 'bankCode', width: 90, render: (row: any) => {
-    return row.bankCode
-      ? h(NTag, { type: 'success', size: 'small', bordered: true }, () => '已绑定')
-      : h(NTag, { type: 'warning', size: 'small', bordered: true }, () => '未绑定')
+  { title: '分账资料', key: 'receiverProfileStatus', width: 120, render: (row: any) => {
+    const status = getCpReceiverStatus(row)
+    return h(NTag, { type: getReceiverProfileStatusTagType(status), size: 'small', bordered: true }, () => getReceiverProfileStatusLabel(status))
   }},
   {
     title: '操作', key: 'actions', width: 150, fixed: 'right',
@@ -270,28 +372,77 @@ function rowProps(row: any) {
 }
 
 function getBankName(code: string) {
-  const map: Record<string, string> = {
-    ICBC: '中国工商银行', CCB: '中国建设银行', ABC: '中国农业银行',
-    BOC: '中国银行', BOCOM: '交通银行', CMB: '招商银行',
-    PSBC: '中国邮政储蓄银行', CIB: '兴业银行', SPDB: '浦发银行', CMBC: '民生银行'
+  return getBankDisplayName(code)
+}
+
+function getCpReceiverStatus(cp: any) {
+  return getReceiverProfileStatus({
+    accountKind: cp.accountKind || 'public',
+    accountName: cp.accountName,
+    accountNo: cp.bankAccount,
+    bankName: cp.bankCode,
+    certificateNo: cp.idCard,
+    contactMobile: cp.phone,
+    licenseNo: cp.licenseNo,
+    licenseName: cp.licenseName,
+    legalPersonName: cp.legalPersonName,
+    legalPersonCertificateNo: cp.legalPersonCertificateNo,
+    attachmentsReady: cp.attachmentsReady,
+    profileConfirmed: cp.profileConfirmed,
+    receiverStatus: cp.receiverStatus,
+  })
+}
+
+function getCpAttachmentDisplayList(cp: any) {
+  return getReceiverAttachmentDisplayList(cp.attachmentNames, cp.accountKind || 'public', cp.name, cp.attachmentsReady)
+}
+
+function getCpSettlementChangeState(cp: any) {
+  const storageKey = getReceiverSettlementChangeStorageKey('cp', cp.name)
+  const saved = localStorage.getItem(storageKey)
+  if (saved) {
+    try {
+      return JSON.parse(saved)
+    } catch {
+      localStorage.removeItem(storageKey)
+    }
   }
-  return map[code] || code
+  const draftStatus = cp.pendingSettlementDraft?.draftStatus
+  return {
+    status: draftStatus || 'none',
+    remark: draftStatus ? '已保存结算账户变更草稿，尚未提交拉卡拉审核' : '',
+  }
 }
 
 function openAdd() {
   editingCp.value = null
-  form.value = { name: '', contact: '', phone: '', bankCode: '', bankAccount: '', accountName: '', idCard: '', feeRate: 0.005, status: 'active', username: '', password: '' }
+  settlementDraftMode.value = false
+  form.value = { name: '', contact: '', phone: '', accountKind: 'public', bankCode: '', bankAccount: '', accountName: '', idCard: '', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false, feeRate: 0.005, status: 'active', username: '', password: '' }
+  receiverAttachmentFiles.value = {}
   showModal.value = true
 }
 function openEdit(row: any) {
   editingCp.value = row
+  settlementDraftMode.value = false
+  const settlementSource = row.pendingSettlementDraft || row
   form.value = {
     name: row.name, contact: row.contact, phone: row.phone,
-    bankCode: row.bankCode || '', bankAccount: row.bankAccount || '',
-    accountName: row.accountName || '', idCard: row.idCard || '',
+    accountKind: settlementSource.accountKind || 'public',
+    bankCode: settlementSource.bankCode || '', bankAccount: settlementSource.bankAccount || '',
+    accountName: settlementSource.accountName || '', idCard: settlementSource.idCard || '',
+    licenseNo: settlementSource.licenseNo || '',
+    licenseName: settlementSource.licenseName || '',
+    legalPersonName: settlementSource.legalPersonName || '',
+    legalPersonCertificateNo: settlementSource.legalPersonCertificateNo || '',
+    attachmentsReady: settlementSource.attachmentsReady || false,
+    profileConfirmed: settlementSource.profileConfirmed || false,
     feeRate: row.feeRate ?? 0.005,
     status: row.status,
     username: row.username || '', password: '',
+  }
+  receiverAttachmentFiles.value = parseAttachmentNames(settlementSource.attachmentNames || [])
+  if (!isCpSettlementLocked(row)) {
+    refreshReceiverAttachmentStatus()
   }
   showModal.value = true
 }
@@ -299,23 +450,118 @@ function viewDetail(row: any) {
   detailCp.value = row
   showDetail.value = true
 }
+function getRequiredAttachmentNames(accountKind: string) {
+  return accountKind === 'public'
+    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+    : ['身份证正面', '身份证反面', '银行卡']
+}
+
+function buildAttachmentNames(filesMap: Record<string, UploadFileInfo[]>) {
+  return Object.entries(filesMap).flatMap(([type, files]) => files.map((file) => `${type}：${file.name}`))
+}
+
+function parseAttachmentNames(names: string[]) {
+  return names.reduce((acc, item) => {
+    const [type, name] = item.includes('：') ? item.split('：') : ['其他资料', item]
+    acc[type] = [{ id: item, name, status: 'finished' }]
+    return acc
+  }, {} as Record<string, UploadFileInfo[]>)
+}
+
+function getReceiverAttachmentFiles(type: string) {
+  return receiverAttachmentFiles.value[type] || []
+}
+
+function refreshReceiverAttachmentStatus() {
+  form.value.attachmentsReady = getRequiredAttachmentNames(form.value.accountKind).every((type) => Boolean(receiverAttachmentFiles.value[type]?.length))
+}
+
+function handleReceiverAttachmentFiles(type: string, files: UploadFileInfo[]) {
+  receiverAttachmentFiles.value[type] = files.slice(0, 1)
+  refreshReceiverAttachmentStatus()
+}
 function handleSave() {
   if (editingCp.value) {
-    Object.assign(editingCp.value, form.value)
+    const lockedSettlement = pickCpSettlementFields(editingCp.value)
+    const nextSettlementDraft = settlementDraftMode.value
+      ? {
+          ...pickCpSettlementFields(form.value),
+          attachmentNames: buildAttachmentNames(receiverAttachmentFiles.value),
+          bankName: form.value.bankCode ? getBankName(form.value.bankCode) + ' ' + (form.value.bankAccount || '') : '',
+          draftStatus: 'draft',
+        }
+      : editingCp.value.pendingSettlementDraft
+    Object.assign(
+      editingCp.value,
+      form.value,
+      { attachmentNames: buildAttachmentNames(receiverAttachmentFiles.value) },
+      settlementLocked.value ? { ...lockedSettlement, pendingSettlementDraft: nextSettlementDraft } : {}
+    )
     // 更新 bankName 显示用
-    editingCp.value.bankName = form.value.bankCode ? getBankName(form.value.bankCode) + ' ' + (form.value.bankAccount || '') : ''
-    message.success('供应商信息已更新')
+    if (!settlementLocked.value) {
+      editingCp.value.bankName = form.value.bankCode ? getBankName(form.value.bankCode) + ' ' + (form.value.bankAccount || '') : ''
+    }
+    message.success(settlementDraftMode.value ? '结算账户变更草稿已保存，当前生效资料未覆盖' : '供应商信息已更新')
   } else {
     const newCp = {
       ...form.value,
       id: Date.now(), gameCount: 0, totalSettlement: 0,
       joinTime: new Date().toISOString().slice(0, 10),
       bankName: form.value.bankCode ? getBankName(form.value.bankCode) + ' ' + (form.value.bankAccount || '') : '',
+      attachmentNames: buildAttachmentNames(receiverAttachmentFiles.value),
     }
     cpList.value.push(newCp)
     message.success('供应商已添加')
   }
   showModal.value = false
+}
+function isCpSettlementLocked(cp: any) {
+  return Boolean(
+    cp?.profileConfirmed
+    || ['reviewing', 'active', 'supplement'].includes(cp?.receiverStatus)
+  )
+}
+function pickCpSettlementFields(cp: any) {
+  return {
+    accountKind: cp.accountKind,
+    bankCode: cp.bankCode,
+    bankAccount: cp.bankAccount,
+    accountName: cp.accountName,
+    idCard: cp.idCard,
+    licenseNo: cp.licenseNo,
+    licenseName: cp.licenseName,
+    legalPersonName: cp.legalPersonName,
+    legalPersonCertificateNo: cp.legalPersonCertificateNo,
+    attachmentsReady: cp.attachmentsReady,
+    profileConfirmed: cp.profileConfirmed,
+    receiverStatus: cp.receiverStatus,
+    attachmentNames: cp.attachmentNames,
+    bankName: cp.bankName,
+  }
+}
+function startCpSettlementDraft() {
+  if (!editingCp.value) return
+  settlementDraftMode.value = true
+  const draft = editingCp.value.pendingSettlementDraft || editingCp.value
+  Object.assign(form.value, pickCpSettlementFields(draft))
+  receiverAttachmentFiles.value = parseAttachmentNames(draft.attachmentNames || [])
+}
+function goReceiverChangeFromCp() {
+  if (!editingCp.value) return
+  if (isCpSettlementLocked(editingCp.value) && !editingCp.value.pendingSettlementDraft) {
+    message.warning('请先填写并保存结算账户变更草稿，再提交拉卡拉变更申请')
+    return
+  }
+  showModal.value = false
+  router.push({
+    path: '/platform/finance/lakala-merchant-split',
+    query: {
+      receiverOwnerType: 'cp',
+      receiverOwnerId: String(editingCp.value.id),
+      receiverOwnerName: editingCp.value.name,
+      action: 'receiver-change',
+    },
+  })
 }
 function banCp(row: any) { row.status = 'banned'; message.warning(`「${row.name}」已封禁`) }
 function unbanCp(row: any) { row.status = 'active'; message.success(`「${row.name}」已解封`) }
@@ -334,4 +580,25 @@ function unbanCp(row: any) { row.status = 'active'; message.success(`「${row.na
 .stat-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
 .form-hint { margin-left: 8px; font-size: 12px; color: var(--text-muted); }
+.receiver-profile-alert { margin-bottom: 14px; }
+.inline-action { margin-left: 10px; }
+.upload-hint { width: 100%; margin-top: 6px; color: var(--text-muted); font-size: 12px; }
+.receiver-attachment-list { width: 100%; display: grid; gap: 10px; }
+.receiver-attachment-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #fafbfc; }
+.attachment-detail-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+:global(.entity-manage-modal.n-card) {
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+:global(.entity-manage-modal .n-card-content) {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:global(.entity-manage-modal .n-card__footer) {
+  flex-shrink: 0;
+}
 </style>

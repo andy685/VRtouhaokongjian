@@ -60,7 +60,7 @@
     </div>
 
     <!-- 新增代理商弹窗 -->
-    <n-modal :show="showAddModal" @update:show="(val: boolean) => showAddModal = val" preset="card" title="新增代理商" style="width: 680px;" :bordered="false">
+    <n-modal :show="showAddModal" @update:show="(val: boolean) => showAddModal = val" preset="card" title="新增代理商" class="entity-manage-modal" style="width: 680px;" :bordered="false">
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="left" label-width="100">
         <n-tabs type="line">
           <n-tab-pane name="basic" tab="基本信息">
@@ -102,10 +102,15 @@
           </n-tab-pane>
 
           <n-tab-pane name="bank" tab="结算账户">
-            <div style="margin-bottom: 12px; padding: 12px; background: #EFF6FF; border-radius: 8px; font-size: 13px; color: #3B82F6;">
-              <n-icon :component="InformationCircleOutline" style="vertical-align: middle; margin-right: 4px;" />
-              结算账户用于接收平台定期打款的分润收益，请确保信息准确
-            </div>
+            <n-alert type="info" :bordered="false" class="receiver-profile-alert">
+              这里维护拉卡拉“分账接收方”的结算账户和附件资料。请一次确认准确，提交拉卡拉后仅结算资料不可自行修改，确需变更由运营后台处理。
+            </n-alert>
+            <n-form-item label="账户类型">
+              <n-radio-group v-model:value="addForm.accountKind" @update:value="refreshAddReceiverAttachmentStatus">
+                <n-radio value="private">对私账户</n-radio>
+                <n-radio value="public">对公账户</n-radio>
+              </n-radio-group>
+            </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="addForm.bankName" :options="bankOptions" placeholder="请选择开户银行" />
             </n-form-item>
@@ -117,6 +122,48 @@
             </n-form-item>
             <n-form-item label="身份证号">
               <n-input v-model:value="addForm.idCard" placeholder="请输入身份证号" maxlength="18" />
+            </n-form-item>
+            <template v-if="addForm.accountKind === 'public'">
+              <n-form-item label="营业执照号">
+                <n-input v-model:value="addForm.licenseNo" placeholder="请输入营业执照号码" />
+              </n-form-item>
+              <n-form-item label="营业执照名称">
+                <n-input v-model:value="addForm.licenseName" placeholder="请输入营业执照名称" />
+              </n-form-item>
+              <n-form-item label="法人姓名">
+                <n-input v-model:value="addForm.legalPersonName" placeholder="请输入法人姓名" />
+              </n-form-item>
+              <n-form-item label="法人证件号">
+                <n-input v-model:value="addForm.legalPersonCertificateNo" placeholder="请输入法人身份证号" maxlength="18" />
+              </n-form-item>
+            </template>
+            <n-form-item label="附件状态">
+              <n-tag :type="addForm.attachmentsReady ? 'success' : 'warning'" size="small">
+                {{ addForm.attachmentsReady ? '已收齐' : '待补充' }}
+              </n-tag>
+            </n-form-item>
+            <n-form-item label="分项附件">
+              <div class="receiver-attachment-list">
+                <div v-for="item in getRequiredAttachmentNames(addForm.accountKind)" :key="item" class="receiver-attachment-row">
+                  <span>{{ item }}</span>
+                  <n-upload
+                    :file-list="getAddReceiverAttachmentFiles(item)"
+                    :max="1"
+                    :default-upload="false"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    @update:file-list="(files) => handleAddReceiverAttachmentFiles(item, files)"
+                  >
+                    <n-button size="small">上传</n-button>
+                  </n-upload>
+                </div>
+              </div>
+              <div class="upload-hint">每一项资料单独上传，全部必传项上传后才会标记为已收齐。</div>
+            </n-form-item>
+            <n-form-item label="资料确认">
+              <n-radio-group v-model:value="addForm.profileConfirmed">
+                <n-radio :value="true">已确认，提交后不可自行修改</n-radio>
+                <n-radio :value="false">暂不提交</n-radio>
+              </n-radio-group>
             </n-form-item>
           </n-tab-pane>
         </n-tabs>
@@ -130,7 +177,7 @@
     </n-modal>
 
     <!-- 编辑代理商弹窗 -->
-    <n-modal v-model:show="showEditModal" preset="card" title="编辑代理商" style="width: 680px;" :bordered="false">
+    <n-modal v-model:show="showEditModal" preset="card" title="编辑代理商" class="entity-manage-modal" style="width: 680px;" :bordered="false">
       <n-tabs v-if="currentAgent" type="line">
         <n-tab-pane name="basic" tab="基本信息">
           <n-form label-placement="left" label-width="100">
@@ -165,17 +212,81 @@
 
         <n-tab-pane name="bank" tab="结算账户">
           <n-form label-placement="left" label-width="100">
+            <n-alert :type="editSettlementLocked ? 'warning' : 'info'" :bordered="false" class="receiver-profile-alert">
+              {{
+                editSettlementLocked
+                  ? '该结算账户和附件资料已确认或已提交拉卡拉接收方申请，不能直接修改；基本信息、状态、分润比例和手续费率等基础数据仍可编辑。确需变更结算资料，请到接收方与分账关系发起信息变更申请。'
+                  : '这里仅维护结算账户和附件资料；确认后将作为拉卡拉分账接收方资料，后续变更需走申请。'
+              }}
+              <n-space v-if="editSettlementLocked" inline class="inline-action">
+                <n-button size="tiny" secondary type="warning" @click="startAgentSettlementDraft">
+                  {{ settlementDraftMode ? '正在填写草稿' : '填写变更草稿' }}
+                </n-button>
+                <n-button size="tiny" secondary type="primary" @click="goReceiverChangeFromAgent">
+                  去提交变更申请
+                </n-button>
+              </n-space>
+            </n-alert>
+            <n-form-item label="账户类型">
+              <n-radio-group v-model:value="editForm.accountKind" :disabled="settlementFieldsReadonly" @update:value="refreshEditReceiverAttachmentStatus">
+                <n-radio value="private">对私账户</n-radio>
+                <n-radio value="public">对公账户</n-radio>
+              </n-radio-group>
+            </n-form-item>
             <n-form-item label="开户银行">
-              <n-select v-model:value="editForm.bankName" :options="bankOptions" placeholder="请选择开户银行" />
+              <n-select v-model:value="editForm.bankName" :options="bankOptions" :disabled="settlementFieldsReadonly" placeholder="请选择开户银行" />
             </n-form-item>
             <n-form-item label="银行卡号">
-              <n-input v-model:value="editForm.cardNo" placeholder="请输入银行卡号" maxlength="23" />
+              <n-input v-model:value="editForm.cardNo" :disabled="settlementFieldsReadonly" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
             <n-form-item label="开户人姓名">
-              <n-input v-model:value="editForm.accountName" placeholder="请输入开户人姓名" />
+              <n-input v-model:value="editForm.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入开户人姓名" />
             </n-form-item>
             <n-form-item label="身份证号">
-              <n-input v-model:value="editForm.idCard" placeholder="请输入身份证号" maxlength="18" />
+              <n-input v-model:value="editForm.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入身份证号" maxlength="18" />
+            </n-form-item>
+            <template v-if="editForm.accountKind === 'public'">
+              <n-form-item label="营业执照号">
+                <n-input v-model:value="editForm.licenseNo" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照号码" />
+              </n-form-item>
+              <n-form-item label="营业执照名称">
+                <n-input v-model:value="editForm.licenseName" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照名称" />
+              </n-form-item>
+              <n-form-item label="法人姓名">
+                <n-input v-model:value="editForm.legalPersonName" :disabled="settlementFieldsReadonly" placeholder="请输入法人姓名" />
+              </n-form-item>
+              <n-form-item label="法人证件号">
+                <n-input v-model:value="editForm.legalPersonCertificateNo" :disabled="settlementFieldsReadonly" placeholder="请输入法人身份证号" maxlength="18" />
+              </n-form-item>
+            </template>
+            <n-form-item label="附件状态">
+              <n-tag :type="editForm.attachmentsReady ? 'success' : 'warning'" size="small">
+                {{ editForm.attachmentsReady ? '已收齐' : '待补充' }}
+              </n-tag>
+            </n-form-item>
+            <n-form-item label="分项附件">
+              <div class="receiver-attachment-list">
+                <div v-for="item in getRequiredAttachmentNames(editForm.accountKind)" :key="item" class="receiver-attachment-row">
+                  <span>{{ item }}</span>
+                  <n-upload
+                    :file-list="getEditReceiverAttachmentFiles(item)"
+                    :max="1"
+                    :default-upload="false"
+                    :disabled="settlementFieldsReadonly"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    @update:file-list="(files) => handleEditReceiverAttachmentFiles(item, files)"
+                  >
+                    <n-button size="small" :disabled="settlementFieldsReadonly">上传</n-button>
+                  </n-upload>
+                </div>
+              </div>
+              <div class="upload-hint">{{ settlementFieldsReadonly ? '当前展示的是生效结算资料；如需更换，请先填写变更草稿。' : '每一项资料单独上传，全部必传项上传后才会标记为已收齐。' }}</div>
+            </n-form-item>
+            <n-form-item label="资料确认">
+              <n-radio-group v-model:value="editForm.profileConfirmed" :disabled="settlementFieldsReadonly">
+                <n-radio :value="true">已确认，提交后结算账户不可自行修改</n-radio>
+                <n-radio :value="false">暂不提交</n-radio>
+              </n-radio-group>
             </n-form-item>
           </n-form>
         </n-tab-pane>
@@ -189,7 +300,7 @@
     </n-modal>
 
     <!-- 详情弹窗 -->
-    <n-modal :show="showDetailModal" @update:show="(val: boolean) => showDetailModal = val" preset="card" title="代理商详情" style="width: 720px;" :bordered="false">
+    <n-modal :show="showDetailModal" @update:show="(val: boolean) => showDetailModal = val" preset="card" title="代理商详情" class="entity-manage-modal" style="width: 720px;" :bordered="false">
       <n-tabs v-if="currentAgent" type="line">
         <n-tab-pane name="basic" tab="基本信息">
           <n-descriptions label-placement="left" :column="2" bordered>
@@ -215,12 +326,45 @@
 
         <n-tab-pane name="bank" tab="结算账户">
           <n-descriptions label-placement="left" :column="1" bordered v-if="currentAgent.bankName && currentAgent.cardNo">
+            <n-descriptions-item label="资料状态">
+              <n-tag :type="getReceiverProfileStatusTagType(getAgentReceiverStatus(currentAgent))" size="small">
+                {{ getReceiverProfileStatusLabel(getAgentReceiverStatus(currentAgent)) }}
+              </n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item label="变更状态">
+              <n-tag :type="getReceiverSettlementChangeStatusTagType(getAgentSettlementChangeState(currentAgent).status)" size="small">
+                {{ getReceiverSettlementChangeStatusLabel(getAgentSettlementChangeState(currentAgent).status) }}
+              </n-tag>
+            </n-descriptions-item>
+            <n-descriptions-item v-if="getAgentSettlementChangeState(currentAgent).remark" label="变更说明">
+              {{ getAgentSettlementChangeState(currentAgent).remark }}
+            </n-descriptions-item>
+            <n-descriptions-item label="账户类型">{{ currentAgent.accountKind === 'public' ? '对公账户' : '对私账户' }}</n-descriptions-item>
             <n-descriptions-item label="开户银行">{{ getBankNameText(currentAgent.bankName) }}</n-descriptions-item>
-            <n-descriptions-item label="银行卡号">{{ formatCardNo(currentAgent.cardNo) }}</n-descriptions-item>
+            <n-descriptions-item label="银行卡号">{{ maskAccountNo(currentAgent.cardNo) }}</n-descriptions-item>
             <n-descriptions-item label="开户人姓名">{{ currentAgent.accountName }}</n-descriptions-item>
             <n-descriptions-item label="身份证号">{{ formatIDCard(currentAgent.idCard) }}</n-descriptions-item>
-            <n-descriptions-item label="账户状态">
-              <n-tag type="success" size="small">已绑定</n-tag>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="营业执照号">{{ currentAgent.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="营业执照名称">{{ currentAgent.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="法人姓名">{{ currentAgent.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="法人证件号">{{ formatIDCard(currentAgent.legalPersonCertificateNo) }}</n-descriptions-item>
+            <n-descriptions-item label="必传附件">
+              {{ currentAgent.attachmentsReady ? '已收齐' : '待补充' }}
+            </n-descriptions-item>
+            <n-descriptions-item label="附件文件">
+              <div class="attachment-detail-list">
+                <n-tag
+                  v-for="item in getAgentAttachmentDisplayList(currentAgent)"
+                  :key="item"
+                  size="small"
+                  :type="item === '待补充' ? 'warning' : 'success'"
+                >
+                  {{ item }}
+                </n-tag>
+              </div>
+            </n-descriptions-item>
+            <n-descriptions-item label="资料确认">
+              {{ currentAgent.profileConfirmed ? '已确认，结算账户不可自行修改' : '未确认' }}
             </n-descriptions-item>
           </n-descriptions>
           <n-empty v-else description="该代理商尚未绑定结算账户" />
@@ -238,19 +382,34 @@
 
 <script setup lang="ts">
 import { ref, computed, h, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import {
-  NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
+  NAlert, NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
   NForm, NFormItem, NRadioGroup, NRadio, NIcon, NDescriptions, NDescriptionsItem,
-  useMessage, type FormInst, type FormRules, NInputNumber, NTabs, NTabPane, NEmpty, NCascader
+  useMessage, type FormInst, type FormRules, NInputNumber, NTabs, NTabPane, NEmpty, NCascader, NUpload
 } from 'naive-ui'
+import type { UploadFileInfo } from 'naive-ui'
 import {
   SearchOutline, AddOutline, PeopleOutline, StorefrontOutline,
   TrendingUpOutline, LocationOutline, EyeOutline, CreateOutline,
   TrashOutline, InformationCircleOutline
 } from '@vicons/ionicons5'
 import { useDialog } from 'naive-ui'
+import {
+  bankNameOptions,
+  getBankDisplayName,
+  getReceiverAttachmentDisplayList,
+  getReceiverProfileStatus,
+  getReceiverProfileStatusLabel,
+  getReceiverProfileStatusTagType,
+  getReceiverSettlementChangeStatusLabel,
+  getReceiverSettlementChangeStatusTagType,
+  getReceiverSettlementChangeStorageKey,
+  maskAccountNo,
+} from './lakalaReceiverProfile'
 
 const message = useMessage()
+const router = useRouter()
 const dialog = useDialog()
 const searchText = ref('')
 const regionFilter = ref<string[]>([])
@@ -355,18 +514,7 @@ function joinRegionPath(path: string[]): string {
 const addRegionPath = ref<string[]>([])
 const editRegionPath = ref<string[]>([])
 
-const bankOptions = [
-  { label: '中国工商银行', value: 'ICBC' },
-  { label: '中国建设银行', value: 'CCB' },
-  { label: '中国农业银行', value: 'ABC' },
-  { label: '中国银行', value: 'BOC' },
-  { label: '交通银行', value: 'BOCOM' },
-  { label: '招商银行', value: 'CMB' },
-  { label: '中国邮政储蓄银行', value: 'PSBC' },
-  { label: '兴业银行', value: 'CIB' },
-  { label: '浦发银行', value: 'SPDB' },
-  { label: '民生银行', value: 'CMBC' },
-]
+const bankOptions = bankNameOptions
 
 const columns = [
   { title: '代理商名称', key: 'name', width: 180 },
@@ -387,10 +535,9 @@ const columns = [
       return h(NTag, { type: row.status === 'active' ? 'success' : 'default', size: 'small', bordered: true }, () => row.status === 'active' ? '正常' : '停用')
     }
   },
-  { title: '结算账户', key: 'bankStatus', width: 100, render(row: any) {
-    return row.bankName && row.cardNo
-      ? h(NTag, { type: 'success', size: 'small', bordered: true }, () => '已绑定')
-      : h(NTag, { type: 'warning', size: 'small', bordered: true }, () => '未绑定')
+  { title: '分账资料', key: 'receiverProfileStatus', width: 120, render(row: any) {
+    const status = getAgentReceiverStatus(row)
+    return h(NTag, { type: getReceiverProfileStatusTagType(status), size: 'small', bordered: true }, () => getReceiverProfileStatusLabel(status))
   }},
   { title: '创建时间', key: 'createdAt', width: 120 },
   {
@@ -417,11 +564,11 @@ const columns = [
 ]
 
 const agentData = ref([
-  { id: 1, name: '深圳未来科技', contact: '张伟', phone: '13800138001', region: '广东省 / 深圳市', commissionRate: 15, feeRate: 0.005, merchantCount: 5, storeCount: 36, monthRecharge: '¥856,200', monthCommission: '¥128,430', status: 'active', createdAt: '2023-06-01', bankName: 'ICBC', cardNo: '6222021234567890123', accountName: '张伟', idCard: '440301199001011234' },
-  { id: 2, name: '北京梦想空间', contact: '李娜', phone: '13800138002', region: '北京市', commissionRate: 12, feeRate: 0.005, merchantCount: 3, storeCount: 8, monthRecharge: '¥623,400', monthCommission: '¥74,808', status: 'active', createdAt: '2023-07-15', bankName: 'CCB', cardNo: '6227001234567890123', accountName: '李娜', idCard: '110101199002022345' },
-  { id: 3, name: '上海星际娱乐', contact: '王强', phone: '13800138003', region: '上海市', commissionRate: 18, feeRate: 0.006, merchantCount: 5, storeCount: 15, monthRecharge: '¥1,056,800', monthCommission: '¥190,224', status: 'active', createdAt: '2023-08-20', bankName: '', cardNo: '', accountName: '', idCard: '' },
-  { id: 4, name: '成都虚拟现实', contact: '赵敏', phone: '13800138004', region: '四川省 / 成都市', commissionRate: 10, feeRate: 0.004, merchantCount: 2, storeCount: 6, monthRecharge: '¥312,500', monthCommission: '¥31,250', status: 'active', createdAt: '2023-09-10', bankName: 'ABC', cardNo: '6228481234567890123', accountName: '赵敏', idCard: '510104199003033456' },
-  { id: 5, name: '武汉创新体验', contact: '刘洋', phone: '13800138005', region: '湖北省 / 武汉市', commissionRate: 14, feeRate: 0.005, merchantCount: 2, storeCount: 9, monthRecharge: '¥445,600', monthCommission: '¥62,384', status: 'inactive', createdAt: '2023-10-05', bankName: '', cardNo: '', accountName: '', idCard: '' },
+  { id: 1, name: '深圳未来科技', contact: '张伟', phone: '13800138001', region: '广东省 / 深圳市', commissionRate: 15, feeRate: 0.005, merchantCount: 5, storeCount: 36, monthRecharge: '¥856,200', monthCommission: '¥128,430', status: 'active', createdAt: '2023-06-01', accountKind: 'private', bankName: 'ICBC', cardNo: '6222021234567890123', accountName: '张伟', idCard: '440301199001011234', attachmentsReady: true, profileConfirmed: true },
+  { id: 2, name: '北京梦想空间', contact: '李娜', phone: '13800138002', region: '北京市', commissionRate: 12, feeRate: 0.005, merchantCount: 3, storeCount: 8, monthRecharge: '¥623,400', monthCommission: '¥74,808', status: 'active', createdAt: '2023-07-15', accountKind: 'private', bankName: 'CCB', cardNo: '6227001234567890123', accountName: '李娜', idCard: '110101199002022345', attachmentsReady: true, profileConfirmed: true },
+  { id: 3, name: '上海星际娱乐', contact: '王强', phone: '13800138003', region: '上海市', commissionRate: 18, feeRate: 0.006, merchantCount: 5, storeCount: 15, monthRecharge: '¥1,056,800', monthCommission: '¥190,224', status: 'active', createdAt: '2023-08-20', accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '', attachmentsReady: false, profileConfirmed: false },
+  { id: 4, name: '成都虚拟现实', contact: '赵敏', phone: '13800138004', region: '四川省 / 成都市', commissionRate: 10, feeRate: 0.004, merchantCount: 2, storeCount: 6, monthRecharge: '¥312,500', monthCommission: '¥31,250', status: 'active', createdAt: '2023-09-10', accountKind: 'private', bankName: 'ABC', cardNo: '6228481234567890123', accountName: '赵敏', idCard: '510104199003033456', attachmentsReady: true, profileConfirmed: true },
+  { id: 5, name: '武汉创新体验', contact: '刘洋', phone: '13800138005', region: '湖北省 / 武汉市', commissionRate: 14, feeRate: 0.005, merchantCount: 2, storeCount: 9, monthRecharge: '¥445,600', monthCommission: '¥62,384', status: 'inactive', createdAt: '2023-10-05', accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '', attachmentsReady: false, profileConfirmed: false },
 ])
 
 const pagination = { pageSize: 10 }
@@ -450,12 +597,46 @@ function formatIDCard(idCard: string) {
 }
 
 function getBankNameText(bankCode: string) {
-  const map: Record<string, string> = {
-    ICBC: '中国工商银行', CCB: '中国建设银行', ABC: '中国农业银行',
-    BOC: '中国银行', BOCOM: '交通银行', CMB: '招商银行',
-    PSBC: '中国邮政储蓄银行', CIB: '兴业银行', SPDB: '浦发银行', CMBC: '民生银行'
+  return getBankDisplayName(bankCode)
+}
+
+function getAgentReceiverStatus(agent: any) {
+  return getReceiverProfileStatus({
+    accountKind: agent.accountKind || 'private',
+    accountName: agent.accountName,
+    accountNo: agent.cardNo,
+    bankName: agent.bankName,
+    certificateNo: agent.idCard,
+    contactMobile: agent.phone,
+    licenseNo: agent.licenseNo,
+    licenseName: agent.licenseName,
+    legalPersonName: agent.legalPersonName,
+    legalPersonCertificateNo: agent.legalPersonCertificateNo,
+    attachmentsReady: agent.attachmentsReady,
+    profileConfirmed: agent.profileConfirmed,
+    receiverStatus: agent.receiverStatus,
+  })
+}
+
+function getAgentAttachmentDisplayList(agent: any) {
+  return getReceiverAttachmentDisplayList(agent.attachmentNames, agent.accountKind || 'private', agent.name, agent.attachmentsReady)
+}
+
+function getAgentSettlementChangeState(agent: any) {
+  const storageKey = getReceiverSettlementChangeStorageKey('agent', agent.name)
+  const saved = localStorage.getItem(storageKey)
+  if (saved) {
+    try {
+      return JSON.parse(saved)
+    } catch {
+      localStorage.removeItem(storageKey)
+    }
   }
-  return map[bankCode] || bankCode
+  const draftStatus = agent.pendingSettlementDraft?.draftStatus
+  return {
+    status: draftStatus || 'none',
+    remark: draftStatus ? '已保存结算账户变更草稿，尚未提交拉卡拉审核' : '',
+  }
 }
 
 // ===== 新增 =====
@@ -469,10 +650,12 @@ function openAdd() {
 }
 
 const addFormRef = ref<FormInst | null>(null)
+const addReceiverAttachmentFiles = ref<Record<string, UploadFileInfo[]>>({})
 const addForm = ref({
   name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active',
   username: '', password: '',
-  bankName: '', cardNo: '', accountName: '', idCard: ''
+  accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '',
+  licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false,
 })
 const addRules: FormRules = {
   name: { required: true, message: '请输入代理商名称', trigger: 'blur' },
@@ -507,10 +690,18 @@ function handleAdd() {
       monthCommission: '¥0',
       username: addForm.value.username,
       password: addForm.value.password,
+      accountKind: addForm.value.accountKind,
       bankName: addForm.value.bankName,
       cardNo: addForm.value.cardNo,
       accountName: addForm.value.accountName,
       idCard: addForm.value.idCard,
+      licenseNo: addForm.value.licenseNo,
+      licenseName: addForm.value.licenseName,
+      legalPersonName: addForm.value.legalPersonName,
+      legalPersonCertificateNo: addForm.value.legalPersonCertificateNo,
+      attachmentsReady: addForm.value.attachmentsReady,
+      profileConfirmed: addForm.value.profileConfirmed,
+      attachmentNames: buildAttachmentNames(addReceiverAttachmentFiles.value),
       createdAt: new Date().toISOString().slice(0, 10),
     })
     message.success('代理商新增成功')
@@ -519,42 +710,170 @@ function handleAdd() {
   })
 }
 
+function getRequiredAttachmentNames(accountKind: string) {
+  return accountKind === 'public'
+    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+    : ['身份证正面', '身份证反面', '银行卡']
+}
+
+function buildAttachmentNames(filesMap: Record<string, UploadFileInfo[]>) {
+  return Object.entries(filesMap).flatMap(([type, files]) => files.map((file) => `${type}：${file.name}`))
+}
+
+function getAddReceiverAttachmentFiles(type: string) {
+  return addReceiverAttachmentFiles.value[type] || []
+}
+
+function refreshAddReceiverAttachmentStatus() {
+  addForm.value.attachmentsReady = getRequiredAttachmentNames(addForm.value.accountKind).every((type) => Boolean(addReceiverAttachmentFiles.value[type]?.length))
+}
+
+function handleAddReceiverAttachmentFiles(type: string, files: UploadFileInfo[]) {
+  addReceiverAttachmentFiles.value[type] = files.slice(0, 1)
+  refreshAddReceiverAttachmentStatus()
+}
+
 function resetAddForm() {
-  addForm.value = { name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active', username: '', password: '', bankName: '', cardNo: '', accountName: '', idCard: '' }
+  addForm.value = { name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active', username: '', password: '', accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false }
+  addReceiverAttachmentFiles.value = {}
   addRegionPath.value = []
 }
 
 // ===== 编辑 =====
 const showEditModal = ref(false)
 const currentAgent = ref<any>(null)
+const editReceiverAttachmentFiles = ref<Record<string, UploadFileInfo[]>>({})
+const editSettlementLocked = computed(() => isAgentSettlementLocked(currentAgent.value))
+const settlementDraftMode = ref(false)
+const settlementFieldsReadonly = computed(() => editSettlementLocked.value && !settlementDraftMode.value)
 const editForm = ref({
   name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active',
-  bankName: '', cardNo: '', accountName: '', idCard: ''
+  accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '',
+  licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false,
 })
 
 function openEdit(row: any) {
   currentAgent.value = row
+  settlementDraftMode.value = false
+  const settlementSource = row.pendingSettlementDraft || row
   editForm.value = {
     name: row.name, contact: row.contact || '', phone: row.phone || '',
     region: row.region || '', commissionRate: row.commissionRate || 10,
     feeRate: row.feeRate || 0.005,
     status: row.status || 'active',
-    bankName: row.bankName || '', cardNo: row.cardNo || '',
-    accountName: row.accountName || '', idCard: row.idCard || '',
+    accountKind: settlementSource.accountKind || 'private',
+    bankName: settlementSource.bankName || '', cardNo: settlementSource.cardNo || '',
+    accountName: settlementSource.accountName || '', idCard: settlementSource.idCard || '',
+    licenseNo: settlementSource.licenseNo || '',
+    licenseName: settlementSource.licenseName || '',
+    legalPersonName: settlementSource.legalPersonName || '',
+    legalPersonCertificateNo: settlementSource.legalPersonCertificateNo || '',
+    attachmentsReady: settlementSource.attachmentsReady || false,
+    profileConfirmed: settlementSource.profileConfirmed || false,
+  }
+  editReceiverAttachmentFiles.value = parseAttachmentNames(settlementSource.attachmentNames || [])
+  if (!isAgentSettlementLocked(row)) {
+    refreshEditReceiverAttachmentStatus()
   }
   // Parse "广东省 / 深圳市" → ['广东省', '深圳市']
   editRegionPath.value = row.region ? row.region.split(' / ') : []
   showEditModal.value = true
 }
 
+function parseAttachmentNames(names: string[]) {
+  return names.reduce((acc, item) => {
+    const [type, name] = item.includes('：') ? item.split('：') : ['其他资料', item]
+    acc[type] = [{ id: item, name, status: 'finished' }]
+    return acc
+  }, {} as Record<string, UploadFileInfo[]>)
+}
+
+function getEditReceiverAttachmentFiles(type: string) {
+  return editReceiverAttachmentFiles.value[type] || []
+}
+
+function refreshEditReceiverAttachmentStatus() {
+  editForm.value.attachmentsReady = getRequiredAttachmentNames(editForm.value.accountKind).every((type) => Boolean(editReceiverAttachmentFiles.value[type]?.length))
+}
+
+function handleEditReceiverAttachmentFiles(type: string, files: UploadFileInfo[]) {
+  editReceiverAttachmentFiles.value[type] = files.slice(0, 1)
+  refreshEditReceiverAttachmentStatus()
+}
+
 function handleEdit() {
   if (!currentAgent.value) return
   const idx = agentData.value.findIndex(d => d.id === currentAgent.value.id)
   if (idx !== -1) {
-    agentData.value[idx] = { ...agentData.value[idx], ...editForm.value, region: editRegionPath.value.join(' / ') }
-    message.success('代理商信息已更新')
+    const lockedSettlement = pickAgentSettlementFields(agentData.value[idx])
+    const nextSettlementDraft = settlementDraftMode.value
+      ? {
+          ...pickAgentSettlementFields(editForm.value),
+          attachmentNames: buildAttachmentNames(editReceiverAttachmentFiles.value),
+          draftStatus: 'draft',
+        }
+      : agentData.value[idx].pendingSettlementDraft
+    agentData.value[idx] = {
+      ...agentData.value[idx],
+      ...editForm.value,
+      attachmentNames: buildAttachmentNames(editReceiverAttachmentFiles.value),
+      region: editRegionPath.value.join(' / '),
+      ...(editSettlementLocked.value ? { ...lockedSettlement, pendingSettlementDraft: nextSettlementDraft } : {}),
+    }
+    message.success(settlementDraftMode.value ? '结算账户变更草稿已保存，当前生效资料未覆盖' : '代理商信息已更新')
   }
   showEditModal.value = false
+}
+
+function isAgentSettlementLocked(agent: any) {
+  return Boolean(
+    agent?.profileConfirmed
+    || ['reviewing', 'active', 'supplement'].includes(agent?.receiverStatus)
+  )
+}
+
+function pickAgentSettlementFields(agent: any) {
+  return {
+    accountKind: agent.accountKind,
+    bankName: agent.bankName,
+    cardNo: agent.cardNo,
+    accountName: agent.accountName,
+    idCard: agent.idCard,
+    licenseNo: agent.licenseNo,
+    licenseName: agent.licenseName,
+    legalPersonName: agent.legalPersonName,
+    legalPersonCertificateNo: agent.legalPersonCertificateNo,
+    attachmentsReady: agent.attachmentsReady,
+    profileConfirmed: agent.profileConfirmed,
+    receiverStatus: agent.receiverStatus,
+    attachmentNames: agent.attachmentNames,
+  }
+}
+
+function startAgentSettlementDraft() {
+  if (!currentAgent.value) return
+  settlementDraftMode.value = true
+  const draft = currentAgent.value.pendingSettlementDraft || currentAgent.value
+  Object.assign(editForm.value, pickAgentSettlementFields(draft))
+  editReceiverAttachmentFiles.value = parseAttachmentNames(draft.attachmentNames || [])
+}
+
+function goReceiverChangeFromAgent() {
+  if (!currentAgent.value) return
+  if (isAgentSettlementLocked(currentAgent.value) && !currentAgent.value.pendingSettlementDraft) {
+    message.warning('请先填写并保存结算账户变更草稿，再提交拉卡拉变更申请')
+    return
+  }
+  showEditModal.value = false
+  router.push({
+    path: '/platform/finance/lakala-merchant-split',
+    query: {
+      receiverOwnerType: 'agent',
+      receiverOwnerId: String(currentAgent.value.id),
+      receiverOwnerName: currentAgent.value.name,
+      action: 'receiver-change',
+    },
+  })
 }
 
 // ===== 详情 =====
@@ -598,4 +917,25 @@ function handleDelete(row: any) {
 .stat-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
 
 .content-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); }
+.receiver-profile-alert { margin-bottom: 14px; }
+.inline-action { margin-left: 10px; }
+.upload-hint { width: 100%; margin-top: 6px; color: var(--text-muted); font-size: 12px; }
+.receiver-attachment-list { width: 100%; display: grid; gap: 10px; }
+.receiver-attachment-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #fafbfc; }
+.attachment-detail-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+:global(.entity-manage-modal.n-card) {
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+:global(.entity-manage-modal .n-card-content) {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:global(.entity-manage-modal .n-card__footer) {
+  flex-shrink: 0;
+}
 </style>

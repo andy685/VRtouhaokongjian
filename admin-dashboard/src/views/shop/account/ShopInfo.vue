@@ -1,101 +1,261 @@
 <template>
-  <div class="shop-info-container">
-    <n-card title="商家信息" class="shop-info-card">
-      <n-tabs type="line">
-        <n-tab-pane name="basic" tab="基本信息">
-          <n-form>
-            <n-form-item label="商家名称">
-              <n-input v-model:value="shopInfo.name" placeholder="请输入商家名称" />
-            </n-form-item>
-            <n-form-item label="商家地址">
-              <n-input v-model:value="shopInfo.address" placeholder="请输入商家地址" />
-            </n-form-item>
-            <n-form-item label="联系电话">
-              <n-input v-model:value="shopInfo.phone" placeholder="请输入联系电话" />
-            </n-form-item>
-            <n-form-item label="邮箱地址">
-              <n-input v-model:value="shopInfo.email" placeholder="请输入邮箱地址" />
-            </n-form-item>
-            <n-form-item label="商家简介">
-              <n-input
-                v-model:value="shopInfo.description"
-                type="textarea"
-                placeholder="请输入商家简介"
-                :autosize="{ minRows: 3, maxRows: 5 }"
-              />
-            </n-form-item>
-            <n-form-item>
-              <n-button type="primary" @click="saveBasicInfo">保存修改</n-button>
-            </n-form-item>
-          </n-form>
-        </n-tab-pane>
-        <n-tab-pane name="business" tab="经营信息">
-          <n-form>
-            <n-form-item label="经营范围">
-              <n-input
-                v-model:value="shopInfo.businessScope"
-                type="textarea"
-                placeholder="请输入经营范围"
-                :autosize="{ minRows: 3, maxRows: 5 }"
-              />
-            </n-form-item>
-            <n-form-item label="营业执照号">
-              <n-input v-model:value="shopInfo.businessLicense" placeholder="请输入营业执照号" />
-            </n-form-item>
-            <n-form-item label="法人姓名">
-              <n-input v-model:value="shopInfo.legalPerson" placeholder="请输入法人姓名" />
-            </n-form-item>
-            <n-form-item label="注册资本">
-              <n-input v-model:value="shopInfo.registeredCapital" placeholder="请输入注册资本" />
-            </n-form-item>
-            <n-form-item>
-              <n-button type="primary" @click="saveBusinessInfo">保存修改</n-button>
-            </n-form-item>
-          </n-form>
-        </n-tab-pane>
-      </n-tabs>
-    </n-card>
+  <div class="page-container animate-fade-in">
+    <div class="page-header">
+      <h1>商家信息</h1>
+    </div>
+
+    <div class="merchant-hero">
+      <div>
+        <span class="hero-label">当前商家</span>
+        <strong>{{ info.name }}</strong>
+        <p>由总运营后台创建和维护，商家侧仅维护联系方式和展示简介。</p>
+      </div>
+      <n-tag type="success" size="small">正常</n-tag>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <h3>基本信息</h3>
+        <span class="section-badge">平台设定，不可修改</span>
+      </div>
+      <div class="info-grid">
+        <div class="readonly-item">
+          <span>商家名称</span>
+          <strong>{{ info.name }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>联系人</span>
+          <strong>{{ info.contact }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>联系电话</span>
+          <strong>{{ info.phone }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>负责区域</span>
+          <strong>{{ info.region }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>对应代理商</span>
+          <strong>{{ info.agentName }}</strong>
+        </div>
+        <div class="readonly-item">
+          <span>手续费率</span>
+          <strong>{{ info.feeRate }}%</strong>
+        </div>
+      </div>
+      <n-alert type="info" :bordered="false" class="section-hint">
+        营业执照、法人、银行账户和附件资料统一在“账户 > 结算账户”中维护。
+      </n-alert>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <h3>联系信息</h3>
+      </div>
+      <n-alert type="info" :bordered="false" class="section-hint contact-hint">
+        联系人、电话、邮箱和简介允许商家自助维护；商家名称、区域、代理商和费率仍由总运营后台维护。
+      </n-alert>
+      <n-form label-placement="top" class="contact-form">
+        <div class="form-grid">
+        <n-form-item label="联系人">
+          <n-input v-model:value="contactForm.contact" placeholder="请输入联系人姓名" />
+        </n-form-item>
+        <n-form-item label="联系电话">
+          <n-input v-model:value="contactForm.phone" placeholder="请输入联系电话" />
+        </n-form-item>
+        <n-form-item label="联系邮箱">
+          <n-input v-model:value="contactForm.email" placeholder="请输入联系邮箱" />
+        </n-form-item>
+        <n-form-item label="商家简介" class="grid-wide">
+          <n-input
+            v-model:value="contactForm.description"
+            type="textarea"
+            placeholder="请输入商家简介"
+            :autosize="{ minRows: 3, maxRows: 5 }"
+          />
+        </n-form-item>
+        </div>
+        <n-form-item class="form-actions">
+          <n-space>
+            <n-button type="primary" @click="handleSave">保存修改</n-button>
+            <n-button @click="resetContact">取消</n-button>
+          </n-space>
+        </n-form-item>
+      </n-form>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
+import {
+  NAlert,
+  NButton,
+  NDescriptions,
+  NDescriptionsItem,
+  NForm,
+  NFormItem,
+  NInput,
+  NSpace,
+  NTag,
+  useMessage,
+} from 'naive-ui'
 
-// 商家信息数据
-const shopInfo = ref({
-  name: '头号空间商家',
-  address: '北京市朝阳区某某大厦1001室',
+const message = useMessage()
+
+const info = ref({
+  name: '恒然集团',
+  contact: '陈总',
+  phone: '13800001101',
+  region: '深圳',
+  agentName: '深圳未来科技',
+  feeRate: 0.5,
+})
+
+const initialContact = {
+  contact: '张经理',
   phone: '13800138000',
   email: 'contact@example.com',
   description: '专业的VR体验商家，提供多种VR游戏和体验项目',
-  businessScope: 'VR游戏体验、VR设备销售、VR内容制作',
-  businessLicense: '91110000XXXXXXXXXX',
-  legalPerson: '张三',
-  registeredCapital: '500万元'
-})
-
-// 保存基本信息
-const saveBasicInfo = () => {
-  // 这里可以添加保存逻辑，比如调用API
-  console.log('保存基本信息:', shopInfo.value)
-  // 显示保存成功提示
 }
 
-// 保存经营信息
-const saveBusinessInfo = () => {
-  // 这里可以添加保存逻辑，比如调用API
-  console.log('保存经营信息:', shopInfo.value)
-  // 显示保存成功提示
+const contactForm = reactive({ ...initialContact })
+
+function handleSave() {
+  if (!contactForm.contact || !contactForm.phone) {
+    message.warning('请填写联系人和联系电话')
+    return
+  }
+  message.success('联系信息已保存')
+}
+
+function resetContact() {
+  Object.assign(contactForm, initialContact)
 }
 </script>
 
 <style scoped>
-.shop-info-container {
-  padding: 20px;
+.page-container { max-width: 960px; padding: 20px 24px; }
+.page-header { margin-bottom: 24px; }
+.page-header h1 { margin: 0; color: var(--text-primary); font-size: 22px; font-weight: 700; }
+
+.merchant-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 22px 24px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 60%);
 }
 
-.shop-info-card {
-  max-width: 800px;
-  margin: 0 auto;
+.merchant-hero strong,
+.merchant-hero p,
+.hero-label {
+  display: block;
+}
+
+.hero-label {
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.merchant-hero strong {
+  color: #1e293b;
+  font-size: 20px;
+}
+
+.merchant-hero p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.section-card {
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.section-badge {
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: var(--color-bg-elevated);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.info-grid,
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.readonly-item {
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.readonly-item span,
+.readonly-item strong {
+  display: block;
+}
+
+.readonly-item span {
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.readonly-item strong {
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.section-hint {
+  margin-top: 16px;
+}
+
+.contact-form { padding-top: 4px; }
+
+.grid-wide,
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .merchant-hero {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .info-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
