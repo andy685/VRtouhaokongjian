@@ -727,7 +727,9 @@
             <n-descriptions-item label="当前开户银行">{{ receiverChangeTarget.bankName }}</n-descriptions-item>
             <n-descriptions-item label="拟变更账户">{{ receiverChangeOwner.acctName || '源资料未维护' }}</n-descriptions-item>
             <n-descriptions-item label="拟变更开户银行">{{ receiverChangeOwner.acctOpenBankName || '源资料未维护' }}</n-descriptions-item>
-            <n-descriptions-item label="账户类型">对公账户</n-descriptions-item>
+            <n-descriptions-item label="账户类型">
+              {{ receiverChangeOwner.acctTypeCode === '57' ? '对公账户' : '对私账户' }}
+            </n-descriptions-item>
             <n-descriptions-item label="账户尾号">
               {{ receiverChangeOwner.acctNo ? receiverChangeOwner.acctNo.slice(-4) : '源资料未维护' }}
             </n-descriptions-item>
@@ -1477,6 +1479,7 @@ const receiverTypeOptions: SelectOption[] = Object.entries(receiverTypeLabel).ma
 const relationStatusOptions: SelectOption[] = Object.entries(relationStatusLabel).map(([value, label]) => ({ value, label }))
 const accountTypeOptions: SelectOption[] = [
   { label: '对公账户', value: '57' },
+  { label: '对私账户', value: '58' },
 ]
 const certificateTypeOptions: SelectOption[] = [
   { label: '身份证', value: '17' },
@@ -1577,13 +1580,13 @@ const platformOwners: Record<ReceiverType, PlatformOwner[]> = {
     { label: '华东展厅', value: 103, type: 'merchant', contactMobile: '13900001003', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000001003', acctName: '华东展厅娱乐有限公司', acctCertificateType: '17', acctCertificateNo: '91310000MA1K00003X', acctOpenBankName: '中国银行上海分行', licenseNo: '91310000MA1K00003X', legalPersonName: '吴华东', legalPersonCertificateNo: '310101198803030033', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('华东展厅', '57') },
   ],
   agent: [
-    { label: '深圳未来科技', value: 1, type: 'agent', contactMobile: '13800138001', businessRule: '分润 15% / 手续费 0.5%', acctTypeCode: '57', acctNo: '6222021234567890123', acctName: '深圳未来科技有限公司', acctCertificateType: '17', acctCertificateNo: '91440300MA5AG0001X', acctOpenBankName: '中国工商银行深圳分行', licenseNo: '91440300MA5AG0001X', legalPersonName: '张伟', legalPersonCertificateNo: '440301199001011234', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('深圳未来科技', '57') },
-    { label: '北京梦想空间', value: 2, type: 'agent', contactMobile: '13800138002', businessRule: '分润 12% / 手续费 0.5%', acctTypeCode: '57', acctNo: '6227001234567890123', acctName: '北京梦想空间有限公司', acctCertificateType: '17', acctCertificateNo: '91110101MA6BK0002X', acctOpenBankName: '中国建设银行北京分行', licenseNo: '91110101MA6BK0002X', legalPersonName: '李娜', legalPersonCertificateNo: '110101199002022345', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('北京梦想空间', '57') },
-    { label: '上海星际娱乐', value: 3, type: 'agent', contactMobile: '13800138003', businessRule: '分润 18% / 手续费 0.6%', acctTypeCode: '57', acctNo: '', acctName: '', acctCertificateType: '17', acctCertificateNo: '', acctOpenBankName: '', licenseNo: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false },
+    { label: '深圳未来科技', value: 1, type: 'agent', contactMobile: '13800138001', businessRule: '分润 15% / 手续费 0.5%', acctTypeCode: '58', acctNo: '6222021234567890123', acctName: '张伟', acctCertificateType: '17', acctCertificateNo: '440301199001011234', acctOpenBankName: '中国工商银行深圳分行', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('深圳未来科技', '58') },
+    { label: '北京梦想空间', value: 2, type: 'agent', contactMobile: '13800138002', businessRule: '分润 12% / 手续费 0.5%', acctTypeCode: '58', acctNo: '6227001234567890123', acctName: '李娜', acctCertificateType: '17', acctCertificateNo: '110101199002022345', acctOpenBankName: '中国建设银行北京分行', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('北京梦想空间', '58') },
+    { label: '上海星际娱乐', value: 3, type: 'agent', contactMobile: '13800138003', businessRule: '分润 18% / 手续费 0.6%', acctTypeCode: '58', acctNo: '', acctName: '', acctCertificateType: '17', acctCertificateNo: '', acctOpenBankName: '', attachmentsReady: false, profileConfirmed: false },
   ],
   cp: [
     { label: '极境互动科技', value: 301, type: 'cp', contactMobile: '13700003001', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6214830000003001', acctName: '深圳极境互动科技有限公司', acctCertificateType: '17', acctCertificateNo: '91440300MA5F00001X', acctOpenBankName: '平安银行深圳分行', licenseNo: '91440300MA5F00001X', legalPersonName: '林极境', legalPersonCertificateNo: '440301198901010011', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('极境互动科技', '57') },
-    { label: '闪耀游戏工作室', value: 302, type: 'cp', contactMobile: '13700003002', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '57', acctNo: '6222020000003002', acctName: '上海闪耀游戏科技有限公司', acctCertificateType: '17', acctCertificateNo: '91310101MA1SH0002X', acctOpenBankName: '中国工商银行深圳分行', licenseNo: '91310101MA1SH0002X', legalPersonName: '李明', legalPersonCertificateNo: '310101199102022345', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('闪耀游戏工作室', '57') },
+    { label: '闪耀游戏工作室', value: 302, type: 'cp', contactMobile: '13700003002', businessRule: '月结 / 手续费 0.5%', acctTypeCode: '58', acctNo: '6222020000003002', acctName: '王闪耀', acctCertificateType: '17', acctCertificateNo: '440301199202020022', acctOpenBankName: '中国工商银行深圳分行', attachmentsReady: true, profileConfirmed: true, attachmentNames: mockReceiverAttachments('闪耀游戏工作室', '58') },
   ],
 }
 

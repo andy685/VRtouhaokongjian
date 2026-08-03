@@ -106,7 +106,10 @@
               这里维护拉卡拉“分账接收方”的结算账户和附件资料。请一次确认准确，提交拉卡拉后仅结算资料不可自行修改，确需变更由运营后台处理。
             </n-alert>
             <n-form-item label="账户类型">
-              <n-input value="对公账户" readonly />
+              <n-radio-group v-model:value="addForm.accountKind" @update:value="refreshAddReceiverAttachmentStatus">
+                <n-radio value="private">对私账户</n-radio>
+                <n-radio value="public">对公账户</n-radio>
+              </n-radio-group>
             </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="addForm.bankName" :options="bankOptions" placeholder="请选择开户银行" />
@@ -114,13 +117,13 @@
             <n-form-item label="银行卡号">
               <n-input v-model:value="addForm.cardNo" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
-            <n-form-item label="开户主体名称">
-              <n-input v-model:value="addForm.accountName" placeholder="请输入企业开户主体名称" />
+            <n-form-item label="开户人姓名">
+              <n-input v-model:value="addForm.accountName" placeholder="请输入开户人姓名（需与身份证一致）" />
             </n-form-item>
-            <n-form-item label="统一社会信用代码（账户证件号）">
-              <n-input v-model:value="addForm.idCard" placeholder="请输入统一社会信用代码" maxlength="18" />
+            <n-form-item label="身份证号">
+              <n-input v-model:value="addForm.idCard" placeholder="请输入身份证号" maxlength="18" />
             </n-form-item>
-            <template>
+            <template v-if="addForm.accountKind === 'public'">
               <n-form-item label="营业执照号">
                 <n-input v-model:value="addForm.licenseNo" placeholder="请输入营业执照号码" />
               </n-form-item>
@@ -225,7 +228,10 @@
               </n-space>
             </n-alert>
             <n-form-item label="账户类型">
-              <n-input value="对公账户" readonly :disabled="settlementFieldsReadonly" />
+              <n-radio-group v-model:value="editForm.accountKind" :disabled="settlementFieldsReadonly" @update:value="refreshEditReceiverAttachmentStatus">
+                <n-radio value="private">对私账户</n-radio>
+                <n-radio value="public">对公账户</n-radio>
+              </n-radio-group>
             </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="editForm.bankName" :options="bankOptions" :disabled="settlementFieldsReadonly" placeholder="请选择开户银行" />
@@ -233,13 +239,13 @@
             <n-form-item label="银行卡号">
               <n-input v-model:value="editForm.cardNo" :disabled="settlementFieldsReadonly" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
-            <n-form-item label="开户主体名称">
-              <n-input v-model:value="editForm.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入企业开户主体名称" />
+            <n-form-item label="开户人姓名">
+              <n-input v-model:value="editForm.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入开户人姓名" />
             </n-form-item>
-            <n-form-item label="统一社会信用代码（账户证件号）">
-              <n-input v-model:value="editForm.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入统一社会信用代码" maxlength="18" />
+            <n-form-item label="身份证号">
+              <n-input v-model:value="editForm.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入身份证号" maxlength="18" />
             </n-form-item>
-            <template>
+            <template v-if="editForm.accountKind === 'public'">
               <n-form-item label="营业执照号">
                 <n-input v-model:value="editForm.licenseNo" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照号码" />
               </n-form-item>
@@ -333,15 +339,15 @@
             <n-descriptions-item v-if="getAgentSettlementChangeState(currentAgent).remark" label="变更说明">
               {{ getAgentSettlementChangeState(currentAgent).remark }}
             </n-descriptions-item>
-            <n-descriptions-item label="账户类型">对公账户</n-descriptions-item>
+            <n-descriptions-item label="账户类型">{{ currentAgent.accountKind === 'public' ? '对公账户' : '对私账户' }}</n-descriptions-item>
             <n-descriptions-item label="开户银行">{{ getBankNameText(currentAgent.bankName) }}</n-descriptions-item>
             <n-descriptions-item label="银行卡号">{{ maskAccountNo(currentAgent.cardNo) }}</n-descriptions-item>
-            <n-descriptions-item label="开户主体名称">{{ currentAgent.accountName }}</n-descriptions-item>
-            <n-descriptions-item label="统一社会信用代码">{{ formatIDCard(currentAgent.idCard) }}</n-descriptions-item>
-            <n-descriptions-item label="营业执照号">{{ currentAgent.licenseNo || '-' }}</n-descriptions-item>
-            <n-descriptions-item label="营业执照名称">{{ currentAgent.licenseName || '-' }}</n-descriptions-item>
-            <n-descriptions-item label="法人姓名">{{ currentAgent.legalPersonName || '-' }}</n-descriptions-item>
-            <n-descriptions-item label="法人证件号">{{ formatIDCard(currentAgent.legalPersonCertificateNo) }}</n-descriptions-item>
+            <n-descriptions-item label="开户人姓名">{{ currentAgent.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="身份证号">{{ formatIDCard(currentAgent.idCard) }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="营业执照号">{{ currentAgent.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="营业执照名称">{{ currentAgent.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="法人姓名">{{ currentAgent.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item v-if="currentAgent.accountKind === 'public'" label="法人证件号">{{ formatIDCard(currentAgent.legalPersonCertificateNo) }}</n-descriptions-item>
             <n-descriptions-item label="必传附件">
               {{ currentAgent.attachmentsReady ? '已收齐' : '待补充' }}
             </n-descriptions-item>
@@ -558,11 +564,11 @@ const columns = [
 ]
 
 const agentData = ref([
-  { id: 1, name: '深圳未来科技', contact: '张伟', phone: '13800138001', region: '广东省 / 深圳市', commissionRate: 15, feeRate: 0.005, merchantCount: 5, storeCount: 36, monthRecharge: '¥856,200', monthCommission: '¥128,430', status: 'active', createdAt: '2023-06-01', accountKind: 'public', bankName: 'ICBC', cardNo: '6222021234567890123', accountName: '深圳未来科技有限公司', idCard: '91440300MA5AG0001X', licenseNo: '91440300MA5AG0001X', licenseName: '深圳未来科技有限公司', legalPersonName: '张伟', legalPersonCertificateNo: '440301199001011234', attachmentsReady: true, profileConfirmed: true },
-  { id: 2, name: '北京梦想空间', contact: '李娜', phone: '13800138002', region: '北京市', commissionRate: 12, feeRate: 0.005, merchantCount: 3, storeCount: 8, monthRecharge: '¥623,400', monthCommission: '¥74,808', status: 'active', createdAt: '2023-07-15', accountKind: 'public', bankName: 'CCB', cardNo: '6227001234567890123', accountName: '北京梦想空间有限公司', idCard: '91110101MA6BK0002X', licenseNo: '91110101MA6BK0002X', licenseName: '北京梦想空间有限公司', legalPersonName: '李娜', legalPersonCertificateNo: '110101199002022345', attachmentsReady: true, profileConfirmed: true },
-  { id: 3, name: '上海星际娱乐', contact: '王强', phone: '13800138003', region: '上海市', commissionRate: 18, feeRate: 0.006, merchantCount: 5, storeCount: 15, monthRecharge: '¥1,056,800', monthCommission: '¥190,224', status: 'active', createdAt: '2023-08-20', accountKind: 'public', bankName: '', cardNo: '', accountName: '', idCard: '', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false },
-  { id: 4, name: '成都虚拟现实', contact: '赵敏', phone: '13800138004', region: '四川省 / 成都市', commissionRate: 10, feeRate: 0.004, merchantCount: 2, storeCount: 6, monthRecharge: '¥312,500', monthCommission: '¥31,250', status: 'active', createdAt: '2023-09-10', accountKind: 'public', bankName: 'ABC', cardNo: '6228481234567890123', accountName: '成都虚拟现实科技有限公司', idCard: '91510100MA6CT0004X', licenseNo: '91510100MA6CT0004X', licenseName: '成都虚拟现实科技有限公司', legalPersonName: '赵敏', legalPersonCertificateNo: '510104199003033456', attachmentsReady: true, profileConfirmed: true },
-  { id: 5, name: '武汉创新体验', contact: '刘洋', phone: '13800138005', region: '湖北省 / 武汉市', commissionRate: 14, feeRate: 0.005, merchantCount: 2, storeCount: 9, monthRecharge: '¥445,600', monthCommission: '¥62,384', status: 'inactive', createdAt: '2023-10-05', accountKind: 'public', bankName: '', cardNo: '', accountName: '', idCard: '', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false },
+  { id: 1, name: '深圳未来科技', contact: '张伟', phone: '13800138001', region: '广东省 / 深圳市', commissionRate: 15, feeRate: 0.005, merchantCount: 5, storeCount: 36, monthRecharge: '¥856,200', monthCommission: '¥128,430', status: 'active', createdAt: '2023-06-01', accountKind: 'private', bankName: 'ICBC', cardNo: '6222021234567890123', accountName: '张伟', idCard: '440301199001011234', attachmentsReady: true, profileConfirmed: true },
+  { id: 2, name: '北京梦想空间', contact: '李娜', phone: '13800138002', region: '北京市', commissionRate: 12, feeRate: 0.005, merchantCount: 3, storeCount: 8, monthRecharge: '¥623,400', monthCommission: '¥74,808', status: 'active', createdAt: '2023-07-15', accountKind: 'private', bankName: 'CCB', cardNo: '6227001234567890123', accountName: '李娜', idCard: '110101199002022345', attachmentsReady: true, profileConfirmed: true },
+  { id: 3, name: '上海星际娱乐', contact: '王强', phone: '13800138003', region: '上海市', commissionRate: 18, feeRate: 0.006, merchantCount: 5, storeCount: 15, monthRecharge: '¥1,056,800', monthCommission: '¥190,224', status: 'active', createdAt: '2023-08-20', accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '', attachmentsReady: false, profileConfirmed: false },
+  { id: 4, name: '成都虚拟现实', contact: '赵敏', phone: '13800138004', region: '四川省 / 成都市', commissionRate: 10, feeRate: 0.004, merchantCount: 2, storeCount: 6, monthRecharge: '¥312,500', monthCommission: '¥31,250', status: 'active', createdAt: '2023-09-10', accountKind: 'private', bankName: 'ABC', cardNo: '6228481234567890123', accountName: '赵敏', idCard: '510104199003033456', attachmentsReady: true, profileConfirmed: true },
+  { id: 5, name: '武汉创新体验', contact: '刘洋', phone: '13800138005', region: '湖北省 / 武汉市', commissionRate: 14, feeRate: 0.005, merchantCount: 2, storeCount: 9, monthRecharge: '¥445,600', monthCommission: '¥62,384', status: 'inactive', createdAt: '2023-10-05', accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '', attachmentsReady: false, profileConfirmed: false },
 ])
 
 const pagination = { pageSize: 10 }
@@ -596,7 +602,7 @@ function getBankNameText(bankCode: string) {
 
 function getAgentReceiverStatus(agent: any) {
   return getReceiverProfileStatus({
-    accountKind: agent.accountKind || 'public',
+    accountKind: agent.accountKind || 'private',
     accountName: agent.accountName,
     accountNo: agent.cardNo,
     bankName: agent.bankName,
@@ -613,7 +619,7 @@ function getAgentReceiverStatus(agent: any) {
 }
 
 function getAgentAttachmentDisplayList(agent: any) {
-  return getReceiverAttachmentDisplayList(agent.attachmentNames, agent.accountKind || 'public', agent.name, agent.attachmentsReady)
+  return getReceiverAttachmentDisplayList(agent.attachmentNames, agent.accountKind || 'private', agent.name, agent.attachmentsReady)
 }
 
 function getAgentSettlementChangeState(agent: any) {
@@ -648,7 +654,7 @@ const addReceiverAttachmentFiles = ref<Record<string, UploadFileInfo[]>>({})
 const addForm = ref({
   name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active',
   username: '', password: '',
-  accountKind: 'public', bankName: '', cardNo: '', accountName: '', idCard: '',
+  accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '',
   licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false,
 })
 const addRules: FormRules = {
@@ -705,7 +711,9 @@ function handleAdd() {
 }
 
 function getRequiredAttachmentNames(accountKind: string) {
-  return ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+  return accountKind === 'public'
+    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+    : ['身份证正面', '身份证反面', '银行卡']
 }
 
 function buildAttachmentNames(filesMap: Record<string, UploadFileInfo[]>) {
@@ -726,7 +734,7 @@ function handleAddReceiverAttachmentFiles(type: string, files: UploadFileInfo[])
 }
 
 function resetAddForm() {
-  addForm.value = { name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active', username: '', password: '', accountKind: 'public', bankName: '', cardNo: '', accountName: '', idCard: '', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false }
+  addForm.value = { name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active', username: '', password: '', accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false }
   addReceiverAttachmentFiles.value = {}
   addRegionPath.value = []
 }
@@ -740,7 +748,7 @@ const settlementDraftMode = ref(false)
 const settlementFieldsReadonly = computed(() => editSettlementLocked.value && !settlementDraftMode.value)
 const editForm = ref({
   name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active',
-  accountKind: 'public', bankName: '', cardNo: '', accountName: '', idCard: '',
+  accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '',
   licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false,
 })
 
@@ -753,7 +761,7 @@ function openEdit(row: any) {
     region: row.region || '', commissionRate: row.commissionRate || 10,
     feeRate: row.feeRate || 0.005,
     status: row.status || 'active',
-    accountKind: settlementSource.accountKind || 'public',
+    accountKind: settlementSource.accountKind || 'private',
     bankName: settlementSource.bankName || '', cardNo: settlementSource.cardNo || '',
     accountName: settlementSource.accountName || '', idCard: settlementSource.idCard || '',
     licenseNo: settlementSource.licenseNo || '',

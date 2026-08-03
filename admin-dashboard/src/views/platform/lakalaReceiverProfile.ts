@@ -23,6 +23,7 @@ export interface ReceiverSettlementProfile {
 
 export const receiverAccountKindOptions = [
   { label: '对公账户', value: 'public' },
+  { label: '对私账户', value: 'private' },
 ]
 
 export const bankNameOptions = [
@@ -62,13 +63,15 @@ export function resolveBankCodes(bankName: string) {
   return matchedKey ? bankCodePresets[matchedKey] : { openBankCode: '', clearBankCode: '' }
 }
 
-export function getReceiverRequiredMaterials(accountKind: ReceiverAccountKind = 'public') {
-  return ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+export function getReceiverRequiredMaterials(accountKind: ReceiverAccountKind = 'private') {
+  return accountKind === 'public'
+    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+    : ['身份证正面', '身份证反面', '银行卡']
 }
 
 export function getReceiverAttachmentDisplayList(
   attachmentNames: string[] | undefined,
-  accountKind: ReceiverAccountKind = 'public',
+  accountKind: ReceiverAccountKind = 'private',
   ownerName = '主体',
   attachmentsReady = false,
 ) {
@@ -92,7 +95,7 @@ export function getReceiverProfileStatus(profile: ReceiverSettlementProfile | nu
     && profile.attachmentsReady
     && profile.profileConfirmed
   )
-  const publicReady = Boolean(
+  const publicReady = profile.accountKind !== 'public' || Boolean(
     profile.licenseNo
     && profile.licenseName
     && profile.legalPersonName

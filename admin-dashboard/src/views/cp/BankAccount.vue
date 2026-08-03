@@ -64,7 +64,10 @@
           提交后不会直接覆盖当前生效账户，平台确认并通过拉卡拉审核后才会生效。
         </n-alert>
         <n-form-item label="账户类型" required>
-          <n-input value="对公账户" readonly />
+          <n-radio-group v-model:value="bankForm.accountKind" @update:value="refreshReceiverAttachmentStatus">
+            <n-radio value="public">对公账户</n-radio>
+            <n-radio value="private">对私账户</n-radio>
+          </n-radio-group>
         </n-form-item>
         <n-form-item label="开户银行" required>
           <n-select v-model:value="bankForm.bankName" :options="bankOptions" placeholder="请选择开户银行" />
@@ -75,10 +78,10 @@
         <n-form-item label="开户名" required>
           <n-input v-model:value="bankForm.holderName" placeholder="请输入企业开户名" />
         </n-form-item>
-        <n-form-item label="统一社会信用代码（账户证件号）" required>
-          <n-input v-model:value="bankForm.idCard" placeholder="请输入统一社会信用代码" maxlength="18" />
+        <n-form-item label="身份证号" required>
+          <n-input v-model:value="bankForm.idCard" placeholder="请输入身份证号或统一社会信用代码" maxlength="18" />
         </n-form-item>
-        <template>
+        <template v-if="bankForm.accountKind === 'public'">
           <n-form-item label="营业执照号">
             <n-input v-model:value="bankForm.licenseNo" placeholder="请输入营业执照号码" />
           </n-form-item>
@@ -357,11 +360,13 @@ function maskCertificateNo(certificateNo: string) {
 }
 
 function getAccountKindLabel(accountKind?: SettlementAccountKind) {
-  return '对公账户'
+  return accountKind === 'public' ? '对公账户' : '对私账户'
 }
 
-function getRequiredAttachmentNames(accountKind: SettlementAccountKind = 'public') {
-  return ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+function getRequiredAttachmentNames(accountKind: SettlementAccountKind = 'private') {
+  return accountKind === 'public'
+    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
+    : ['身份证正面', '身份证反面', '银行卡']
 }
 
 function getAttachmentDisplayList(account: CpSettlementAccount) {
