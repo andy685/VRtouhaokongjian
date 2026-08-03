@@ -4485,7 +4485,7 @@ CP应结金额来自商家购买/消耗游戏豆形成的 B 端收入池，不�
 | `ownerType/ownerId` | 绑定平台内业务对象，如商家、代理商、CP | 必填 |
 | `receiverName` | 分账接收方主体名称 | 必填 |
 | `acctNo/acctName` | 收款银行卡号/账户名 | 必填 |
-| `acctTypeCode` | 对公/对私账户类型 | 必填 |
+| `acctTypeCode` | 对公账户类型（固定为 `57`） | 必填 |
 | `acctCertificateType/acctCertificateNo` | 账户证件类型和证件号 | 必填 |
 | `acctOpenBankCode/acctOpenBankName/acctClearBankCode` | 开户行和联行号信息 | 必填 |
 | `licenseNo/licenseName/legalPersonName` | 对公账户营业执照和法人信息 | 对公账户必填 |

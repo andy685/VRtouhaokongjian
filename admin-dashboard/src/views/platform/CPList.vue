@@ -97,10 +97,7 @@
               </n-space>
             </n-alert>
             <n-form-item label="账户类型">
-              <n-radio-group v-model:value="form.accountKind" :disabled="settlementFieldsReadonly" @update:value="refreshReceiverAttachmentStatus">
-                <n-radio value="public">对公账户</n-radio>
-                <n-radio value="private">对私账户</n-radio>
-              </n-radio-group>
+              <n-input value="对公账户" readonly :disabled="settlementFieldsReadonly" />
             </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="form.bankCode" :options="bankOptions" :disabled="settlementFieldsReadonly" placeholder="请选择开户银行" />
@@ -108,13 +105,13 @@
             <n-form-item label="银行卡号">
               <n-input v-model:value="form.bankAccount" :disabled="settlementFieldsReadonly" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
-            <n-form-item label="开户人姓名">
-              <n-input v-model:value="form.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入开户人姓名（需与身份证一致）" />
+            <n-form-item label="开户主体名称">
+              <n-input v-model:value="form.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入企业开户主体名称" />
             </n-form-item>
-            <n-form-item label="身份证号">
-              <n-input v-model:value="form.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入身份证号" maxlength="18" />
+            <n-form-item label="统一社会信用代码（账户证件号）">
+              <n-input v-model:value="form.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入统一社会信用代码" maxlength="18" />
             </n-form-item>
-            <template v-if="form.accountKind === 'public'">
+            <template>
               <n-form-item label="营业执照号">
                 <n-input v-model:value="form.licenseNo" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照号码" />
               </n-form-item>
@@ -203,15 +200,15 @@
             <n-descriptions-item v-if="getCpSettlementChangeState(detailCp).remark" label="变更说明">
               {{ getCpSettlementChangeState(detailCp).remark }}
             </n-descriptions-item>
-            <n-descriptions-item label="账户类型">{{ detailCp.accountKind === 'private' ? '对私账户' : '对公账户' }}</n-descriptions-item>
+            <n-descriptions-item label="账户类型">对公账户</n-descriptions-item>
             <n-descriptions-item label="开户银行">{{ getBankName(detailCp.bankCode) }}</n-descriptions-item>
             <n-descriptions-item label="银行卡号">{{ maskAccountNo(detailCp.bankAccount) }}</n-descriptions-item>
-            <n-descriptions-item label="开户人姓名">{{ detailCp.accountName }}</n-descriptions-item>
-            <n-descriptions-item label="身份证号">{{ detailCp.idCard ? detailCp.idCard.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="营业执照号">{{ detailCp.licenseNo || '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="营业执照名称">{{ detailCp.licenseName || '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="法人姓名">{{ detailCp.legalPersonName || '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="detailCp.accountKind === 'public'" label="法人证件号">{{ detailCp.legalPersonCertificateNo ? detailCp.legalPersonCertificateNo.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
+            <n-descriptions-item label="开户主体名称">{{ detailCp.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="统一社会信用代码">{{ detailCp.idCard ? detailCp.idCard.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
+            <n-descriptions-item label="营业执照号">{{ detailCp.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="营业执照名称">{{ detailCp.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="法人姓名">{{ detailCp.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="法人证件号">{{ detailCp.legalPersonCertificateNo ? detailCp.legalPersonCertificateNo.replace(/(\d{4})\d+(\d{4})/, '$1**********$2') : '-' }}</n-descriptions-item>
             <n-descriptions-item label="必传附件">{{ detailCp.attachmentsReady ? '已收齐' : '待补充' }}</n-descriptions-item>
             <n-descriptions-item label="附件文件">
               <div class="attachment-detail-list">
@@ -319,12 +316,12 @@ const bankOptions = bankNameOptions
 
 const cpList = ref([
   { id: 1, name: '极境互动科技', contact: '张伟', phone: '13800001001', accountKind: 'public', bankCode: 'CMB', bankAccount: '6222123412341234', accountName: '极境互动科技有限公司', idCard: '91440300MA5CP0001X', licenseNo: '91440300MA5CP0001X', licenseName: '极境互动科技有限公司', legalPersonName: '张伟', legalPersonCertificateNo: '110101199001011234', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '招商银行北京望京支行', gameCount: 12, totalSettlement: 528000, status: 'active', joinTime: '2024-03-15', username: 'jijing', password: '' },
-  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', accountKind: 'private', bankCode: 'ICBC', bankAccount: '6217123456785678', accountName: '李明', idCard: '310101199102022345', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
+  { id: 2, name: '闪耀游戏工作室', contact: '李明', phone: '13800001002', accountKind: 'public', bankCode: 'ICBC', bankAccount: '6217123456785678', accountName: '上海闪耀游戏科技有限公司', idCard: '91310101MA1SH0002X', licenseNo: '91310101MA1SH0002X', licenseName: '上海闪耀游戏科技有限公司', legalPersonName: '李明', legalPersonCertificateNo: '310101199102022345', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '工商银行上海张江支行', gameCount: 8, totalSettlement: 356000, status: 'active', joinTime: '2024-05-20', username: 'shanyao', password: '' },
   { id: 3, name: '乐游网络', contact: '王芳', phone: '13800001003', accountKind: 'public', bankCode: 'CCB', bankAccount: '6214123490129012', accountName: '乐游网络有限公司', idCard: '91440300MA5CP0003X', licenseNo: '91440300MA5CP0003X', licenseName: '乐游网络有限公司', legalPersonName: '王芳', legalPersonCertificateNo: '440301199203033456', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '建设银行深圳南山支行', gameCount: 10, totalSettlement: 412000, status: 'active', joinTime: '2024-02-28', username: 'leyou', password: '' },
   { id: 4, name: '星际科技', contact: '赵磊', phone: '13800001004', accountKind: 'public', bankCode: 'ABC', bankAccount: '6228123434563456', accountName: '星际科技有限公司', idCard: '91330100MA5CP0004X', licenseNo: '91330100MA5CP0004X', licenseName: '星际科技有限公司', legalPersonName: '赵磊', legalPersonCertificateNo: '330101199304044567', attachmentsReady: false, profileConfirmed: false, feeRate: 0.006, bankName: '农业银行杭州滨江支行', gameCount: 5, totalSettlement: 185000, status: 'active', joinTime: '2024-06-10', username: 'xingji', password: '' },
-  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', accountKind: 'private', bankCode: 'BOC', bankAccount: '6230123478907890', accountName: '陈静', idCard: '510101199405055678', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
+  { id: 5, name: '未来幻境', contact: '陈静', phone: '13800001005', accountKind: 'public', bankCode: 'BOC', bankAccount: '6230123478907890', accountName: '成都未来幻境数字科技有限公司', idCard: '91510100MA6WH0005X', licenseNo: '91510100MA6WH0005X', licenseName: '成都未来幻境数字科技有限公司', legalPersonName: '陈静', legalPersonCertificateNo: '510101199405055678', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '中国银行成都高新支行', gameCount: 7, totalSettlement: 298000, status: 'active', joinTime: '2024-04-05', username: 'weilai', password: '' },
   { id: 6, name: '幻视科技', contact: '刘洋', phone: '13800001006', accountKind: 'public', bankCode: 'BOCOM', bankAccount: '6225123423452345', accountName: '幻视科技有限公司', idCard: '91320100MA5CP0006X', licenseNo: '91320100MA5CP0006X', licenseName: '幻视科技有限公司', legalPersonName: '刘洋', legalPersonCertificateNo: '320101199506066789', attachmentsReady: true, profileConfirmed: true, feeRate: 0.004, bankName: '交通银行南京江宁支行', gameCount: 6, totalSettlement: 267000, status: 'active', joinTime: '2024-07-18', username: 'huanshi', password: '' },
-  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', accountKind: 'private', bankCode: 'SPDB', bankAccount: '6216123467896789', accountName: '周婷', idCard: '420101199607077890', licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
+  { id: 7, name: '星辰游戏', contact: '周婷', phone: '13800001007', accountKind: 'public', bankCode: 'SPDB', bankAccount: '6216123467896789', accountName: '武汉星辰游戏科技有限公司', idCard: '91420100MA6XC0007X', licenseNo: '91420100MA6XC0007X', licenseName: '武汉星辰游戏科技有限公司', legalPersonName: '周婷', legalPersonCertificateNo: '420101199607077890', attachmentsReady: true, profileConfirmed: true, feeRate: 0.005, bankName: '浦发银行武汉光谷支行', gameCount: 3, totalSettlement: 52000, status: 'active', joinTime: '2025-04-01', username: 'xingchen', password: '' },
 ])
 
 const pagination = { pageSize: 10 }

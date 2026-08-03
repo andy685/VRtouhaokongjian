@@ -99,10 +99,7 @@
               此处资料用于创建拉卡拉分账接收方。请一次确认准确，提交拉卡拉后仅结算账户和附件资料不可自行修改；门店收款码仍在收银配置中维护。
             </n-alert>
             <n-form-item label="账户类型">
-              <n-radio-group v-model:value="addForm.bankInfo.accountKind" @update:value="refreshAddReceiverAttachmentStatus">
-                <n-radio value="public">对公账户</n-radio>
-                <n-radio value="private">对私账户</n-radio>
-              </n-radio-group>
+              <n-input value="对公账户" readonly />
             </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="addForm.bankInfo.bankName" :options="bankOptions" placeholder="请选择开户银行" />
@@ -110,13 +107,13 @@
             <n-form-item label="银行卡号">
               <n-input v-model:value="addForm.bankInfo.cardNo" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
-            <n-form-item label="开户人姓名">
-              <n-input v-model:value="addForm.bankInfo.accountName" placeholder="请输入开户人姓名" />
+            <n-form-item label="开户主体名称">
+              <n-input v-model:value="addForm.bankInfo.accountName" placeholder="请输入企业开户主体名称" />
             </n-form-item>
-            <n-form-item label="身份证号">
-              <n-input v-model:value="addForm.bankInfo.idCard" placeholder="请输入身份证号" maxlength="18" />
+            <n-form-item label="统一社会信用代码（账户证件号）">
+              <n-input v-model:value="addForm.bankInfo.idCard" placeholder="请输入统一社会信用代码" maxlength="18" />
             </n-form-item>
-            <template v-if="addForm.bankInfo.accountKind === 'public'">
+            <template>
               <n-form-item label="营业执照号">
                 <n-input v-model:value="addForm.bankInfo.licenseNo" placeholder="请输入营业执照号码" />
               </n-form-item>
@@ -221,10 +218,7 @@
               </n-space>
             </n-alert>
             <n-form-item label="账户类型">
-              <n-radio-group v-model:value="editForm.bankInfo.accountKind" :disabled="settlementFieldsReadonly" @update:value="refreshEditReceiverAttachmentStatus">
-                <n-radio value="public">对公账户</n-radio>
-                <n-radio value="private">对私账户</n-radio>
-              </n-radio-group>
+              <n-input value="对公账户" readonly :disabled="settlementFieldsReadonly" />
             </n-form-item>
             <n-form-item label="开户银行">
               <n-select v-model:value="editForm.bankInfo.bankName" :options="bankOptions" :disabled="settlementFieldsReadonly" placeholder="请选择开户银行" />
@@ -232,13 +226,13 @@
             <n-form-item label="银行卡号">
               <n-input v-model:value="editForm.bankInfo.cardNo" :disabled="settlementFieldsReadonly" placeholder="请输入银行卡号" maxlength="23" />
             </n-form-item>
-            <n-form-item label="开户人姓名">
-              <n-input v-model:value="editForm.bankInfo.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入开户人姓名" />
+            <n-form-item label="开户主体名称">
+              <n-input v-model:value="editForm.bankInfo.accountName" :disabled="settlementFieldsReadonly" placeholder="请输入企业开户主体名称" />
             </n-form-item>
-            <n-form-item label="身份证号">
-              <n-input v-model:value="editForm.bankInfo.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入身份证号" maxlength="18" />
+            <n-form-item label="统一社会信用代码（账户证件号）">
+              <n-input v-model:value="editForm.bankInfo.idCard" :disabled="settlementFieldsReadonly" placeholder="请输入统一社会信用代码" maxlength="18" />
             </n-form-item>
-            <template v-if="editForm.bankInfo.accountKind === 'public'">
+            <template>
               <n-form-item label="营业执照号">
                 <n-input v-model:value="editForm.bankInfo.licenseNo" :disabled="settlementFieldsReadonly" placeholder="请输入营业执照号码" />
               </n-form-item>
@@ -331,15 +325,15 @@
             <n-descriptions-item v-if="getMerchantSettlementChangeState(currentMerchant).remark" label="变更说明">
               {{ getMerchantSettlementChangeState(currentMerchant).remark }}
             </n-descriptions-item>
-            <n-descriptions-item label="账户类型">{{ currentMerchant.bankInfo.accountKind === 'private' ? '对私账户' : '对公账户' }}</n-descriptions-item>
+            <n-descriptions-item label="账户类型">对公账户</n-descriptions-item>
             <n-descriptions-item label="开户银行">{{ getBankDisplayName(currentMerchant.bankInfo.bankName) }}</n-descriptions-item>
             <n-descriptions-item label="银行卡号">{{ maskAccountNo(currentMerchant.bankInfo.cardNo) }}</n-descriptions-item>
-            <n-descriptions-item label="开户人">{{ currentMerchant.bankInfo.accountName }}</n-descriptions-item>
-            <n-descriptions-item label="身份证号">{{ formatIDCard(currentMerchant.bankInfo.idCard) }}</n-descriptions-item>
-            <n-descriptions-item v-if="currentMerchant.bankInfo.accountKind === 'public'" label="营业执照号">{{ currentMerchant.bankInfo.licenseNo || '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="currentMerchant.bankInfo.accountKind === 'public'" label="营业执照名称">{{ currentMerchant.bankInfo.licenseName || '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="currentMerchant.bankInfo.accountKind === 'public'" label="法人姓名">{{ currentMerchant.bankInfo.legalPersonName || '-' }}</n-descriptions-item>
-            <n-descriptions-item v-if="currentMerchant.bankInfo.accountKind === 'public'" label="法人证件号">{{ formatIDCard(currentMerchant.bankInfo.legalPersonCertificateNo) }}</n-descriptions-item>
+            <n-descriptions-item label="开户主体">{{ currentMerchant.bankInfo.accountName }}</n-descriptions-item>
+            <n-descriptions-item label="统一社会信用代码">{{ formatIDCard(currentMerchant.bankInfo.idCard) }}</n-descriptions-item>
+            <n-descriptions-item label="营业执照号">{{ currentMerchant.bankInfo.licenseNo || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="营业执照名称">{{ currentMerchant.bankInfo.licenseName || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="法人姓名">{{ currentMerchant.bankInfo.legalPersonName || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="法人证件号">{{ formatIDCard(currentMerchant.bankInfo.legalPersonCertificateNo) }}</n-descriptions-item>
             <n-descriptions-item label="必传附件">{{ currentMerchant.bankInfo.attachmentsReady ? '已收齐' : '待补充' }}</n-descriptions-item>
             <n-descriptions-item label="附件文件">
               <div class="attachment-detail-list">
@@ -612,9 +606,7 @@ function handleAdd() {
 }
 
 function getRequiredAttachmentNames(accountKind: string) {
-  return accountKind === 'public'
-    ? ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
-    : ['身份证正面', '身份证反面', '银行卡']
+  return ['法人身份证正面', '法人身份证反面', '银行卡', '营业执照']
 }
 
 function buildAttachmentNames(filesMap: Record<string, UploadFileInfo[]>) {
