@@ -1,0 +1,8 @@
+{
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "model": "qwen-plus",
+  "temperature": 0.8,
+  "max_tokens": 2000,
+  "enable_search": false,
+  "note": "把 model 改成你的自定义/微调模型 ID（如 qwen3-14b-finetuned-xxxxxxxx）即可调用私有模型"
+}

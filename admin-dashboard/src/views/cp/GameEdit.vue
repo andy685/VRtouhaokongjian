@@ -149,12 +149,6 @@
                 <label>游戏大小</label>
                 <n-input v-model:value="form.size" placeholder="如：256M / 2G" />
               </div>
-              <div class="form-group">
-                <label>游戏时长</label>
-                <n-input-number v-model:value="form.duration" :min="1" :max="180" style="width:100%">
-                  <template #suffix>分钟</template>
-                </n-input-number>
-              </div>
             </div>
             <div class="form-group">
               <label>标签</label>
@@ -418,25 +412,25 @@
               </n-text>
             </div>
 
-            <!-- 时长限制 -->
+            <!-- 游戏时长 -->
             <div class="form-group">
-              <label>时长限制</label>
+              <label>游戏时长</label>
               <div class="time-limit-card">
                 <div class="time-limit-header">
                   <div class="time-limit-info">
                     <span class="time-limit-icon">⏱</span>
                     <div>
-                      <div class="time-limit-title">游戏时长限制</div>
-                      <div class="time-limit-desc">时间到了以后自动结束游戏</div>
+                      <div class="time-limit-title">游戏时长与自动结束</div>
+                      <div class="time-limit-desc">在这里设置游戏时长；开启后，到时会自动结束游戏</div>
                     </div>
                   </div>
                   <n-switch v-model:value="form.timeLimitEnabled" size="medium" />
                 </div>
                 <transition name="fade-slide">
-                  <div v-if="form.timeLimitEnabled" class="time-limit-body">
+                  <div class="time-limit-body">
                     <div class="time-limit-slider-area">
                       <div class="time-limit-slider-label">
-                        <span>限制时长</span>
+                        <span>游戏时长</span>
                         <span class="time-limit-value">{{ form.timeLimitMinutes }} <small>分钟</small></span>
                       </div>
                       <n-slider
@@ -453,11 +447,11 @@
                           @click="form.timeLimitMinutes = preset.value"
                         >{{ preset.label }}</span>
                       </div>
+                      <n-text depth="3" style="font-size:12px;">
+                        <template v-if="form.timeLimitEnabled">已开启自动结束，时间到后系统会自动结束游戏。</template>
+                        <template v-else>当前仅记录游戏时长，不会因为时间到而自动结束。</template>
+                      </n-text>
                     </div>
-                  </div>
-                  <div v-else class="time-limit-unlimited">
-                    <span>♾️</span>
-                    <span>不限制游戏时长，玩家可一直体验直到手动结束</span>
                   </div>
                 </transition>
               </div>
@@ -511,7 +505,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton, NInput, NInputNumber, NSelect, NSwitch, NCheckbox, NTag,
@@ -612,18 +606,6 @@ const tagOptions = [
   { label: '音乐', value: '音乐' },
   { label: '多人', value: '多人' },
   { label: '放松', value: '放松' },
-]
-
-// 时长预设
-const timePresets = [
-  { label: '3分钟', value: 3 },
-  { label: '5分钟', value: 5 },
-  { label: '10分钟', value: 10 },
-  { label: '15分钟', value: 15 },
-  { label: '30分钟', value: 30 },
-  { label: '1小时', value: 60 },
-  { label: '2小时', value: 120 },
-  { label: '3小时', value: 180 },
 ]
 
 const runtimeArchitectureOptions: {
@@ -825,6 +807,17 @@ const versionSuggestions = computed(() => {
 
 const showVersionSuggestions = computed(() => isUpdate.value && !!baselineVersion.value)
 
+const timePresets = [
+  { label: '3分钟', value: 3 },
+  { label: '5分钟', value: 5 },
+  { label: '10分钟', value: 10 },
+  { label: '15分钟', value: 15 },
+  { label: '30分钟', value: 30 },
+  { label: '1小时', value: 60 },
+  { label: '2小时', value: 120 },
+  { label: '3小时', value: 180 },
+]
+
 const selectedRuntimeArchitecture = computed(() => (
   runtimeArchitectureOptions.find(item => item.value === form.value.runtimeArchitecture) || runtimeArchitectureOptions[0]
 ))
@@ -899,6 +892,14 @@ function applySuggestedVersion(version: string) {
   if (versionFieldDisabled.value) return
   form.value.version = version
 }
+
+watch(
+  () => form.value.timeLimitMinutes,
+  (timeLimitMinutes) => {
+    form.value.duration = timeLimitMinutes
+  },
+  { immediate: true }
+)
 
 // 模拟加载已有游戏数据
 function loadGameData(id: string) {

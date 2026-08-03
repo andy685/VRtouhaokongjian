@@ -150,12 +150,6 @@
                 <label>游戏大小</label>
                 <n-input v-model:value="gameData.size" placeholder="如：256M / 2G" />
               </div>
-              <div class="form-group">
-                <label>游戏时长</label>
-                <n-input-number v-model:value="gameData.duration" :min="1" :max="180" style="width:100%">
-                  <template #suffix>分钟</template>
-                </n-input-number>
-              </div>
             </div>
             <div class="form-group">
               <label>评分</label>
@@ -459,25 +453,25 @@
               </n-text>
             </div>
 
-            <!-- 时长限制 -->
+            <!-- 游戏时长 -->
             <div class="form-group">
-              <label>时长限制</label>
+              <label>游戏时长</label>
               <div class="time-limit-card">
                 <div class="time-limit-header">
                   <div class="time-limit-info">
                     <span class="time-limit-icon">⏱</span>
                     <div>
-                      <div class="time-limit-title">游戏时长限制</div>
-                      <div class="time-limit-desc">时间到了以后自动结束游戏</div>
+                      <div class="time-limit-title">游戏时长与自动结束</div>
+                      <div class="time-limit-desc">在这里设置游戏时长；开启后，到时会自动结束游戏</div>
                     </div>
                   </div>
                   <n-switch v-model:value="gameData.timeLimitEnabled" size="medium" />
                 </div>
                 <transition name="fade-slide">
-                  <div v-if="gameData.timeLimitEnabled" class="time-limit-body">
+                  <div class="time-limit-body">
                     <div class="time-limit-slider-area">
                       <div class="time-limit-slider-label">
-                        <span>限制时长</span>
+                        <span>游戏时长</span>
                         <span class="time-limit-value">{{ gameData.timeLimitMinutes }} <small>分钟</small></span>
                       </div>
                       <n-slider
@@ -494,11 +488,11 @@
                           @click="gameData.timeLimitMinutes = preset.value"
                         >{{ preset.label }}</span>
                       </div>
+                      <n-text depth="3" style="font-size:12px;">
+                        <template v-if="gameData.timeLimitEnabled">已开启自动结束，时间到后系统会自动结束游戏。</template>
+                        <template v-else>当前仅记录游戏时长，不会因为时间到而自动结束。</template>
+                      </n-text>
                     </div>
-                  </div>
-                  <div v-else class="time-limit-unlimited">
-                    <span>♾️</span>
-                    <span>不限制游戏时长，玩家可一直体验直到手动结束</span>
                   </div>
                 </transition>
               </div>
