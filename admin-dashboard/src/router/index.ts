@@ -71,6 +71,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'device-config', name: 'PlatformDeviceConfig', component: () => import('../views/platform/DeviceConfig.vue'), meta: { title: '设备配置管理' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: () => import('../views/platform/FinanceOverview.vue'), meta: { title: '营收总览' } },
+      { path: 'finance/platform-withdraw', name: 'PlatformFinanceWithdraw', component: () => import('../views/platform/PlatformWithdraw.vue'), meta: { title: '平台提现' } },
       { path: 'finance/settlement', name: 'PlatformFinanceSettlement', component: () => import('../views/platform/SettlementManage.vue'), meta: { title: '商家分账管理' } },
       { path: 'finance/settlement-config', name: 'PlatformSettlementConfig', component: () => import('../views/platform/SettlementConfig.vue'), meta: { title: '结算配置' } },
       { path: 'finance/reconciliation', redirect: '/platform/finance/exception-orders' },

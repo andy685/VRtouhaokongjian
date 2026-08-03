@@ -6,6 +6,7 @@
         <p class="header-desc">分模块查看平台营收、商家结算与代理商分润数据</p>
       </div>
       <n-space>
+        <n-button type="primary" secondary @click="router.push('/platform/finance/platform-withdraw')">平台提现</n-button>
         <n-radio-group v-model:value="trendPeriod" size="small">
           <n-radio-button value="month">近6个月</n-radio-button>
           <n-radio-button value="year">近一年</n-radio-button>

@@ -365,6 +365,7 @@ const menuOptions: MenuOption[] = [
     icon: icon(WalletOutline),
     children: [
       { label: '营收总览', key: '/platform/finance' },
+      { label: '平台提现', key: '/platform/finance/platform-withdraw' },
       {
         label: '游戏豆销售',
         key: 'gamebean-sales-group',
