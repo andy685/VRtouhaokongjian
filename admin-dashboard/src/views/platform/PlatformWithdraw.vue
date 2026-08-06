@@ -169,9 +169,9 @@
         <div class="card-title">
           <span>提现记录</span>
           <n-space size="small">
-            <n-tag type="warning" :bordered="false">处理中 {{ processingCount }} 笔</n-tag>
-            <n-tag type="warning" :bordered="false">占额 ¥{{ processingWithdrawOccupied.toLocaleString() }}</n-tag>
-            <n-tag type="success" :bordered="false">本月成功 {{ successCount }} 笔</n-tag>
+            <n-tag type="warning" :bordered="false">处理中 {{ processingCount }} 笔 / ¥{{ processingWithdrawOccupied.toLocaleString() }}</n-tag>
+            <n-tag type="success" :bordered="false">成功 {{ successCount }} 笔 / ¥{{ successAmount.toLocaleString() }}</n-tag>
+            <n-tag type="error" :bordered="false">失败 {{ failedCount }} 笔 / ¥{{ failedAmount.toLocaleString() }}</n-tag>
           </n-space>
         </div>
       </template>
@@ -295,9 +295,20 @@ const accountOptions = [
 
 const processingCount = computed(() => withdrawRecords.value.filter((item) => item.status === 'processing').length)
 const successCount = computed(() => withdrawRecords.value.filter((item) => item.status === 'success').length)
+const failedCount = computed(() => withdrawRecords.value.filter((item) => item.status === 'rejected').length)
 const processingWithdrawOccupied = computed(() =>
   withdrawRecords.value
     .filter((item) => item.status === 'processing')
+    .reduce((sum, item) => sum + item.amount, 0)
+)
+const successAmount = computed(() =>
+  withdrawRecords.value
+    .filter((item) => item.status === 'success')
+    .reduce((sum, item) => sum + item.amount, 0)
+)
+const failedAmount = computed(() =>
+  withdrawRecords.value
+    .filter((item) => item.status === 'rejected')
     .reduce((sum, item) => sum + item.amount, 0)
 )
 const baseWithdrawableBalance = computed(() => Math.max(

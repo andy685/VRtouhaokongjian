@@ -266,6 +266,8 @@ const menuOptions: MenuOption[] = [
         ]
       },
       { label: '内容消耗明细', key: '/shop/film-revenue' },
+      { label: '营收目标与完成率', key: '/shop/revenue-target' },
+      { label: '员工销售排名', key: '/shop/staff-ranking' },
     ]
   },
   {
@@ -317,6 +319,7 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: '用户列表', key: '/shop/users' },
           { label: '角色列表', key: '/shop/roles' },
+          { label: '操作日志', key: '/shop/operation-logs' },
         ]
       },
     ]

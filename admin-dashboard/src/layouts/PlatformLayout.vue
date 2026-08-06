@@ -413,6 +413,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '账号管理', key: '/platform/users' },
       { label: '角色权限', key: '/platform/users/roles' },
+      { label: '操作日志', key: '/platform/system/logs' },
     ]
   },
   {

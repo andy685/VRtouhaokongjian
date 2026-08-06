@@ -35,8 +35,14 @@
       <!-- 游戏库 -->
       <n-tab-pane name="games" tab="🎮 游戏库">
         <div class="tab-content">
-          <n-grid :cols="4" :x-gap="20" :y-gap="20">
-            <n-gi v-for="game in games" :key="game.id">
+          <div class="view-switch-row">
+            <n-radio-group v-model:value="gameViewMode" size="small">
+              <n-radio-button value="waterfall">瀑布流</n-radio-button>
+              <n-radio-button value="list">列表</n-radio-button>
+            </n-radio-group>
+          </div>
+          <div v-if="gameViewMode === 'waterfall'" class="game-waterfall">
+            <div v-for="game in games" :key="game.id" class="waterfall-item">
               <div class="game-card" :class="{ disabled: game.status === 'offline' }">
                 <div class="game-cover" :style="{ background: game.gradient }">
                   <span class="game-icon">{{ game.icon }}</span>
@@ -58,8 +64,31 @@
                   </div>
                 </div>
               </div>
-            </n-gi>
-          </n-grid>
+            </div>
+          </div>
+          <div v-else class="game-list">
+            <div v-for="game in games" :key="game.id" class="game-list-card" :class="{ disabled: game.status === 'offline' }">
+              <div class="list-cover" :style="{ background: game.gradient }">
+                <span class="game-icon">{{ game.icon }}</span>
+                <div class="game-badge" :class="game.status">{{ game.statusText }}</div>
+              </div>
+              <div class="list-main">
+                <h4>{{ game.name }}</h4>
+                <div class="game-meta">
+                  <span>🕐 {{ game.duration }}分钟</span>
+                  <span>👥 {{ game.playCount }}</span>
+                </div>
+                <div class="game-rating">
+                  <n-rate :value="game.rating" size="small" readonly />
+                  <span>{{ game.rating }}</span>
+                </div>
+              </div>
+              <div class="list-actions">
+                <n-button size="tiny" secondary @click="editGame(game)">编辑</n-button>
+                <n-button size="tiny" secondary @click="distributeGame(game)">分发</n-button>
+              </div>
+            </div>
+          </div>
         </div>
       </n-tab-pane>
 
@@ -116,7 +145,7 @@
 import { ref, h } from 'vue'
 import {
   NButton, NIcon, NSpace, NTabs, NTabPane, NGrid, NGi,
-  NDataTable, NTag, NInput, NSelect, NRate
+  NDataTable, NTag, NInput, NSelect, NRate, NRadioGroup, NRadioButton
 } from 'naive-ui'
 import {
   SearchOutline, GameControllerOutline, CloudUploadOutline,
@@ -124,6 +153,7 @@ import {
 } from '@vicons/ionicons5'
 
 const activeTab = ref('games')
+const gameViewMode = ref<'waterfall' | 'list'>('waterfall')
 
 const games = ref([
   { id: 1, name: '过山车VR', icon: '🎢', duration: 10, playCount: '15.8k', rating: 4.9, gradient: 'linear-gradient(135deg, #667eea, #764ba2)', status: 'online', statusText: '已上线' },
@@ -199,12 +229,19 @@ function batchApprove() { console.log('批量通过') }
 .stat-card .label { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
 
 .tab-content { padding-top: 16px; }
+.view-switch-row { display: flex; justify-content: flex-end; margin-bottom: 16px; }
 
+.game-waterfall { column-count: 4; column-gap: 20px; }
+.waterfall-item { break-inside: avoid; margin-bottom: 20px; }
+.game-list { display: flex; flex-direction: column; gap: 16px; }
 .game-card { background: white; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); transition: all 0.25s; }
 .game-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
 .game-card.disabled { opacity: 0.6; }
+.game-list-card { display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; gap: 16px; align-items: center; background: white; border-radius: 14px; border: 1px solid var(--border-color); padding: 14px; transition: all 0.25s; }
+.game-list-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.08); }
 
 .game-cover { height: 120px; display: flex; align-items: center; justify-content: center; position: relative; }
+.list-cover { height: 120px; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 .game-icon { font-size: 48px; }
 .game-badge { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: white; }
 .game-badge.online { background: rgba(16,185,129,0.9); }
@@ -212,7 +249,10 @@ function batchApprove() { console.log('批量通过') }
 .game-badge.offline { background: rgba(100,116,139,0.9); }
 
 .game-info { padding: 14px; }
-.game-info h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.list-main { min-width: 0; }
+.list-actions { display: flex; flex-direction: column; gap: 8px; }
+.game-info h4,
+.list-main h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
 .game-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
 .game-rating { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
 .game-actions { display: flex; gap: 8px; }
@@ -228,4 +268,15 @@ function batchApprove() { console.log('批量通过') }
 .stat-card.success { border-color: rgba(16,185,129,0.3); background: linear-gradient(180deg, rgba(16,185,129,0.05), white); }
 .stat-card.warning { border-color: rgba(245,158,11,0.3); background: linear-gradient(180deg, rgba(245,158,11,0.05), white); }
 .stat-card.error { border-color: rgba(239,68,68,0.3); background: linear-gradient(180deg, rgba(239,68,68,0.05), white); }
+
+@media (max-width: 1200px) {
+  .game-waterfall { column-count: 3; }
+}
+
+@media (max-width: 900px) {
+  .game-waterfall { column-count: 2; }
+  .game-list-card { grid-template-columns: 1fr; }
+  .list-cover { max-width: 180px; }
+  .list-actions { flex-direction: row; }
+}
 </style>

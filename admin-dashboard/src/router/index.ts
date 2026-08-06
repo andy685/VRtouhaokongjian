@@ -90,7 +90,7 @@ const routes: RouteRecordRaw[] = [
       // 系统运维
       { path: 'system', name: 'PlatformSystem', component: () => import('../views/platform/System.vue'), meta: { title: '版本发布' } },
       { path: 'system/alerts', name: 'PlatformSystemAlerts', component: () => import('../views/platform/System.vue'), meta: { title: '告警中心' } },
-      { path: 'system/logs', name: 'PlatformSystemLogs', component: () => import('../views/platform/System.vue'), meta: { title: '操作日志' } },
+      { path: 'system/logs', name: 'PlatformSystemLogs', component: () => import('../views/shared/OperationLogs.vue'), meta: { title: '操作日志' } },
       { path: 'support/tickets', name: 'PlatformSupportTickets', component: () => import('../views/platform/System.vue'), meta: { title: '工单系统' } },
       { path: 'support/help', name: 'PlatformSupportHelp', component: () => import('../views/platform/System.vue'), meta: { title: '帮助中心' } },
       // 帮助中心
@@ -161,6 +161,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: () => import('../views/shop/PointsExchangeOrder.vue'), meta: { title: '游戏币兑换订单' } },
       { path: 'gift-order', name: 'ShopGiftOrder', component: () => import('../views/shop/GiftOrder.vue'), meta: { title: '活动赠送订单' } },
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '内容消耗明细' } },
+      { path: 'revenue-target', name: 'ShopRevenueTarget', component: () => import('../views/shop/RevenueTarget.vue'), meta: { title: '营收目标与完成率' } },
+      { path: 'staff-ranking', name: 'ShopStaffRanking', component: () => import('../views/shop/StaffRanking.vue'), meta: { title: '员工销售排名' } },
       { path: 'settlement', name: 'ShopSettlement', component: () => import('../views/shop/Settlement.vue'), meta: { title: '结算记录' } },
       { path: 'reconciliation', redirect: '/shop/exception-orders' },
       { path: 'exception-orders', name: 'ShopExceptionOrders', component: () => import('../views/shop/Reconciliation.vue'), meta: { title: '异常订单' } },
@@ -178,6 +180,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'points-settings', name: 'ShopPointsSettings', component: () => import('../views/shop/PointsSettings.vue'), meta: { title: '游戏币设置' } },
       { path: 'users', name: 'ShopUsers', component: () => import('../views/shop/Users.vue'), meta: { title: '用户列表' } },
       { path: 'roles', name: 'ShopRoles', component: () => import('../views/shop/Roles.vue'), meta: { title: '角色列表' } },
+      { path: 'operation-logs', name: 'ShopOperationLogs', component: () => import('../views/shared/OperationLogs.vue'), meta: { title: '操作日志' } },
       // 账户
       { path: 'account/bills', name: 'ShopAccountBills', component: () => import('../views/shop/AccountBills.vue'), meta: { title: '账户账单' } },
       { path: 'account/operating-bills', name: 'ShopOperatingBills', component: () => import('../views/shop/OperatingBills.vue'), meta: { title: '运营账户账单' } },

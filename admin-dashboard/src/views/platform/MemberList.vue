@@ -188,27 +188,30 @@ const columns = [
     }
   },
   {
-    title: '储值余额',
+    title: '累计消费金额',
+    key: 'totalSpent',
+    width: 110,
+    sorter: (a: any, b: any) => Number(a.totalSpent) - Number(b.totalSpent),
+    render(row: any) {
+      return h('span', {}, Number(row.totalSpent).toLocaleString())
+    }
+  },
+  {
+    title: '预存剩余金额',
     key: 'deposit',
-    width: 100,
+    width: 110,
+    sorter: (a: any, b: any) => Number(a.deposit) - Number(b.deposit),
     render(row: any) {
       return h('span', { style: 'color:#3B82F6;font-weight:500;' }, Number(row.deposit).toLocaleString())
     }
   },
   {
-    title: '游戏币',
+    title: '剩余游戏币',
     key: 'coins',
-    width: 90,
+    width: 100,
+    sorter: (a: any, b: any) => Number(a.coins) - Number(b.coins),
     render(row: any) {
       return h('span', { style: 'color:#F59E0B;font-weight:500;' }, Number(row.coins).toLocaleString())
-    }
-  },
-  {
-    title: '累计消费',
-    key: 'totalSpent',
-    width: 110,
-    render(row: any) {
-      return h('span', {}, Number(row.totalSpent).toLocaleString())
     }
   },
   {
@@ -342,9 +345,9 @@ function handleReset() {
 }
 
 function handleExport() {
-  const headers = ['姓名', '手机', '商家', '店铺', '等级', '储值余额', '游戏币', '累计消费', '订单数', '状态', '绑定微信', '最后消费', '注册时间']
+  const headers = ['姓名', '手机', '商家', '店铺', '等级', '累计消费金额', '预存剩余金额', '剩余游戏币', '订单数', '状态', '绑定微信', '最后消费', '注册时间']
   const rows = filteredData.value.map(r => [
-    r.name, r.phone, r.merchant, r.store, r.level, r.deposit, r.coins, r.totalSpent, r.orderCount, r.memberStatus, r.wechatBound ? '是' : '否', r.lastConsumeTime, r.registerTime,
+    r.name, r.phone, r.merchant, r.store, r.level, r.totalSpent, r.deposit, r.coins, r.orderCount, r.memberStatus, r.wechatBound ? '是' : '否', r.lastConsumeTime, r.registerTime,
   ])
   const csvContent = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
   const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })

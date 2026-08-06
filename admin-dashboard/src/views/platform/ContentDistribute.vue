@@ -76,7 +76,7 @@
           <n-space>
             <n-select v-model:value="filterStatus" placeholder="分发状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
           </n-space>
-          <n-button type="primary" @click="showBatchModal = true">批量分发</n-button>
+          <n-button type="primary" @click="showFullDistributeModal = true">一键全发</n-button>
         </div>
         <div class="content-card">
           <n-data-table :columns="columns" :data="filteredData" :pagination="pagination" striped />
@@ -84,21 +84,21 @@
       </n-tab-pane>
     </n-tabs>
 
-    <!-- 批量分发弹窗 -->
-    <n-modal v-model:show="showBatchModal" preset="card" :title="batchForm.games.length === 1 ? '游戏分发' : '批量分发'" style="width: 560px;" :bordered="false">
+    <!-- 游戏分发弹窗 -->
+    <n-modal v-model:show="showDistributeModal" preset="card" title="游戏分发" style="width: 560px;" :bordered="false">
       <n-form label-placement="left" label-width="100">
         <n-form-item label="选择游戏" required>
-          <n-select v-model:value="batchForm.games" :options="gameOptions" multiple placeholder="请选择要分发的游戏" />
+          <n-select v-model:value="distributeForm.game" :options="gameOptions" placeholder="请选择要分发的游戏" />
+        </n-form-item>
+        <n-form-item label="可分发版本">
+          <n-input :value="distributeVersionDisplay" readonly />
+          <span class="release-hint">{{ distributeVersionHint }}</span>
         </n-form-item>
         <n-form-item label="目标店铺" required>
-          <n-select v-model:value="batchForm.stores" :options="storeOptions" multiple placeholder="请选择目标店铺" />
-        </n-form-item>
-        <n-form-item :label="batchForm.games.length <= 1 ? '可分发版本' : '分发版本策略'">
-          <n-input :value="batchVersionDisplay" readonly />
-          <span class="release-hint">{{ batchVersionHint }}</span>
+          <n-select v-model:value="distributeForm.stores" :options="storeOptions" multiple placeholder="请选择目标店铺" />
         </n-form-item>
         <n-form-item label="分发方式" required>
-          <n-radio-group v-model:value="batchForm.distributeMode" name="distributeMode">
+          <n-radio-group v-model:value="distributeForm.distributeMode" name="distributeMode">
             <n-space vertical>
               <n-radio value="smart">
                 <div class="distribute-mode-option">
@@ -119,8 +119,35 @@
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showBatchModal = false">取消</n-button>
-          <n-button type="primary" @click="confirmBatch">确认分发</n-button>
+          <n-button @click="showDistributeModal = false">取消</n-button>
+          <n-button type="primary" @click="confirmDistribute">确认分发</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <!-- 一键全发确认弹窗 -->
+    <n-modal v-model:show="showFullDistributeModal" preset="card" title="一键全发" style="width: 560px;" :bordered="false">
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 14px; color: var(--text-primary); margin-bottom: 12px;">
+          将对以下 <strong>{{ distributableGames.length }}</strong> 款游戏执行智能分发到全部 <strong>{{ storeOptions.length }}</strong> 家店铺：
+        </p>
+        <div style="background: #f8f9fb; border-radius: 8px; padding: 12px 14px; max-height: 200px; overflow-y: auto;">
+          <div v-for="g in distributableGames" :key="g.id" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px;">
+            <span style="color: var(--text-primary); font-weight: 500;">{{ g.gameName }}</span>
+            <span style="color: var(--text-muted); font-size: 12px;">{{ g.latestReleaseVersion }}</span>
+          </div>
+        </div>
+        <div style="margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <n-tag v-for="s in storeOptions" :key="s.value" size="tiny" :bordered="false" type="info">{{ s.label }}</n-tag>
+        </div>
+      </div>
+      <n-alert type="warning" style="margin-bottom: 8px;">
+        一键全发将对所有可分发游戏执行<strong>智能分发</strong>（仅分发变更部分），不可分发游戏（无已审核版本）将被跳过。
+      </n-alert>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showFullDistributeModal = false">取消</n-button>
+          <n-button type="primary" @click="confirmFullDistribute">确认分发</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -164,7 +191,7 @@ import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal, NForm, NFormItem,
   NInput, NIcon, NDescriptions, NDescriptionsItem, NTabs, NTabPane,
-  NRadio, NRadioGroup, useMessage, useDialog
+  NRadio, NRadioGroup, NAlert, useMessage, useDialog
 } from 'naive-ui'
 import {
   CloudUploadOutline, CheckmarkCircleOutline, TimeOutline, CloseCircleOutline,
@@ -580,41 +607,58 @@ function refreshData() {
   message.success('数据已刷新')
 }
 
-// 批量分发
-const showBatchModal = ref(false)
-const batchForm = ref({ games: [] as string[], stores: [] as string[], version: '', distributeMode: 'smart' as 'smart' | 'full' })
+// 游戏分发
+const showDistributeModal = ref(false)
+const distributeForm = ref({ game: '', stores: [] as string[], version: '', distributeMode: 'smart' as 'smart' | 'full' })
 
-const selectedGames = computed(() => gameList.value.filter(game => batchForm.value.games.includes(game.gameName)))
+const selectedGame = computed(() => gameList.value.find(g => g.gameName === distributeForm.value.game))
 
-const batchVersionDisplay = computed(() => {
-  if (selectedGames.value.length === 0) return '请先选择游戏'
-  if (selectedGames.value.length === 1) return selectedGames.value[0].latestReleaseVersion || '暂无可分发版本'
-  const details = selectedGames.value.map(game => `${game.gameName} ${game.latestReleaseVersion || '待审核'}`)
-  return details.join(' / ')
+const distributeVersionDisplay = computed(() => {
+  if (!selectedGame.value) return '请先选择游戏'
+  return selectedGame.value.latestReleaseVersion || '暂无可分发版本'
 })
 
-const batchVersionHint = computed(() => {
-  if (selectedGames.value.length === 0) return '分发版本由系统根据已审核通过的发布版本自动带出。'
-  if (selectedGames.value.length === 1) return '分发页不再手填版本号，只能分发该游戏当前已审核通过的发布版本。'
-  return '批量分发时，系统会按每个游戏各自最新已审核通过的发布版本执行分发。'
+const distributeVersionHint = computed(() => {
+  if (!selectedGame.value) return '分发版本由系统根据已审核通过的发布版本自动带出。'
+  return '分发页不再手填版本号，只能分发该游戏当前已审核通过的发布版本。'
 })
 
-function confirmBatch() {
-  if (batchForm.value.games.length === 0 || batchForm.value.stores.length === 0) {
-    message.warning('请选择游戏和目标店铺')
+function confirmDistribute() {
+  if (!distributeForm.value.game) {
+    message.warning('请选择游戏')
     return
   }
-  if (selectedGames.value.some(game => !game.latestReleaseVersion)) {
-    message.warning('存在尚未审核通过的游戏，当前不可分发')
+  if (distributeForm.value.stores.length === 0) {
+    message.warning('请选择目标店铺')
     return
   }
-  const versionSummary = selectedGames.value.length === 1
-    ? `版本 ${selectedGames.value[0].latestReleaseVersion}`
-    : '各游戏最新已审核版本'
-  const modeText = batchForm.value.distributeMode === 'smart' ? '智能分发（仅变更部分）' : '全量分发'
-  message.success(`已成功${modeText} ${batchForm.value.games.length} 个游戏到 ${batchForm.value.stores.length} 家店铺，分发版本：${versionSummary}`)
-  showBatchModal.value = false
-  batchForm.value = { games: [], stores: [], version: '', distributeMode: 'smart' }
+  if (!selectedGame.value?.latestReleaseVersion) {
+    message.warning('该游戏尚未审核通过，当前不可分发')
+    return
+  }
+  const modeText = distributeForm.value.distributeMode === 'smart' ? '智能分发（仅变更部分）' : '全量分发'
+  message.success(`已成功${modeText}「${distributeForm.value.game}」（${selectedGame.value.latestReleaseVersion}）到 ${distributeForm.value.stores.length} 家店铺`)
+  showDistributeModal.value = false
+  distributeForm.value = { game: '', stores: [], version: '', distributeMode: 'smart' }
+}
+
+// 一键全发
+const showFullDistributeModal = ref(false)
+
+const distributableGames = computed(() =>
+  gameList.value.filter(g => g.latestReleaseVersion)
+)
+
+function confirmFullDistribute() {
+  if (distributableGames.value.length === 0) {
+    message.warning('暂无可分发游戏（无已审核通过的版本）')
+    return
+  }
+  const skipped = gameList.value.length - distributableGames.value.length
+  let msg = `已对 ${distributableGames.value.length} 款游戏执行智能分发到 ${storeOptions.length} 家店铺`
+  if (skipped > 0) msg += `，${skipped} 款无已审核版本的游戏已跳过`
+  message.success(msg)
+  showFullDistributeModal.value = false
 }
 
 // 详情
@@ -628,18 +672,17 @@ function openDetail(row: any) {
 
 // 重试分发（从列表）
 function retryDistribute(row: any) {
-  // 将失败的店铺名称映射到 storeOptions 的 value
   const failedStoreNames = row.storeList?.filter((s: any) => s.status === 'failed').map((s: any) => s.storeName) || []
   const storeValueMap = new Map(storeOptions.map((opt: any) => [opt.label, opt.value]))
   const failedStoreValues = failedStoreNames.map((name: string) => storeValueMap.get(name)).filter(Boolean)
   
-  batchForm.value = {
-    games: [row.gameName],
+  distributeForm.value = {
+    game: row.gameName,
     stores: failedStoreValues,
     version: row.latestReleaseVersion || row.version || '',
     distributeMode: 'full',
   }
-  showBatchModal.value = true
+  showDistributeModal.value = true
   message.info(`正在重新分发：${row.gameName}，已预选失败的店铺（全量分发模式）`)
 }
 
@@ -708,15 +751,14 @@ function revokeStore(store: any) {
 
 // 打开游戏分发弹窗（从游戏列表）
 function openGameDistribute(row: any) {
-  // 有更新/未分发 → 智能分发；失败/已撤回 → 全量分发
   const mode = (row.distributeStatus === '有更新' || row.distributeStatus === '未分发') ? 'smart' : 'full'
-  batchForm.value = {
-    games: [row.gameName],
+  distributeForm.value = {
+    game: row.gameName,
     stores: [],
     version: row.latestReleaseVersion || row.currentVersion || '',
     distributeMode: mode,
   }
-  showBatchModal.value = true
+  showDistributeModal.value = true
 }
 
 // 查看游戏分发详情（从游戏列表）

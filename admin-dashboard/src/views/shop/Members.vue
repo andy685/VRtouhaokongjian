@@ -123,17 +123,6 @@
               />
             </div>
           </n-form-item>
-          <n-form-item label="预存次数">
-            <div class="range-input">
-              <n-select v-model:value="filterForm.prepaidTimesOp" :options="compareOptions" style="width: 70px;" />
-              <n-input
-                v-model:value="filterForm.prepaidTimesVal"
-                placeholder="请输入预存次数"
-                clearable
-                style="flex:1;"
-              />
-            </div>
-          </n-form-item>
           <n-form-item label="未消费天数">
             <n-input
               v-model:value="filterForm.inactiveDays"
@@ -180,8 +169,6 @@ const filterForm = ref({
   balanceVal: '',
   pointsOp: '>=',
   pointsVal: '',
-  prepaidTimesOp: '>=',
-  prepaidTimesVal: '',
   inactiveDays: '',
 })
 
@@ -219,13 +206,6 @@ const compareOptions = [
 // ===== 表格配置 =====
 const columns = [
   {
-    title: '姓名',
-    key: 'name',
-    width: 100,
-    fixed: 'left' as const,
-    ellipsis: { tooltip: true },
-  },
-  {
     title: '昵称',
     key: 'nickname',
     width: 90,
@@ -243,33 +223,45 @@ const columns = [
     width: 110,
   },
   {
-    title: '预存金额',
-    key: 'prepaidAmount',
-    width: 100,
+    title: '会员等级',
+    key: 'level',
+    width: 90,
     render(row: any) {
-      return h('span', { style: 'color:#3B82F6;' }, Number(row.prepaidAmount).toFixed(2))
-    }
-  },
-  {
-    title: '预存次数',
-    key: 'prepaidTimes',
-    width: 80,
-    align: 'center' as const,
-  },
-  {
-    title: '游戏币',
-    key: 'points',
-    width: 80,
-    render(row: any) {
-      return h('span', {}, Number(row.points).toFixed(2))
+      const map: Record<string, { color: string; text: string }> = {
+        normal: { color: '#6B7280', text: '普通' },
+        bronze: { color: '#CD7F32', text: '青铜' },
+        silver: { color: '#9CA3AF', text: '白银' },
+        gold: { color: '#F59E0B', text: '黄金' },
+      }
+      const item = map[row.level] || map.normal
+      return h(NTag, { type: 'info', size: 'small', bordered: false }, () => item.text)
     }
   },
   {
     title: '累计消费金额',
     key: 'totalSpent',
     width: 120,
+    sorter: (a: any, b: any) => Number(a.totalSpent) - Number(b.totalSpent),
     render(row: any) {
       return h('span', {}, Number(row.totalSpent).toFixed(2))
+    }
+  },
+  {
+    title: '预存剩余金额',
+    key: 'prepaidAmount',
+    width: 110,
+    sorter: (a: any, b: any) => Number(a.prepaidAmount) - Number(b.prepaidAmount),
+    render(row: any) {
+      return h('span', { style: 'color:#3B82F6;' }, Number(row.prepaidAmount).toFixed(2))
+    }
+  },
+  {
+    title: '剩余游戏币',
+    key: 'points',
+    width: 90,
+    sorter: (a: any, b: any) => Number(a.points) - Number(b.points),
+    render(row: any) {
+      return h('span', {}, Number(row.points).toFixed(2))
     }
   },
   {
@@ -325,11 +317,11 @@ const tableData = ref([
   {
     id: 1,
     name: '烂漫的痕迹重',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '13801231234',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 0.00,
     wechatBound: false,
@@ -340,11 +332,11 @@ const tableData = ref([
   {
     id: 2,
     name: '无脚的空战勋章',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '13905675678',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 1280.00,
     wechatBound: false,
@@ -355,11 +347,11 @@ const tableData = ref([
   {
     id: 3,
     name: '连你的长城都逃',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '13709019012',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 560.00,
     wechatBound: false,
@@ -370,11 +362,11 @@ const tableData = ref([
   {
     id: 4,
     name: '寂寞的雪山飞车',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '13603453456',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 3200.00,
     wechatBound: true,
@@ -385,6 +377,7 @@ const tableData = ref([
   {
     id: 5,
     name: '张浩理',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '13507897890',
@@ -400,6 +393,7 @@ const tableData = ref([
   {
     id: 6,
     name: '阮颖慧',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '15801121122',
@@ -415,6 +409,7 @@ const tableData = ref([
   {
     id: 7,
     name: '阳恩',
+    level: 'gold',
     nickname: '黄金',
     storeName: '和民轩小黑厅',
     phone: '15903343344',
@@ -430,11 +425,11 @@ const tableData = ref([
   {
     id: 8,
     name: '认真的海底两万里',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '18605565566',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 420.00,
     wechatBound: true,
@@ -445,11 +440,11 @@ const tableData = ref([
   {
     id: 9,
     name: '潇潇默潇',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '18807787788',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 1890.00,
     wechatBound: true,
@@ -460,11 +455,11 @@ const tableData = ref([
   {
     id: 10,
     name: 'syfrdhgo',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '17709909900',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 750.00,
     wechatBound: true,
@@ -475,11 +470,11 @@ const tableData = ref([
   {
     id: 11,
     name: '现代的这地跳脱',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '18302233223',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 2100.00,
     wechatBound: true,
@@ -490,11 +485,11 @@ const tableData = ref([
   {
     id: 12,
     name: '小巧玲珑璐',
+    level: 'normal',
     nickname: '普通会员',
     storeName: '和民轩小黑厅',
     phone: '19904454455',
     prepaidAmount: 0.00,
-    prepaidTimes: 0,
     points: 0.00,
     totalSpent: 0.00,
     wechatBound: false,
@@ -563,9 +558,6 @@ const filteredTableData = computed(() => {
   if (f.pointsVal) {
     data = data.filter(row => compare(Number(row.points), f.pointsOp!, f.pointsVal!))
   }
-  if (f.prepaidTimesVal) {
-    data = data.filter(row => compare(Number(row.prepaidTimes), f.prepaidTimesOp!, f.prepaidTimesVal!))
-  }
 
   return data
 })
@@ -576,10 +568,10 @@ function handleSearch() {
 }
 
 function handleExport() {
-  const headers = ['姓名', '昵称', '开卡店铺', '手机', '预存金额', '预存次数', '游戏币', '累计消费金额', '绑定微信', '最后消费时间', '开通时间', '状态']
+  const headers = ['昵称', '开卡店铺', '手机', '会员等级', '累计消费金额', '预存剩余金额', '剩余游戏币', '绑定微信', '最后消费时间', '开通时间', '状态']
   const rows = filteredTableData.value.map(row => [
-    row.name, row.nickname, row.storeName, row.phone,
-    row.prepaidAmount, row.prepaidTimes, row.points, row.totalSpent,
+    row.nickname, row.storeName, row.phone,
+    row.level, row.totalSpent, row.prepaidAmount, row.points,
     row.wechatBound ? '是' : '否', row.lastConsumeTime, row.openTime, row.status,
   ])
   const csvContent = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
