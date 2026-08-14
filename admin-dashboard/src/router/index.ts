@@ -54,9 +54,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'members/ranking', name: 'PlatformMemberRanking', component: () => import('../views/platform/MemberConsumptionRanking.vue'), meta: { title: '会员消费排行' } },
       { path: 'members/deposit-log', name: 'PlatformMemberDepositLog', component: () => import('../views/platform/MemberDepositLog.vue'), meta: { title: '会员储值变更' } },
       { path: 'members/coins-query', name: 'PlatformMemberCoinsQuery', component: () => import('../views/platform/MemberCoinsQuery.vue'), meta: { title: '会员游戏币查询' } },
-      { path: 'members/coin-adjust-log', name: 'PlatformMemberCoinAdjustLog', component: () => import('../views/platform/MemberCoinAdjustLog.vue'), meta: { title: '游戏币调整有效期查询' } },
-      { path: 'members/prepaid-times-query', name: 'PlatformMemberPrepaidTimesQuery', component: () => import('../views/platform/MemberPrepaidTimesQuery.vue'), meta: { title: '会员预存次数查询' } },
-      { path: 'members/times-adjust-log', name: 'PlatformMemberTimesAdjustLog', component: () => import('../views/platform/MemberTimesAdjustLog.vue'), meta: { title: '次数调整有效查询' } },
       // 订单流水
       { path: 'order-flow', redirect: '/platform/order-flow/cashier' },
       { path: 'order-flow/cashier', name: 'PlatformOrderFlowCashier', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '收银订单' } },

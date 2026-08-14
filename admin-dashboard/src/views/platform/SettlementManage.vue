@@ -5,13 +5,13 @@
       <div>
         <h1>商家分账管理</h1>
         <p class="header-desc">
-          商家结算额拉卡拉扣手续费后为<strong class="highlight">到账金额</strong>。
-          结算及放款均在<strong class="highlight">拉卡拉侧</strong>完成，平台仅<strong>定时同步</strong>状态。
+          商家结算额扣除手续费后为<strong class="highlight">实缴金额</strong>。
+          优先走<strong class="highlight">自动分账</strong>，第三方不支持或分账失败时由财务<strong>人工打款</strong>并留存凭证。
         </p>
       </div>
       <n-button @click="handleSyncLakala">
         <template #icon><n-icon :component="SyncOutline" /></template>
-        同步拉卡拉状态
+        同步打款状态
       </n-button>
     </div>
 
@@ -22,9 +22,9 @@
           <n-icon :component="FlashOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">本月自动分润</span>
-          <span class="value success">{{ autoSubmittedCount }}</span>
-          <span class="sub-text">笔 · 到账 ¥{{ autoSubmittedAmount.toLocaleString() }}</span>
+          <span class="label">自动分账</span>
+          <span class="value success">{{ autoFlowCount }}</span>
+          <span class="sub-text">笔 · 实缴 ¥{{ autoFlowAmount.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -32,9 +32,9 @@
           <n-icon :component="SyncOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">拉卡拉分账中</span>
-          <span class="value processing">{{ processingCount }}</span>
-          <span class="sub-text">笔 · 到账 ¥{{ processingAmount.toLocaleString() }}</span>
+          <span class="label">人工打款</span>
+          <span class="value processing">{{ manualFlowCount }}</span>
+          <span class="sub-text">笔 · 实缴 ¥{{ manualFlowAmount.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -42,9 +42,9 @@
           <n-icon :component="CheckmarkDoneOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">本月已到账</span>
-          <span class="value">{{ settledCount }}</span>
-          <span class="sub-text">笔 · 到账 ¥{{ settledAmount.toLocaleString() }}</span>
+          <span class="label">已完成</span>
+          <span class="value">{{ completedCount }}</span>
+          <span class="sub-text">笔 · 实缴 ¥{{ completedAmount.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card stat-card-alert">
@@ -52,18 +52,18 @@
           <n-icon :component="AlertCircleOutline" size="22" color="#fff" />
         </div>
         <div class="stat-content">
-          <span class="label">异常待处理</span>
-          <span class="value alert">{{ exceptionCount }}</span>
-          <span class="sub-text">笔 · 拉卡拉侧处理</span>
+          <span class="label">异常处理</span>
+          <span class="value alert">{{ exceptionFlowCount }}</span>
+          <span class="sub-text">笔 · 可转人工打款</span>
         </div>
       </div>
     </div>
 
     <!-- 自动化规则提示条 -->
     <n-alert type="info" :bordered="false" style="margin-bottom: 20px; border-radius: 12px;">
-      <template #header>同步规则</template>
-      平台<strong>每小时自动同步</strong>拉卡拉分账状态，点击右上角「同步拉卡拉状态」可手动触发。
-      异常和失败记录由拉卡拉侧处理，平台仅展示最新状态。
+      <template #header>处理规则</template>
+      系统按结算周期自动生成结算单，结算状态用于确认应付金额。
+      打款方式决定资金处理路径：拉卡拉自动分账由平台同步状态，人工打款由财务确认并可上传凭证。
     </n-alert>
 
     <!-- Tab 状态切换 + 筛选 -->
@@ -78,14 +78,12 @@
           <n-date-picker v-model:value="filterMonth" type="month" clearable style="width: 140px;" />
         </n-space>
       </div>
-      <!-- 第二行：状态 Tab -->
+      <!-- 第二行：处理渠道 Tab -->
       <n-tabs v-model:value="activeTab" type="segment" animated size="small" style="margin-bottom: 16px;">
         <n-tab-pane name="all" :tab="`全部 (${totalCount})`" />
-        <n-tab-pane name="auto_submitted" :tab="`自动已提交 (${autoSubmittedCount})`" />
-        <n-tab-pane name="processing" :tab="`分账中 (${processingCount})`" />
-        <n-tab-pane name="settled" :tab="`已到账 (${settledCount})`" />
-        <n-tab-pane name="failed" :tab="`分账失败 (${failedCount})`" />
-        <n-tab-pane name="exception" :tab="`⚠ 异常待处 (${exceptionCount})`" />
+        <n-tab-pane name="auto" :tab="`自动分账 (${autoFlowCount})`" />
+        <n-tab-pane name="manual" :tab="`人工打款 (${manualFlowCount})`" />
+        <n-tab-pane name="exception" :tab="`异常处理 (${exceptionFlowCount})`" />
       </n-tabs>
 
       <n-data-table
@@ -120,10 +118,14 @@
               </n-descriptions-item>
               <n-descriptions-item label="手续费率">{{ (currentRecord.feeRate * 100).toFixed(1) }}%</n-descriptions-item>
               <n-descriptions-item label="手续费">¥{{ currentRecord.fee.toFixed(2) }}</n-descriptions-item>
-              <n-descriptions-item label="预计实付">
+              <n-descriptions-item label="实缴金额">
                 <span style="font-weight:700;color:#10B981;">¥{{ (currentRecord.amount - currentRecord.fee).toFixed(2) }}</span>
               </n-descriptions-item>
-              <n-descriptions-item label="分账状态">
+              <n-descriptions-item label="结算状态">
+                <n-tag type="success" size="medium" round :bordered="false">已生成结算单</n-tag>
+              </n-descriptions-item>
+              <n-descriptions-item label="打款方式">{{ paymentMethodLabel(currentRecord) }}</n-descriptions-item>
+              <n-descriptions-item label="打款状态">
                 <n-tag :type="statusType(currentRecord.status)" size="medium" round :bordered="false">{{ statusLabel(currentRecord.status) }}</n-tag>
               </n-descriptions-item>
               <n-descriptions-item label="收款银行">{{ currentRecord.bankName || '<span style=\'color:#EF4444\'>未绑定</span>' }}</n-descriptions-item>
@@ -143,8 +145,8 @@
 
           <!-- Tab 3: 分账日志 + 打款凭证 -->
           <n-tab-pane name="log" tab="分账日志">
-            <!-- 打款凭证（已到账时显示） -->
-            <div v-if="currentRecord?.status === 'settled'" style="margin-bottom: 16px;">
+            <!-- 打款凭证 -->
+            <div v-if="canManageVoucher(currentRecord)" style="margin-bottom: 16px;">
               <div style="font-size:13px;font-weight:600;margin-bottom:10px;">打款凭证</div>
               <div v-if="currentRecord.voucher">
                 <n-image :src="currentRecord.voucher" width="200" style="border-radius: 8px;" />
@@ -156,7 +158,7 @@
                 <n-upload-dragger>
                   <div style="padding: 20px 0;">
                     <n-icon size="32" :depth="3"><CloudUploadOutline /></n-icon>
-                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">点击或拖拽上传拉卡拉打款回执凭证</p>
+                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">点击或拖拽上传打款凭证（选填）</p>
                   </div>
                 </n-upload-dragger>
               </n-upload>
@@ -179,7 +181,10 @@
       </template>
 
       <template #footer>
-        <n-button @click="showDetailModal = false">关闭</n-button>
+        <n-space justify="end">
+          <n-button v-if="canManualPay(currentRecord)" type="primary" @click="markManualPaid">标记已人工打款</n-button>
+          <n-button @click="showDetailModal = false">关闭</n-button>
+        </n-space>
       </template>
     </n-modal>
 
@@ -211,11 +216,13 @@ const filterMonth = ref<number | null>(null)
  * 状态定义（与代理商分账一致）：
  * auto_submitted - 正常单，系统自动提交拉卡拉
  * processing     - 拉卡拉开票中，等待回调
- * settled        - 已到账
- * failed         - 拉卡拉开票失败，可修复后重试
+ * settled        - 自动分账到账
+ * manual_pending - 打款方式配置为人工打款，待财务处理
+ * manual_paid    - 财务人工打款完成
+ * failed         - 拉卡拉开票失败，可转人工打款
  * exception      - 异常拦截，需人工处理
  */
-type SettlementStatus = 'auto_submitted' | 'processing' | 'settled' | 'failed' | 'exception'
+type SettlementStatus = 'auto_submitted' | 'processing' | 'settled' | 'manual_pending' | 'manual_paid' | 'failed' | 'exception'
 
 interface MerchantSettlement {
   id: number
@@ -325,22 +332,72 @@ const settlementData = ref<MerchantSettlement[]>([
       { action: '开票失败', time: '2026-04-28 10:05', detail: '拉卡拉返回：账户名与开户名不一致(BANK_NAME_MISMATCH)', type: 'error' as const },
     ],
   },
+  {
+    // 场景6：商家打款方式配置为人工打款，待财务处理
+    id: 6, no: 'MS2026040601', merchant: '杭州未来娱乐公司',
+    period: '2026-03-30 ~ 2026-04-05', amount: 56800, feeRate: 0.03, fee: 1704,
+    bankName: '中国银行', cardNo: '6216618888888888888',
+    status: 'manual_pending', statusText: '待人工打款',
+    exceptionReason: '该商家打款方式配置为人工打款',
+    time: '-', createTime: '2026-04-06 08:00',
+    storeDetails: [{ store: '杭州滨江店', amount: 56800, fee: 1704 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-06 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '进入人工打款', time: '2026-04-06 08:00:02', detail: '商家打款方式为人工打款，等待财务处理', type: 'warning' as const },
+    ],
+  },
+  {
+    // 场景7：人工打款完成，已上传凭证
+    id: 7, no: 'MS2026040602', merchant: '南京蓝海运动馆',
+    period: '2026-03-30 ~ 2026-04-05', amount: 42450, feeRate: 0.03, fee: 1273.50,
+    bankName: '浦发银行', cardNo: '6225216666666666666',
+    status: 'manual_paid', statusText: '已人工打款',
+    exceptionReason: '该商家打款方式配置为人工打款',
+    time: '2026-04-07 15:30', createTime: '2026-04-06 08:00',
+    voucher: 'https://dummyimage.com/640x360/f8fafc/334155&text=Manual+Payment+Voucher',
+    storeDetails: [{ store: '南京新街口店', amount: 42450, fee: 1273.50 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-06 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '进入人工打款', time: '2026-04-06 08:00:02', detail: '商家打款方式为人工打款，等待财务处理', type: 'warning' as const },
+      { action: '已人工打款', time: '2026-04-07 15:30', detail: '财务确认线下转账完成，实缴金额 ¥41,176.50', type: 'success' as const },
+      { action: '凭证上传', time: '2026-04-07 15:35', detail: '已上传银行回单凭证', type: 'success' as const },
+    ],
+  },
+  {
+    // 场景8：人工打款处理中，需补充线下凭证
+    id: 8, no: 'MS2026040603', merchant: '苏州星河互动空间',
+    period: '2026-03-30 ~ 2026-04-05', amount: 31600, feeRate: 0.03, fee: 948,
+    bankName: '农业银行', cardNo: '6228487777777777777',
+    status: 'manual_pending', statusText: '待人工打款',
+    exceptionReason: '财务已发起线下转账，等待银行回单确认',
+    time: '-', createTime: '2026-04-06 08:00',
+    storeDetails: [{ store: '苏州园区店', amount: 31600, fee: 948 }],
+    logs: [
+      { action: '结算单生成', time: '2026-04-06 08:00', detail: '结算引擎自动计算', type: 'info' as const },
+      { action: '进入人工打款', time: '2026-04-06 08:00:02', detail: '商家打款方式为人工打款，等待财务处理', type: 'warning' as const },
+      { action: '线下转账处理中', time: '2026-04-07 11:20', detail: '财务已发起企业网银转账，待补充回单凭证', type: 'warning' as const },
+    ],
+  },
 ])
 
 // ========== 统计 ==========
-const autoSubmittedCount = computed(() => settlementData.value.filter(d => d.status === 'auto_submitted').length)
-const processingCount = computed(() => settlementData.value.filter(d => d.status === 'processing').length)
-const settledCount = computed(() => settlementData.value.filter(d => d.status === 'settled').length)
-const failedCount = computed(() => settlementData.value.filter(d => d.status === 'failed').length)
-const exceptionCount = computed(() => settlementData.value.filter(d => d.status === 'exception').length)
+const autoStatuses: SettlementStatus[] = ['auto_submitted', 'processing', 'settled']
+const manualStatuses: SettlementStatus[] = ['manual_pending', 'manual_paid']
+const exceptionStatuses: SettlementStatus[] = ['failed', 'exception']
+
+const netAmount = (record: MerchantSettlement) => Math.max(0, record.amount - record.fee)
+const sumByStatuses = (statuses: SettlementStatus[]) =>
+  settlementData.value.filter(d => statuses.includes(d.status)).reduce((sum, item) => sum + netAmount(item), 0)
+
+const autoFlowCount = computed(() => settlementData.value.filter(d => autoStatuses.includes(d.status)).length)
+const manualFlowCount = computed(() => settlementData.value.filter(d => manualStatuses.includes(d.status)).length)
+const exceptionFlowCount = computed(() => settlementData.value.filter(d => exceptionStatuses.includes(d.status)).length)
+const completedCount = computed(() => settlementData.value.filter(d => ['settled', 'manual_paid'].includes(d.status)).length)
 const totalCount = computed(() => settlementData.value.length)
 
-const sumByNet = (status: SettlementStatus) =>
-  settlementData.value.filter(d => d.status === status).reduce((s, d) => s + Math.max(0, d.amount - d.fee), 0)
-
-const autoSubmittedAmount = computed(() => sumByNet('auto_submitted'))
-const processingAmount = computed(() => sumByNet('processing'))
-const settledAmount = computed(() => sumByNet('settled'))
+const autoFlowAmount = computed(() => sumByStatuses(autoStatuses))
+const manualFlowAmount = computed(() => sumByStatuses(manualStatuses))
+const completedAmount = computed(() => sumByStatuses(['settled', 'manual_paid']))
 
 // ========== 表格列 ==========
 const columns = [
@@ -368,14 +425,18 @@ const columns = [
     render: (row: any) => `${(row.feeRate * 100).toFixed(1)}%`
   },
   {
-    title: '到账金额(¥)', key: 'actualAmount', width: 110, align: 'right',
+    title: '打款方式', key: 'paymentMethod', width: 120, align: 'center',
+    render: (row: any) => h(NTag, { type: ['manual_pending', 'manual_paid'].includes(row.status) ? 'warning' : 'info', size: 'small', bordered: false }, () => paymentMethodLabel(row))
+  },
+  {
+    title: '实缴金额(¥)', key: 'actualAmount', width: 110, align: 'right',
     render: (row: any) => {
       const net = row.amount - row.fee
       return h('span', { style: `font-weight:700;${net > 0 ? 'color:#10B981;' : 'color:#9CA3AF;'}` }, net > 0 ? `¥${net.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '-')
     }
   },
   {
-    title: '状态', key: 'status', width: 110, align: 'center',
+    title: '打款状态', key: 'status', width: 110, align: 'center',
     render: (row: any) => h(NSpace, { size: 2, align: 'center' }, () =>
       row.status === 'exception' || row.status === 'failed'
         ? [h(NTag, { type: statusType(row.status), size: 'small', round: true, bordered: false }, () => statusLabel(row.status)),
@@ -401,7 +462,9 @@ const storeDetailColumns = [
 // ========== 过滤 ==========
 const filteredData = computed(() => {
   let data = [...settlementData.value]
-  if (activeTab.value !== 'all') data = data.filter(d => d.status === activeTab.value)
+  if (activeTab.value === 'auto') data = data.filter(d => autoStatuses.includes(d.status))
+  if (activeTab.value === 'manual') data = data.filter(d => manualStatuses.includes(d.status))
+  if (activeTab.value === 'exception') data = data.filter(d => exceptionStatuses.includes(d.status))
   if (searchKeyword.value) {
     const kw = searchKeyword.value.toLowerCase()
     data = data.filter(d => d.merchant.toLowerCase().includes(kw) || d.no.toLowerCase().includes(kw))
@@ -415,6 +478,8 @@ const pagination = { pageSize: 10 }
 function rowClassName(row: any): string {
   if (row.status === 'exception') return 'row-exception'
   if (row.status === 'failed') return 'row-failed'
+  if (row.status === 'manual_pending') return 'row-manual-pending'
+  if (row.status === 'manual_paid') return 'row-manual-paid'
   return ''
 }
 
@@ -422,16 +487,28 @@ function isException(record: MerchantSettlement): boolean {
   return record.status === 'exception' || record.status === 'failed'
 }
 
+function canManualPay(record: MerchantSettlement | null): boolean {
+  return !!record && ['manual_pending', 'failed', 'exception'].includes(record.status)
+}
+
+function canManageVoucher(record: MerchantSettlement | null): boolean {
+  return !!record && ['settled', 'manual_paid'].includes(record.status)
+}
+
+function paymentMethodLabel(record: MerchantSettlement): string {
+  return ['manual_pending', 'manual_paid'].includes(record.status) ? '人工打款' : '拉卡拉自动分账'
+}
+
 function statusType(s: SettlementStatus): string {
   const map: Record<SettlementStatus, string> = {
-    auto_submitted: 'success', processing: 'warning', settled: 'default',
+    auto_submitted: 'success', processing: 'warning', settled: 'success', manual_pending: 'warning', manual_paid: 'warning',
     failed: 'error', exception: 'error'
   }
   return map[s] || 'default'
 }
 function statusLabel(s: SettlementStatus): string {
   const map: Record<SettlementStatus, string> = {
-    auto_submitted: '已自动提交', processing: '拉卡拉分账中', settled: '已到账',
+    auto_submitted: '已自动提交', processing: '拉卡拉分账中', settled: '自动分账成功', manual_pending: '待人工打款', manual_paid: '已人工打款',
     failed: '分账失败', exception: '异常待处理'
   }
   return map[s] || s
@@ -450,13 +527,43 @@ function openDetail(row: MerchantSettlement) {
   showDetailModal.value = true
 }
 
-// ========== 同步拉卡拉状态 ==========
+// ========== 同步打款状态 ==========
 function handleSyncLakala() {
-  message.info('正在同步拉卡拉分账状态...')
-  setTimeout(() => { message.success('拉卡拉分账状态已同步（共更新 0 条）') }, 1500)
+  message.info('正在同步打款状态...')
+  setTimeout(() => { message.success('打款状态已同步（共更新 0 条）') }, 1500)
 }
 
 // ========== 打款凭证上传 ==========
+function markManualPaid() {
+  if (!currentRecord.value) return
+  const idx = settlementData.value.findIndex(d => d.id === currentRecord.value!.id)
+  if (idx === -1) return
+
+  const now = new Date().toLocaleString('zh-CN', { hour12: false })
+  const record = settlementData.value[idx]
+  record.status = 'manual_paid'
+  record.statusText = '已人工打款'
+  record.time = now
+  record.logs.push({
+    action: '已人工打款',
+    time: now,
+    detail: `财务确认线下转账完成，实缴金额 ¥${(record.amount - record.fee).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+    type: 'success'
+  })
+  currentRecord.value = record
+  detailTab.value = 'log'
+  message.success('已标记为人工打款，可选填上传打款凭证')
+}
+
+function removeVoucher() {
+  if (!currentRecord.value) return
+  const idx = settlementData.value.findIndex(d => d.id === currentRecord.value!.id)
+  if (idx === -1) return
+  settlementData.value[idx].voucher = undefined
+  currentRecord.value = settlementData.value[idx]
+  message.success('凭证已删除')
+}
+
 function handleVoucherUpload({ file, onFinish }: any) {
   if (!currentRecord.value) return
   const reader = new FileReader()
@@ -505,4 +612,6 @@ function handleVoucherUpload({ file, onFinish }: any) {
 :::deep(.row-exception td:first-child) { border-left: 3px solid #F59E0B; }
 :::deep(.row-failed td) { background: #FEF2F2 !important; }
 :::deep(.row-failed td:first-child) { border-left: 3px solid #EF4444; }
+:::deep(.row-manual-paid td) { background: #FFFBEB !important; }
+:::deep(.row-manual-paid td:first-child) { border-left: 3px solid #F59E0B; }
 </style>

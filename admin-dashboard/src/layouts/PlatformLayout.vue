@@ -342,9 +342,6 @@ const menuOptions: MenuOption[] = [
       { label: '会员消费排行', key: '/platform/members/ranking' },
       { label: '会员储值变更', key: '/platform/members/deposit-log' },
       { label: '会员游戏币查询', key: '/platform/members/coins-query' },
-      { label: '游戏币调整有效期查询', key: '/platform/members/coin-adjust-log' },
-      { label: '会员预存次数查询', key: '/platform/members/prepaid-times-query' },
-      { label: '次数调整有效查询', key: '/platform/members/times-adjust-log' },
     ]
   },
   {

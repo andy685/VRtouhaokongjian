@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>商家结算配置</h1>
-        <p class="header-desc">统一设置商家的结算周期、手续费和打款通知规则</p>
+        <p class="header-desc">统一设置商家的结算周期、打款方式、手续费和打款通知规则</p>
       </div>
     </div>
 
@@ -12,9 +12,17 @@
       <h3 class="section-title">结算规则</h3>
       <n-card class="config-card">
         <n-form label-placement="left" label-width="140">
+          <n-form-item label="默认打款方式">
+            <n-radio-group v-model:value="autoSettlement.paymentMode" name="paymentMode">
+              <n-radio-button value="lakala">拉卡拉自动分账</n-radio-button>
+              <n-radio-button value="manual">人工打款</n-radio-button>
+            </n-radio-group>
+            <span class="form-hint">结算单仍按周期自动生成；打款可由拉卡拉自动分账，或由财务人工打款并选填上传凭证</span>
+          </n-form-item>
+
           <n-form-item label="结算周期">
             <n-select v-model:value="autoSettlement.period" :options="periodOptions" style="width: 200px;" />
-            <span class="form-hint">系统将按此周期自动生成结算单</span>
+            <span class="form-hint">系统将按此周期自动生成结算单，并按打款方式进入拉卡拉分账或人工打款流程</span>
           </n-form-item>
 
           <n-form-item label="结算日" v-if="autoSettlement.period !== 't1'">
@@ -100,13 +108,14 @@
 import { ref, computed } from 'vue'
 import {
   NCard, NForm, NFormItem, NSelect, NInputNumber,
-  NInput, NAlert, useMessage
+  NInput, NAlert, NRadioGroup, NRadioButton, useMessage
 } from 'naive-ui'
 
 const message = useMessage()
 
 // 结算配置
 const autoSettlement = ref({
+  paymentMode: 'lakala',
   period: 'monthly',
   settlementDay: 5,
   minAmount: 100,

@@ -15,7 +15,8 @@
           style="width: 240px;"
           placeholder="选择日期范围"
         />
-        <n-select v-model:value="filterStatus" placeholder="结算状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
+        <n-select v-model:value="filterStatus" placeholder="打款状态" :options="statusOptions" size="small" style="width: 120px;" clearable />
+        <n-select v-model:value="filterPaymentMethod" placeholder="打款方式" :options="paymentMethodOptions" size="small" style="width: 140px;" clearable />
         <n-button @click="exportToExcel">
           <template #icon>
             <n-icon :component="DownloadOutline" />
@@ -65,9 +66,18 @@
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
         <n-descriptions-item label="商家">{{ currentRecord.merchant }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
+        <n-descriptions-item label="结算状态">
+          <n-tag type="success" size="small">已生成结算单</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="打款方式">{{ currentRecord.paymentMethod }}</n-descriptions-item>
+        <n-descriptions-item label="结算金额">¥{{ currentRecord.amount.toLocaleString() }}</n-descriptions-item>
+        <n-descriptions-item label="手续费">¥{{ currentRecord.fee.toFixed(2) }}</n-descriptions-item>
+        <n-descriptions-item label="实缴金额">
+          <span style="font-weight:700;color:#10B981;">¥{{ currentRecord.actualAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+        </n-descriptions-item>
         <n-descriptions-item label="打款时间">{{ currentRecord.time || '-' }}</n-descriptions-item>
         <n-descriptions-item label="拉卡拉商户号">{{ currentRecord.lakalaMerchantNo || '-' }}</n-descriptions-item>
-        <n-descriptions-item label="状态">
+        <n-descriptions-item label="打款状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
             {{ currentRecord.statusText }}
           </n-tag>
@@ -75,6 +85,10 @@
         <n-descriptions-item label="拉卡拉分账流水号">
           <span v-if="currentRecord.lakalaSplitNo" style="font-family: monospace; font-size: 12px;">{{ currentRecord.lakalaSplitNo }}</span>
           <span v-else style="color: #999;">-</span>
+        </n-descriptions-item>
+        <n-descriptions-item label="打款凭证">
+          <n-image v-if="currentRecord.voucher" :src="currentRecord.voucher" width="120" style="border-radius: 8px;" />
+          <span v-else style="color: #999;">未上传</span>
         </n-descriptions-item>
       </n-descriptions>
 
@@ -104,7 +118,7 @@ import { ref, computed, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NSelect, NModal,
   NIcon, NDescriptions, NDescriptionsItem, NDatePicker, NDivider,
-  useMessage
+  NImage, useMessage
 } from 'naive-ui'
 
 import {
@@ -118,11 +132,14 @@ const message = useMessage()
 // 店铺明细表格列
 const storeDetailColumns = [
   { title: '店铺名称', key: 'store', width: 240 },
-  { title: '结算金额', key: 'amount', width: 160, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '结算金额', key: 'amount', width: 140, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '手续费', key: 'fee', width: 120, render: (row: any) => `¥${row.fee.toFixed(2)}` },
+  { title: '实缴金额', key: 'actualAmount', width: 140, render: (row: any) => `¥${(row.amount - row.fee).toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
 ]
 
 // 筛选条件
 const filterStatus = ref<string | null>(null)
+const filterPaymentMethod = ref<string | null>(null)
 const filterDateRange = ref<[number, number] | null>(null)
 
 const statusOptions = [
@@ -131,11 +148,18 @@ const statusOptions = [
   { label: '处理中', value: 'processing' },
 ]
 
+const paymentMethodOptions = [
+  { label: '拉卡拉自动分账', value: '自动分账' },
+  { label: '人工打款', value: '人工打款' },
+]
+
 // 表格列定义
 const columns = [
   { title: '结算单号', key: 'no', width: 150 },
   { title: '结算周期', key: 'period', width: 160 },
+  { title: '打款方式', key: 'paymentMethod', width: 100 },
   { title: '结算金额', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '实缴金额', key: 'actualAmount', width: 110, render: (row: any) => `¥${row.actualAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
   {
     title: '拉卡拉分账流水号',
     key: 'lakalaSplitNo',
@@ -144,7 +168,7 @@ const columns = [
     render: (row: any) => row.lakalaSplitNo ? row.lakalaSplitNo : '-'
   },
   {
-    title: '状态',
+    title: '打款状态',
     key: 'status',
     width: 90,
     render(row: any) {
@@ -165,52 +189,84 @@ const columns = [
 
 // 模拟数据（实际应该从API获取，字段按分账与对账说明.md 第5.3节定义）
 const settlementData = ref([
-  { 
-    id: 1, 
-    no: 'ST2026042001', 
-    merchant: '深圳XX科技公司', 
-    period: '2026-04-13 ~ 2026-04-19', 
-    amount: 137963, 
-    status: 'done', 
-    statusText: '已打款', 
+  {
+    id: 1,
+    no: 'ST2026042001',
+    merchant: '深圳XX科技公司',
+    period: '2026-04-13 ~ 2026-04-19',
+    amount: 137963,
+    fee: 4138.89,
+    actualAmount: 133824.11,
+    paymentMethod: '自动分账',
+    status: 'done',
+    statusText: '自动分账成功',
     time: '2026-04-20 10:00',
     lakalaMerchantNo: '890123456789',
     lakalaSplitNo: 'LS2026042000156789',
+    voucher: '',
     storeDetails: [
-      { store: '深圳福田旗舰店', amount: 85623 },
-      { store: '南山科技园店', amount: 52340 },
+      { store: '深圳福田旗舰店', amount: 85623, fee: 2568.69 },
+      { store: '南山科技园店', amount: 52340, fee: 1570.20 },
     ]
   },
-  { 
-    id: 2, 
-    no: 'ST2026042002', 
-    merchant: '深圳XX科技公司', 
-    period: '2026-04-06 ~ 2026-04-12', 
-    amount: 89000, 
-    status: 'done', 
-    statusText: '已打款', 
+  {
+    id: 2,
+    no: 'ST2026042002',
+    merchant: '深圳XX科技公司',
+    period: '2026-04-06 ~ 2026-04-12',
+    amount: 89000,
+    fee: 2670,
+    actualAmount: 86330,
+    paymentMethod: '人工打款',
+    status: 'done',
+    statusText: '已人工打款',
     time: '2026-04-13 10:00',
     lakalaMerchantNo: '890123456789',
-    lakalaSplitNo: 'LS2026041300112345',
+    lakalaSplitNo: '',
+    voucher: 'https://dummyimage.com/640x360/f8fafc/334155&text=Manual+Payment+Voucher',
     storeDetails: [
-      { store: '深圳福田旗舰店', amount: 55000 },
-      { store: '南山科技园店', amount: 34000 },
+      { store: '深圳福田旗舰店', amount: 55000, fee: 1650 },
+      { store: '南山科技园店', amount: 34000, fee: 1020 },
     ]
   },
-  { 
-    id: 3, 
-    no: 'ST2026042003', 
-    merchant: '深圳XX科技公司', 
-    period: '2026-03-30 ~ 2026-04-05', 
-    amount: 72330, 
-    status: 'pending', 
-    statusText: '待打款', 
+  {
+    id: 3,
+    no: 'ST2026042003',
+    merchant: '深圳XX科技公司',
+    period: '2026-03-30 ~ 2026-04-05',
+    amount: 72330,
+    fee: 2169.90,
+    actualAmount: 70160.10,
+    paymentMethod: '自动分账',
+    status: 'pending',
+    statusText: '待打款',
     time: '-',
     lakalaMerchantNo: '890123456789',
     lakalaSplitNo: '',
+    voucher: '',
     storeDetails: [
-      { store: '深圳福田旗舰店', amount: 42330 },
-      { store: '南山科技园店', amount: 30000 },
+      { store: '深圳福田旗舰店', amount: 42330, fee: 1269.90 },
+      { store: '南山科技园店', amount: 30000, fee: 900 },
+    ]
+  },
+  {
+    id: 4,
+    no: 'ST2026042004',
+    merchant: '深圳XX科技公司',
+    period: '2026-03-23 ~ 2026-03-29',
+    amount: 56800,
+    fee: 1704,
+    actualAmount: 55096,
+    paymentMethod: '人工打款',
+    status: 'pending',
+    statusText: '待人工打款',
+    time: '-',
+    lakalaMerchantNo: '890123456789',
+    lakalaSplitNo: '',
+    voucher: '',
+    storeDetails: [
+      { store: '深圳福田旗舰店', amount: 36800, fee: 1104 },
+      { store: '南山科技园店', amount: 20000, fee: 600 },
     ]
   },
 ])
@@ -224,6 +280,11 @@ const filteredData = computed(() => {
   // 按状态筛选
   if (filterStatus.value) {
     data = data.filter(d => d.status === filterStatus.value)
+  }
+
+  // 按打款方式筛选
+  if (filterPaymentMethod.value) {
+    data = data.filter(d => d.paymentMethod === filterPaymentMethod.value)
   }
   
   // 按日期范围筛选
@@ -266,8 +327,13 @@ function exportToExcel() {
         '结算单号': item.no,
         '结算周期': item.period,
         '结算金额': item.amount,
-        '状态': item.statusText,
+        '手续费': item.fee,
+        '实缴金额': item.actualAmount,
+        '结算状态': '已生成结算单',
+        '打款方式': item.paymentMethod,
+        '打款状态': item.statusText,
         '打款时间': item.time,
+        '打款凭证': item.voucher ? '已上传' : '未上传',
         '店铺数': `${item.storeDetails.length} 家`,
       })
       
@@ -277,9 +343,14 @@ function exportToExcel() {
           '结算单号': '',
           '结算周期': '',
           '结算金额': '',
-          '状态': '',
+          '手续费': '',
+          '实缴金额': '',
+          '结算状态': '',
+          '打款方式': '',
+          '打款状态': '',
           '打款时间': '',
-          '店铺数': `${store.store} ¥${store.amount.toLocaleString()}`,
+          '打款凭证': '',
+          '店铺数': `${store.store} ¥${store.amount.toLocaleString()}，实缴 ¥${(store.amount - store.fee).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
         })
       })
     })
@@ -293,7 +364,7 @@ function exportToExcel() {
       { wch: 16 }, // 结算单号
       { wch: 22 }, // 结算周期
       { wch: 14 }, // 结算金额
-      { wch: 10 }, // 状态
+      { wch: 12 }, // 结算状态
       { wch: 18 }, // 打款时间
       { wch: 36 }, // 店铺明细
     ]

@@ -724,6 +724,7 @@
             <button v-if="selectedOrder?.settleStatus === '已结算'" type="button" class="ors-detail-refund-btn ors-detail-refund-btn--offline" @click="openRefund">线下退款</button>
             <button v-else type="button" class="ors-detail-refund-btn" @click="openRefund">申请退款</button>
           </template>
+          <button v-else-if="canCancelOrder" type="button" class="ors-detail-cancel-btn" @click="cancelOrder">取消订单</button>
           <span v-else></span>
           <button type="button" class="ors-detail-close-btn" @click="closeDetail">关闭</button>
         </footer>
@@ -1005,6 +1006,38 @@ const orderDataMap = {
       statusTone: 'done',
       settleStatus: '已结算',
       member: '赵琪（13611112222）',
+      source: '收银系统',
+      promotions: []
+    },
+    {
+      id: 81,
+      orderNo: 'CS20250111009',
+      tradeTime: '2025-01-11 18:36',
+      product: 'VR体验组合支付单',
+      totalAmount: 120,
+      discountAmount: 20,
+      paidAmount: 0,
+      paymentContent: '预存款:40.00元\n微信支付:60.00元（待支付）',
+      status: '待支付',
+      statusTone: 'pending',
+      settleStatus: '未结算',
+      member: '刘洋（13500008888）',
+      source: '收银系统',
+      promotions: [{ type: '优惠券', name: '组合支付测试券', amount: 20, action: '手动核销' }]
+    },
+    {
+      id: 82,
+      orderNo: 'CS20250111010',
+      tradeTime: '2025-01-11 18:42',
+      product: '小程序支付中体验单',
+      totalAmount: 158,
+      discountAmount: 0,
+      paidAmount: 40,
+      paymentContent: '预存款:40.00元\n微信支付:118.00元（支付中）',
+      status: '支付中',
+      statusTone: 'pending',
+      settleStatus: '未结算',
+      member: '周宁（13500009999）',
       source: '收银系统',
       promotions: []
     }
@@ -1411,7 +1444,7 @@ const orderDataMap = {
 }
 
 const sourceOptions = ['收银系统', '点播系统', '抖音']
-const statusOptions = ['完成', '已退款', '待支付']
+const statusOptions = ['完成', '已退款', '待支付', '支付中', '已取消']
 const deductTypeOptions = ['储蓄', '次数', '游戏币']
 const editTypeOptions = ['增加', '减少']
 const rechargeTypeOptions = ['充值活动', '单次消费', '购买商品', '商品']
@@ -1696,6 +1729,7 @@ const refundVoucherList = ref([])
 const refundReasonOptions = ['客户不想要了', '游戏体验异常', '操作错误（买错项目）', '设备故障', '重复付款', '其他']
 
 const isRefundSettled = computed(() => refundOrder.value?.settleStatus === '已结算')
+const canCancelOrder = computed(() => ['待支付', '支付中'].includes(selectedOrder.value?.status))
 
 const refundTitle = computed(() => isRefundSettled.value ? '线下退款' : '申请退款')
 
@@ -1823,6 +1857,16 @@ const confirmRefund = () => {
     }
   }
   closeRefund()
+  closeDetail()
+}
+
+const cancelOrder = () => {
+  if (!canCancelOrder.value || !selectedOrder.value) return
+  const order = selectedOrder.value
+  order.status = '已取消'
+  order.statusTone = 'refund'
+  order.cancelReason = '支付未完成，已手动取消订单'
+  order.settleStatus = '无需结算'
   closeDetail()
 }
 </script>
@@ -2968,7 +3012,8 @@ const confirmRefund = () => {
   background: #F1F8FF;
 }
 
-.ors-detail-refund-btn {
+.ors-detail-refund-btn,
+.ors-detail-cancel-btn {
   height: 36px;
   padding: 0 20px;
   border: 0;

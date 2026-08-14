@@ -24,7 +24,7 @@
           <div class="metric-icon" :style="{ background: metric.gradient }">
             <n-icon :component="metric.icon" size="24" color="#fff" />
           </div>
-          <n-tag :type="metric.trend > 0 ? 'success' : 'error'" size="small" bordered>
+          <n-tag v-if="metric.trend !== null" :type="metric.trend > 0 ? 'success' : 'error'" size="small" bordered>
             {{ metric.trend > 0 ? '+' : '' }}{{ metric.trend }}%
           </n-tag>
         </div>
@@ -36,7 +36,7 @@
           </div>
           <div class="metric-label">{{ metric.label }}</div>
         </div>
-        <div class="metric-footer">
+        <div v-if="metric.sparkData.length" class="metric-footer">
           <div class="mini-chart">
             <svg viewBox="0 0 100 24" preserveAspectRatio="none">
               <polyline
@@ -54,15 +54,15 @@
     </div>
 
     <!-- 图表区域 -->
-    <div class="charts-grid">
+    <div class="charts-stack">
       <!-- 游戏豆销售趋势 -->
       <div class="chart-card chart-large">
         <div class="chart-header">
           <div>
             <h3>游戏豆销售趋势</h3>
-            <p>近7天平台游戏豆销售额变化</p>
+            <p>{{ revenuePeriodMap[currentPeriod].title }}</p>
           </div>
-          <n-radio-group value="week" size="small">
+          <n-radio-group v-model:value="currentPeriod" size="small">
             <n-radio-button value="week">周</n-radio-button>
             <n-radio-button value="month">月</n-radio-button>
             <n-radio-button value="year">年</n-radio-button>
@@ -71,39 +71,47 @@
         <div ref="revenueChartRef" class="chart-container"></div>
       </div>
 
-      <!-- 设备分布 -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3>店铺分布</h3>
-            <p>各地区店铺数量</p>
-          </div>
-        </div>
-        <div ref="storeChartRef" class="chart-container"></div>
-      </div>
-
-      <!-- 游戏热度排行 -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3>游戏TOP10</h3>
-            <p>全平台最受欢迎游戏</p>
-          </div>
-        </div>
-        <div class="game-rank-list">
-          <div 
-            v-for="(game, idx) in topGames" 
-            :key="game.name"
-            class="rank-item"
-          >
-            <span class="rank-num" :class="{ 'top-three': idx < 3 }">{{ idx + 1 }}</span>
-            <div class="rank-info">
-              <span class="rank-name">{{ game.name }}</span>
-              <div class="rank-bar-wrap">
-                <div class="rank-bar" :style="{ width: game.percentage + '%', background: getRankColor(idx) }"></div>
-              </div>
+      <div class="charts-row">
+        <!-- 店铺分布 -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3>店铺分布</h3>
+              <p>各地区店铺数量</p>
             </div>
-            <span class="rank-count">{{ game.count.toLocaleString() }}次</span>
+          </div>
+          <div ref="storeChartRef" class="chart-container"></div>
+          <div class="store-region-list">
+            <div v-for="region in storeRegionStats" :key="region.name" class="store-region-item">
+              <span class="region-name">{{ region.name }}</span>
+              <span class="region-meta">{{ region.count }}家 · {{ region.percent }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 游戏热度排行 -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3>游戏TOP10</h3>
+              <p>全平台最受欢迎游戏</p>
+            </div>
+          </div>
+          <div class="game-rank-list">
+            <div
+              v-for="(game, idx) in topGames"
+              :key="game.name"
+              class="rank-item"
+            >
+              <span class="rank-num" :class="{ 'top-three': idx < 3 }">{{ idx + 1 }}</span>
+              <div class="rank-info">
+                <span class="rank-name">{{ game.name }}</span>
+                <div class="rank-bar-wrap">
+                  <div class="rank-bar" :style="{ width: game.percentage + '%', background: getRankColor(idx) }"></div>
+                </div>
+              </div>
+              <span class="rank-count">{{ game.count.toLocaleString() }}次</span>
+            </div>
           </div>
         </div>
       </div>
@@ -130,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, h } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, h } from 'vue'
 import {
   NButton, NIcon, NTag, NDatePicker, NRadioGroup,
   NRadioButton, NInput, NDataTable
@@ -212,11 +220,11 @@ const metrics = ref([
     prefix: '',
     value: 94.2,
     suffix: '%',
-    trend: 1.5,
+    trend: null,
     icon: StorefrontOutline,
     gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
     color: '#8B5CF6',
-    sparkData: [90, 91, 92, 93, 93.5, 94, 94.2]
+    sparkData: []
   }
 ])
 
@@ -229,6 +237,9 @@ const topGames = ref([
   { name: '恐龙王国', count: 7560, percentage: 48 },
   { name: 'CS对战', count: 6890, percentage: 44 },
   { name: '音乐节VR', count: 5430, percentage: 35 },
+  { name: '太空探险', count: 4820, percentage: 31 },
+  { name: '丛林跑酷', count: 4360, percentage: 28 },
+  { name: '星际射击', count: 4010, percentage: 26 },
 ])
 
 // 店铺列表
@@ -259,6 +270,7 @@ const storeList = ref([
   { name: '武汉光谷店', region: '武汉', status: 'online', statusText: '营业中', devices: 11, beanBalance: '7,100', beanConsume: 290, deviceRate: '91%' },
 ])
 
+const currentPeriod = ref<'week' | 'month' | 'year'>('week')
 const revenueChartRef = ref<HTMLElement>()
 const storeChartRef = ref<HTMLElement>()
 
@@ -272,6 +284,59 @@ function getRankColor(idx: number): string {
   if (idx === 1) return 'linear-gradient(90deg, #94A3B8, #CBD5E1)'
   if (idx === 2) return 'linear-gradient(90deg, #CD7C4A, #E8A87C)'
   return 'linear-gradient(90deg, #3B82F6, #93C5FD)'
+}
+
+const revenuePeriodMap = {
+  week: {
+    title: '近7天平台游戏豆销售额变化',
+    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+    data: [185, 210, 195, 230, 245, 280, 286]
+  },
+  month: {
+    title: '近30天平台游戏豆销售额变化',
+    labels: ['1日', '5日', '10日', '15日', '20日', '25日', '30日'],
+    data: [820, 910, 865, 980, 1030, 1125, 1210]
+  },
+  year: {
+    title: '近12个月平台游戏豆销售额变化',
+    labels: ['1月', '3月', '5月', '7月', '9月', '11月', '12月'],
+    data: [5600, 6100, 6480, 7200, 6850, 8300, 9100]
+  }
+} as const
+
+const storeRegionStats = [
+  { name: '深圳', count: 42, percent: 26.9 },
+  { name: '广州', count: 38, percent: 24.4 },
+  { name: '北京', count: 32, percent: 20.5 },
+  { name: '上海', count: 28, percent: 17.9 },
+  { name: '其他', count: 16, percent: 10.3 }
+]
+
+function renderRevenueChart(period: keyof typeof revenuePeriodMap) {
+  if (!revenueChartRef.value) return
+  const chart = echarts.getInstanceByDom(revenueChartRef.value) || echarts.init(revenueChartRef.value)
+  const config = revenuePeriodMap[period]
+  chart.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#eee', textStyle: { color: '#333' } },
+    grid: { left: 48, right: 16, top: 24, bottom: 28 },
+    xAxis: { type: 'category', data: config.labels, axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#64748b' } },
+    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { color: '#64748b', formatter: period === 'week' ? '¥{value}k' : period === 'month' ? '¥{value}k' : '¥{value}k' } },
+    series: [{
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      data: config.data,
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: 'rgba(59,130,246,0.25)' },
+          { offset: 1, color: 'rgba(59,130,246,0)' }
+        ])
+      },
+      lineStyle: { width: 3, color: '#3B82F6' },
+      itemStyle: { color: '#3B82F6', borderWidth: 2, borderColor: '#fff' }
+    }]
+  })
 }
 
 function initCharts() {
@@ -329,6 +394,10 @@ function initCharts() {
     }
   })
 }
+
+watch(currentPeriod, (period) => {
+  renderRevenueChart(period)
+})
 
 onMounted(() => {
   initCharts()
@@ -455,12 +524,16 @@ onMounted(() => {
 }
 
 /* ===== 图表区域 ===== */
-.charts-grid {
+.charts-stack {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto;
   gap: 20px;
   margin-bottom: 28px;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
 }
 
 .chart-card {
@@ -470,7 +543,35 @@ onMounted(() => {
   border: 1px solid var(--border-color);
 }
 
-.chart-large { grid-row: span 2; }
+.store-region-list {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.store-region-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.region-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.region-meta {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.chart-large { min-height: 360px; }
 
 .chart-header {
   display: flex;
@@ -579,7 +680,7 @@ onMounted(() => {
 
 @media (max-width: 1200px) {
   .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-  .charts-grid { grid-template-columns: 1fr; }
-  .chart-large { grid-row: span 1; }
+  .charts-row { grid-template-columns: 1fr; }
+  .chart-large { min-height: 320px; }
 }
 </style>
