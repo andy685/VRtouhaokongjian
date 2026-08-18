@@ -138,8 +138,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'member-levels', name: 'ShopMemberLevels', component: () => import('../views/shop/MemberLevels.vue'), meta: { title: '会员级别' } },
       { path: 'member-ranking', name: 'ShopMemberRanking', component: () => import('../views/shop/MemberRanking.vue'), meta: { title: '会员消费排行' } },
       { path: 'member-balance', name: 'ShopMemberBalance', component: () => import('../views/shop/MemberBalance.vue'), meta: { title: '会员储值变更' } },
-      { path: 'member-points-query', name: 'ShopMemberPointsQuery', component: () => import('../views/shop/MemberPointsQuery.vue'), meta: { title: '会员游戏币查询' } },
-      { path: 'member-points-adjust-log', name: 'ShopMemberPointsAdjustLog', component: () => import('../views/shop/MemberPointsAdjustLog.vue'), meta: { title: '游戏币调整有效期查询' } },
       { path: 'member-prepaid-times-query', name: 'ShopMemberPrepaidTimesQuery', component: () => import('../views/shop/MemberPrepaidTimesQuery.vue'), meta: { title: '会员预存次数查询' } },
       { path: 'times-adjust-log', name: 'ShopTimesAdjustLog', component: () => import('../views/shop/TimesAdjustLog.vue'), meta: { title: '次数调整有效期查询' } },
       // 数据报表
