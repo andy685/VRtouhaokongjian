@@ -198,7 +198,7 @@ function createInitialRoles(): Role[] {
   return [
     { id: 1, name: '管理员', desc: '拥有所有权限', userCount: 2, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
     { id: 2, name: '店长', desc: '门店运营、会员与收银管理', userCount: 8, status: true, permissions: ['*'], systems: ['shop', 'cashier'] },
-    { id: 3, name: '收银员', desc: '收银、退款、查询订单；不可修改会员等级', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'member-points-query', 'daily-sales'], systems: ['cashier'] },
+    { id: 3, name: '收银员', desc: '收银、退款、查询订单；不可修改会员等级', userCount: 5, status: true, permissions: ['cashier-order', 'ondemand-order', 'members', 'daily-sales'], systems: ['cashier'] },
   ]
 }
 
@@ -476,15 +476,11 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
         {
           key: 'members-module', label: '会员管理', checked: false, expanded: false,
           children: [
-            { key: 'members', label: '会员列表', checked: false, expanded: false },
+            { key: 'members', label: '会员卡列表', checked: false, expanded: false },
             { key: 'member-discount', label: '会员折扣', checked: false, expanded: false },
             { key: 'member-levels', label: '会员级别', checked: false, expanded: false },
             { key: 'member-ranking', label: '消费排行', checked: false, expanded: false },
             { key: 'member-balance', label: '储值变更', checked: false, expanded: false },
-            { key: 'member-points-query', label: '游戏币查询', checked: false, expanded: false },
-            { key: 'member-points-adjust-log', label: '游戏币有效期', checked: false, expanded: false },
-            { key: 'member-prepaid-times-query', label: '预存次数', checked: false, expanded: false },
-            { key: 'times-adjust-log', label: '次数有效期', checked: false, expanded: false },
           ]
         },
         {

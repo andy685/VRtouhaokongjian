@@ -337,11 +337,10 @@ const menuOptions: MenuOption[] = [
     icon: icon(PeopleOutline),
     children: [
       { label: '会员数据', key: '/platform/members' },
-      { label: '会员列表', key: '/platform/members/list' },
+      { label: '会员卡列表', key: '/platform/members/list' },
       { label: '会员增长', key: '/platform/members/growth' },
       { label: '会员消费排行', key: '/platform/members/ranking' },
       { label: '会员储值变更', key: '/platform/members/deposit-log' },
-      { label: '会员游戏币查询', key: '/platform/members/coins-query' },
     ]
   },
   {

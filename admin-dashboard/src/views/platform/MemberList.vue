@@ -3,7 +3,7 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div>
-        <h1>会员列表</h1>
+        <h1>会员卡列表</h1>
         <p class="header-desc">全平台会员数据，跨商家统一查看</p>
       </div>
       <n-space>

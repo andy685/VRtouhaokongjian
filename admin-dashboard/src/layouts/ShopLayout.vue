@@ -232,14 +232,10 @@ const menuOptions: MenuOption[] = [
     key: 'members-group',
     icon: renderIcon(PeopleOutline),
     children: [
-      { label: '会员列表', key: '/shop/members' },
+      { label: '会员卡列表', key: '/shop/members' },
       { label: '会员级别', key: '/shop/member-levels' },
       { label: '会员消费排行', key: '/shop/member-ranking' },
       { label: '会员储值变更', key: '/shop/member-balance' },
-      { label: '会员游戏币查询', key: '/shop/member-points-query' },
-      { label: '游戏币调整有效期查询', key: '/shop/member-points-adjust-log' },
-      { label: '会员预存次数查询', key: '/shop/member-prepaid-times-query' },
-      { label: '次数调整有效查询', key: '/shop/times-adjust-log' },
     ]
   },
   {

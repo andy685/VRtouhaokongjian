@@ -502,11 +502,11 @@
             <div class="form-group">
               <label>付费模式</label>
               <n-radio-group v-model:value="gameData.payMode">
-                <n-radio-button value="multi" label="多人付费">👥 多人付费 — 多人共同花钱运行游戏</n-radio-button>
-                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一人花钱运行游戏</n-radio-button>
+                <n-radio-button value="multi" label="多人付费">👥 多人付费 — 多名用户分别支付/扣费</n-radio-button>
+                <n-radio-button value="single" label="单人付费">👤 单人付费 — 一名用户支付整场费用</n-radio-button>
               </n-radio-group>
               <n-text depth="3" style="font-size:11px;margin-top:4px;">
-                单人付费：一名玩家付费后运行游戏；多人付费：多名玩家分摊费用后共同进入游戏
+                单人付费表示整场体验由一名用户承担费用；多人付费表示多名用户可分别支付或扣费后共同开局。
               </n-text>
             </div>
 

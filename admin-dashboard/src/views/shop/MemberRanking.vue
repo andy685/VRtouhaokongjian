@@ -80,25 +80,21 @@ const columns: DataTableColumns = [
   },
   { title: '累计消费', key: 'totalConsume', width: 130, render: (row) => `¥${row.totalConsume.toLocaleString()}` },
   { title: '消费次数', key: 'visitCount', width: 100 },
-  { title: '最近消费', key: 'lastConsume', width: 120 },
-  { title: '活跃度', key: 'activity', width: 150, render: (row) =>
-    h('div', { class: 'activity-bar' },
-      h('div', { class: 'activity-fill', style: { width: row.activity + '%' } }))
-  }
+  { title: '最近消费', key: 'lastConsume', width: 170 },
 ]
 
 const tableData = ref([
-  { rank: 1, name: '张小明', phone: '13801231234', level: '黄金', totalConsume: 15800, visitCount: 56, lastConsume: '2026-04-18', activity: 95 },
-  { rank: 2, name: '李小红', phone: '13905675678', level: '黄金', totalConsume: 12800, visitCount: 48, lastConsume: '2026-04-15', activity: 88 },
-  { rank: 3, name: '王小强', phone: '13709019012', level: '白银', totalConsume: 9800, visitCount: 38, lastConsume: '2026-04-12', activity: 82 },
-  { rank: 4, name: '陈小芳', phone: '13603453456', level: '白银', totalConsume: 6500, visitCount: 28, lastConsume: '2026-04-10', activity: 75 },
-  { rank: 5, name: '刘小丽', phone: '13507897890', level: '青铜', totalConsume: 5200, visitCount: 22, lastConsume: '2026-04-08', activity: 68 },
-  { rank: 6, name: '赵小军', phone: '13402342345', level: '普通会员', totalConsume: 3800, visitCount: 16, lastConsume: '2026-04-05', activity: 55 },
-  { rank: 7, name: '孙小娟', phone: '13306786789', level: '普通会员', totalConsume: 2800, visitCount: 12, lastConsume: '2026-04-02', activity: 45 },
+  { rank: 1, name: '张小明', phone: '13801231234', level: '黄金', totalConsume: 15800, visitCount: 56, lastConsume: '2026-04-18 20:36:18' },
+  { rank: 2, name: '李小红', phone: '13905675678', level: '黄金', totalConsume: 12800, visitCount: 48, lastConsume: '2026-04-15 18:22:43' },
+  { rank: 3, name: '王小强', phone: '13709019012', level: '白银', totalConsume: 9800, visitCount: 38, lastConsume: '2026-04-12 16:08:29' },
+  { rank: 4, name: '陈小芳', phone: '13603453456', level: '白银', totalConsume: 6500, visitCount: 28, lastConsume: '2026-04-10 14:51:06' },
+  { rank: 5, name: '刘小丽', phone: '13507897890', level: '青铜', totalConsume: 5200, visitCount: 22, lastConsume: '2026-04-08 19:17:35' },
+  { rank: 6, name: '赵小军', phone: '13402342345', level: '普通会员', totalConsume: 3800, visitCount: 16, lastConsume: '2026-04-05 11:43:52' },
+  { rank: 7, name: '孙小娟', phone: '13306786789', level: '普通会员', totalConsume: 2800, visitCount: 12, lastConsume: '2026-04-02 13:05:11' },
 ])
 
 function exportData() {
-  const headers = ['排名', '会员姓名', '手机号', '会员等级', '累计消费', '消费次数', '最近消费', '活跃度']
+  const headers = ['排名', '会员姓名', '手机号', '会员等级', '累计消费', '消费次数', '最近消费']
   const rows = tableData.value.map((item) => [
     item.rank,
     item.name,
@@ -107,7 +103,6 @@ function exportData() {
     item.totalConsume,
     item.visitCount,
     item.lastConsume,
-    `${item.activity}%`,
   ])
 
   const csvContent = [headers, ...rows]
@@ -153,6 +148,4 @@ function exportData() {
 .stat-value { display: block; font-size: 16px; font-weight: 600; color: #333; margin-top: 2px; }
 .table-card { border-radius: 12px; }
 .rank-cell { display: flex; align-items: center; justify-content: center; }
-.activity-bar { width: 100px; height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
-.activity-fill { height: 100%; background: linear-gradient(90deg, #3B82F6, #60A5FA); border-radius: 3px; }
 </style>
