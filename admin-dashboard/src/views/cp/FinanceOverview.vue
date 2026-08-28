@@ -219,9 +219,10 @@ function onChartHover(e: MouseEvent) {
 }
 
 const settleColumns = [
-  { title: '结算时间', key: 'time', width: 160 },
-  { title: '金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '收款账户', key: 'account', width: 200 },
+  { title: '结算单号', key: 'settlementNo', width: 150 },
+  { title: '结算周期', key: 'settlementCycle', width: 180 },
+  { title: '结算金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '到账金额', key: 'receivedAmount', width: 120, render: (row: any) => h('span', { style: 'font-weight:600;color:#10B981;' }, `¥${row.receivedAmount.toLocaleString()}`) },
   {
     title: '状态', key: 'status', width: 100,
     render(row: any) {
@@ -230,11 +231,12 @@ const settleColumns = [
       return h(NTag, { type, size: 'small', bordered: false }, () => label)
     }
   },
+  { title: '打款时间', key: 'paidTime', width: 160 },
 ]
 const settleRecords = ref([
-  { id: 1, time: '2026-05-01 14:30', amount: 100000, account: '招商银行 尾号3821', status: 'done' },
-  { id: 2, time: '2026-04-01 10:15', amount: 80000, account: '招商银行 尾号3821', status: 'done' },
-  { id: 3, time: '2026-06-01 06:00', amount: 28450, account: '招商银行 尾号3821', status: 'pending' },
+  { id: 1, settlementNo: 'CS2026050301', settlementCycle: '2026-04-01 至 2026-04-30', amount: 100000, receivedAmount: 98000, status: 'done', paidTime: '2026-05-03 09:15:00' },
+  { id: 2, settlementNo: 'CS2026040301', settlementCycle: '2026-03-01 至 2026-03-31', amount: 80000, receivedAmount: 78400, status: 'done', paidTime: '2026-04-03 14:20:00' },
+  { id: 3, settlementNo: 'CS2026060101', settlementCycle: '2026-05-01 至 2026-05-31', amount: 28450, receivedAmount: 27881, status: 'pending', paidTime: '-' },
 ])
 </script>
 

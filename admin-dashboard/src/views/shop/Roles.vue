@@ -476,13 +476,11 @@ function createDefaultTerminalPerms(): TerminalPerm[] {
         {
           key: 'members-module', label: '会员管理', checked: false, expanded: false,
           children: [
-            { key: 'members', label: '会员列表', checked: false, expanded: false },
+            { key: 'members', label: '会员卡列表', checked: false, expanded: false },
             { key: 'member-discount', label: '会员折扣', checked: false, expanded: false },
             { key: 'member-levels', label: '会员级别', checked: false, expanded: false },
             { key: 'member-ranking', label: '消费排行', checked: false, expanded: false },
             { key: 'member-balance', label: '储值变更', checked: false, expanded: false },
-            { key: 'member-prepaid-times-query', label: '预存次数', checked: false, expanded: false },
-            { key: 'times-adjust-log', label: '次数有效期', checked: false, expanded: false },
           ]
         },
         {

@@ -63,12 +63,14 @@
       <n-descriptions v-if="currentRecord" label-placement="left" :column="2" bordered>
         <n-descriptions-item label="结算单号">{{ currentRecord.no }}</n-descriptions-item>
         <n-descriptions-item label="结算周期">{{ currentRecord.period }}</n-descriptions-item>
-        <n-descriptions-item label="总结算额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
+        <n-descriptions-item label="分润金额">{{ `¥${currentRecord.amount.toLocaleString()}` }}</n-descriptions-item>
         <n-descriptions-item label="状态">
           <n-tag :type="currentRecord.status === 'done' ? 'success' : currentRecord.status === 'pending' ? 'warning' : 'info'" size="small">
             {{ currentRecord.statusText }}
           </n-tag>
         </n-descriptions-item>
+        <n-descriptions-item label="创建时间">{{ currentRecord.createTime }}</n-descriptions-item>
+        <n-descriptions-item label="打款方式">{{ currentRecord.paymentMethod }}</n-descriptions-item>
         <n-descriptions-item label="打款时间">{{ currentRecord.time || '-' }}</n-descriptions-item>
       </n-descriptions>
 
@@ -130,7 +132,7 @@ const gameDetailColumns = [
 const columns = [
   { title: '结算单号', key: 'no', width: 150 },
   { title: '结算周期', key: 'period', width: 180 },
-  { title: '结算额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '分润金额', key: 'amount', width: 120, render: (row: any) => `¥${row.amount.toLocaleString()}` },
   {
     title: '状态',
     key: 'status',
@@ -140,6 +142,8 @@ const columns = [
       return h(NTag, { type: typeMap[row.status] as any, size: 'small', bordered: true }, () => row.statusText)
     }
   },
+  { title: '创建时间', key: 'createTime', width: 160 },
+  { title: '打款方式', key: 'paymentMethod', width: 110 },
   { title: '打款时间', key: 'time', width: 160 },
   {
     title: '操作',
@@ -163,7 +167,9 @@ const settlementData = ref([
     actualAmount: 95031,
     status: 'done',
     statusText: '已打款',
-    time: '2026-06-03 10:30',
+    createTime: '2026-06-01 08:00:00',
+    paymentMethod: '银行卡打款',
+    time: '2026-06-03 10:30:00',
     voucher: '',
     gameDetails: [
       { gameName: '过山车VR', playCount: 12800, perPlayCost: 2.40, revenue: 30720 },
@@ -183,7 +189,9 @@ const settlementData = ref([
     actualAmount: 74754,
     status: 'done',
     statusText: '已打款',
-    time: '2026-05-03 09:15',
+    createTime: '2026-05-01 08:00:00',
+    paymentMethod: '银行卡打款',
+    time: '2026-05-03 09:15:00',
     voucher: '',
     gameDetails: [
       { gameName: '过山车VR', playCount: 11500, perPlayCost: 2.40, revenue: 27600 },
@@ -202,7 +210,9 @@ const settlementData = ref([
     actualAmount: 56379,
     status: 'done',
     statusText: '已打款',
-    time: '2026-04-03 14:20',
+    createTime: '2026-04-01 08:00:00',
+    paymentMethod: '银行卡打款',
+    time: '2026-04-03 14:20:00',
     voucher: '',
     gameDetails: [
       { gameName: '过山车VR', playCount: 10200, perPlayCost: 2.40, revenue: 24480 },
@@ -220,6 +230,8 @@ const settlementData = ref([
     actualAmount: 44198,
     status: 'pending',
     statusText: '待打款',
+    createTime: '2026-07-01 08:00:00',
+    paymentMethod: '银行卡打款',
     time: '-',
     voucher: '',
     gameDetails: [
@@ -272,8 +284,10 @@ function exportToExcel() {
         '序号': index + 1,
         '结算单号': item.no,
         '结算周期': item.period,
-        '结算额': item.amount,
+        '分润金额': item.amount,
         '状态': item.statusText,
+        '创建时间': item.createTime,
+        '打款方式': item.paymentMethod,
         '打款时间': item.time,
         '游戏数': `${item.gameDetails.length} 款`,
       })
@@ -282,8 +296,10 @@ function exportToExcel() {
           '序号': `${index + 1}.${gi + 1}`,
           '结算单号': '',
           '结算周期': '',
-          '结算额': '',
+          '分润金额': '',
           '状态': '',
+          '创建时间': '',
+          '打款方式': '',
           '打款时间': '',
           '游戏数': `${g.gameName} - ${g.playCount.toLocaleString()}次 × ¥${g.perPlayCost.toFixed(2)} = ¥${g.revenue.toLocaleString()}`,
         })
@@ -296,7 +312,7 @@ function exportToExcel() {
 
     ws['!cols'] = [
       { wch: 8 }, { wch: 16 }, { wch: 22 }, { wch: 12 },
-      { wch: 10 }, { wch: 18 }, { wch: 52 },
+      { wch: 10 }, { wch: 20 }, { wch: 14 }, { wch: 20 }, { wch: 52 },
     ]
 
     const fileName = `CP结算记录_${new Date().toLocaleDateString('zh-CN')}.xlsx`

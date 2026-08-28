@@ -188,13 +188,13 @@
             <n-descriptions-item label="订单号">{{ detailRow.orderNo }}</n-descriptions-item>
             <n-descriptions-item label="商家">{{ detailRow.merchant }}</n-descriptions-item>
             <n-descriptions-item label="店铺">{{ detailRow.store }}</n-descriptions-item>
-            <n-descriptions-item label="兑换游戏币">{{ detailRow.beanAmount }} 币</n-descriptions-item>
-            <n-descriptions-item label="金额">¥{{ detailRow.amount.toFixed(2) }}</n-descriptions-item>
-            <n-descriptions-item label="支付方式">{{ detailRow.paymentContent }}</n-descriptions-item>
-            <n-descriptions-item label="状态">
-              <n-tag type="success" size="small">{{ detailRow.status }}</n-tag>
-            </n-descriptions-item>
-            <n-descriptions-item label="时间">{{ detailRow.time }}</n-descriptions-item>
+            <n-descriptions-item label="业务类型">{{ detailRow.businessType }}</n-descriptions-item>
+            <n-descriptions-item label="变动游戏币">{{ formatBeanChange(detailRow.beanChange) }}</n-descriptions-item>
+            <n-descriptions-item label="变动前游戏币">{{ formatBeanCount(detailRow.beanBefore) }}</n-descriptions-item>
+            <n-descriptions-item label="变动后游戏币">{{ formatBeanCount(detailRow.beanAfter) }}</n-descriptions-item>
+            <n-descriptions-item label="关联订单号">{{ detailRow.relatedOrderNo || '--' }}</n-descriptions-item>
+            <n-descriptions-item label="创建时间">{{ detailRow.createTime }}</n-descriptions-item>
+            <n-descriptions-item label="备注" :span="2">{{ detailRow.remark || '--' }}</n-descriptions-item>
           </n-descriptions>
         </template>
         <!-- 活动赠送记录详情 -->
@@ -345,6 +345,14 @@ const renderRepurchaseTag = (value?: string) => {
   return h(NTag, { type: value === '复玩' ? 'success' : 'info', size: 'small', bordered: false }, { default: () => value })
 }
 
+function formatBeanChange(value = 0) {
+  return `${value > 0 ? '+' : ''}${value.toLocaleString()} 币`
+}
+
+function formatBeanCount(value = 0) {
+  return `${value.toLocaleString()} 币`
+}
+
 interface PaymentItem {
   method: string
   amount: number
@@ -414,9 +422,9 @@ const allData = ref([
   { id: 9, orderNo: 'MB202309160010', merchant: '利民街商家', store: '利民街大展厅', type: '修改储值订单', amount: -50.00, paymentContent: '后台调整:-50.00', time: '2023-09-16 15:20:00', status: '已完成', changeType: '扣减', balanceBefore: 150.00, balanceAfter: 100.00, operator: '李小红' },
   { id: 22, orderNo: 'MB20260415022', merchant: '华东展厅', store: '华东展厅', type: '修改储值订单', amount: 500.00, paymentContent: '支付宝:500.00', time: '2026-04-15 11:00:00', status: '已完成', changeType: '充值', balanceBefore: 800.00, balanceAfter: 1300.00, operator: '张运营' },
   // === 游戏币兑换订单 ===
-  { id: 10, orderNo: 'GB202309160007', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '游戏币兑换订单', amount: 50.00, paymentContent: '微信支付:50.00', time: '2023-09-16 15:48:12', status: '已完成', beanAmount: 500 },
-  { id: 11, orderNo: 'GB202309160011', merchant: '华东展厅', store: '华东展厅', type: '游戏币兑换订单', amount: 100.00, paymentContent: '支付宝:100.00', time: '2023-09-16 15:10:00', status: '已完成', beanAmount: 1000 },
-  { id: 23, orderNo: 'GB20260415023', merchant: '党建馆集团', store: '党建馆', type: '游戏币兑换订单', amount: 30.00, paymentContent: '微信支付:30.00', time: '2026-04-15 16:30:00', status: '已完成', beanAmount: 300 },
+  { id: 10, orderNo: 'GB202309160007', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '游戏币兑换订单', businessType: '充值兑换', beanChange: 500, beanBefore: 1200, beanAfter: 1700, relatedOrderNo: 'CO202309160001', remark: '微信支付兑换游戏币', createTime: '2023-09-16 15:48:12', amount: 50.00, paymentContent: '微信支付:50.00', time: '2023-09-16 15:48:12', status: '已完成', beanAmount: 500 },
+  { id: 11, orderNo: 'GB202309160011', merchant: '华东展厅', store: '华东展厅', type: '游戏币兑换订单', businessType: '充值兑换', beanChange: 1000, beanBefore: 300, beanAfter: 1300, relatedOrderNo: 'CO202309160005', remark: '支付宝兑换游戏币', createTime: '2023-09-16 15:10:00', amount: 100.00, paymentContent: '支付宝:100.00', time: '2023-09-16 15:10:00', status: '已完成', beanAmount: 1000 },
+  { id: 23, orderNo: 'GB20260415023', merchant: '党建馆集团', store: '党建馆', type: '游戏币兑换订单', businessType: '后台调整', beanChange: 300, beanBefore: 680, beanAfter: 980, relatedOrderNo: 'MB20260415022', remark: '门店后台补发游戏币', createTime: '2026-04-15 16:30:00', amount: 30.00, paymentContent: '微信支付:30.00', time: '2026-04-15 16:30:00', status: '已完成', beanAmount: 300 },
   // === 活动赠送记录 ===
   { id: 12, orderNo: 'PR202309160012', merchant: '恒然集团', store: '恒然分部展厅', type: '活动赠送记录', amount: 0, paymentContent: '', time: '2023-09-16 14:00:00', status: '已完成', promoName: '新用户注册送', giftContent: '游戏币×100' },
   { id: 13, orderNo: 'PR202309170001', merchant: '幻影星空', store: '幻影星空馆 NO.8088', type: '活动赠送记录', amount: 0, paymentContent: '', time: '2023-09-17 09:30:00', status: '已完成', promoName: '中秋签到活动', giftContent: '游戏币×50' },
@@ -489,7 +497,19 @@ const typeExtraCols: Record<string, DataTableColumns> = {
     { title: '操作人', key: 'operator', width: 80, align: 'center' },
   ],
   '游戏币兑换订单': [
-    { title: '兑换游戏币', key: 'beanAmount', width: 110, align: 'center', render: (row: any) => `${row.beanAmount} 币` },
+    { title: '业务类型', key: 'businessType', width: 110, align: 'center' },
+    {
+      title: '变动游戏币',
+      key: 'beanChange',
+      width: 120,
+      align: 'center',
+      render: (row: any) => h('span', { style: `color:${row.beanChange >= 0 ? '#10b981' : '#ef4444'};font-weight:600;` }, formatBeanChange(row.beanChange)),
+    },
+    { title: '变动前游戏币', key: 'beanBefore', width: 130, align: 'center', render: (row: any) => formatBeanCount(row.beanBefore) },
+    { title: '变动后游戏币', key: 'beanAfter', width: 130, align: 'center', render: (row: any) => formatBeanCount(row.beanAfter) },
+    { title: '关联订单号', key: 'relatedOrderNo', width: 170, align: 'center', render: (row: any) => row.relatedOrderNo || '--' },
+    { title: '备注', key: 'remark', minWidth: 180, ellipsis: { tooltip: true } },
+    { title: '创建时间', key: 'createTime', width: 160, align: 'center' },
   ],
   '活动赠送记录': [
     { title: '活动名称', key: 'promoName', width: 150, align: 'center' },
@@ -526,6 +546,10 @@ const currentColumns = computed(() => {
   // 活动赠送记录不显示金额和支付方式
   if (currentType.value === '活动赠送记录') {
     const cols = baseColumns.filter((c: any) => c.key !== 'amount' && c.key !== 'paymentContent')
+    return [...cols, ...extra, ...actionCol]
+  }
+  if (currentType.value === '游戏币兑换订单') {
+    const cols = baseColumns.filter((c: any) => !['amount', 'paymentContent', 'status', 'time'].includes(c.key))
     return [...cols, ...extra, ...actionCol]
   }
   return [...baseColumns, ...extra, ...actionCol]

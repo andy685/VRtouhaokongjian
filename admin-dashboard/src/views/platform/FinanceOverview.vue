@@ -220,8 +220,11 @@ let revenueChart: echarts.ECharts | null = null
 const settlementColumns = [
   { title: '单号', key: 'settlementNo', width: 130, ellipsis: { tooltip: true } },
   { title: '商家', key: 'merchant' },
-  { title: '金额', key: 'amount', width: 100, render: (row: any) => `¥${row.amount.toLocaleString()}` },
+  { title: '门店数', key: 'storeCount', width: 80, align: 'center', render: (row: any) => `${row.storeCount} 家` },
+  { title: '结算周期', key: 'settlementCycle', width: 150, align: 'center' },
+  { title: '结算基数', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
   { title: '手续费', key: 'fee', width: 80, render: (row: any) => `¥${row.fee.toLocaleString()}` },
+  { title: '应打款', key: 'actual', width: 110, render: (row: any) => h('span', { style: 'font-weight:600;color:#10B981;' }, `¥${row.actual.toLocaleString()}`) },
   {
     title: '状态', key: 'status', width: 75, align: 'center',
     render: (row: any) => h(NTag, {
@@ -232,11 +235,11 @@ const settlementColumns = [
 ]
 
 const settlementData = [
-  { settlementNo: 'ST2026042001', merchant: '深圳XX科技公司', amount: 137963, fee: 4138.89, actual: 133824.11, status: 'settled', statusText: '已打款', payTime: '2026-04-20 10:00' },
-  { settlementNo: 'ST2026042002', merchant: '广州YY传媒公司', amount: 78230, fee: 2346.9, actual: 75883.1, status: 'pending', statusText: '待打款', payTime: '-' },
-  { settlementNo: 'ST2026042003', merchant: '北京ZZ娱乐公司', amount: 45680, fee: 1370.4, actual: 44309.6, status: 'processing', statusText: '处理中', payTime: '-' },
-  { settlementNo: 'ST2026042004', merchant: '上海WW投资公司', amount: 97850, fee: 2935.5, actual: 94914.5, status: 'pending', statusText: '待打款', payTime: '-' },
-  { settlementNo: 'ST2026041301', merchant: '杭州AA文化公司', amount: 156200, fee: 4686, actual: 151514, status: 'settled', statusText: '已打款', payTime: '2026-04-14 11:30' },
+  { settlementNo: 'ST2026042001', merchant: '深圳XX科技公司', storeCount: 8, settlementCycle: '2026-04-01 至 2026-04-15', amount: 137963, fee: 4138.89, actual: 133824.11, status: 'settled', statusText: '已打款', payTime: '2026-04-20 10:00' },
+  { settlementNo: 'ST2026042002', merchant: '广州YY传媒公司', storeCount: 5, settlementCycle: '2026-04-01 至 2026-04-15', amount: 78230, fee: 2346.9, actual: 75883.1, status: 'pending', statusText: '待打款', payTime: '-' },
+  { settlementNo: 'ST2026042003', merchant: '北京ZZ娱乐公司', storeCount: 3, settlementCycle: '2026-04-01 至 2026-04-15', amount: 45680, fee: 1370.4, actual: 44309.6, status: 'processing', statusText: '处理中', payTime: '-' },
+  { settlementNo: 'ST2026042004', merchant: '上海WW投资公司', storeCount: 6, settlementCycle: '2026-04-01 至 2026-04-15', amount: 97850, fee: 2935.5, actual: 94914.5, status: 'pending', statusText: '待打款', payTime: '-' },
+  { settlementNo: 'ST2026041301', merchant: '杭州AA文化公司', storeCount: 11, settlementCycle: '2026-03-16 至 2026-03-31', amount: 156200, fee: 4686, actual: 151514, status: 'settled', statusText: '已打款', payTime: '2026-04-14 11:30' },
 ]
 
 // ---- 代理商分润排行 ----
@@ -245,41 +248,32 @@ const agentRankColumns = [
     style: `font-weight:700;${row.rank <= 3 ? (row.rank === 1 ? 'color:#F59E0B' : row.rank === 2 ? 'color:#9CA3AF' : '#CD7F32') : ''}`
   }, `#${row.rank}`) },
   { title: '代理商', key: 'agentName' },
-  { title: '级别', key: 'level', width: 80, align: 'center', render: (row: any) => h(NTag, {
-    type: row.level === '省级总代' ? 'error' : row.level === '区域代理' ? 'warning' : 'default', size: 'tiny', bordered: false
-  }, () => row.level) },
-  { title: '游戏豆采购额', key: 'monthlyFlow', width: 110, render: (row: any) => `¥${row.monthlyFlow.toLocaleString()}` },
-  { title: '应发分润', key: 'commission', width: 115, render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.commission.toLocaleString()}`) },
+  { title: '地区', key: 'region', width: 100, align: 'center' },
+  { title: '结算基数', key: 'monthlyFlow', width: 110, render: (row: any) => `¥${row.monthlyFlow.toLocaleString()}` },
+  { title: '分润金额', key: 'commission', width: 115, render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.commission.toLocaleString()}`) },
   { title: '手续费', key: 'payoutFee', width: 90, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.commission * 0.003)).toLocaleString()}` },
-  { title: '实际分润率', key: 'effectiveRate', width: 85, align: 'center', render: (row: any) => `${row.effectiveRate}%` },
+  { title: '应打款金额', key: 'actualPayout', width: 115, render: (row: any) => h('span', { style: 'font-weight:600;color:#10B981;' }, `¥${row.actualPayout.toLocaleString()}`) },
+  { title: '综合分润比例', key: 'compositeRate', width: 110, align: 'center', render: (row: any) => `${row.compositeRate}%` },
 ]
 
 const agentRankData = [
-  { rank: 1, agentName: '广东省级总代-A', level: '省级总代', monthlyFlow: 1850000, commission: 111000, effectiveRate: 6.0 },
-  { rank: 2, agentName: '华东区域代理-B', level: '区域代理', monthlyFlow: 680000, commission: 21420, effectiveRate: 3.15 },
-  { rank: 3, agentName: '深圳城市代理-C', level: '城市代理', monthlyFlow: 120000, commission: 3000, effectiveRate: 2.5 },
-  { rank: 4, agentName: '成都城市代理-E', level: '城市代理', monthlyFlow: 88000, commission: 1730, effectiveRate: 1.97 },
-  { rank: 5, agentName: '武汉创新体验-F', level: '城市代理', monthlyFlow: 65000, commission: 1300, effectiveRate: 2.0 },
+  { rank: 1, agentName: '广东省级总代-A', region: '广东省', monthlyFlow: 1850000, commission: 111000, payoutFee: 333, actualPayout: 110667, compositeRate: 6.0 },
+  { rank: 2, agentName: '华东区域代理-B', region: '华东区', monthlyFlow: 680000, commission: 21420, payoutFee: 64.26, actualPayout: 21355.74, compositeRate: 3.15 },
+  { rank: 3, agentName: '深圳城市代理-C', region: '深圳市', monthlyFlow: 120000, commission: 3000, payoutFee: 9, actualPayout: 2991, compositeRate: 2.5 },
+  { rank: 4, agentName: '成都城市代理-E', region: '成都市', monthlyFlow: 88000, commission: 1730, payoutFee: 5.19, actualPayout: 1724.81, compositeRate: 1.97 },
+  { rank: 5, agentName: '武汉创新体验-F', region: '武汉市', monthlyFlow: 65000, commission: 1300, payoutFee: 3.9, actualPayout: 1296.1, compositeRate: 2.0 },
 ]
 
 // ---- CP 供应商结算流水表（按分账与对账说明 第7章） ----
 const cpSettleColumns = [
   { title: '结算单号', key: 'settlementNo', width: 140, ellipsis: { tooltip: true } },
   { title: 'CP 供应商', key: 'cpName' },
-  {
-    title: '有效体验', key: 'validPlayCount', width: 80, align: 'center',
-    render: (row: any) => `${row.validPlayCount} 次`
-  },
-  { title: '应结金额', key: 'cpSettleAmount', width: 110, render: (row: any) => `¥${row.cpSettleAmount.toLocaleString()}` },
-  { title: '退款冲减', key: 'refundAdjustment', width: 90, render: (row: any) => row.refundAdjustment > 0 ? `-¥${row.refundAdjustment.toLocaleString()}` : '-' },
-  { title: '实发金额', key: 'actualPayout', width: 110, render: (row: any) => `¥${row.actualPayout.toLocaleString()}` },
+  { title: '结算周期', key: 'settlementCycle', width: 150, align: 'center' },
+  { title: '结算基数', key: 'cpSettleAmount', width: 110, render: (row: any) => `¥${row.cpSettleAmount.toLocaleString()}` },
+  { title: '分润金额', key: 'actualPayout', width: 110, render: (row: any) => h('span', { style: 'font-weight:600;color:#4F46E5;' }, `¥${row.actualPayout.toLocaleString()}`) },
   { title: '手续费', key: 'payoutFee', width: 95, render: (row: any) => `¥${(row.payoutFee ?? Math.round(row.cpSettleAmount * 0.003)).toLocaleString()}` },
-  {
-    title: '拉卡拉流水', key: 'lakalaSplitNo', width: 150,
-    render: (row: any) => row.lakalaSplitNo
-      ? h('span', { style: 'font-family:monospace;font-size:12px;' }, row.lakalaSplitNo)
-      : '-'
-  },
+  { title: '可提现金额', key: 'withdrawableAmount', width: 110, render: (row: any) => h('span', { style: 'font-weight:600;color:#10B981;' }, `¥${row.withdrawableAmount.toLocaleString()}`) },
+  { title: '创建时间', key: 'createTime', width: 145, align: 'center' },
   {
     title: '状态', key: 'status', width: 75, align: 'center',
     render: (row: any) => h(NTag, {
@@ -290,11 +284,11 @@ const cpSettleColumns = [
 ]
 
 const cpSettleData = [
-  { settlementNo: 'CP2026042001', cpName: '广州星辰游戏科技', validPlayCount: 12850, cpSettleAmount: 192750, refundAdjustment: 1200, actualPayout: 191550, lakalaSplitNo: 'LS2026042000987654', status: 'settled', statusText: '已到账' },
-  { settlementNo: 'CP2026042002', cpName: '上海梦幻互动娱乐', validPlayCount: 8620, cpSettleAmount: 129300, refundAdjustment: 450, actualPayout: 128850, lakalaSplitNo: 'LS2026041900543210', status: 'settled', statusText: '已到账' },
-  { settlementNo: 'CP2026041801', cpName: '北京极客乐园 CP', validPlayCount: 5380, cpSettleAmount: 80700, refundAdjustment: 0, actualPayout: 80700, lakalaSplitNo: 'LS2026041700321098', status: 'settled', statusText: '已到账' },
-  { settlementNo: 'CP2026042501', cpName: '成都创梦空间游戏', validPlayCount: 3200, cpSettleAmount: 48000, refundAdjustment: 800, actualPayout: 47200, lakalaSplitNo: '', status: 'adjusting', statusText: '调整中' },
-  { settlementNo: 'CP2026042601', cpName: '杭州未来视界科技', validPlayTotal: 2100, cpSettleAmount: 31500, refundAdjustment: 0, actualPayout: 31500, lakalaSplitNo: '', status: 'pending', statusText: '待结算' },
+  { settlementNo: 'CP2026042001', cpName: '广州星辰游戏科技', settlementCycle: '2026-04-01 至 2026-04-15', cpSettleAmount: 192750, actualPayout: 191550, payoutFee: 574.65, withdrawableAmount: 190975.35, createTime: '2026-04-20 09:30', status: 'settled', statusText: '已到账' },
+  { settlementNo: 'CP2026042002', cpName: '上海梦幻互动娱乐', settlementCycle: '2026-04-01 至 2026-04-15', cpSettleAmount: 129300, actualPayout: 128850, payoutFee: 386.55, withdrawableAmount: 128463.45, createTime: '2026-04-20 09:40', status: 'settled', statusText: '已到账' },
+  { settlementNo: 'CP2026041801', cpName: '北京极客乐园 CP', settlementCycle: '2026-04-01 至 2026-04-15', cpSettleAmount: 80700, actualPayout: 80700, payoutFee: 242.1, withdrawableAmount: 80457.9, createTime: '2026-04-18 10:15', status: 'settled', statusText: '已到账' },
+  { settlementNo: 'CP2026042501', cpName: '成都创梦空间游戏', settlementCycle: '2026-04-16 至 2026-04-30', cpSettleAmount: 48000, actualPayout: 47200, payoutFee: 141.6, withdrawableAmount: 47058.4, createTime: '2026-04-25 14:20', status: 'adjusting', statusText: '调整中' },
+  { settlementNo: 'CP2026042601', cpName: '杭州未来视界科技', settlementCycle: '2026-04-16 至 2026-04-30', cpSettleAmount: 31500, actualPayout: 31500, payoutFee: 94.5, withdrawableAmount: 31405.5, createTime: '2026-04-26 11:05', status: 'pending', statusText: '待结算' },
 ]
 
 // ---- 图表初始化 ----

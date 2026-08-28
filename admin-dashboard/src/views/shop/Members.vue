@@ -3,7 +3,7 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div>
-        <h2>会员列表</h2>
+        <h2>会员卡列表</h2>
         <p class="header-desc">
           活跃会员：30天内有消费 · 流失会员：超过60天无消费记录
           <n-tooltip placement="bottom-start">
