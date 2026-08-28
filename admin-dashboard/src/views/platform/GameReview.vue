@@ -145,7 +145,6 @@
               <n-descriptions-item label="运行平台">{{ currentGame.platform }}</n-descriptions-item>
               <n-descriptions-item label="玩法模式">{{ currentGame.gameModeLabel }}</n-descriptions-item>
               <n-descriptions-item label="提交时间">{{ currentGame.submitTime }}</n-descriptions-item>
-              <n-descriptions-item label="体验人数">{{ currentGame.playerCountLabel }}</n-descriptions-item>
               <n-descriptions-item label="游戏描述" :span="2">{{ currentGame.description }}</n-descriptions-item>
               <n-descriptions-item label="开发者备注" :span="2">{{ currentGame.devNote || '无' }}</n-descriptions-item>
             </n-descriptions>
@@ -465,7 +464,6 @@ type ReviewGame = {
   platform: string
   gameMode: string
   gameModeLabel: string
-  playerCountLabel: string
   reviewType: 'new' | 'update'
   submitTime: string
   description: string
@@ -562,7 +560,7 @@ const networkModeLabelMap: Record<string, string> = {
 const pendingData = ref<ReviewGame[]>([
   {
     id: 1, name: '深海探险VR', cpName: '极境互动科技', version: '1.0.0', category: '冒险', size: '1.8GB', duration: 15,
-    platform: '头显一体机', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    platform: '头显一体机', gameMode: 'standalone', gameModeLabel: '单机体验',
     reviewType: 'new', submitTime: '2026-05-28 14:30', description: '潜入深海世界，探索未知海域，与海洋生物互动。支持体感控制。',
     devNote: '这是我们首款海洋题材 VR 游戏，画面精美，适合全年龄段。',
     runtimeArchitecture: 'headset_native', installTarget: 'android_headset', packageIdentifier: 'com.ocean.deepsea',
@@ -578,7 +576,7 @@ const pendingData = ref<ReviewGame[]>([
   },
   {
     id: 2, name: '赛博朋克2079', cpName: '闪耀游戏工作室', version: '0.5.0', category: '射击', size: '3.2GB', duration: 20,
-    platform: 'PCVR', gameMode: 'online', gameModeLabel: '多人联机', playerCountLabel: '2-4 人',
+    platform: 'PCVR', gameMode: 'online', gameModeLabel: '多人联机',
     reviewType: 'new', submitTime: '2026-05-28 10:15', description: '未来都市背景的多人在线射击游戏，支持 4 人对战。',
     devNote: '目前是早期版本，后续会持续更新内容。',
     runtimeArchitecture: 'pcvr', installTarget: 'windows_pc', packageIdentifier: 'steam-app-42079',
@@ -594,7 +592,7 @@ const pendingData = ref<ReviewGame[]>([
   },
   {
     id: 3, name: '棋牌乐园', cpName: '乐游网络', version: '2.0.0', category: '休闲', size: '500MB', duration: 30,
-    platform: '头显一体机', gameMode: 'online', gameModeLabel: '房间联机', playerCountLabel: '2-6 人',
+    platform: '头显一体机', gameMode: 'online', gameModeLabel: '房间联机',
     reviewType: 'new', submitTime: '2026-05-29 09:00', description: '包含斗地主、麻将等多款经典棋牌游戏，支持语音交流。',
     devNote: '已在线下棋牌室验证，用户粘性强。',
     runtimeArchitecture: 'multiplayer_server', installTarget: 'android_headset', packageIdentifier: 'com.leyou.cardvr',
@@ -610,7 +608,7 @@ const pendingData = ref<ReviewGame[]>([
   },
   {
     id: 4, name: '极限滑雪', cpName: '极境互动科技', version: '1.2.0', category: '体育', size: '2.1GB', duration: 12,
-    platform: '头显一体机', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    platform: '头显一体机', gameMode: 'standalone', gameModeLabel: '单机体验',
     reviewType: 'new', submitTime: '2026-05-29 11:20', description: '模拟真实滑雪体验，多种赛道可选，支持体感控制。',
     devNote: '',
     runtimeArchitecture: 'headset_with_pc_service', installTarget: 'android_headset', packageIdentifier: 'com.extreme.ski',
@@ -626,7 +624,7 @@ const pendingData = ref<ReviewGame[]>([
   },
   {
     id: 5, name: '太空站', cpName: '星际科技', version: '1.0.0', category: '冒险', size: '4.5GB', duration: 25,
-    platform: '沉浸式体验', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    platform: '沉浸式体验', gameMode: 'standalone', gameModeLabel: '单机体验',
     reviewType: 'new', submitTime: '2026-05-29 16:00', description: '在国际空间站中完成各种任务，体验宇航员生活。',
     devNote: '与航天局合作素材，画面真实度极高。',
     runtimeArchitecture: 'media_experience', installTarget: 'android_headset', packageIdentifier: 'space-station-media',
@@ -642,7 +640,7 @@ const pendingData = ref<ReviewGame[]>([
   },
   {
     id: 6, name: '过山车VR', cpName: '极境互动科技', prevVersion: 'v2.3.2', version: 'v2.4.0', category: '冒险', size: '280M', duration: 10,
-    platform: 'PCVR', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    platform: 'PCVR', gameMode: 'standalone', gameModeLabel: '单机体验',
     reviewType: 'update', submitTime: '2026-05-30 09:15', description: '更新版本：新增两条赛道，优化画面渲染性能，修复联机掉线问题。',
     devNote: '根据用户反馈优化了晕动症适配参数。',
     runtimeArchitecture: 'pcvr', installTarget: 'windows_pc', packageIdentifier: 'rollercoaster-vr',
@@ -675,7 +673,7 @@ const pendingData = ref<ReviewGame[]>([
   // ── L0 示例：仅素材/元数据变更，不入分发队列 ──
   {
     id: 7, name: '恐怖医院', cpName: '极境互动科技', prevVersion: 'v1.8.5', version: 'v1.8.6', category: '恐怖', size: '—', duration: 12,
-    platform: '一体机', gameMode: 'standalone', gameModeLabel: '单机体验', playerCountLabel: '1 人',
+    platform: '一体机', gameMode: 'standalone', gameModeLabel: '单机体验',
     reviewType: 'update', submitTime: '2026-06-28 16:45', description: '更新封面图与展位宣传图，调整游戏介绍文案。',
     devNote: 'CP 仅替换了封面图和 banner 素材，无任何二进制变更。',
     runtimeArchitecture: 'headset_native', installTarget: 'headset', packageIdentifier: 'horror-hospital',
@@ -705,7 +703,7 @@ const pendingData = ref<ReviewGame[]>([
   // ── L2 示例：运行架构变更，全量分发 ──
   {
     id: 8, name: '末日求生', cpName: '极境互动科技', prevVersion: 'v0.9.1', version: 'v1.0.0', category: '生存', size: '4.2G', duration: 30,
-    platform: 'PCVR+一体机', gameMode: 'multiplayer_coop', gameModeLabel: '多人联机', playerCountLabel: '2-4 人',
+    platform: 'PCVR+一体机', gameMode: 'multiplayer_coop', gameModeLabel: '多人联机',
     reviewType: 'update', submitTime: '2026-06-25 11:20', description: '重大版本升级：从一体机独占升级为 PCVR + 一体机双端架构，新增联机模式。',
     devNote: '运行架构从 headset 改为 dual_device，所有构件都需要换新。',
     runtimeArchitecture: 'headset_with_pc_service', installTarget: 'headset+pc', packageIdentifier: 'doomsday-survival',
@@ -733,7 +731,6 @@ const pendingData = ref<ReviewGame[]>([
         { field: 'description', action: 'update' },
         { field: 'platform', action: 'update' },
         { field: 'gameMode', action: 'update' },
-        { field: 'playerCountLabel', action: 'update' },
       ],
       artifactChanges: [
         { role: 'headset_client', action: 'update', fileSize: 2254857830, sha256: 'f1a2b3c4d5e6...8e7d6c5b' },
