@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1>营收总览</h1>
-        <p class="header-desc">分模块查看平台营收、商家结算与代理商分润数据</p>
+        <p class="header-desc">分模块查看平台营收与代理商分润数据</p>
       </div>
       <n-space>
         <n-button type="primary" secondary @click="router.push('/platform/finance/platform-withdraw')">平台提现</n-button>
@@ -93,31 +93,7 @@
       <div ref="revenueChartRef" class="chart-container"></div>
     </div>
 
-    <!-- ======================== 二、商家结算状态 ======================== -->
-    <div class="section-block">
-      <div class="section-title-bar">
-        <span class="section-badge merchant">商家结算</span>
-        <span class="section-desc">商家待结算金额与近期结算流水</span>
-      </div>
-
-      <div class="sub-metrics-row">
-        <div class="sub-metric-card">
-          <span class="sub-label">待结算总额</span>
-          <span class="sub-value warning">¥456,180</span>
-          <span class="sub-detail">商家待结算金额（含手续费）</span>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="section-header">
-          <h3>近期商家结算流水</h3>
-          <n-button quaternary size="tiny" @click="$router.push('/platform/finance/settlement')">查看全部</n-button>
-        </div>
-        <n-data-table :columns="settlementColumns" :data="settlementData" :pagination="{ pageSize: 5 }" striped size="small" />
-      </div>
-    </div>
-
-    <!-- ======================== 三、代理商分润状态 ======================== -->
+    <!-- ======================== 二、代理商分润状态 ======================== -->
     <div class="section-block">
       <div class="section-title-bar">
         <span class="section-badge agent">代理商分润</span>
@@ -151,7 +127,7 @@
       </div>
     </div>
 
-    <!-- ======================== 四、CP供应商结算概览 ======================== -->
+    <!-- ======================== 三、CP供应商结算概览 ======================== -->
     <div class="section-block" style="border-bottom: none; padding-bottom: 0;">
       <div class="section-title-bar">
         <span class="section-badge cp">CP 供应商结算</span>
@@ -215,32 +191,6 @@ const message = useMessage()
 const trendPeriod = ref('month')
 const revenueChartRef = ref<HTMLElement | null>(null)
 let revenueChart: echarts.ECharts | null = null
-
-// ---- 商家结算流水表 ----
-const settlementColumns = [
-  { title: '单号', key: 'settlementNo', width: 130, ellipsis: { tooltip: true } },
-  { title: '商家', key: 'merchant' },
-  { title: '门店数', key: 'storeCount', width: 80, align: 'center', render: (row: any) => `${row.storeCount} 家` },
-  { title: '结算周期', key: 'settlementCycle', width: 150, align: 'center' },
-  { title: '结算基数', key: 'amount', width: 110, render: (row: any) => `¥${row.amount.toLocaleString()}` },
-  { title: '手续费', key: 'fee', width: 80, render: (row: any) => `¥${row.fee.toLocaleString()}` },
-  { title: '应打款', key: 'actual', width: 110, render: (row: any) => h('span', { style: 'font-weight:600;color:#10B981;' }, `¥${row.actual.toLocaleString()}`) },
-  {
-    title: '状态', key: 'status', width: 75, align: 'center',
-    render: (row: any) => h(NTag, {
-      type: row.status === 'settled' ? 'success' : row.status === 'pending' ? 'warning' : 'default',
-      size: 'small', bordered: false
-    }, () => row.statusText),
-  },
-]
-
-const settlementData = [
-  { settlementNo: 'ST2026042001', merchant: '深圳XX科技公司', storeCount: 8, settlementCycle: '2026-04-01 至 2026-04-15', amount: 137963, fee: 4138.89, actual: 133824.11, status: 'settled', statusText: '已打款', payTime: '2026-04-20 10:00' },
-  { settlementNo: 'ST2026042002', merchant: '广州YY传媒公司', storeCount: 5, settlementCycle: '2026-04-01 至 2026-04-15', amount: 78230, fee: 2346.9, actual: 75883.1, status: 'pending', statusText: '待打款', payTime: '-' },
-  { settlementNo: 'ST2026042003', merchant: '北京ZZ娱乐公司', storeCount: 3, settlementCycle: '2026-04-01 至 2026-04-15', amount: 45680, fee: 1370.4, actual: 44309.6, status: 'processing', statusText: '处理中', payTime: '-' },
-  { settlementNo: 'ST2026042004', merchant: '上海WW投资公司', storeCount: 6, settlementCycle: '2026-04-01 至 2026-04-15', amount: 97850, fee: 2935.5, actual: 94914.5, status: 'pending', statusText: '待打款', payTime: '-' },
-  { settlementNo: 'ST2026041301', merchant: '杭州AA文化公司', storeCount: 11, settlementCycle: '2026-03-16 至 2026-03-31', amount: 156200, fee: 4686, actual: 151514, status: 'settled', statusText: '已打款', payTime: '2026-04-14 11:30' },
-]
 
 // ---- 代理商分润排行 ----
 const agentRankColumns = [

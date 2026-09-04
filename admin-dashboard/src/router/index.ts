@@ -53,6 +53,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'members/growth', name: 'PlatformMembersGrowth', component: () => import('../views/platform/MemberGrowth.vue'), meta: { title: '会员增长' } },
       { path: 'members/ranking', name: 'PlatformMemberRanking', component: () => import('../views/platform/MemberConsumptionRanking.vue'), meta: { title: '会员消费排行' } },
       { path: 'members/deposit-log', name: 'PlatformMemberDepositLog', component: () => import('../views/platform/MemberDepositLog.vue'), meta: { title: '会员储值变更' } },
+      { path: 'members/points-tasks', name: 'PlatformPointTasks', component: () => import('../views/platform/PointTaskConfig.vue'), meta: { title: '积分任务' } },
+      { path: 'members/points-ledger', name: 'PlatformPointLedger', component: () => import('../views/platform/PointLedger.vue'), meta: { title: '积分流水' } },
       // 订单流水
       { path: 'order-flow', redirect: '/platform/order-flow/cashier' },
       { path: 'order-flow/cashier', name: 'PlatformOrderFlowCashier', component: () => import('../views/platform/OrderFlow.vue'), meta: { title: '收银订单' } },

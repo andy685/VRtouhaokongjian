@@ -341,6 +341,8 @@ const menuOptions: MenuOption[] = [
       { label: '会员增长', key: '/platform/members/growth' },
       { label: '会员消费排行', key: '/platform/members/ranking' },
       { label: '会员储值变更', key: '/platform/members/deposit-log' },
+      { label: '积分任务', key: '/platform/members/points-tasks' },
+      { label: '积分流水', key: '/platform/members/points-ledger' },
     ]
   },
   {
@@ -353,6 +355,7 @@ const menuOptions: MenuOption[] = [
       { label: '修改储值订单', key: '/platform/order-flow/balance' },
       { label: '游戏币兑换订单', key: '/platform/order-flow/gamebean' },
       { label: '活动赠送订单', key: '/platform/order-flow/promo' },
+      { label: '异常订单', key: '/platform/finance/exception-orders' },
     ]
   },
   {
@@ -368,15 +371,6 @@ const menuOptions: MenuOption[] = [
         children: [
           { label: '销售总览', key: '/platform/gamebean-sales' },
           { label: '销售明细', key: '/platform/gamebean-sales/detail' },
-        ]
-      },
-      {
-        label: '商家结算',
-        key: 'merchant-settlement-group',
-        children: [
-          { label: '商家分账管理', key: '/platform/finance/settlement' },
-          { label: '结算配置', key: '/platform/finance/settlement-config' },
-          { label: '异常订单', key: '/platform/finance/exception-orders' },
         ]
       },
       {

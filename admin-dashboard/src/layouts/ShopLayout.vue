@@ -250,28 +250,21 @@ const menuOptions: MenuOption[] = [
       { label: '账户金额统计', key: '/shop/account-stats' },
       { label: '交接班记录', key: '/shop/shifts' },
       { label: '点播数据', key: '/shop/on-demand-records' },
-      {
-        label: '订单查询',
-        key: 'order-group',
-        children: [
-          { label: '收银订单', key: '/shop/cashier-order' },
-          { label: '点播系统订单', key: '/shop/ondemand-order' },
-          { label: '修改储值订单', key: '/shop/edit-balance-order' },
-          { label: '游戏币兑换订单', key: '/shop/points-exchange-order' },
-          { label: '活动赠送订单', key: '/shop/gift-order' },
-        ]
-      },
       { label: '内容消耗明细', key: '/shop/film-revenue' },
       { label: '营收目标与完成率', key: '/shop/revenue-target' },
       { label: '员工销售排名', key: '/shop/staff-ranking' },
     ]
   },
   {
-    label: '财务管理',
-    key: 'finance-group',
+    label: '订单查询',
+    key: 'order-group',
     icon: renderIcon(WalletOutline),
     children: [
-      { label: '结算记录', key: '/shop/settlement' },
+      { label: '收银订单', key: '/shop/cashier-order' },
+      { label: '点播系统订单', key: '/shop/ondemand-order' },
+      { label: '修改储值订单', key: '/shop/edit-balance-order' },
+      { label: '游戏币兑换订单', key: '/shop/points-exchange-order' },
+      { label: '活动赠送订单', key: '/shop/gift-order' },
       { label: '异常订单', key: '/shop/exception-orders' },
     ]
   },

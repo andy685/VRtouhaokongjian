@@ -25,7 +25,7 @@
       <n-input v-model:value="filterKeyword" placeholder="搜索商户号/终端号/机构号..." clearable style="width: 260px;" />
       <n-select
         v-model:value="filterStatus"
-        :options="[{ label: '全部状态', value: null }, { label: '启用', value: 1 }, { label: '停用', value: 0 }]"
+        :options="statusFilterOptions"
         style="width: 120px;"
       />
     </n-space>
@@ -38,7 +38,7 @@
       :single-line="false"
       size="small"
       :pagination="{ pageSize: 10 }"
-      :scroll-x="1600"
+      :scroll-x="1750"
     />
 
     <!-- 新增/编辑弹窗 -->
@@ -66,6 +66,11 @@
             </n-form-item>
           </n-gi>
           <n-gi>
+            <n-form-item label="拉卡拉内部商户号" path="internal_merchant_no">
+              <n-input v-model:value="formData.internal_merchant_no" placeholder="内部商户号" :disabled="isMerchantOwner" />
+            </n-form-item>
+          </n-gi>
+          <n-gi>
             <n-form-item label="拉卡拉终端号" path="term_no">
               <n-input v-model:value="formData.term_no" placeholder="终端号" />
             </n-form-item>
@@ -77,22 +82,22 @@
           </n-gi>
           <n-gi>
             <n-form-item label="虚拟终端号" path="vpos_id">
-              <n-input v-model:value="formData.vpos_id" placeholder="聚合收银台虚拟终端号" />
+              <n-input v-model:value="formData.vpos_id" placeholder="聚合收银台虚拟终端号" :disabled="isMerchantOwner" />
             </n-form-item>
           </n-gi>
           <n-gi>
             <n-form-item label="渠道号" path="channel_id">
-              <n-input v-model:value="formData.channel_id" placeholder="聚合收银台渠道号" />
+              <n-input v-model:value="formData.channel_id" placeholder="聚合收银台渠道号" :disabled="isMerchantOwner" />
             </n-form-item>
           </n-gi>
           <n-gi>
             <n-form-item label="分账接收方编号" path="ledger_receiver_no">
-              <n-input v-model:value="formData.ledger_receiver_no" placeholder="分账接收方编号" />
+              <n-input v-model:value="formData.ledger_receiver_no" placeholder="分账接收方编号（可选）" :disabled="isMerchantOwner" />
             </n-form-item>
           </n-gi>
           <n-gi>
             <n-form-item label="行业钱包账户号" path="ewallet_account_no">
-              <n-input v-model:value="formData.ewallet_account_no" placeholder="行业钱包账户号" />
+              <n-input v-model:value="formData.ewallet_account_no" placeholder="行业钱包账户号（可选）" :disabled="isMerchantOwner" />
             </n-form-item>
           </n-gi>
         </n-grid>
@@ -140,17 +145,16 @@ const formRef = ref<FormInst | null>(null)
 const ownerTypeOptions = [
   { label: '平台', value: 1 },
   { label: '商家', value: 2 },
-  { label: '门店', value: 3 },
   { label: '代理商', value: 4 },
   { label: '游戏供应商', value: 5 },
 ]
 
 const ownerTypeLabel: Record<number, string> = {
-  1: '平台', 2: '商家', 3: '门店', 4: '代理商', 5: '游戏供应商',
+  1: '平台', 2: '商家', 4: '代理商', 5: '游戏供应商',
 }
 
 const ownerTypeColor: Record<number, string> = {
-  1: '#6366f1', 2: '#10b981', 3: '#f59e0b', 4: '#ef4444', 5: '#8b5cf6',
+  1: '#6366f1', 2: '#10b981', 4: '#ef4444', 5: '#8b5cf6',
 }
 
 // ===== 归属对象 Mock 数据 =====
@@ -159,11 +163,6 @@ const merchantList: OwnerObject[] = [
   { id: 1001, name: '华东展厅' },
   { id: 1002, name: '幻影星空' },
   { id: 1003, name: '未来空间' },
-]
-const storeList: OwnerObject[] = [
-  { id: 2001, name: '华东展厅-收银台A' },
-  { id: 2002, name: '幻影星空-1号机' },
-  { id: 2003, name: '未来空间-前台' },
 ]
 const agentList: OwnerObject[] = [
   { id: 3001, name: '华北代理商' },
@@ -176,13 +175,13 @@ const cpList: OwnerObject[] = [
 
 const ownerListMap: Record<number, OwnerObject[]> = {
   2: merchantList,
-  3: storeList,
   4: agentList,
   5: cpList,
 }
 
 // 动态归属对象选项（平台无归属对象，ID 固定为 0）
 const isPlatform = computed(() => formData.value.account_owner_type === 1)
+const isMerchantOwner = computed(() => formData.value.account_owner_type === 2)
 
 const ownerObjectOptions = computed(() => {
   if (isPlatform.value) {
@@ -197,6 +196,11 @@ const ownerObjectOptions = computed(() => {
 const filterOwnerType = ref<number | null>(null)
 const filterKeyword = ref('')
 const filterStatus = ref<number | null>(null)
+const statusFilterOptions = [
+  { label: '全部状态', value: null },
+  { label: '启用', value: 1 },
+  { label: '停用', value: 0 },
+] as any[]
 
 // ===== 表单 =====
 const showForm = ref(false)
@@ -207,6 +211,7 @@ const defaultFormData = () => ({
   account_owner_type: 2 as number,
   account_owner_id: 0 as number,
   merchant_no: '',
+  internal_merchant_no: '',
   term_no: '',
   vpos_id: '',
   channel_id: '',
@@ -239,6 +244,7 @@ function openEdit(row: any) {
     account_owner_type: row.account_owner_type,
     account_owner_id: row.account_owner_id,
     merchant_no: row.merchant_no || '',
+    internal_merchant_no: row.internal_merchant_no || '',
     term_no: row.term_no || '',
     vpos_id: row.vpos_id || '',
     channel_id: row.channel_id || '',
@@ -321,6 +327,7 @@ const columns: DataTableColumns = [
     render: (row: any) => resolveOwnerName(row.account_owner_type, row.account_owner_id),
   },
   { title: '商户号', key: 'merchant_no', width: 150, align: 'center' },
+  { title: '内部商户号', key: 'internal_merchant_no', width: 150, align: 'center' },
   { title: '终端号', key: 'term_no', width: 130, align: 'center' },
   { title: '虚拟终端号', key: 'vpos_id', width: 160, align: 'center' },
   { title: '渠道号', key: 'channel_id', width: 140, align: 'center' },
@@ -351,7 +358,7 @@ const columns: DataTableColumns = [
 const mockData = ref([
   {
     id: 1, account_owner_type: 1, account_owner_id: 0,
-    merchant_no: 'LK888000000001', term_no: 'TERM-001',
+    merchant_no: 'LK888000000001', internal_merchant_no: 'INNER-0001', term_no: 'TERM-001',
     vpos_id: 'VPOS-0001', channel_id: 'CH-0001',
     org_no: 'ORG-1001', ledger_receiver_no: 'LR-00001',
     ewallet_account_no: 'EW-00001', status: 1,
@@ -359,23 +366,15 @@ const mockData = ref([
   },
   {
     id: 2, account_owner_type: 2, account_owner_id: 1001,
-    merchant_no: 'LK888000000101', term_no: 'TERM-101',
+    merchant_no: 'LK888000000101', internal_merchant_no: '', term_no: 'TERM-101',
     vpos_id: 'VPOS-1001', channel_id: 'CH-1001',
     org_no: 'ORG-1001', ledger_receiver_no: 'LR-00002',
     ewallet_account_no: 'EW-00002', status: 1,
     create_time: '2024-03-10 09:00:00', update_time: '2025-06-01 11:00:00', deleted: 0,
   },
   {
-    id: 3, account_owner_type: 3, account_owner_id: 2001,
-    merchant_no: 'LK888000000201', term_no: 'TERM-201',
-    vpos_id: 'VPOS-2001', channel_id: 'CH-2001',
-    org_no: 'ORG-1002', ledger_receiver_no: 'LR-00003',
-    ewallet_account_no: 'EW-00003', status: 0,
-    create_time: '2024-05-20 16:00:00', update_time: '2025-01-10 08:30:00', deleted: 0,
-  },
-  {
     id: 4, account_owner_type: 4, account_owner_id: 3001,
-    merchant_no: 'LK888000000301', term_no: 'TERM-301',
+    merchant_no: 'LK888000000301', internal_merchant_no: 'INNER-3001', term_no: 'TERM-301',
     vpos_id: 'VPOS-3001', channel_id: 'CH-3001',
     org_no: 'ORG-1003', ledger_receiver_no: 'LR-00004',
     ewallet_account_no: '', status: 1,
@@ -383,7 +382,7 @@ const mockData = ref([
   },
   {
     id: 5, account_owner_type: 5, account_owner_id: 4001,
-    merchant_no: 'LK888000000401', term_no: 'TERM-401',
+    merchant_no: 'LK888000000401', internal_merchant_no: 'INNER-4001', term_no: 'TERM-401',
     vpos_id: 'VPOS-4001', channel_id: 'CH-4001',
     org_no: 'ORG-1004', ledger_receiver_no: 'LR-00005',
     ewallet_account_no: 'EW-00005', status: 1,
@@ -391,7 +390,7 @@ const mockData = ref([
   },
   {
     id: 6, account_owner_type: 2, account_owner_id: 1002,
-    merchant_no: 'LK888000000501', term_no: 'TERM-501',
+    merchant_no: 'LK888000000501', internal_merchant_no: '', term_no: 'TERM-501',
     vpos_id: 'VPOS-5001', channel_id: 'CH-5001',
     org_no: 'ORG-1005', ledger_receiver_no: 'LR-00006',
     ewallet_account_no: 'EW-00006', status: 1,
@@ -412,6 +411,7 @@ const filteredData = computed(() => {
     const kw = filterKeyword.value.toLowerCase()
     data = data.filter((d: any) =>
       (d.merchant_no || '').toLowerCase().includes(kw) ||
+      (d.internal_merchant_no || '').toLowerCase().includes(kw) ||
       (d.term_no || '').toLowerCase().includes(kw) ||
       (d.org_no || '').toLowerCase().includes(kw) ||
       (d.vpos_id || '').toLowerCase().includes(kw) ||
