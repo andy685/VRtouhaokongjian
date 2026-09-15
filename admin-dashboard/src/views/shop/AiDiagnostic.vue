@@ -16,11 +16,10 @@
             <article v-for="report in group.items" :key="report.id" class="report-card" :class="healthInfo(report.score).className" @click="openReport(report.month)">
               <div class="report-card-main">
                 <div class="report-copy">
-                  <div class="report-card-top"><span>{{ report.month }}</span><span v-if="report.isNew" class="new-badge">新报告</span></div>
-                  <n-tag :type="healthInfo(report.score).tagType" size="small" round>{{ healthInfo(report.score).label }}</n-tag>
+                  <div class="report-card-top"><span>{{ report.month }}</span><span v-if="reportUpdateStates[report.id]" class="updating-badge">报告更新中</span><span v-else-if="report.isNew" class="new-badge">新报告</span></div>
                   <p>生成于 {{ report.generatedAt }}</p>
                 </div>
-                <div class="score-orb"><strong>{{ report.score }}</strong><span>健康分</span></div>
+                <div class="status-orb" :class="healthInfo(report.score).className"><span>经营状态</span><strong>{{ healthInfo(report.score).label }}</strong></div>
               </div>
               <div class="report-card-actions"><n-button size="small" secondary @click="openReport(report.month)">查看报告</n-button><n-button size="small" secondary type="primary" @click="openGenerator(report.month)">补充经营背景</n-button></div>
             </article>
@@ -30,23 +29,26 @@
       <div v-else class="empty-card"><h2>暂未生成诊断报告</h2><p>报告将由系统按月自动生成。你可以通过页面顶部入口提前补充本月经营背景。</p></div>
     </section>
 
-    <section v-else class="shop-workspace">
+    <section v-else class="shop-workspace report-shell">
       <div class="report-content">
-    <n-button text class="back-button" @click="viewMode = 'list'">← 返回报告中心</n-button>
+    <div class="report-topbar"><n-button text class="back-button" @click="viewMode = 'list'">← 返回报告中心</n-button><n-space><n-button @click="openGenerator(activeReport?.month)">补充经营背景</n-button><n-button @click="message.success('已开始导出 PDF')">下载 PDF</n-button><n-button type="primary" @click="message.success('已开始导出 ZIP')">下载 ZIP</n-button></n-space></div>
     <template v-if="activeReport">
-      <section class="report-cover">
-        <div><span>AI 经营诊断报告</span><h2>{{ activeReport.store }} · {{ activeReport.month }}</h2><p>生成于 {{ activeReport.generatedAt }} · 数据截止 {{ activeReport.snapshotAt }}</p></div>
-        <div class="cover-actions"><n-button @click="openGenerator(activeReport.month)">补充{{ activeReport.month }}经营背景</n-button><n-button @click="message.success('已开始导出 PDF')">下载 PDF</n-button><n-button @click="message.success('已开始导出 ZIP')">下载 ZIP</n-button></div>
+      <div v-if="reportUpdateStates[activeReport.id]" class="report-update-notice">报告更新中，当前展示的是上一版报告；更新完成后将自动替换为最新内容。</div>
+      <section class="report-hero">
+        <span class="hero-tag">AI 店铺经营诊断报告</span>
+        <h1>{{ activeReport.store }} · {{ activeReport.month }}</h1>
+        <p>基于已固化的经营数据快照、诊断资料与报告模板自动生成。</p>
+        <div class="hero-meta"><div><span>所属商家</span><strong>{{ currentStore.merchant }}</strong></div><div><span>数据范围</span><strong>{{ activeReport.month }}</strong></div><div><span>生成时间</span><strong>{{ activeReport.generatedAt }}</strong></div></div>
       </section>
-      <section class="score-grid">
-        <div class="health-card" :class="healthInfo(activeReport.score).className"><span>经营健康分</span><strong>{{ activeReport.score }}</strong><small>{{ activeReport.level }}</small></div>
-        <div class="dimension-card"><div v-for="item in displayDimensions" :key="item.label" class="dimension"><n-tooltip v-if="item.desc" trigger="hover" placement="top"><template #trigger><span class="dim-label">{{ item.label }}<i class="dim-info">?</i></span></template>{{ item.desc }}</n-tooltip><span v-else>{{ item.label }}</span><n-progress type="line" :percentage="item.score" :show-indicator="false" :height="8" :color="item.score >= 80 ? '#3B82F6' : item.score >= 70 ? '#F59E0B' : '#EF4444'" rail-color="#E2E8F0" /><strong>{{ item.score }}</strong></div></div>
-      </section>
-      <section class="content-card"><div class="section-title"><h2>关键指标快照</h2><span>与上月对比</span></div><div class="metrics"><div v-for="item in activeReport.metrics" :key="item.label"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="item.down ? 'down' : 'up'">{{ item.trend }}</small></div></div></section>
-      <section class="content-card"><div class="section-title"><h2>一页结论</h2></div><p class="conclusion">{{ activeReport.conclusion }}</p></section>
-      <section class="content-card context-card"><div class="section-title"><h2>店长补充</h2><span>仅作为本期 AI 分析依据</span></div><p>{{ activeReport.context || '本期店长未提交额外经营背景，AI 仅依据系统数据快照、规则和诊断资料生成报告。' }}</p></section>
-      <section class="content-card insight-grid"><article class="problem"><h2>主要问题</h2><p v-for="item in activeReport.problems" :key="item">{{ item }}</p></article><article class="chance"><h2>增长机会</h2><p v-for="item in activeReport.opportunities" :key="item">{{ item }}</p></article></section>
-      <section class="content-card"><div class="section-title"><h2>下月行动计划</h2><span>建议门店按优先级执行</span></div><n-data-table :columns="actionColumns" :data="activeReport.actions" :pagination="false" :bordered="false" /></section>
+      <section class="report-section ai-summary-section"><div class="section-title"><div><h2>AI 总结</h2><p>先看本期结论与优先方向</p></div></div><div class="conclusion">{{ activeReport.conclusion }}</div></section>
+      <section class="report-section score-section"><div class="section-title"><div><h2>经营健康度</h2><p>六维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ activeReport.snapshotAt }}</span></div><div class="score-layout">
+        <div class="score-card shop-status-card" :class="healthInfo(activeReport.score).className"><span>经营健康度</span><strong>{{ healthInfo(activeReport.score).label }}</strong><small>{{ healthDescription(activeReport.score) }}</small></div>
+        <div class="dimension-list"><div v-for="item in displayDimensions" :key="item.label" class="dimension"><n-tooltip v-if="item.desc" trigger="hover" placement="top"><template #trigger><span class="dim-label">{{ item.label }}<i class="dim-info">?</i></span></template>{{ item.desc }}</n-tooltip><span v-else>{{ item.label }}</span><div class="track"><i :style="{ width: item.score + '%' }"></i></div><strong>{{ item.score }}</strong></div></div>
+      </div></section>
+      <section class="report-section"><div class="section-title"><div><h2>核心经营指标</h2><p>与上一个完整周期对比</p></div></div><div class="metrics-grid"><div v-for="item in activeReport.metrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div></section>
+      <section class="report-section insight-grid"><article class="insight problem"><span>01</span><h3>主要问题</h3><p v-for="item in activeReport.problems" :key="item">{{ item }}</p></article><article class="insight chance"><span>02</span><h3>增长机会</h3><p v-for="item in activeReport.opportunities" :key="item">{{ item }}</p></article></section>
+      <section class="report-section"><div class="section-title"><div><h2>下月行动计划</h2><p>可用于门店执行与下期复盘</p></div></div><n-data-table :columns="actionColumns" :data="activeReport.actions" :pagination="false" :bordered="false" /></section>
+      <section class="report-section manager-context"><div class="section-title"><div><h2>店长补充</h2><p>本期诊断依据，不修改原始经营数据</p></div></div><p>{{ activeReport.context || '本期店长未提交额外经营背景，AI 仅依据系统数据快照、规则和诊断资料生成报告。' }}</p></section>
     </template>
     <section v-else class="empty-card"><h2>该月份暂无报告</h2><p>报告将由系统按月自动生成。你可以在生成前补充本月经营背景，供 AI 作为分析依据。</p><n-button type="primary" @click="openGenerator">补充本月经营背景</n-button></section>
       </div>
@@ -54,7 +56,7 @@
 
     <n-drawer v-model:show="showGenerator" placement="right" :width="620"><n-drawer-content :title="'补充' + generationMonthLabel + '经营背景'" closable>
       <div class="generator">
-        <div class="generator-summary"><n-tag type="info">下次自动生成时引用</n-tag><h2>{{ currentStore.name }} · {{ generationMonthLabel }}</h2><p>报告由系统按月自动生成。此处补充仅作为下一次生成该月份报告的 AI 分析依据，不会立即生成或修改历史报告。</p></div>
+        <div class="generator-summary"><n-tag type="info">{{ contextTargetReport ? '将异步更新报告' : '下次自动生成时引用' }}</n-tag><h2>{{ currentStore.name }} · {{ generationMonthLabel }}</h2><p>{{ contextTargetReport ? '保存后将创建报告更新任务。现有报告继续保留，任务完成后才展示更新后的报告。' : '报告由系统按月自动生成。此处补充会作为该月份下一次生成报告的 AI 分析依据。' }}</p></div>
         <div v-for="question in questions" :key="question.id" class="question"><strong>{{ question.title }}<i v-if="question.required" class="required-mark">*</i></strong><n-input v-model:value="question.answer" type="textarea" :rows="3" :placeholder="question.placeholder" /></div>
         <n-space justify="end"><n-button @click="showGenerator = false">取消</n-button><n-button type="primary" @click="saveContext">保存补充</n-button></n-space>
       </div>
@@ -67,12 +69,13 @@ import { computed, h, ref, watch } from 'vue'
 import { NButton, NDataTable, NDrawer, NDrawerContent, NInput, NProgress, NSelect, NSpace, NTag, NTooltip, useMessage } from 'naive-ui'
 import { loadDiagnosticDimensions, loadSupplementQuestions } from '../../constants/aiDiagnosticConfig'
 const message = useMessage()
-const stores = [{ id: 'futian', name: '深圳福田旗舰店' }, { id: 'nanshan', name: '深圳南山科技园店' }]
+const stores = [{ id: 'futian', name: '深圳福田旗舰店', merchant: '卓远娱乐' }, { id: 'nanshan', name: '深圳南山科技园店', merchant: '卓远娱乐' }]
 const selectedStoreId = ref('futian')
 const defaultReportMonth = new Date(2026, 7, 1).getTime()
 const selectedMonth = ref(defaultReportMonth)
 const generationMonth = ref(defaultReportMonth)
 const showGenerator = ref(false)
+const reportUpdateStates = ref<Record<string, boolean>>({})
 const viewMode = ref<'list' | 'detail'>('list')
 const questions = ref(loadSupplementQuestions().map((item) => ({ ...item, answer: '' })))
 const currentStore = computed(() => stores.find((item) => item.id === selectedStoreId.value) || stores[0])
@@ -92,6 +95,7 @@ const displayDimensions = computed(() => {
   return activeReport.value.dimensions.map((item, index) => ({ label: configDims[index]?.label || item.label, score: item.score, desc: configDims[index]?.desc || '' }))
 })
 const storeReports = computed(() => reports.value.filter((item) => item.storeId === selectedStoreId.value).sort((a, b) => b.month.localeCompare(a.month)))
+const contextTargetReport = computed(() => reports.value.find((item) => item.storeId === currentStore.value.id && item.month === generationMonthLabel.value))
 const reportsByYear = computed(() => {
   const groups = new Map<string, typeof storeReports.value>()
   storeReports.value.forEach((item) => { const year = item.month.slice(0, 4); groups.set(year, [...(groups.get(year) || []), item]) })
@@ -101,6 +105,9 @@ const actionColumns = [{ title: '优先级', key: 'priority', width: 90, render:
 function formatMonth(value: number) { const date = new Date(value); return date.getFullYear() + '年' + (date.getMonth() + 1) + '月' }
 function selectHistoryReport(month: string) { const match = month.match(/(\d{4})年(\d+)月/); if (match) selectedMonth.value = new Date(Number(match[1]), Number(match[2]) - 1, 1).getTime() }
 function healthInfo(score: number) { return score >= 80 ? { label: '健康增长', className: 'health-good', tagType: 'success' as const } : score >= 70 ? { label: '稳中待升', className: 'health-watch', tagType: 'warning' as const } : { label: '重点优化', className: 'health-risk', tagType: 'error' as const } }
+function healthDescription(score: number) { return score >= 80 ? '本期经营表现良好' : score >= 70 ? '本期经营仍有提升空间' : '建议优先处理重点问题' }
+function dimensionStatus(score: number) { return score >= 80 ? '良好' : score >= 70 ? '可提升' : '需关注' }
+function dimensionClass(score: number) { return score >= 80 ? 'is-good' : score >= 70 ? 'is-watch' : 'is-risk' }
 function openReport(month: string) { const report = reports.value.find((item) => item.storeId === selectedStoreId.value && item.month === month); if (report) report.isNew = false; selectHistoryReport(month); viewMode.value = 'detail' }
 function openGenerator(month?: string) {
   if (month) selectHistoryReport(month)
@@ -111,7 +118,19 @@ function openGenerator(month?: string) {
 function saveContext() {
   const missing = questions.value.find((item) => item.required && !item.answer.trim())
   if (missing) { message.warning('请回答必填问题：' + missing.title); return }
-  showGenerator.value = false; message.success('经营背景已保存，将在系统生成 ' + generationMonthLabel.value + ' 报告时作为分析依据')
+  const context = questions.value.filter((item) => item.answer.trim()).map((item) => item.title + '：' + item.answer.trim()).join('；')
+  const report = contextTargetReport.value
+  showGenerator.value = false
+  if (!report) { message.success('经营背景已保存，将在系统生成 ' + generationMonthLabel.value + ' 报告时作为分析依据'); return }
+  reportUpdateStates.value[report.id] = true
+  message.info('经营背景已保存，报告正在更新中；当前报告内容暂不变更')
+  window.setTimeout(() => {
+    report.context = context
+    reportUpdateStates.value[report.id] = false
+    report.isNew = true
+    report.generatedAt = '刚刚更新'
+    message.success('报告更新完成，已展示最新内容')
+  }, 1800)
 }
 watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = defaultReportMonth })
 </script>
@@ -177,7 +196,11 @@ watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = de
 .report-card.health-risk:hover .score-orb{border-color:#EF4444}
 .score-orb strong{font-size:22px;line-height:1;color:var(--ds-text);font-variant-numeric:tabular-nums}
 .score-orb span{font-size:10px;color:var(--ds-text-soft);margin-top:3px}
+.status-orb{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:92px;height:64px;padding:0 10px;border-radius:12px;background:#F8FAFC;border:1px solid var(--ds-border);text-align:center}.status-orb span{font-size:10px;color:var(--ds-text-soft);margin-bottom:5px}.status-orb strong{font-size:14px;white-space:nowrap}.status-orb.health-good{background:#ECFDF5;color:#15803D;border-color:#BBF7D0}.status-orb.health-watch{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status-orb.health-risk{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
 .report-card-actions{display:flex;align-items:center;gap:10px;min-height:28px}
+.updating-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:11px;font-weight:700}
+.report-update-notice{padding:10px 14px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:13px;line-height:1.6}
+.score-grid{grid-template-columns:1fr;gap:12px}.health-card{display:grid;grid-template-columns:220px minmax(0,1fr);align-items:center;min-height:112px;padding:20px 24px;gap:24px}.health-card .health-main{padding-right:24px;border-right:1px solid rgba(15,23,42,.10)}.health-card .health-main span{margin-bottom:8px}.health-card .health-main strong{font-size:30px;line-height:1.2}.health-card>small{max-width:560px;font-size:14px;line-height:1.75;color:inherit;opacity:.82}.dimension-card{padding:12px 24px;gap:0}.dimension{grid-template-columns:150px minmax(180px,1fr) 48px 68px;min-height:64px;padding:14px 0;gap:16px}.dimension-score{font-size:13px}.dimension-state{min-width:64px}.report-cover{min-height:156px;padding:30px}.report-cover h2{font-size:30px}.content-card{padding:24px}.metrics>div{min-height:122px;padding:18px}.conclusion{padding:22px 24px;font-size:15px}.context-card{padding:22px 24px}@media(max-width:760px){.health-card{grid-template-columns:1fr;gap:14px}.health-card .health-main{padding:0;border:0}.dimension{grid-template-columns:minmax(100px,1fr) 42px 60px;gap:10px}.dimension .n-progress{grid-column:1/-1;grid-row:2}.content-card{padding:18px}.report-cover h2{font-size:24px}}
 
 /* ============ 空状态 ============ */
 .empty-card{
@@ -213,6 +236,9 @@ watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = de
 .health-card span{display:block;font-size:13px;color:var(--ds-text-soft)}
 .health-card strong{display:block;font-size:62px;line-height:1;margin:14px 0 8px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 .health-card small{font-size:13px;font-weight:600}
+.health-card strong{font-size:28px;line-height:1.25;letter-spacing:0;white-space:nowrap}
+.health-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;gap:6px}.health-card strong{font-size:26px}.health-card small{font-weight:400;line-height:1.6}.dimension{grid-template-columns:minmax(0,1fr) auto;min-height:44px;padding:10px 0;border-bottom:1px solid #eef2f7}.dimension:last-child{border-bottom:0}.dimension-state{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600}.dimension-state.is-good{background:#ecfdf5;color:#15803d}.dimension-state.is-watch{background:#fffbeb;color:#b45309}.dimension-state.is-risk{background:#fef2f2;color:#b91c1c}
+.dimension{grid-template-columns:minmax(120px,1fr) minmax(140px,1fr) 46px 60px;gap:12px}.dimension-score{font-size:12px;font-weight:600;color:var(--ds-text-mid);white-space:nowrap}
 .health-card.health-good{background:linear-gradient(160deg,#ECFDF5,#F0FDF4);color:#15803D;border-color:#BBF7D0}
 .health-card.health-watch{background:linear-gradient(160deg,#FFFBEB,#FEFCE8);color:#B45309;border-color:#FDE68A}
 .health-card.health-risk{background:linear-gradient(160deg,#FEF2F2,#FFF1F2);color:#B91C1C;border-color:#FECACA}
@@ -275,4 +301,69 @@ watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = de
   .report-card,.metrics>div,.diagnostic-page :deep(.n-button){transition:none}
   .report-card:hover{transform:none}
 }
+.score-grid{grid-template-columns:1fr;gap:12px}
+.health-card{display:grid;grid-template-columns:220px minmax(0,1fr);align-items:center;min-height:112px;padding:20px 24px;gap:24px}
+.health-card .health-main{padding-right:24px;border-right:1px solid rgba(15,23,42,.10)}
+.health-card .health-main span{margin-bottom:8px}
+.health-card .health-main strong{font-size:30px;line-height:1.2;white-space:nowrap}
+.health-card>small{max-width:560px;font-size:14px;line-height:1.75;color:inherit;opacity:.82}
+.dimension-card{padding:12px 24px;gap:0}
+.dimension{grid-template-columns:150px minmax(180px,1fr) 48px 68px;min-height:64px;padding:14px 0;gap:16px}
+.dimension-score{font-size:13px}
+.dimension-state{min-width:64px}
+@media(max-width:760px){
+  .health-card{grid-template-columns:1fr;gap:14px}
+  .health-card .health-main{padding:0;border:0}
+  .dimension{grid-template-columns:minmax(100px,1fr) 42px 60px;gap:10px}
+  .dimension .n-progress{grid-column:1/-1;grid-row:2}
+}
+.ai-summary-card{border-color:#C7D7F8;background:linear-gradient(135deg,#F6F9FF,#EEF4FF)}
+.ai-summary-card .section-title{margin-bottom:12px;padding-bottom:0;border-bottom:0}
+.ai-summary-card .section-title h2{color:#1E40AF}
+.ai-summary-card .conclusion{padding:0;background:transparent;border:0;color:#1E3A8A;font-size:16px;line-height:1.9}
+.report-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.report-cover{min-height:0;padding:36px 38px;background:linear-gradient(135deg,#0F1D37 0%,#1D4ED8 100%)}
+.report-cover::after{right:-70px;top:-70px;bottom:auto;width:330px;height:330px;background:radial-gradient(circle,rgba(96,165,250,.34),transparent 64%)}
+.report-cover .hero-tag{display:inline-flex;padding:7px 13px;border:1px solid rgba(255,255,255,.25);border-radius:999px;font-size:13px;letter-spacing:0;color:#fff;background:rgba(255,255,255,.08)}
+.report-cover h2{font-size:34px;margin:28px 0 12px;color:#fff}
+.report-cover>p{max-width:640px;font-size:15px;color:rgba(255,255,255,.78)}
+.hero-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px;position:relative;z-index:1}
+.hero-meta>div{padding:14px 16px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.12)}
+.hero-meta span{display:block;margin-bottom:6px;font-size:12px;letter-spacing:0;color:rgba(255,255,255,.66)}
+.hero-meta strong{font-size:15px;color:#fff}
+@media(max-width:760px){.report-topbar{align-items:flex-start;gap:10px;flex-direction:column}.report-cover{padding:26px 22px}.report-cover h2{font-size:26px;margin:20px 0 10px}.hero-meta{grid-template-columns:1fr;gap:8px}}
+.report-hero{padding:38px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#0f172a,#1d4ed8);overflow:hidden;position:relative}
+.report-hero::after{content:'';position:absolute;right:-70px;top:-70px;width:330px;height:330px;border:1px solid rgba(255,255,255,.12);border-radius:50%}
+.report-hero .hero-tag{display:inline-block;padding:6px 12px;border:1px solid rgba(255,255,255,.25);border-radius:20px;font-size:13px;letter-spacing:0;background:transparent;color:#fff;position:relative;z-index:1}
+.report-hero h1{font-size:36px;line-height:1.12;margin:20px 0 10px;color:#fff;position:relative;z-index:1}
+.report-hero>p{margin:0;color:#dbeafe;position:relative;z-index:1}
+.report-hero .hero-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px;position:relative;z-index:1}
+.report-content .content-card{border-radius:14px;padding:26px;background:#fff;border:1px solid #dbe4f0;box-shadow:none}
+@media(max-width:760px){.report-hero{padding:24px}.report-hero h1{font-size:27px}.report-hero .hero-meta{grid-template-columns:1fr;gap:8px}}
+.report-shell{max-width:1120px;background:#f8fafc;padding:28px;border-radius:16px}
+.report-content{gap:18px}
+.report-content .report-section{margin-top:0;padding:26px;background:#fff;border:1px solid #dbe4f0;border-radius:14px;box-shadow:none}
+.report-content .section-title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding:0;border:0}
+.report-content .section-title h2{margin:0 0 5px;font-size:22px;color:#0f172a}
+.report-content .section-title p,.report-content .data-note{margin:0;color:#64748b;font-size:13px}
+.report-content .score-layout{display:grid;grid-template-columns:240px 1fr;gap:28px}
+.report-content .score-card{padding:26px;border:1px solid #bbf7d0;border-radius:14px;background:#ecfdf5;text-align:center;color:#15803d}
+.report-content .score-card span{display:block;font-size:14px}
+.report-content .score-card strong{display:block;margin:12px 0;font-size:28px;line-height:1.2;white-space:nowrap}
+.report-content .score-card small{font-size:13px}
+.report-content .dimension-list{display:grid;gap:14px}
+.report-content .dimension{display:grid;grid-template-columns:110px 1fr 36px;align-items:center;gap:12px;min-height:0;padding:0;border:0;font-size:13px;color:#0f172a}
+.report-content .track{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.report-content .track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2563eb,#22c55e)}
+.report-content .dimension strong{color:#0f172a;text-align:right}
+.report-content .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.report-content .metric-card{min-height:0;padding:18px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc}
+.report-content .metric-card span{display:block;color:#64748b;font-size:13px}
+.report-content .metric-card strong{display:block;margin:8px 0;font-size:25px;color:#0f172a}
+.report-content .metric-card small{color:#16a34a}.report-content .metric-card small.down{color:#dc2626}
+.report-content .conclusion{padding:22px;border-radius:12px;background:#eff6ff;border:0;color:#1e3a8a;font-size:17px;line-height:1.8}
+.report-content .insight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:0;border:0;background:transparent}
+.report-content .insight{padding:20px;border-radius:12px;border:1px solid #dbe4f0}.report-content .insight span{font-weight:700;color:#2563eb}.report-content .insight h3{margin:12px 0 8px}.report-content .insight p{margin:0 0 8px;padding:0;color:#475569;line-height:1.7;font-size:14px}.report-content .insight p::before{display:none}
+.report-content .manager-context{border-left:3px solid #60a5fa}.report-content .manager-context>p{margin:0;color:#334155;line-height:1.8}
+@media(max-width:760px){.report-shell{padding:12px}.report-content .score-layout,.report-content .metrics-grid,.report-content .insight-grid{grid-template-columns:1fr}.report-content .dimension{grid-template-columns:100px 1fr 36px}}
 </style>

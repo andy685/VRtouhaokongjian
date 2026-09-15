@@ -21,10 +21,15 @@
       </section>
       <n-alert v-if="selectedVersion !== baseReport.version" type="warning" :show-icon="false" class="version-banner">当前正在查看历史版本 {{ selectedVersion }}。该版本只读，不会被后续数据或新版本覆盖。</n-alert>
 
+      <section class="report-section ai-summary-section">
+        <div class="section-title"><div><h2>AI 总结</h2><p>先看本期结论与优先方向</p></div></div>
+        <div class="conclusion">{{ report.conclusion }}</div>
+      </section>
+
       <section class="report-section score-section">
         <div class="section-title"><div><h2>经营健康度</h2><p>六维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ report.dataCutoff }}</span></div>
         <div class="score-layout">
-          <div class="score-card"><span>经营健康分</span><strong>{{ report.score }}</strong><small>{{ report.level }}</small></div>
+          <div class="score-card"><span>经营健康度</span><strong>{{ report.score }}</strong><small>{{ report.level }}</small></div>
           <div class="dimension-list">
             <div v-for="item in dimensions" :key="item.name" class="dimension"><span>{{ item.name }}</span><div class="track"><i :style="{ width: item.score + '%' }"></i></div><strong>{{ item.score }}</strong></div>
           </div>
@@ -44,16 +49,6 @@
       </section>
 
       <section class="report-section">
-        <div class="section-title"><div><h2>一页结论</h2><p>AI 对当前经营状态的综合判断</p></div></div>
-        <div class="conclusion">{{ report.conclusion }}</div>
-      </section>
-
-      <section class="report-section manager-context">
-        <div class="section-title"><div><h2>店长补充</h2><p>仅作为本期报告 {{ report.version }} 的 AI 分析上下文，不修改原始经营数据。</p></div></div>
-        <p>{{ report.managerContext || '本期店长未提交额外经营背景，AI 仅依据系统数据快照、规则和诊断资料生成报告。' }}</p>
-      </section>
-
-      <section class="report-section">
         <div class="section-title"><div><h2>问题、机会与建议</h2><p>以下结论均基于本期数据快照</p></div></div>
         <div class="insight-grid">
           <article class="insight problem"><span>01</span><h3>主要问题</h3><p>工作日 18:00 后订单转化低于周末 31%，设备异常集中在高峰时段前后，影响客流承接。</p></article>
@@ -65,6 +60,11 @@
       <section class="report-section">
         <div class="section-title"><div><h2>下期行动计划</h2><p>可用于门店执行与下期复盘</p></div></div>
         <n-data-table :columns="actionColumns" :data="actions" :pagination="false" :bordered="false" />
+      </section>
+
+      <section class="report-section manager-context">
+        <div class="section-title"><div><h2>店长补充</h2><p>本期报告 {{ report.version }} 的诊断依据，不修改原始经营数据。</p></div></div>
+        <p>{{ report.managerContext || '本期店长未提交额外经营背景，AI 仅依据系统数据快照、规则和诊断资料生成报告。' }}</p>
       </section>
 
       <section class="report-section">
@@ -101,11 +101,11 @@ const regenerateReasonOptions = [
 ]
 const requiresReasonNote = computed(() => regenerateReason.value === 'other')
 const baseReport = Number(route.params.id) === 3
-  ? { store: '杭州滨江店', merchant: '幻境空间', period: '2026年8月', generatedAt: '2026-09-01 03:20', dataCutoff: '2026-09-01 03:18', score: 58, level: '需关注', merchantVisible: false, managerContext: '', conclusion: '本期设备异常与退款指标同时升高，建议先检查高峰前设备可用性和退款原因，再评估内容及套餐策略。', version: 'v1.0', template: '月度 AI 经营诊断报告', snapshot: '2026-09-01 03:18' }
+  ? { store: '杭州滨江店', merchant: '幻境空间', period: '2026年8月', generatedAt: '2026-09-01 03:20', dataCutoff: '2026-09-01 03:18', score: 58, level: '重点优化', merchantVisible: false, managerContext: '', conclusion: '本期设备异常与退款指标同时升高，建议先检查高峰前设备可用性和退款原因，再评估内容及套餐策略。', version: 'v1.0', template: '月度 AI 经营诊断报告', snapshot: '2026-09-01 03:18' }
   : { store: '深圳福田旗舰店', merchant: '卓远娱乐', period: '2026年8月', generatedAt: '2026-09-05 10:24', dataCutoff: '2026-09-01 03:10', score: 82, level: '健康增长', merchantVisible: true, managerContext: '暑期亲子活动延长至 22:00；本月有两台头显维修三天，高峰期曾出现短时设备不足。店长希望优先改善工作日晚间转化。', conclusion: '本月营收与订单均高于上月，周末亲子客群及会员储值复购是主要增长来源。应优先改善工作日晚间转化和高峰前设备保障，放大现有增长机会。', version: 'v2.0', template: '月度 AI 经营诊断报告', snapshot: '2026-09-01 03:10' }
 const selectedVersion = ref(baseReport.version)
 const report = computed(() => selectedVersion.value === 'v1.0' && baseReport.version === 'v2.0'
-  ? { ...baseReport, generatedAt: '2026-09-01 03:12', score: 80, level: '稳中待升', version: 'v1.0', managerContext: '', conclusion: '本月营收与订单稳步增长，亲子客群和会员复购带来主要增量。建议继续观察晚间转化与设备高峰承接情况。' }
+  ? { ...baseReport, generatedAt: '2026-09-01 03:12', score: 78, level: '稳中待升', version: 'v1.0', managerContext: '', conclusion: '本月营收与订单稳步增长，亲子客群和会员复购带来主要增量。建议继续观察晚间转化与设备高峰承接情况。' }
   : baseReport)
 const dimensions = [{ name: '营收增长力', score: 86 }, { name: '客流活跃度', score: 82 }, { name: '会员质量', score: 79 }, { name: '设备效率', score: 84 }, { name: '内容吸引力', score: 76 }, { name: '运营执行力', score: 81 }]
 const metrics = [{ label: '营收', value: '¥826,500', trend: '+12.6%' }, { label: '支付订单', value: '3,182', trend: '+8.4%' }, { label: '客单价', value: '¥259.7', trend: '+3.9%' }, { label: '设备可用率', value: '96.2%', trend: '-0.8%', down: true }]

@@ -23,7 +23,7 @@
         <div><h2>报告列表</h2><span>共 {{ filteredReports.length }} 份报告</span></div>
         <span class="format-note">默认格式：HTML</span>
       </div>
-      <n-data-table :columns="columns" :data="filteredReports" :pagination="{ pageSize: 10 }" :bordered="false" />
+      <n-data-table :columns="columns" :data="filteredReports" :pagination="{ pageSize: 10 }" :bordered="false" :scroll-x="1480" />
     </section>
   </div>
 </template>
@@ -66,6 +66,11 @@ const filteredReports = computed(() => reports.value.filter((item) => {
     && (!selectedMerchantVisibility.value || (selectedMerchantVisibility.value === 'synced' ? item.merchantVisible : !item.merchantVisible))
 }))
 function statusTag(status: string) { return status === '已生成' ? 'success' : status === '生成失败' ? 'error' : 'info' }
+/* 与商户端统一的经营状态段位：≥80 健康增长 / 70~79 稳中待升 / <70 重点优化 */
+function healthStatus(score: number | null) {
+  if (score === null) return null
+  return score >= 80 ? { label: '健康增长', type: 'success' as const } : score >= 70 ? { label: '稳中待升', type: 'warning' as const } : { label: '重点优化', type: 'error' as const }
+}
 function showReport(report: Report) { router.push('/platform/ai-diagnostic/report/' + report.id) }
 function retryReport(report: Report) { report.status = '生成中'; message.success('已重新发起报告生成任务') }
 function exportReport(report: Report | null, type: 'PDF' | 'ZIP') { if (report) message.success(`${report.store} ${report.month} 报告已开始导出 ${type} 文件`) }
@@ -75,7 +80,7 @@ const columns = [
   { title: '商家', key: 'merchant', width: 120, align: 'left' as const, titleAlign: 'left' as const, ellipsis: { tooltip: true } },
   { title: '报告月份', key: 'month', width: 110, align: 'left' as const, titleAlign: 'left' as const, render: (row: Report) => row.month.replace('-', '年') + '月' },
   { title: '当前版本', key: 'version', width: 90, align: 'left' as const, titleAlign: 'left' as const, render: (row: Report) => row.version === '—' ? '—' : h(NTag, { type: row.version === 'v2.0' ? 'info' : 'default', size: 'small' }, { default: () => row.version }) },
-  { title: '健康分', key: 'score', width: 90, align: 'left' as const, titleAlign: 'left' as const, render: (row: Report) => row.score === null ? '—' : h(NTag, { type: row.score >= 80 ? 'success' : row.score >= 70 ? 'info' : 'error', size: 'small', round: true }, { default: () => `${row.score} 分` }) },
+  { title: '经营状态', key: 'score', width: 110, align: 'left' as const, titleAlign: 'left' as const, render: (row: Report) => { const s = healthStatus(row.score); return s ? h(NTag, { type: s.type, size: 'small', round: true }, { default: () => s.label }) : '—' } },
   { title: '状态', key: 'status', width: 150, align: 'left' as const, titleAlign: 'left' as const, render: (row: Report) => h('div', { class: 'status-stack' }, [h(NTag, { type: statusTag(row.status), size: 'small' }, { default: () => row.status }), row.failureReason ? h('small', { title: row.failureReason }, row.failureReason) : null]) },
   { title: '商户可见', key: 'merchantVisible', width: 100, align: 'left' as const, titleAlign: 'left' as const, render: (row: Report) => h(NTag, { type: row.merchantVisible ? 'success' : 'default', size: 'small' }, { default: () => row.merchantVisible ? '已同步' : '未同步' }) },
   { title: '生成时间', key: 'generatedAt', width: 155, align: 'left' as const, titleAlign: 'left' as const },
@@ -91,6 +96,7 @@ const columns = [
 .filter-card { margin-bottom:16px; }.table-title { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }.table-title h2 { margin:0 0 4px; font-size:16px; }.table-title span { color:var(--text-secondary); font-size:13px; }.format-note { background:#f0f7ff; color:#1677ff !important; padding:4px 8px; border-radius:4px; }
 .operation-actions{display:flex;align-items:center;gap:12px;white-space:nowrap}
 .status-stack{display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1.2}.status-stack small{max-width:130px;color:#dc2626;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-:deep(.n-data-table-th),:deep(.n-data-table-td){vertical-align:middle}:deep(.n-data-table-td__content){display:flex;align-items:center;min-height:32px}:deep(.n-data-table-th__title){white-space:nowrap}
-@media (max-width: 760px) { .ai-report-page{padding:16px}.page-header{flex-direction:column}.content-card{overflow:auto} }
+.content-card{min-width:0;overflow:hidden}
+:deep(.n-data-table-th),:deep(.n-data-table-td){vertical-align:middle}:deep(.n-data-table-th__title){white-space:nowrap}
+@media (max-width: 760px) { .ai-report-page{padding:16px}.page-header{flex-direction:column} }
 </style>
