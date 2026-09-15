@@ -130,7 +130,6 @@ const columns: DataTableColumns<PointTask> = [
   { title: '任务名称', key: 'name', width: 150 },
   { title: '任务类型', key: 'type', width: 120, render: row => row.type === 'recharge' ? '充值送积分' : '消费送积分' },
   { title: '奖励方式', key: 'rewardMode', width: 100, render: row => row.rewardMode === 'amount' ? '按金额' : '按次数' },
-  { title: '奖励规则', key: 'rewardRule', width: 180, render: row => row.rewardMode === 'amount' ? `${row.amountUnit} 元 = ${row.pointsPerUnit} 积分` : `每次 ${row.pointsPerAction} 积分` },
   { title: '每日上限', key: 'dailyLimit', width: 110, render: row => row.rewardMode === 'amount' ? `${row.dailyLimit.toLocaleString()} 积分` : `${row.dailyLimit} 次` },
   {
     title: '状态', key: 'enabled', width: 90, render: row => h(NTag, {

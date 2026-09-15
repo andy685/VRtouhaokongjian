@@ -32,6 +32,9 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: 'dashboard', name: 'PlatformDashboard', component: () => import('../views/platform/Dashboard.vue'), meta: { title: '大屏看板' } },
       { path: 'reports', name: 'PlatformReports', component: () => import('../views/platform/Reports.vue'), meta: { title: '数据报表' } },
+      { path: 'ai-diagnostic', name: 'PlatformAiDiagnostic', component: () => import('../views/platform/AiDiagnosticCenter.vue'), meta: { title: '报告记录' } },
+      { path: 'ai-diagnostic/report/:id', name: 'PlatformAiDiagnosticReportDetail', component: () => import('../views/platform/AiDiagnosticReportDetail.vue'), meta: { title: 'AI 诊断报告详情' } },
+      { path: 'ai-diagnostic/config', name: 'PlatformAiDiagnosticConfig', component: () => import('../views/platform/AiDiagnosticReportConfig.vue'), meta: { title: 'AI 诊断报告配置' } },
       { path: 'stores', name: 'PlatformStores', component: () => import('../views/platform/StoreList.vue'), meta: { title: '店铺列表' } },
       { path: 'merchants', name: 'PlatformMerchants', component: () => import('../views/platform/MerchantList.vue'), meta: { title: '商家管理' } },
       { path: 'agents', name: 'PlatformAgents', component: () => import('../views/platform/AgentList.vue'), meta: { title: '代理商' } },
@@ -157,6 +160,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '内容消耗明细' } },
       { path: 'revenue-target', name: 'ShopRevenueTarget', component: () => import('../views/shop/RevenueTarget.vue'), meta: { title: '营收目标与完成率' } },
       { path: 'staff-ranking', name: 'ShopStaffRanking', component: () => import('../views/shop/StaffRanking.vue'), meta: { title: '员工销售排名' } },
+      { path: 'ai-diagnostic', name: 'ShopAiDiagnostic', component: () => import('../views/shop/AiDiagnostic.vue'), meta: { title: 'AI 店铺经营诊断', breadcrumb: [{ label: '数据报表' }, { label: 'AI 店铺经营诊断' }] } },
       { path: 'settlement', name: 'ShopSettlement', component: () => import('../views/shop/Settlement.vue'), meta: { title: '结算记录' } },
       { path: 'reconciliation', redirect: '/shop/exception-orders' },
       { path: 'exception-orders', name: 'ShopExceptionOrders', component: () => import('../views/shop/Reconciliation.vue'), meta: { title: '异常订单' } },

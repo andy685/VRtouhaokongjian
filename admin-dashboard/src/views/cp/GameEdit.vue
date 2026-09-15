@@ -317,8 +317,14 @@
                 <n-select v-model:value="form.installTarget" :options="installTargetOptions" placeholder="选择安装位置" />
               </div>
               <div class="form-group">
-                <label>包名 / 应用标识</label>
-                <n-input v-model:value="form.packageIdentifier" placeholder="如 com.vendor.game 或 Steam AppID" />
+                <label>
+                  <template v-if="isPackageIdentifierRequired"><span class="required-mark">*</span> </template>包名 / 应用标识
+                  <n-text v-if="form.runtimeArchitecture === 'media_experience'" depth="3" style="font-size:11px;">（影视内容无需填写）</n-text>
+                </label>
+                <n-input
+                  v-model:value="form.packageIdentifier"
+ :placeholder="isPackageIdentifierRequired ? '如 com.vendor.game（APK 包名，必填）' : '如 com.vendor.game 或 Steam AppID（选填）'"
+                />
               </div>
             </div>
 
@@ -834,6 +840,8 @@ const needsNetworkConfig = computed(() => (
   ['headset_with_pc_service', 'multiplayer_server'].includes(form.value.runtimeArchitecture)
 ))
 
+const isPackageIdentifierRequired = computed(() => form.value.installTarget === 'android_headset')
+
 function resourceMeta(role: ResourceRole) {
   return resourceRoleOptions[role]
 }
@@ -1070,6 +1078,10 @@ function submitForReview() {
   }
   if (!isVersionUpgradeValid.value) {
     message.warning(`新版本必须高于当前已审核版本 ${baselineVersion.value}`)
+    return
+  }
+  if (isPackageIdentifierRequired.value && !form.value.packageIdentifier) {
+    message.warning('请填写包名/应用标识（安卓头显必填）')
     return
   }
   form.value.version = formatVersion(form.value.version)

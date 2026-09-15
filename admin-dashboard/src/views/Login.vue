@@ -38,7 +38,7 @@
             <n-button text @click="showForgotPassword = true">忘记密码？</n-button>
           </div>
           <n-button type="primary" block attr-type="button" @click="handleLogin" :loading="isLoading">
-            登录
+            {{ loginButtonLabel }}
           </n-button>
         </n-form>
 
@@ -142,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, NCheckbox, NModal, useMessage } from 'naive-ui'
 import { checkSystemLoginAccess, DEMO_LOGIN_ACCOUNTS } from '../constants/shopAccessSystems'
@@ -362,8 +362,19 @@ function sendForgotVerificationCode() {
   }, 2000)
 }
 
+const LOGIN_ROLE_STORAGE_KEY = 'adminLoginRole'
+
+/** 登录按钮文案随所选系统变化，明确本次登录进入哪个后台 */
+const loginButtonLabel = computed(() => ({
+  shop: '登录商家后台',
+  agent: '登录代理商后台',
+  platform: '登录平台超管后台',
+  cp: '登录供应商后台',
+}[loginRole.value]))
+
 function syncLoginRole(role: LoginRole) {
   loginRole.value = role
+  try { sessionStorage.setItem(LOGIN_ROLE_STORAGE_KEY, role) } catch { /* ignore */ }
   router.replace({
     path: '/login',
     query: { role }
@@ -437,7 +448,16 @@ function applyRoleFromQuery() {
   const role = route.query.role
   if (role === 'shop' || role === 'agent' || role === 'platform' || role === 'cp') {
     loginRole.value = role
+    try { sessionStorage.setItem(LOGIN_ROLE_STORAGE_KEY, role) } catch { /* ignore */ }
+    return
   }
+  // 无 role 参数时恢复上次选择的系统入口，避免刷新/回退后身份丢失
+  try {
+    const stored = sessionStorage.getItem(LOGIN_ROLE_STORAGE_KEY)
+    if (stored === 'shop' || stored === 'agent' || stored === 'platform' || stored === 'cp') {
+      loginRole.value = stored
+    }
+  } catch { /* ignore */ }
 }
 
 // 页面加载时检查

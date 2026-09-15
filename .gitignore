@@ -11,3 +11,8 @@ backend/dist/
 .playwright-mcp/
 .env
 *.env
+
+# 生成产物（本地预览用，不入库）
+outputs/
+tmp/
+stitch-ai-ui-overview.png

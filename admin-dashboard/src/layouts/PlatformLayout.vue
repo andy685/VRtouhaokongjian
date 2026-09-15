@@ -38,6 +38,7 @@
           :collapsed="isCollapsed"
           :collapsed-width="64"
           :collapsed-icon-size="22"
+          :default-expanded-keys="['dashboard-group', 'ai-diagnostic-group']"
           :render-label="renderMenuLabel"
           @update:value="handleMenuUpdate"
           @update:expanded-keys="handleExpand"
@@ -291,6 +292,14 @@ const menuOptions: MenuOption[] = [
       { label: '内容消费大盘', key: '/platform/content-consumption' },
       { label: '设备运行总览', key: '/platform/device-overview' },
       { label: '设备配置管理', key: '/platform/device-config' },
+      {
+        label: 'AI 诊断报告',
+        key: 'ai-diagnostic-group',
+        children: [
+          { label: '报告记录', key: '/platform/ai-diagnostic' },
+          { label: 'AI 诊断报告配置', key: '/platform/ai-diagnostic/config' },
+        ],
+      },
     ]
   },
   {

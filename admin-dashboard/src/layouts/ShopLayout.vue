@@ -253,6 +253,7 @@ const menuOptions: MenuOption[] = [
       { label: '内容消耗明细', key: '/shop/film-revenue' },
       { label: '营收目标与完成率', key: '/shop/revenue-target' },
       { label: '员工销售排名', key: '/shop/staff-ranking' },
+      { label: 'AI 店铺经营诊断', key: '/shop/ai-diagnostic' },
     ]
   },
   {

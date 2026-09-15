@@ -360,8 +360,14 @@
                 <n-select v-model:value="gameData.installTarget" :options="installTargetOptions" placeholder="选择安装位置" />
               </div>
               <div class="form-group">
-                <label>包名 / 应用标识</label>
-                <n-input v-model:value="gameData.packageIdentifier" placeholder="如 com.vendor.game 或 Steam AppID" />
+                <label>
+                  <template v-if="isPackageIdentifierRequired"><span class="required-mark">*</span> </template>包名 / 应用标识
+                  <n-text v-if="gameData.runtimeArchitecture === 'media_experience'" depth="3" style="font-size:11px;">（影视内容无需填写）</n-text>
+                </label>
+                <n-input
+                  v-model:value="gameData.packageIdentifier"
+ :placeholder="isPackageIdentifierRequired ? '如 com.vendor.game（APK 包名，必填）' : '如 com.vendor.game 或 Steam AppID（选填）'"
+                />
               </div>
             </div>
 
@@ -1111,6 +1117,8 @@ const needsNetworkConfig = computed(() => (
   ['headset_with_pc_service', 'multiplayer_server'].includes(gameData.value.runtimeArchitecture)
 ))
 
+const isPackageIdentifierRequired = computed(() => gameData.value.installTarget === 'android_headset')
+
 function resourceMeta(role: ResourceRole) {
   return resourceRoleOptions[role]
 }
@@ -1358,6 +1366,10 @@ async function handleSave() {
   }
   if (!gameData.value.presetPrice || gameData.value.presetPrice <= 0) {
     message.warning('请填写预设销售金额')
+    return
+  }
+  if (isPackageIdentifierRequired.value && !gameData.value.packageIdentifier) {
+    message.warning('请填写包名/应用标识（安卓头显必填）')
     return
   }
   const missingResources = gameData.value.resourceComponents.filter(item => item.required && !item.fileName)
@@ -1719,6 +1731,11 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-muted, #999);
+}
+.required-mark {
+  color: #d03050;
+  font-weight: 700;
+  margin-right: 2px;
 }
 .form-row-2 {
   display: grid;
