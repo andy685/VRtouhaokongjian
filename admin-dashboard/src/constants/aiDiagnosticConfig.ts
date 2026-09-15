@@ -32,12 +32,11 @@ export const MAX_QUESTIONS = 6
 export const MIN_QUESTIONS = 2
 
 export const DEFAULT_DIAGNOSTIC_DIMENSIONS: DiagnosticDimension[] = [
-  { key: 'revenue', label: '营收增长力', weight: 20, desc: '数据来源：月度营收环比、客单价变化、营收目标完成率（历史营收统计）。' },
-  { key: 'traffic', label: '客流活跃度', weight: 18, desc: '数据来源：订单数、到店客次、工作日/周末转化差异（订单查询、销售日报）。' },
-  { key: 'member', label: '会员质量', weight: 16, desc: '数据来源：新增会员、30 天复购率、储值消耗、沉睡会员占比（会员数据、储值变更）。' },
-  { key: 'device', label: '设备效率', weight: 16, desc: '数据来源：设备可用率、故障时长、高峰可用设备率、单机产出（设备数据、故障记录）。' },
-  { key: 'content', label: '内容吸引力', weight: 15, desc: '数据来源：点播次数、游戏点播分布、尾部内容占比（点播数据、内容消耗明细）。' },
-  { key: 'operation', label: '运营执行力', weight: 15, desc: '数据来源：上月行动计划完成率、巡检/交接班执行记录（运营数据）。' },
+  { key: 'revenue', label: '营收增长力', weight: 30, desc: '数据来源：营收环比、客单价环比、同类门店营收表现（相对同城同店型中位数）。门店自设目标不参与评分，目标完成率仅作展示。' },
+  { key: 'traffic', label: '客流活跃度', weight: 18, desc: '数据来源：日均订单（基准取本店近 3 个完整周期）、高峰/非高峰订单转化率（高峰时段由门店配置）。' },
+  { key: 'member', label: '会员质量', weight: 24, desc: '数据来源：90 天复购率、储值转化率、30 天沉睡会员占比（会员数据、90 天消费滚动快照）。' },
+  { key: 'content', label: '内容吸引力', weight: 12, desc: '数据来源：TOP 游戏订单占比、尾部内容订单占比、内容完成率（游戏启动/完成/中断事件与订单归因）。' },
+  { key: 'operation', label: '运营执行力', weight: 16, desc: '数据来源：上期行动计划完成率、活动转化率、数据完整率。' },
 ]
 
 export const DEFAULT_SUPPLEMENT_QUESTIONS: SupplementQuestion[] = [
@@ -65,16 +64,20 @@ function writeJSON(key: string, value: unknown) {
 }
 
 export function loadDiagnosticDimensions(): DiagnosticDimension[] {
-  const list = readJSON<DiagnosticDimension[]>(DIMENSIONS_KEY, [])
-  if (!Array.isArray(list) || !list.length) {
-    return DEFAULT_DIAGNOSTIC_DIMENSIONS.map((item) => ({ ...item }))
-  }
-  return list.slice(0, MAX_DIMENSIONS).map((item, index) => ({
-    key: String(item.key || 'dim-' + index),
-    label: String(item.label || ''),
-    weight: Math.min(100, Math.max(0, Number(item.weight) || 0)),
-    desc: item.desc ? String(item.desc) : '',
-  }))
+  /* 维度结构以代码内置定义为准（结构锁定，五维，不含设备效率）；已保存的配置仅覆盖
+     名称、权重与说明，历史遗留的结构性增删（含已移除的设备效率）自动失效。 */
+  const saved = readJSON<DiagnosticDimension[]>(DIMENSIONS_KEY, [])
+  const savedMap = new Map((Array.isArray(saved) ? saved : []).map((item) => [String(item.key), item]))
+  return DEFAULT_DIAGNOSTIC_DIMENSIONS.map((def) => {
+    const item = savedMap.get(def.key)
+    const weight = item ? Math.min(100, Math.max(0, Number(item.weight))) : NaN
+    return {
+      key: def.key,
+      label: item && String(item.label || '').trim() ? String(item.label) : def.label,
+      weight: Number.isFinite(weight) ? weight : def.weight,
+      desc: item && item.desc ? String(item.desc) : def.desc,
+    }
+  })
 }
 
 export function saveDiagnosticDimensions(list: DiagnosticDimension[]) {

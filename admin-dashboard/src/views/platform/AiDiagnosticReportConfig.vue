@@ -23,7 +23,7 @@
       </n-tab-pane>
       <n-tab-pane name="rules" tab="内容规则">
     <section class="content-card">
-      <div class="section-head"><div><h2>健康分段位</h2><p>配置经营健康分的段位名称、门槛分数与标识色；保存后商户端报告卡、健康分卡与六维诊断按此分段着色。</p></div></div>
+      <div class="section-head"><div><h2>健康分段位</h2><p>配置经营健康分的段位名称、门槛分数与标识色；保存后商户端报告卡、健康分卡与五维诊断按此分段着色。</p></div></div>
       <div class="tier-table">
         <div class="tier-row tier-head"><span>段位名称</span><span>分数下限（含）</span><span>标识色</span><span>分段预览</span><span></span></div>
         <div v-for="(tier, index) in healthTiers" :key="tier.key" class="tier-row">
@@ -41,9 +41,9 @@
       </div>
     </section>
     <section class="content-card">
-      <div class="section-head"><div><h2>诊断维度与权重</h2><p>配置报告「AI 六维诊断」的维度名称与权重，以及健康分计算方式。</p></div></div>
+      <div class="section-head"><div><h2>诊断维度与权重</h2><p>调整各维度在健康分中的影响占比。</p></div><span class="dim-total" :class="{ invalid: scoreMode === 'weighted' && weightTotal !== 100 }">{{ weightTotal }}%</span></div>
       <div class="dim-table">
-        <div class="dim-row dim-head"><span>维度名称</span><span>权重（%）</span><span>占比</span><span></span></div>
+        <div class="dim-row dim-head"><span>诊断维度</span><span>权重</span><span>占比预览</span><span></span></div>
         <div v-for="dim in diagnosticDimensions" :key="dim.key" class="dim-block">
           <div class="dim-row">
             <n-input v-model:value="dim.label" placeholder="维度名称" />
@@ -51,13 +51,10 @@
             <n-progress type="line" :percentage="dim.weight" :height="8" :show-indicator="false" color="#3B82F6" rail-color="#E2E8F0" />
             <span class="dim-locked">结构锁定</span>
           </div>
-          <n-input v-model:value="dim.desc" type="textarea" :rows="2" placeholder="数据来源说明：该维度引用哪些系统数据与指标口径（展示给商家，并作为 AI 生成报告时的口径约束）" />
+          <div class="dim-desc-row"><span>说明</span><n-input v-model:value="dim.desc" type="textarea" :rows="1" placeholder="例如：引用本期营收、环比与客单价等指标" /></div>
         </div>
-        <n-space justify="space-between" align="center">
-          <span class="form-hint">维度结构与指标口径由产品/研发统一维护（走版本迭代），运营侧可调整名称、权重与说明文案。</span>
-          <span class="dim-total" :class="{ invalid: scoreMode === 'weighted' && weightTotal !== 100 }">权重合计：{{ weightTotal }}%</span>
-        </n-space>
-        <n-form-item label="健康分计算方式"><n-radio-group v-model:value="scoreMode"><n-space><n-radio value="average">六维简单平均</n-radio><n-radio value="weighted">按权重加权（合计须为 100%）</n-radio></n-space></n-radio-group></n-form-item>
+        <p class="form-hint dim-helper">维度结构和指标口径由产品/研发统一维护；运营侧仅调整名称、权重与商家侧说明。</p>
+        <div class="score-mode-panel"><div><strong>健康分计算方式</strong><span>简单平均适合初期；加权模式下总权重必须为 100%。</span></div><n-radio-group v-model:value="scoreMode"><n-space><n-radio value="average">简单平均</n-radio><n-radio value="weighted">按权重加权</n-radio></n-space></n-radio-group></div>
       </div>
     </section>
     <section class="content-card">
@@ -304,4 +301,5 @@ function saveAll() {
 
 <style scoped>
 .config-page{padding:24px;display:flex;flex-direction:column;gap:16px}.page-header,.section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.page-header{margin-bottom:4px}.page-header h1{font-size:22px;margin:0 0 8px}.header-desc,.section-head p,.form-hint{margin:0;color:var(--text-secondary);line-height:1.6}.save-status{margin:6px 0 0;color:#94a3b8;font-size:12px}.config-tabs :deep(.n-tab-pane){display:flex;flex-direction:column;gap:16px;padding-top:16px}.content-card{background:#fff;border:1px solid var(--border-color);border-radius:12px;padding:20px}.section-head{margin-bottom:16px}.section-head h2{font-size:17px;margin:0 0 5px}.current-template{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px}.current-template span{color:var(--text-secondary);font-size:13px}.current-template strong{color:#1e293b}.rule-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px}.form-hint,.sync-note{font-size:13px;color:var(--text-secondary)}.sync-note{line-height:1.6;margin:8px 0 0}.validation-box{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:0 0 12px;border-radius:6px;background:#f8fafc;color:#64748b;font-size:13px}.validation-box.passed{background:#f0fdf4;color:#15803d}.validation-box.failed{background:#fef2f2;color:#b91c1c}.tier-table{display:flex;flex-direction:column;gap:10px}.tier-row{display:grid;grid-template-columns:180px 140px 110px minmax(0,1fr) auto;gap:12px;align-items:center}.tier-row.tier-head{font-size:12px;font-weight:600;color:var(--text-secondary);padding:0 2px}.tier-preview{padding:8px 12px;border:1px solid;border-radius:6px;font-size:13px;font-weight:600;text-align:center}.tier-count{font-size:12px;color:#94a3b8}.dim-table,.question-table{display:flex;flex-direction:column;gap:10px}.dim-row{display:grid;grid-template-columns:200px 120px minmax(0,1fr) auto;gap:12px;align-items:center}.dim-row.dim-head,.question-row.question-head{font-size:12px;font-weight:600;color:var(--text-secondary);padding:0 2px}.dim-locked{font-size:12px;color:#94a3b8;white-space:nowrap}.dim-total{font-size:13px;font-weight:600;color:#16a34a}.dim-total.invalid{color:#dc2626}.question-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto;gap:12px;align-items:center}.template-options{display:flex;flex-direction:column;gap:10px}.template-option{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid #e2e8f0;border-radius:8px}.template-option-main{display:flex;justify-content:space-between;align-items:center}.template-option small{padding-left:28px;color:var(--text-secondary)}.knowledge-guide{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.knowledge-guide>div{display:flex;flex-direction:column;gap:4px;padding:12px 14px;background:#F8FAFC;border:1px solid var(--border-color);border-radius:8px}.knowledge-guide strong{font-size:13px;color:#1E40AF}.knowledge-guide span{font-size:12.5px;color:var(--text-secondary);line-height:1.7}.type-select-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;width:100%}.type-list{display:flex;flex-direction:column;gap:8px}.type-list>div{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f8fafc;border-radius:6px}@media(max-width:760px){.config-page{padding:16px}.page-header,.section-head{flex-direction:column}.rule-form{grid-template-columns:1fr}}
+.dim-block{padding:14px 16px;border:1px solid #e6edf5;border-radius:10px;background:#fbfcfe}.dim-desc-row{display:grid;grid-template-columns:42px minmax(0,1fr);gap:10px;align-items:start;margin-top:10px;color:#94a3b8;font-size:12px}.dim-desc-row .n-input{min-width:0}.dim-helper{margin:2px 0 0}.dim-total{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:#ecfdf5;color:#15803d;font-size:13px;font-weight:700}.dim-total.invalid{background:#fef2f2;color:#dc2626}.score-mode-panel{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:14px 16px;border-radius:10px;background:#f6f9fd;border:1px solid #e2e8f0}.score-mode-panel strong,.score-mode-panel span{display:block}.score-mode-panel strong{margin-bottom:4px;font-size:14px}.score-mode-panel span{color:var(--text-secondary);font-size:12px}@media(max-width:760px){.score-mode-panel{flex-direction:column;align-items:flex-start}.dim-row{grid-template-columns:1fr}.dim-row.dim-head{display:none}.dim-locked{display:none}}
 </style>
