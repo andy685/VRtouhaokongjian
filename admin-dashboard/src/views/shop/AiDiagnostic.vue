@@ -41,11 +41,13 @@
         <div class="hero-meta"><div><span>所属商家</span><strong>{{ currentStore.merchant }}</strong></div><div><span>数据范围</span><strong>{{ activeReport.month }}</strong></div><div><span>生成时间</span><strong>{{ activeReport.generatedAt }}</strong></div></div>
       </section>
       <section class="report-section ai-summary-section"><div class="section-title"><div><h2>AI 总结</h2><p>先看本期结论与优先方向</p></div></div><div class="conclusion">{{ activeReport.conclusion }}</div></section>
-      <section class="report-section score-section"><div class="section-title"><div><h2>经营健康度</h2><p>六维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ activeReport.snapshotAt }}</span></div><div class="score-layout">
+      <section class="report-section score-section"><div class="section-title"><div><h2>经营健康度</h2><p>五维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ activeReport.snapshotAt }}</span></div><div class="score-layout">
         <div class="score-card shop-status-card" :class="healthInfo(activeReport.score).className"><span>经营健康度</span><strong>{{ healthInfo(activeReport.score).label }}</strong><small>{{ healthDescription(activeReport.score) }}</small></div>
         <div class="dimension-list"><div v-for="item in displayDimensions" :key="item.label" class="dimension"><n-tooltip v-if="item.desc" trigger="hover" placement="top"><template #trigger><span class="dim-label">{{ item.label }}<i class="dim-info">?</i></span></template>{{ item.desc }}</n-tooltip><span v-else>{{ item.label }}</span><div class="track"><i :style="{ width: item.score + '%' }"></i></div><strong>{{ item.score }}</strong></div></div>
       </div></section>
-      <section class="report-section"><div class="section-title"><div><h2>核心经营指标</h2><p>与上一个完整周期对比</p></div></div><div class="metrics-grid"><div v-for="item in activeReport.metrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div></section>
+      <section class="report-section"><div class="section-title"><div><h2>核心经营指标</h2><p>与上一个完整周期对比</p></div></div><div class="metrics-grid"><div v-for="item in displayMetrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div></section>
+      <section class="report-section game-diagnosis"><div class="section-title"><div><h2>内容与游戏诊断</h2><p>以点播、完成和收入贡献识别内容机会与风险</p></div></div><div class="game-grid"><article><span>核心贡献</span><h3>《星际营救》《奇幻赛车》</h3><p>合计贡献 46% 点播收入，完成率稳定在 84% 以上，适合纳入亲子套餐与导购推荐。</p></article><article><span>重点关注</span><h3>《深海探险》</h3><p>启动率较高但完成率仅 58%，建议优先检查设备适配和新手引导。</p></article><article><span>内容结构</span><h3>热门内容集中度偏高</h3><p>TOP 3 游戏收入占比 61%，尾部游戏占比 18%，建议调整推荐位并降低低效内容资源投入。</p></article></div></section>
+      <section class="report-section"><div class="section-title"><div><h2>游戏点播数据</h2><p>热门游戏表现与内容结构</p></div></div><div class="metrics-grid"><div v-for="item in gameSummary" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div><n-data-table class="game-table" :columns="gameColumns" :data="activeGames" :pagination="false" :bordered="false" /></section>
       <section class="report-section insight-grid"><article class="insight problem"><span>01</span><h3>主要问题</h3><p v-for="item in activeReport.problems" :key="item">{{ item }}</p></article><article class="insight chance"><span>02</span><h3>增长机会</h3><p v-for="item in activeReport.opportunities" :key="item">{{ item }}</p></article></section>
       <section class="report-section"><div class="section-title"><div><h2>下月行动计划</h2><p>可用于门店执行与下期复盘</p></div></div><n-data-table :columns="actionColumns" :data="activeReport.actions" :pagination="false" :bordered="false" /></section>
       <section class="report-section manager-context"><div class="section-title"><div><h2>店长补充</h2><p>本期诊断依据，不修改原始经营数据</p></div></div><p>{{ activeReport.context || '本期店长未提交额外经营背景，AI 仅依据系统数据快照、规则和诊断资料生成报告。' }}</p></section>
@@ -83,7 +85,7 @@ const storeOptions = stores.map((item) => ({ label: item.name, value: item.id })
 const selectedMonthLabel = computed(() => formatMonth(selectedMonth.value || Date.now()))
 const generationMonthLabel = computed(() => formatMonth(generationMonth.value || Date.now()))
 const reports = ref([
-  { id: 'futian-202608', storeId: 'futian', month: formatMonth(defaultReportMonth), store: '深圳福田旗舰店', generatedAt: '2026-09-01 03:12', snapshotAt: '2026-09-01 03:10', score: 82, level: '健康增长', isNew: true, context: '', conclusion: '本月营收与订单均高于上月。主要增长来自周末亲子客群和会员储值复购，但工作日晚间转化偏弱，建议优先改善高峰前设备保障和套餐组合。', dimensions: [{ label: '营收增长力', score: 86 }, { label: '客流活跃度', score: 82 }, { label: '会员质量', score: 79 }, { label: '设备效率', score: 84 }, { label: '内容吸引力', score: 76 }, { label: '运营执行力', score: 81 }], metrics: [{ label: '营收', value: '¥826,500', trend: '+12.6%' }, { label: '订单数', value: '3,182', trend: '+8.4%' }, { label: '客单价', value: '¥259.7', trend: '+3.9%' }, { label: '设备可用率', value: '96.2%', trend: '-0.8%', down: true }], problems: ['工作日 18:00 后订单转化低于周末 31%', '两款尾部游戏点播占比不足 4%', '头显异常集中在高峰时段前后'], opportunities: ['将热门项目组合成亲子双人套餐', '用满减券或折扣券召回 30 天未消费会员', '将设备巡检前置到周五闭店前'], actions: [{ priority: 'P0', action: '周五闭店前完成头显巡检并登记异常', owner: '店长 / 设备负责人', metric: '高峰可用设备率 ≥ 96%' }, { priority: 'P1', action: '上线亲子双人套餐，主推 TOP3 游戏', owner: '店长', metric: '周末客单价提升 8%' }] },
+  { id: 'futian-202608', storeId: 'futian', month: formatMonth(defaultReportMonth), store: '深圳福田旗舰店', generatedAt: '2026-09-01 03:12', snapshotAt: '2026-09-01 03:10', score: 82, level: '健康增长', isNew: true, context: '', conclusion: '本月营收与订单均高于上月，周末亲子客群和会员储值复购是主要增长来源。《星际营救》《奇幻赛车》贡献了主要内容收入，但《深海探险》完成率偏低，建议优先改善内容引导、设备保障和工作日晚间转化。', dimensions: [{ label: '营收增长力', score: 86 }, { label: '客流活跃度', score: 82 }, { label: '会员质量', score: 79 }, { label: '设备效率', score: 84 }, { label: '内容吸引力', score: 76 }, { label: '运营执行力', score: 81 }], metrics: [{ label: '营收', value: '¥826,500', trend: '+12.6%' }, { label: '订单数', value: '3,182', trend: '+8.4%' }, { label: '客单价', value: '¥259.7', trend: '+3.9%' }, { label: '设备可用率', value: '96.2%', trend: '-0.8%', down: true }], problems: ['工作日 18:00 后订单转化低于周末 31%', '两款尾部游戏点播占比不足 4%', '头显异常集中在高峰时段前后'], opportunities: ['将热门项目组合成亲子双人套餐', '用满减券或折扣券召回 30 天未消费会员', '将设备巡检前置到周五闭店前'], actions: [{ priority: 'P0', action: '周五闭店前完成头显巡检并登记异常', owner: '店长 / 设备负责人', metric: '高峰可用设备率 ≥ 96%' }, { priority: 'P1', action: '上线亲子双人套餐，主推 TOP3 游戏', owner: '店长', metric: '周末客单价提升 8%' }] },
   { id: 'futian-202607', storeId: 'futian', month: '2026年7月', store: '深圳福田旗舰店', generatedAt: '2026-08-01 03:06', snapshotAt: '2026-08-01 03:04', score: 74, level: '稳中待升', isNew: false, context: '暑期活动首周客流增加，但员工培训安排影响了高峰服务能力。', conclusion: '本月经营整体稳定，活动带来客流增长，但会员储值承接和高峰服务效率仍有改善空间。', dimensions: [{ label: '营收增长力', score: 75 }, { label: '客流活跃度', score: 78 }, { label: '会员质量', score: 70 }, { label: '设备效率', score: 80 }, { label: '内容吸引力', score: 69 }, { label: '运营执行力', score: 72 }], metrics: [{ label: '营收', value: '¥733,800', trend: '+4.2%' }, { label: '订单数', value: '2,840', trend: '+3.1%' }, { label: '客单价', value: '¥258.4', trend: '+1.0%' }, { label: '设备可用率', value: '97.0%', trend: '+0.4%' }], problems: ['新增会员转化低于暑期客流预期', '活动券核销集中在低客单项目'], opportunities: ['优化首充套餐露出', '复盘高绩效员工推荐话术'], actions: [{ priority: 'P0', action: '统一首充套餐推荐话术', owner: '店长', metric: '首充转化率提升 5%' }] },
   { id: 'futian-202606', storeId: 'futian', month: '2026年6月', store: '深圳福田旗舰店', generatedAt: '2026-07-01 03:08', snapshotAt: '2026-07-01 03:05', score: 63, level: '重点优化', isNew: false, context: '六一活动客流大增，但两台头显连续故障三天，新员工未完成上岗培训即顶班。', conclusion: '本月营收环比下滑，设备故障直接造成高峰时段订单流失，客诉率明显上升。建议优先恢复设备可用率，并补齐新人服务流程培训。', dimensions: [{ label: '营收增长力', score: 58 }, { label: '客流活跃度', score: 66 }, { label: '会员质量', score: 62 }, { label: '设备效率', score: 51 }, { label: '内容吸引力', score: 68 }, { label: '运营执行力', score: 60 }], metrics: [{ label: '营收', value: '¥618,200', trend: '-9.8%', down: true }, { label: '订单数', value: '2,405', trend: '-6.2%', down: true }, { label: '客单价', value: '¥257.1', trend: '-0.5%', down: true }, { label: '设备可用率', value: '88.4%', trend: '-8.6%', down: true }], problems: ['设备可用率跌至 88.4%，高峰时段排队流失明显', '六一活动期间客诉 12 起，集中在等待时长', '新员工独立上岗后服务评分下降'], opportunities: ['建立设备故障应急备机机制', '将高峰时段接待流程标准化并复训', '对六一流失客户发放回归补偿券'], actions: [{ priority: 'P0', action: '一周内完成全部头显检修并采购 2 台备机', owner: '设备负责人', metric: '设备可用率恢复至 95% 以上' }, { priority: 'P0', action: '完成 3 名新员工服务流程复训', owner: '店长', metric: '服务评分回升至 4.6 分' }, { priority: 'P1', action: '向活动期流失客户推送 20 元回归券', owner: '运营', metric: '回归券核销率 ≥ 15%' }] },
 ])
@@ -92,8 +94,52 @@ const activeReport = computed(() => reports.value.find((item) => item.storeId ==
 const displayDimensions = computed(() => {
   if (!activeReport.value) return []
   const configDims = loadDiagnosticDimensions()
-  return activeReport.value.dimensions.map((item, index) => ({ label: configDims[index]?.label || item.label, score: item.score, desc: configDims[index]?.desc || '' }))
+  return activeReport.value.dimensions.map((item, index) => ({ label: configDims[index]?.label || item.label, score: item.score, desc: configDims[index]?.desc || '' })).filter((item) => item.label !== '设备效率')
 })
+const displayMetrics = computed(() => [
+  ...(activeReport.value?.metrics || []).filter((item) => item.label !== '设备可用率'),
+  { label: '会员消费贡献率', value: '68.4%', trend: '+4.1%' },
+])
+/* 游戏点播数据：按报告快照给出演示数据 */
+type GameRow = { name: string; plays: string; duration: string; revenueShare: string; trend: string; down?: boolean; tag: string; tagType: 'success' | 'warning' | 'error' }
+const gameDataByReport: Record<string, GameRow[]> = {
+  'futian-202608': [
+    { name: '极速过山车 VR', plays: '1,120', duration: '560 小时', revenueShare: '24.5%', trend: '+18.2%', tag: '明星', tagType: 'success' },
+    { name: '星际探险', plays: '860', duration: '420 小时', revenueShare: '18.9%', trend: '+9.6%', tag: '明星', tagType: 'success' },
+    { name: '亲子动物园', plays: '640', duration: '380 小时', revenueShare: '15.2%', trend: '+6.8%', tag: '稳定', tagType: 'warning' },
+    { name: '恐龙岛求生', plays: '285', duration: '160 小时', revenueShare: '6.1%', trend: '-12.4%', down: true, tag: '待优化', tagType: 'error' },
+    { name: '极限运动', plays: '210', duration: '118 小时', revenueShare: '3.8%', trend: '-8.5%', down: true, tag: '待优化', tagType: 'error' },
+  ],
+  'futian-202607': [
+    { name: '极速过山车 VR', plays: '948', duration: '474 小时', revenueShare: '22.8%', trend: '+7.2%', tag: '明星', tagType: 'success' },
+    { name: '星际探险', plays: '705', duration: '352 小时', revenueShare: '17.1%', trend: '+4.8%', tag: '明星', tagType: 'success' },
+    { name: '亲子动物园', plays: '598', duration: '356 小时', revenueShare: '14.6%', trend: '+3.2%', tag: '稳定', tagType: 'warning' },
+    { name: '恐龙岛求生', plays: '324', duration: '182 小时', revenueShare: '7.0%', trend: '-6.5%', down: true, tag: '待优化', tagType: 'error' },
+    { name: '极限运动', plays: '230', duration: '128 小时', revenueShare: '4.6%', trend: '-4.9%', down: true, tag: '待优化', tagType: 'error' },
+  ],
+  'futian-202606': [
+    { name: '极速过山车 VR', plays: '884', duration: '442 小时', revenueShare: '21.2%', trend: '-5.8%', down: true, tag: '稳定', tagType: 'warning' },
+    { name: '星际探险', plays: '655', duration: '326 小时', revenueShare: '15.4%', trend: '-7.2%', down: true, tag: '稳定', tagType: 'warning' },
+    { name: '亲子动物园', plays: '552', duration: '328 小时', revenueShare: '13.5%', trend: '+1.8%', tag: '稳定', tagType: 'warning' },
+    { name: '恐龙岛求生', plays: '296', duration: '166 小时', revenueShare: '6.8%', trend: '-15.4%', down: true, tag: '待优化', tagType: 'error' },
+    { name: '极限运动', plays: '205', duration: '114 小时', revenueShare: '4.2%', trend: '-11.6%', down: true, tag: '待优化', tagType: 'error' },
+  ],
+}
+const activeGames = computed(() => gameDataByReport[activeReport.value?.id || ''] || [])
+const gameSummary = [
+  { label: '点播总次数', value: '3,118', trend: '+8.4%' },
+  { label: '点播总时长', value: '1,638 小时', trend: '+6.2%' },
+  { label: '游戏营收占比', value: '68.5%', trend: '+2.1%' },
+  { label: '人均游玩时长', value: '8.6 分钟', trend: '+3.5%' },
+]
+const gameColumns = [
+  { title: '游戏名称', key: 'name', width: 180, align: 'left' as const },
+  { title: '点播次数', key: 'plays', width: 110, align: 'left' as const },
+  { title: '点播时长', key: 'duration', width: 110, align: 'left' as const },
+  { title: '营收占比', key: 'revenueShare', width: 100, align: 'left' as const },
+  { title: '环比', key: 'trend', width: 100, render: (row: GameRow) => h(NTag, { type: row.down ? 'error' : 'success', size: 'small', round: true }, { default: () => row.trend }) },
+  { title: '表现', key: 'tag', width: 90, render: (row: GameRow) => h(NTag, { type: row.tagType, size: 'small' }, { default: () => row.tag }) },
+]
 const storeReports = computed(() => reports.value.filter((item) => item.storeId === selectedStoreId.value).sort((a, b) => b.month.localeCompare(a.month)))
 const contextTargetReport = computed(() => reports.value.find((item) => item.storeId === currentStore.value.id && item.month === generationMonthLabel.value))
 const reportsByYear = computed(() => {
@@ -356,7 +402,7 @@ watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = de
 .report-content .track{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
 .report-content .track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2563eb,#22c55e)}
 .report-content .dimension strong{color:#0f172a;text-align:right}
-.report-content .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.report-content .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.report-content .game-table{margin-top:14px}
 .report-content .metric-card{min-height:0;padding:18px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc}
 .report-content .metric-card span{display:block;color:#64748b;font-size:13px}
 .report-content .metric-card strong{display:block;margin:8px 0;font-size:25px;color:#0f172a}
@@ -366,4 +412,5 @@ watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = de
 .report-content .insight{padding:20px;border-radius:12px;border:1px solid #dbe4f0}.report-content .insight span{font-weight:700;color:#2563eb}.report-content .insight h3{margin:12px 0 8px}.report-content .insight p{margin:0 0 8px;padding:0;color:#475569;line-height:1.7;font-size:14px}.report-content .insight p::before{display:none}
 .report-content .manager-context{border-left:3px solid #60a5fa}.report-content .manager-context>p{margin:0;color:#334155;line-height:1.8}
 @media(max-width:760px){.report-shell{padding:12px}.report-content .score-layout,.report-content .metrics-grid,.report-content .insight-grid{grid-template-columns:1fr}.report-content .dimension{grid-template-columns:100px 1fr 36px}}
+.game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.game-grid article{padding:18px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc}.game-grid span{font-size:12px;color:#2563eb;font-weight:700}.game-grid h3{margin:10px 0 8px;font-size:16px}.game-grid p{margin:0;color:#475569;line-height:1.7;font-size:14px}@media(max-width:760px){.game-grid{grid-template-columns:1fr}}
 </style>
