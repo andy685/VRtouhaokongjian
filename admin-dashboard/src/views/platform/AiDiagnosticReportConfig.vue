@@ -57,6 +57,30 @@
         <div class="score-mode-panel"><div><strong>健康分计算方式</strong><span>简单平均适合初期；加权模式下总权重必须为 100%。</span></div><n-radio-group v-model:value="scoreMode"><n-space><n-radio value="average">简单平均</n-radio><n-radio value="weighted">按权重加权</n-radio></n-space></n-radio-group></div>
       </div>
     </section>
+    <section class="content-card benchmark-card">
+      <div class="section-head"><div><h2>评分基准策略</h2><p>按门店运营阶段计算评分基准，不引用商家自主设置的经营目标。</p></div></div>
+      <div class="benchmark-grid">
+        <div v-for="(stage, index) in benchmarkStages" :key="stage.key" class="benchmark-stage">
+          <div class="benchmark-stage-head"><strong>{{ stage.label }}</strong><span>{{ stagePeriodLabel(stage, index) }}</span></div>
+          <div class="benchmark-duration"><div class="benchmark-open-end"><span>开始运营月数</span><strong>{{ stageStartMonth(index) }} 月</strong></div><label v-if="stage.maxCycles !== null"><span>结束运营月数</span><n-input-number v-model:value="stage.maxCycles" :min="stageStartMonth(index)" :max="120" style="width:100%" /><em>月</em></label><div v-else class="benchmark-open-end"><span>结束运营月数</span><strong>无上限</strong></div></div>
+          <div v-if="stage.key === 'observe'" class="benchmark-observe">
+            <div class="observe-head"><strong>初始评分基准</strong><span>只配置会进入公式的基础基准值</span></div>
+            <div class="observe-thresholds">
+              <div v-for="item in initialBenchmarks" :key="item.key" class="observe-threshold-item">
+                <label><span>{{ item.label }}</span><n-input-number v-model:value="item.value" :min="0" :max="999999" style="width:100%" /><em>{{ item.unit }}</em></label>
+                <div class="threshold-usage"><strong>用于：{{ item.usage }}</strong><span>{{ item.formula }}</span></div>
+              </div>
+            </div>
+            <div class="missing-policy"><strong>口径说明</strong><span>这里不是商家经营目标，而是规则引擎的评分基准。百分比类指标按固定区间评分；缺少子指标时重归一化，但五个维度仍保留。</span></div>
+          </div>
+          <div v-else class="benchmark-fields"><label><span>本店历史占比</span><n-input-number v-model:value="stage.storeWeight" :min="0" :max="100" style="width:100%" /><em>%</em></label><label><span>同类门店占比</span><n-input-number v-model:value="stage.peerWeight" :min="0" :max="100" style="width:100%" /><em>%</em></label><label><span>基准调整</span><n-input-number v-model:value="stage.adjustment" :min="-30" :max="30" style="width:100%" /><em>%</em></label></div>
+          <div v-if="stage.key !== 'observe'" class="benchmark-scope"><label><span>中位数取值范围</span><n-select v-model:value="stage.scope" :options="benchmarkScopeOptions" /></label><label><span>样本不足时扩展至</span><n-select v-model:value="stage.fallbackScope" :options="fallbackScopeOptions(stage.scope)" /></label></div>
+          <p>{{ stage.note }}</p>
+          <div v-if="stage.key !== 'observe'" class="benchmark-formula">评分基准 =（本店历史中位数 × {{ stage.storeWeight }}% + 同类门店中位数 × {{ stage.peerWeight }}%）×（1 + {{ stage.adjustment }}%）</div>
+        </div>
+      </div>
+      <div class="benchmark-note"><strong>评分说明</strong><span>本规则由平台统一维护，但会按每家店自身运营时长自动匹配观察期、成长期或稳定期，无需逐店手工设置。观察期使用上方初始评分基准输出完整健康分；成长期和稳定期使用本店历史与同类门店中位数。中位数范围可选同城、同省、全国或全部同店型门店；样本不足时按配置逐级扩展。每个范围均只纳入相近店型、相近营业时长门店；最低样本数为 5 家。</span></div>
+    </section>
     <section class="content-card">
       <div class="section-head"><div><h2>店长补充问题</h2><p>配置商家端「补充经营背景」抽屉中的问题清单（2~6 个），店长回答将作为 AI 分析依据。</p></div></div>
       <div class="question-table">
@@ -195,6 +219,34 @@ function removeTier(index: number) {
 const diagnosticDimensions = ref<DiagnosticDimension[]>(loadDiagnosticDimensions())
 const scoreMode = ref<DiagnosticScoreMode>(loadDiagnosticScoreMode())
 const weightTotal = computed(() => diagnosticDimensions.value.reduce((sum, item) => sum + (Number(item.weight) || 0), 0))
+const benchmarkStages = ref([
+  { key: 'observe', label: '观察期', minCycles: 0, maxCycles: 2, storeWeight: 0, peerWeight: 0, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营不足 3 个月，按初始评分基准输出健康分，同时建立本店基础数据。' },
+  { key: 'growth', label: '成长期', minCycles: 3, maxCycles: 12, storeWeight: 40, peerWeight: 60, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营 3–12 个月，结合本店历史与同城同店型中位数。' },
+  { key: 'stable', label: '稳定期', minCycles: 13, maxCycles: null, storeWeight: 70, peerWeight: 30, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营超过 12 个月，以本店长期表现为主。' },
+])
+const initialBenchmarks = ref([
+  { key: 'revenue', label: '月实收营收基准', value: 200000, unit: '元', usage: '营收增长力 / 营收基准分', formula: '营收基准分 = C(100 × 本期实收营收 ÷ 月实收营收基准)' },
+  { key: 'traffic', label: '月支付订单基准', value: 800, unit: '单', usage: '客流活跃度 / 日均订单分', formula: '基准日均订单 = 月支付订单基准 ÷ 当月天数，再参与日均订单分计算' },
+])
+function stageStartMonth(index: number) {
+  if (index === 0) return 0
+  return (benchmarkStages.value[index - 1].maxCycles ?? 0) + 1
+}
+function stagePeriodLabel(stage: { maxCycles: number | null }, index: number) {
+  const start = stageStartMonth(index)
+  return stage.maxCycles === null ? '运营 ' + start + ' 个月及以上' : '运营 ' + start + '–' + stage.maxCycles + ' 个月'
+}
+const benchmarkScopeOptions = [
+  { label: '同城同店型', value: 'city' },
+  { label: '同省同店型', value: 'province' },
+  { label: '全国同店型', value: 'national' },
+  { label: '全部同店型门店', value: 'all' },
+]
+function fallbackScopeOptions(scope: string) {
+  const order = ['city', 'province', 'national', 'all']
+  const index = order.indexOf(scope)
+  return benchmarkScopeOptions.filter((option) => order.indexOf(option.value) > index)
+}
 
 /* ===== 店长补充问题 ===== */
 const supplementQuestions = ref<SupplementQuestion[]>(loadSupplementQuestions())
@@ -289,6 +341,12 @@ function saveAll() {
   if (diagnosticDimensions.value.some((dim) => !dim.label.trim())) { message.warning('诊断维度名称不能为空'); return }
   const dimLabels = diagnosticDimensions.value.map((dim) => dim.label.trim())
   if (new Set(dimLabels).size !== dimLabels.length) { message.warning('诊断维度名称不能重复'); return }
+  for (let i = 0; i < benchmarkStages.value.length; i++) {
+    const stage = benchmarkStages.value[i]
+    if (stage.maxCycles !== null && stage.maxCycles < stageStartMonth(i)) { message.warning(stage.label + '的结束运营月数不能小于开始月数'); return }
+    if (stage.key !== 'observe' && stage.storeWeight + stage.peerWeight !== 100) { message.warning(stage.label + '的本店历史与同类门店占比合计必须为 100%'); return }
+  }
+  if (initialBenchmarks.value.some((item) => item.value === null || Number(item.value) < 0)) { message.warning('观察期初始评分基准不能小于 0'); return }
   if (scoreMode.value === 'weighted' && weightTotal.value !== 100) { message.warning('按权重加权模式下，权重合计必须为 100%'); return }
   if (supplementQuestions.value.some((q) => !q.title.trim())) { message.warning('店长补充问题标题不能为空'); return }
   saveDiagnosticDimensions(diagnosticDimensions.value)
@@ -302,4 +360,9 @@ function saveAll() {
 <style scoped>
 .config-page{padding:24px;display:flex;flex-direction:column;gap:16px}.page-header,.section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.page-header{margin-bottom:4px}.page-header h1{font-size:22px;margin:0 0 8px}.header-desc,.section-head p,.form-hint{margin:0;color:var(--text-secondary);line-height:1.6}.save-status{margin:6px 0 0;color:#94a3b8;font-size:12px}.config-tabs :deep(.n-tab-pane){display:flex;flex-direction:column;gap:16px;padding-top:16px}.content-card{background:#fff;border:1px solid var(--border-color);border-radius:12px;padding:20px}.section-head{margin-bottom:16px}.section-head h2{font-size:17px;margin:0 0 5px}.current-template{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px}.current-template span{color:var(--text-secondary);font-size:13px}.current-template strong{color:#1e293b}.rule-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px}.form-hint,.sync-note{font-size:13px;color:var(--text-secondary)}.sync-note{line-height:1.6;margin:8px 0 0}.validation-box{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:0 0 12px;border-radius:6px;background:#f8fafc;color:#64748b;font-size:13px}.validation-box.passed{background:#f0fdf4;color:#15803d}.validation-box.failed{background:#fef2f2;color:#b91c1c}.tier-table{display:flex;flex-direction:column;gap:10px}.tier-row{display:grid;grid-template-columns:180px 140px 110px minmax(0,1fr) auto;gap:12px;align-items:center}.tier-row.tier-head{font-size:12px;font-weight:600;color:var(--text-secondary);padding:0 2px}.tier-preview{padding:8px 12px;border:1px solid;border-radius:6px;font-size:13px;font-weight:600;text-align:center}.tier-count{font-size:12px;color:#94a3b8}.dim-table,.question-table{display:flex;flex-direction:column;gap:10px}.dim-row{display:grid;grid-template-columns:200px 120px minmax(0,1fr) auto;gap:12px;align-items:center}.dim-row.dim-head,.question-row.question-head{font-size:12px;font-weight:600;color:var(--text-secondary);padding:0 2px}.dim-locked{font-size:12px;color:#94a3b8;white-space:nowrap}.dim-total{font-size:13px;font-weight:600;color:#16a34a}.dim-total.invalid{color:#dc2626}.question-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto;gap:12px;align-items:center}.template-options{display:flex;flex-direction:column;gap:10px}.template-option{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid #e2e8f0;border-radius:8px}.template-option-main{display:flex;justify-content:space-between;align-items:center}.template-option small{padding-left:28px;color:var(--text-secondary)}.knowledge-guide{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.knowledge-guide>div{display:flex;flex-direction:column;gap:4px;padding:12px 14px;background:#F8FAFC;border:1px solid var(--border-color);border-radius:8px}.knowledge-guide strong{font-size:13px;color:#1E40AF}.knowledge-guide span{font-size:12.5px;color:var(--text-secondary);line-height:1.7}.type-select-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;width:100%}.type-list{display:flex;flex-direction:column;gap:8px}.type-list>div{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f8fafc;border-radius:6px}@media(max-width:760px){.config-page{padding:16px}.page-header,.section-head{flex-direction:column}.rule-form{grid-template-columns:1fr}}
 .dim-block{padding:14px 16px;border:1px solid #e6edf5;border-radius:10px;background:#fbfcfe}.dim-desc-row{display:grid;grid-template-columns:42px minmax(0,1fr);gap:10px;align-items:center;margin-top:10px;color:#94a3b8;font-size:12px}.dim-desc-row .n-input{min-width:0}.dim-helper{margin:2px 0 0}.dim-total{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:#ecfdf5;color:#15803d;font-size:13px;font-weight:700}.dim-total.invalid{background:#fef2f2;color:#dc2626}.score-mode-panel{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:14px 16px;border-radius:10px;background:#f6f9fd;border:1px solid #e2e8f0}.score-mode-panel strong,.score-mode-panel span{display:block}.score-mode-panel strong{margin-bottom:4px;font-size:14px}.score-mode-panel span{color:var(--text-secondary);font-size:12px}@media(max-width:760px){.score-mode-panel{flex-direction:column;align-items:flex-start}.dim-row{grid-template-columns:1fr}.dim-row.dim-head{display:none}.dim-locked{display:none}}
+.benchmark-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.benchmark-stage{padding:16px;border:1px solid #e2e8f0;border-radius:10px;background:#fbfcfe}.benchmark-stage-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.benchmark-stage-head strong{font-size:15px}.benchmark-stage-head span{color:#64748b;font-size:12px}.benchmark-fields{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px;align-items:center;margin:14px 0 10px;color:#64748b;font-size:12px}.benchmark-stage p{margin:0;color:#64748b;font-size:12px;line-height:1.7}.benchmark-note{display:flex;gap:10px;margin-top:12px;padding:12px 14px;border-radius:8px;background:#f4f8ff;color:#52657e;font-size:12px;line-height:1.7}.benchmark-note strong{white-space:nowrap;color:#1d4ed8}@media(max-width:760px){.benchmark-grid{grid-template-columns:1fr}.benchmark-note{flex-direction:column;gap:2px}}
+.benchmark-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.benchmark-fields label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:center}.benchmark-fields label>span{grid-column:1/-1;margin-bottom:2px;color:#64748b;font-size:12px}.benchmark-fields label>em{font-style:normal;color:#94a3b8;font-size:12px}.benchmark-formula{margin-top:10px;padding:9px 10px;border-radius:6px;background:#f1f5fb;color:#51627c;font-size:12px;line-height:1.6}
+.benchmark-scope{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.benchmark-scope label>span{display:block;margin-bottom:5px;color:#64748b;font-size:12px}
+.benchmark-duration{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.benchmark-duration label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:center}.benchmark-duration label>span,.benchmark-open-end span{grid-column:1/-1;margin-bottom:2px;color:#64748b;font-size:12px}.benchmark-duration label>em{font-style:normal;color:#94a3b8;font-size:12px}.benchmark-open-end{display:flex;flex-direction:column;justify-content:center;padding:0 10px;border:1px dashed #cbd5e1;border-radius:8px}.benchmark-open-end strong{font-size:13px;color:#475569}
+.benchmark-observe{display:flex;flex-direction:column;gap:10px;margin:12px 0;padding:12px;border-radius:8px;background:#f1f5fb;color:#51627c;font-size:12px;line-height:1.6}.observe-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.observe-head strong{color:#1e3a8a}.observe-head span{color:#64748b}.observe-thresholds{display:grid;grid-template-columns:1fr;gap:10px}.observe-threshold-item{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:8px;background:#fff;border:1px solid #dbeafe}.observe-thresholds label{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,1.15fr) auto;gap:8px;align-items:center}.observe-thresholds label>span{color:#475569;font-weight:600}.observe-thresholds label>em{font-style:normal;color:#94a3b8}.threshold-usage{padding-top:8px;border-top:1px dashed #dbeafe}.threshold-usage strong,.threshold-usage span{display:block}.threshold-usage strong{color:#1d4ed8}.threshold-usage span{margin-top:2px;color:#64748b}.missing-policy{padding:10px;border-radius:7px;background:#fff;border:1px solid #dbeafe}.missing-policy strong,.missing-policy span{display:block}.missing-policy strong{margin-bottom:3px;color:#1d4ed8}.missing-policy span{color:#52657e}
 </style>
