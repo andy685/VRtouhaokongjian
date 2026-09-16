@@ -41,20 +41,20 @@
       </div>
     </section>
     <section class="content-card">
-      <div class="section-head"><div><h2>诊断维度与权重</h2><p>调整各维度在健康分中的影响占比。</p></div><span class="dim-total" :class="{ invalid: scoreMode === 'weighted' && weightTotal !== 100 }">{{ weightTotal }}%</span></div>
+      <div class="section-head"><div><h2>诊断维度与权重</h2><p>调整各维度在健康分中的影响占比；简单平均时不使用权重，按权重加权时权重合计必须为 100%。</p></div><span class="dim-total" :class="{ invalid: scoreMode === 'weighted' && weightTotal !== 100, muted: scoreMode === 'average' }">{{ scoreMode === 'weighted' ? weightTotal + '%' : '不使用权重' }}</span></div>
       <div class="dim-table">
+        <div class="score-mode-panel"><div><strong>健康分计算方式</strong><span>{{ scoreModeNote }}</span></div><n-radio-group v-model:value="scoreMode"><n-space><n-radio value="average">简单平均</n-radio><n-radio value="weighted">按权重加权</n-radio></n-space></n-radio-group></div>
         <div class="dim-row dim-head"><span>诊断维度</span><span>权重</span><span>占比预览</span><span></span></div>
         <div v-for="dim in diagnosticDimensions" :key="dim.key" class="dim-block">
           <div class="dim-row">
             <n-input v-model:value="dim.label" placeholder="维度名称" />
-            <n-input-number v-model:value="dim.weight" :min="0" :max="100" style="width:100%" />
-            <n-progress type="line" :percentage="dim.weight" :height="8" :show-indicator="false" color="#3B82F6" rail-color="#E2E8F0" />
+            <n-input-number v-model:value="dim.weight" :min="0" :max="100" :disabled="scoreMode === 'average'" style="width:100%" />
+            <n-progress type="line" :percentage="scoreMode === 'weighted' ? dim.weight : 20" :height="8" :show-indicator="false" :color="scoreMode === 'weighted' ? '#3B82F6' : '#94A3B8'" rail-color="#E2E8F0" />
             <span class="dim-locked">结构锁定</span>
           </div>
           <div class="dim-desc-row"><span>说明</span><n-input v-model:value="dim.desc" type="textarea" :rows="1" placeholder="例如：引用本期营收、环比与客单价等指标" /></div>
         </div>
         <p class="form-hint dim-helper">维度结构和指标口径由产品/研发统一维护；运营侧仅调整名称、权重与商家侧说明。</p>
-        <div class="score-mode-panel"><div><strong>健康分计算方式</strong><span>简单平均适合初期；加权模式下总权重必须为 100%。</span></div><n-radio-group v-model:value="scoreMode"><n-space><n-radio value="average">简单平均</n-radio><n-radio value="weighted">按权重加权</n-radio></n-space></n-radio-group></div>
       </div>
     </section>
     <section class="content-card benchmark-card">
@@ -219,6 +219,9 @@ function removeTier(index: number) {
 const diagnosticDimensions = ref<DiagnosticDimension[]>(loadDiagnosticDimensions())
 const scoreMode = ref<DiagnosticScoreMode>(loadDiagnosticScoreMode())
 const weightTotal = computed(() => diagnosticDimensions.value.reduce((sum, item) => sum + (Number(item.weight) || 0), 0))
+const scoreModeNote = computed(() => scoreMode.value === 'average'
+  ? '简单平均时五个维度按相同占比合成健康分，上方权重不参与计算。'
+  : '按权重加权时使用上方权重合成健康分，权重合计必须为 100%。')
 const benchmarkStages = ref([
   { key: 'observe', label: '观察期', minCycles: 0, maxCycles: 2, storeWeight: 0, peerWeight: 0, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营不足 3 个月，按初始评分基准输出健康分，同时建立本店基础数据。' },
   { key: 'growth', label: '成长期', minCycles: 3, maxCycles: 12, storeWeight: 40, peerWeight: 60, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营 3–12 个月，结合本店历史与同城同店型中位数。' },
