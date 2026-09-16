@@ -9,7 +9,7 @@
       </n-space>
     </header>
     <main class="report-shell">
-      <section class="report-hero">
+      <section class="report-hero" :style="heroStyle">
         <span class="hero-tag">AI 店铺经营诊断报告</span>
         <h1>{{ report.store }} · {{ report.period }}</h1>
         <p>基于已固化的经营数据快照、诊断资料与报告模板自动生成。</p>
@@ -22,12 +22,12 @@
       <n-alert v-if="selectedVersion !== baseReport.version" type="warning" :show-icon="false" class="version-banner">当前正在查看历史版本 {{ selectedVersion }}。该版本只读，不会被后续数据或新版本覆盖。</n-alert>
 
       <section class="report-section ai-summary-section">
-        <div class="section-title"><div><h2>AI 总结</h2><p>先看本期结论与优先方向</p></div></div>
+        <div class="section-title"><div><h2><n-icon class="section-icon" :component="SparklesOutline" />AI 总结</h2><p>先看本期结论与优先方向</p></div></div>
         <div class="conclusion">{{ report.conclusion }}</div>
       </section>
 
       <section class="report-section score-section">
-        <div class="section-title"><div><h2>经营健康度</h2><p>五维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ report.dataCutoff }}</span></div>
+        <div class="section-title"><div><h2><n-icon class="section-icon" :component="PulseOutline" />经营健康度</h2><p>五维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ report.dataCutoff }}</span></div>
         <div class="score-layout">
           <div class="score-card" :class="healthClass(report.score)"><span>经营状态</span><strong>{{ report.level }}</strong><small>{{ healthDescription(report.score) }}</small></div>
           <div class="dimension-list">
@@ -37,14 +37,14 @@
       </section>
 
       <section class="report-section">
-        <div class="section-title"><div><h2>核心经营指标</h2><p>与上一个完整周期对比</p></div></div>
+        <div class="section-title"><div><h2><n-icon class="section-icon" :component="BarChartOutline" />核心经营指标</h2><p>与上一个完整周期对比</p></div></div>
         <div class="metrics-grid">
           <div v-for="item in metrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div>
         </div>
       </section>
 
       <section class="report-section game-diagnosis">
-        <div class="section-title"><div><h2>内容与游戏诊断</h2><p>以点播、完成和收入贡献识别内容机会与风险</p></div></div>
+        <div class="section-title"><div><h2><n-icon class="section-icon" :component="GameControllerOutline" />内容与游戏诊断</h2><p>以点播、完成和收入贡献识别内容机会与风险</p></div></div>
         <div class="game-grid"><article><span>核心贡献</span><h3>《星际营救》《奇幻赛车》</h3><p>合计贡献 46% 点播收入，完成率稳定在 84% 以上，适合纳入亲子套餐与导购推荐。</p></article><article><span>重点关注</span><h3>《深海探险》</h3><p>启动率较高但完成率仅 58%，建议优先检查设备适配和新手引导。</p></article><article><span>内容结构</span><h3>热门内容集中度偏高</h3><p>TOP 3 游戏收入占比 61%，尾部游戏占比 18%，建议调整推荐位并降低低效内容资源投入。</p></article></div>
       </section>
 
@@ -54,11 +54,6 @@
           <div v-for="item in gameMetrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div>
         </div>
         <n-data-table class="game-table" :columns="gameColumns" :data="games" :pagination="false" :bordered="false" />
-      </section>
-
-      <section class="report-section">
-        <div class="section-title"><div><h2>数据依据</h2><p>本报告只使用下列已固化的数据快照，不会随源数据后续变更而改写。</p></div></div>
-        <n-data-table :columns="dataSourceColumns" :data="dataSources" :pagination="false" :bordered="false" />
       </section>
 
       <section class="report-section">
@@ -99,10 +94,17 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NDataTable, NDropdown, NFormItem, NInput, NModal, NSelect, NSpace, NTag, useMessage } from 'naive-ui'
+import { NButton, NDataTable, NDropdown, NFormItem, NIcon, NInput, NModal, NSelect, NSpace, NTag, useMessage } from 'naive-ui'
+import { BarChartOutline, GameControllerOutline, PulseOutline, SparklesOutline } from '@vicons/ionicons5'
+import reportHeroBackground from '../../assets/ai-report/vr-space-report-hero.png'
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
+const heroStyle = {
+  backgroundImage: 'linear-gradient(90deg, rgba(7,21,45,.98) 0%, rgba(10,31,72,.90) 42%, rgba(15,48,119,.28) 100%), url(' + reportHeroBackground + ')',
+  backgroundPosition: 'center',
+  backgroundSize: 'cover',
+}
 const showRegenerate = ref(false)
 const regenerateReason = ref('data_update')
 const regenerateNote = ref('')
@@ -164,13 +166,11 @@ const gameColumns = [
 function barColor(score: number) { return score >= 80 ? '#3B82F6' : score >= 70 ? '#F59E0B' : '#EF4444' }
 const metrics = [{ label: '营收', value: '¥826,500', trend: '+12.6%' }, { label: '支付订单', value: '3,182', trend: '+8.4%' }, { label: '客单价', value: '¥259.7', trend: '+3.9%' }, { label: '会员消费贡献率', value: '68.4%', trend: '+4.1%' }]
 const actions = [{ priority: 'P0', action: '周五闭店前完成头显巡检并登记异常', owner: '店长 / 设备负责人', metric: '高峰可用设备率 ≥ 96%' }, { priority: 'P1', action: '上线亲子双人套餐，主推 TOP3 游戏', owner: '店长', metric: '周末客单价提升 8%' }, { priority: 'P1', action: '对 30 天未消费会员定向发放满减券', owner: '店长 / 导购', metric: '沉睡会员回流 60 人' }]
-const dataSources = [{ source: '营收与订单', snapshot: baseReport.snapshot, coverage: '收银订单、点播订单及退款数据' }, { source: '会员数据', snapshot: baseReport.snapshot, coverage: '消费频次、复购与储值变化' }, { source: '设备数据', snapshot: baseReport.snapshot, coverage: '在线状态、异常记录与可用率' }, { source: '内容数据', snapshot: baseReport.snapshot, coverage: '游戏点播、内容热度与消费时长' }]
 const versionHistory = ref(baseReport.version === 'v2.0'
   ? [{ version: 'v2.0', generatedAt: '2026-09-05 10:24', reason: '数据更新', note: '已补充本期会员复购数据后更新报告。', status: '当前版本' }, { version: 'v1.0', generatedAt: '2026-09-01 03:12', reason: '首次生成', note: '', status: '历史版本' }]
   : [{ version: 'v1.0', generatedAt: baseReport.generatedAt, reason: '首次生成', note: '', status: '当前版本' }])
 const downloadOptions = [{ label: '下载 PDF', key: 'PDF' }, { label: '下载 ZIP', key: 'ZIP' }]
 const actionColumns = [{ title: '优先级', key: 'priority', width: 90, render: (row: any) => h(NTag, { type: row.priority === 'P0' ? 'error' : 'warning', size: 'small' }, { default: () => row.priority }) }, { title: '行动建议', key: 'action' }, { title: '建议负责人', key: 'owner', width: 180 }, { title: '验证指标', key: 'metric', width: 210 }]
-const dataSourceColumns = [{ title: '数据来源', key: 'source', width: 170 }, { title: '快照时间', key: 'snapshot', width: 180 }, { title: '覆盖内容', key: 'coverage' }]
 const versionColumns = [{ title: '版本', key: 'version', width: 90 }, { title: '生成时间', key: 'generatedAt', width: 170 }, { title: '更新类型', key: 'reason', width: 110 }, { title: '更新说明', key: 'note', ellipsis: { tooltip: true }, render: (row: any) => row.note || '—' }, { title: '状态', key: 'status', width: 100, render: (row: any) => h(NTag, { type: row.status === '当前版本' ? 'success' : row.status === '生成中' ? 'info' : 'default', size: 'small' }, { default: () => row.status }) }, { title: '操作', key: 'actions', width: 90, render: (row: any) => h(NButton, { text: true, type: 'primary', size: 'small', disabled: selectedVersion.value === row.version || row.status === '生成中', onClick: () => viewVersion(row.version) }, { default: () => selectedVersion.value === row.version ? '正在查看' : row.status === '生成中' ? '生成中' : '查看' }) }]
 function viewVersion(version: string) { selectedVersion.value = version }
 function submitRegenerate() {
@@ -188,4 +188,5 @@ function exportReport(type: string) { message.success('已开始导出 ' + type 
 <style scoped>
 .report-page{min-height:100%;background:#edf2f7;padding:20px}.report-topbar,.report-shell{max-width:1120px;margin:0 auto}.report-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.report-shell{background:#f8fafc;padding:28px;border-radius:16px}.report-hero{padding:38px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#0f172a,#1d4ed8);overflow:hidden}.version-banner{margin-top:16px}.regenerate-hint{margin:0 0 14px;color:#64748b;font-size:13px}.hero-tag{display:inline-block;padding:6px 12px;border:1px solid rgba(255,255,255,.25);border-radius:20px;font-size:13px}.report-hero h1{font-size:36px;margin:20px 0 10px}.report-hero>p{color:#dbeafe;margin:0}.hero-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}.hero-meta div{padding:14px;background:rgba(255,255,255,.1);border-radius:10px}.hero-meta span{display:block;font-size:12px;color:#bfdbfe;margin-bottom:6px}.report-section{margin-top:18px;padding:26px;background:#fff;border:1px solid #dbe4f0;border-radius:14px}.section-title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}.section-title h2{margin:0 0 5px;font-size:22px}.section-title p,.data-note{margin:0;color:#64748b;font-size:13px}.manager-context{border-left:3px solid #60a5fa}.manager-context>p{margin:0;color:#334155;line-height:1.8}.score-layout{display:grid;grid-template-columns:240px 1fr;gap:28px}.score-card{padding:26px;border:1px solid #bbf7d0;border-radius:14px;background:#ecfdf5;text-align:center;color:#15803d}.score-card.health-watch{border-color:#fde68a;background:linear-gradient(160deg,#FFFBEB,#FEFCE8);color:#b45309}.score-card.health-risk{border-color:#fecaca;background:linear-gradient(160deg,#FEF2F2,#FFF1F2);color:#b91c1c}.score-card span{display:block;font-size:14px}.score-card strong{display:block;margin:12px 0;font-size:28px;line-height:1.2;white-space:nowrap}.score-card small{font-size:13px}.dimension-list{display:grid;gap:14px}.dimension{display:grid;grid-template-columns:100px 1fr 36px;align-items:center;gap:12px;font-size:13px}.track{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.track i{display:block;height:100%;border-radius:99px;background:#3B82F6}.metrics-grid,.insight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.metric-card{padding:18px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc}.metric-card span{display:block;color:#64748b;font-size:13px}.metric-card strong{display:block;font-size:25px;margin:8px 0 10px}.metric-card small{display:inline-flex;padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0}.metric-card small.down{color:#b91c1c;background:#fef2f2;border-color:#fecaca}.conclusion{padding:22px;border-radius:12px;background:#eff6ff;color:#1e3a8a;font-size:17px;line-height:1.8}.insight-grid{grid-template-columns:repeat(3,1fr)}.insight{padding:20px;border-radius:12px;border:1px solid #dbe4f0}.insight span{font-weight:700;color:#2563eb}.insight h3{margin:12px 0 8px}.insight p{margin:0;color:#475569;line-height:1.7;font-size:14px}.insight.problem{background:#fff7ed;border-color:#fed7aa}.game-table{margin-top:14px}.insight.chance{background:#f0fdf4;border-color:#bbf7d0}.report-footer{padding:24px 0 4px;text-align:center;color:#94a3b8;font-size:12px}@media(max-width:760px){.report-page{padding:12px}.report-topbar{align-items:flex-start;gap:12px;flex-direction:column}.report-shell{padding:12px}.hero-meta,.score-layout,.metrics-grid,.insight-grid{grid-template-columns:1fr}.report-hero{padding:24px}.report-hero h1{font-size:27px}}
 .game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.game-grid article{padding:18px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc}.game-grid span{font-size:12px;color:#2563eb;font-weight:700}.game-grid h3{margin:10px 0 8px;font-size:16px}.game-grid p{margin:0;color:#475569;line-height:1.7;font-size:14px}@media(max-width:760px){.game-grid{grid-template-columns:1fr}}
+.section-icon{margin-right:8px;color:#2563eb;vertical-align:-3px}
 </style>

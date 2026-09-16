@@ -34,18 +34,18 @@
     <div class="report-topbar"><n-button text class="back-button" @click="viewMode = 'list'">← 返回报告中心</n-button><n-space><n-button @click="openGenerator(activeReport?.month)">补充经营背景</n-button><n-button @click="message.success('已开始导出 PDF')">下载 PDF</n-button><n-button type="primary" @click="message.success('已开始导出 ZIP')">下载 ZIP</n-button></n-space></div>
     <template v-if="activeReport">
       <div v-if="reportUpdateStates[activeReport.id]" class="report-update-notice">报告更新中，当前展示的是上一版报告；更新完成后将自动替换为最新内容。</div>
-      <section class="report-hero">
+      <section class="report-hero" :style="heroStyle">
         <span class="hero-tag">AI 店铺经营诊断报告</span>
         <h1>{{ activeReport.store }} · {{ activeReport.month }}</h1>
         <p>基于已固化的经营数据快照、诊断资料与报告模板自动生成。</p>
         <div class="hero-meta"><div><span>所属商家</span><strong>{{ currentStore.merchant }}</strong></div><div><span>数据范围</span><strong>{{ activeReport.month }}</strong></div><div><span>生成时间</span><strong>{{ activeReport.generatedAt }}</strong></div></div>
       </section>
-      <section class="report-section ai-summary-section"><div class="section-title"><div><h2>AI 总结</h2><p>先看本期结论与优先方向</p></div></div><div class="conclusion">{{ activeReport.conclusion }}</div></section>
-      <section class="report-section score-section"><div class="section-title"><div><h2>经营健康度</h2><p>五维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ activeReport.snapshotAt }}</span></div><div class="score-layout">
+      <section class="report-section ai-summary-section"><div class="section-title"><div><h2><n-icon class="section-icon" :component="SparklesOutline" />AI 总结</h2><p>先看本期结论与优先方向</p></div></div><div class="conclusion">{{ activeReport.conclusion }}</div></section>
+      <section class="report-section score-section"><div class="section-title"><div><h2><n-icon class="section-icon" :component="PulseOutline" />经营健康度</h2><p>五维经营指标综合评估结果</p></div><span class="data-note">数据截止 {{ activeReport.snapshotAt }}</span></div><div class="score-layout">
         <div class="score-card shop-status-card" :class="healthInfo(activeReport.score).className"><span>经营健康度</span><strong>{{ healthInfo(activeReport.score).label }}</strong><small>{{ healthDescription(activeReport.score) }}</small></div>
         <div class="dimension-list"><div v-for="item in displayDimensions" :key="item.label" class="dimension"><n-tooltip v-if="item.desc" trigger="hover" placement="top"><template #trigger><span class="dim-label">{{ item.label }}<i class="dim-info">?</i></span></template>{{ item.desc }}</n-tooltip><span v-else>{{ item.label }}</span><div class="track"><i :style="{ width: item.score + '%' }"></i></div><strong>{{ item.score }}</strong></div></div>
       </div></section>
-      <section class="report-section"><div class="section-title"><div><h2>核心经营指标</h2><p>与上一个完整周期对比</p></div></div><div class="metrics-grid"><div v-for="item in displayMetrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div></section>
+      <section class="report-section"><div class="section-title"><div><h2><n-icon class="section-icon" :component="BarChartOutline" />核心经营指标</h2><p>与上一个完整周期对比</p></div></div><div class="metrics-grid"><div v-for="item in displayMetrics" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div></section>
       <section class="report-section game-diagnosis"><div class="section-title"><div><h2>内容与游戏诊断</h2><p>以点播、完成和收入贡献识别内容机会与风险</p></div></div><div class="game-grid"><article><span>核心贡献</span><h3>《星际营救》《奇幻赛车》</h3><p>合计贡献 46% 点播收入，完成率稳定在 84% 以上，适合纳入亲子套餐与导购推荐。</p></article><article><span>重点关注</span><h3>《深海探险》</h3><p>启动率较高但完成率仅 58%，建议优先检查设备适配和新手引导。</p></article><article><span>内容结构</span><h3>热门内容集中度偏高</h3><p>TOP 3 游戏收入占比 61%，尾部游戏占比 18%，建议调整推荐位并降低低效内容资源投入。</p></article></div></section>
       <section class="report-section"><div class="section-title"><div><h2>游戏点播数据</h2><p>热门游戏表现与内容结构</p></div></div><div class="metrics-grid"><div v-for="item in gameSummary" :key="item.label" class="metric-card"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small :class="{ down: item.down }">{{ item.trend }}</small></div></div><n-data-table class="game-table" :columns="gameColumns" :data="activeGames" :pagination="false" :bordered="false" /></section>
       <section class="report-section insight-grid"><article class="insight problem"><span>01</span><h3>主要问题</h3><p v-for="item in activeReport.problems" :key="item">{{ item }}</p></article><article class="insight chance"><span>02</span><h3>增长机会</h3><p v-for="item in activeReport.opportunities" :key="item">{{ item }}</p></article></section>
@@ -68,9 +68,16 @@
 
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue'
-import { NButton, NDataTable, NDrawer, NDrawerContent, NInput, NProgress, NSelect, NSpace, NTag, NTooltip, useMessage } from 'naive-ui'
+import { NButton, NDataTable, NDrawer, NDrawerContent, NIcon, NInput, NProgress, NSelect, NSpace, NTag, NTooltip, useMessage } from 'naive-ui'
+import { BarChartOutline, PulseOutline, SparklesOutline } from '@vicons/ionicons5'
+import reportHeroBackground from '../../assets/ai-report/vr-space-report-hero.png'
 import { loadDiagnosticDimensions, loadSupplementQuestions } from '../../constants/aiDiagnosticConfig'
 const message = useMessage()
+const heroStyle = {
+  backgroundImage: 'linear-gradient(90deg, rgba(7,21,45,.98) 0%, rgba(10,31,72,.90) 42%, rgba(15,48,119,.28) 100%), url(' + reportHeroBackground + ')',
+  backgroundPosition: 'center',
+  backgroundSize: 'cover',
+}
 const stores = [{ id: 'futian', name: '深圳福田旗舰店', merchant: '卓远娱乐' }, { id: 'nanshan', name: '深圳南山科技园店', merchant: '卓远娱乐' }]
 const selectedStoreId = ref('futian')
 const defaultReportMonth = new Date(2026, 7, 1).getTime()
@@ -246,6 +253,7 @@ watch(selectedStoreId, () => { if (!activeReport.value) selectedMonth.value = de
 .report-card-actions{display:flex;align-items:center;gap:10px;min-height:28px}
 .updating-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:11px;font-weight:700}
 .report-update-notice{padding:10px 14px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:13px;line-height:1.6}
+.section-icon{margin-right:8px;color:#2563eb;vertical-align:-3px}.report-update-notice{animation:reportNoticePulse 1.8s ease-in-out infinite}@keyframes reportNoticePulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}50%{box-shadow:0 0 0 5px rgba(59,130,246,.12)}}@media(prefers-reduced-motion:reduce){.report-update-notice{animation:none}}
 .score-grid{grid-template-columns:1fr;gap:12px}.health-card{display:grid;grid-template-columns:220px minmax(0,1fr);align-items:center;min-height:112px;padding:20px 24px;gap:24px}.health-card .health-main{padding-right:24px;border-right:1px solid rgba(15,23,42,.10)}.health-card .health-main span{margin-bottom:8px}.health-card .health-main strong{font-size:30px;line-height:1.2}.health-card>small{max-width:560px;font-size:14px;line-height:1.75;color:inherit;opacity:.82}.dimension-card{padding:12px 24px;gap:0}.dimension{grid-template-columns:150px minmax(180px,1fr) 48px 68px;min-height:64px;padding:14px 0;gap:16px}.dimension-score{font-size:13px}.dimension-state{min-width:64px}.report-cover{min-height:156px;padding:30px}.report-cover h2{font-size:30px}.content-card{padding:24px}.metrics>div{min-height:122px;padding:18px}.conclusion{padding:22px 24px;font-size:15px}.context-card{padding:22px 24px}@media(max-width:760px){.health-card{grid-template-columns:1fr;gap:14px}.health-card .health-main{padding:0;border:0}.dimension{grid-template-columns:minmax(100px,1fr) 42px 60px;gap:10px}.dimension .n-progress{grid-column:1/-1;grid-row:2}.content-card{padding:18px}.report-cover h2{font-size:24px}}
 
 /* ============ 空状态 ============ */
