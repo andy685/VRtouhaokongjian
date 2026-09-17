@@ -16,3 +16,8 @@ backend/dist/
 outputs/
 tmp/
 stitch-ai-ui-overview.png
+
+# Bailian proxy
+server/.env
+__pycache__/
+*.pyc

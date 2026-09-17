@@ -164,7 +164,7 @@ import {
   PersonAddOutline, LogOutOutline,
   HelpCircleOutline, HomeOutline,
   MailOutline, ChatbubbleOutline, WalletOutline, ShieldCheckmarkOutline, BookOutline,
-  ChevronDownOutline, ConstructOutline, MusicalNotesOutline
+  ChevronDownOutline, ConstructOutline, MusicalNotesOutline, ColorWandOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -284,6 +284,14 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '设备列表', key: '/shop/devices' },
       { label: '设备在线统计', key: '/shop/devices/online-stats' },
+    ]
+  },
+  {
+    label: 'AI店招机器人',
+    key: 'ai-shop-sign-group',
+    icon: renderIcon(ColorWandOutline),
+    children: [
+      { label: '设备管理', key: '/shop/ai-shop-sign' },
     ]
   },
   {

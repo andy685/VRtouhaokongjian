@@ -38,7 +38,7 @@
           :collapsed="isCollapsed"
           :collapsed-width="64"
           :collapsed-icon-size="22"
-          :default-expanded-keys="['dashboard-group', 'ai-diagnostic-group']"
+          :expanded-keys="expandedKeys"
           :render-label="renderMenuLabel"
           @update:value="handleMenuUpdate"
           @update:expanded-keys="handleExpand"
@@ -219,7 +219,7 @@ import {
   ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
   GiftOutline, ConstructOutline, ReceiptOutline,
   PulseOutline, HelpCircleOutline, MegaphoneOutline,
-  ShieldCheckmarkOutline, ChatbubbleOutline
+  ShieldCheckmarkOutline, ChatbubbleOutline, ColorWandOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -292,14 +292,26 @@ const menuOptions: MenuOption[] = [
       { label: '内容消费大盘', key: '/platform/content-consumption' },
       { label: '设备运行总览', key: '/platform/device-overview' },
       { label: '设备配置管理', key: '/platform/device-config' },
-      {
-        label: 'AI 诊断报告',
-        key: 'ai-diagnostic-group',
-        children: [
-          { label: '报告记录', key: '/platform/ai-diagnostic' },
-          { label: 'AI 诊断报告配置', key: '/platform/ai-diagnostic/config' },
-        ],
-      },
+    ]
+  },
+  {
+    label: 'AI店招机器人',
+    key: 'ai-shop-sign-group',
+    icon: icon(ColorWandOutline),
+    children: [
+      { label: '设备管理', key: '/platform/ai-shop-sign/devices' },
+      { label: '知识库管理', key: '/platform/ai-shop-sign/knowledge' },
+      { label: '声音复刻', key: '/platform/ai-shop-sign/voice-cloning' },
+      { label: 'API 密钥配置', key: '/platform/ai-shop-sign/api-keys' },
+    ]
+  },
+  {
+    label: 'AI 诊断报告',
+    key: 'ai-diagnostic-group',
+    icon: icon(PulseOutline),
+    children: [
+      { label: '报告记录', key: '/platform/ai-diagnostic' },
+      { label: '诊断报告配置', key: '/platform/ai-diagnostic/config' },
     ]
   },
   {
@@ -454,6 +466,25 @@ const menuOptions: MenuOption[] = [
 
 const currentRoute = computed(() => route.path)
 
+// 展开状态受控：初始化时自动展开当前路由所在的分组（含嵌套分组），刷新后不再收起
+function matchGroups(options: MenuOption[], path: string, parents: string[] = []): string[] {
+  const out: string[] = []
+  for (const opt of options) {
+    if (!opt.children) continue
+    const isGroupKey = typeof opt.key === 'string' && !opt.key.startsWith('/')
+    const childMatch = opt.children.some((c: any) => {
+      if (typeof c.key !== 'string') return false
+      return c.key === path || (c.key.startsWith('/') && path.startsWith(c.key + '/'))
+    })
+    if (childMatch) out.push(...parents, opt.key as string)
+    out.push(...matchGroups(opt.children, path, isGroupKey ? [...parents, opt.key as string] : parents))
+  }
+  return out
+}
+const expandedKeys = ref<string[]>([
+  ...new Set(['dashboard-group', 'ai-diagnostic-group', ...matchGroups(menuOptions, route.path)]),
+])
+
 const breadcrumbs = computed(() => {
   const matched = route.matched.filter(item => item.meta?.title)
   return matched.map(m => ({ label: m.meta.title as string, path: m.path }))
@@ -468,7 +499,7 @@ const userMenuOptions = [
 
 function toggleCollapse() { isCollapsed.value = !isCollapsed.value }
 function handleMenuUpdate(key: string) { router.push(key) }
-function handleExpand() {}
+function handleExpand(keys: string[]) { expandedKeys.value = keys }
 
 function renderMenuLabel(option: MenuOption) {
   if (!option.label) return null

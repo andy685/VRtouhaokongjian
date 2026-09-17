@@ -70,6 +70,13 @@ const routes: RouteRecordRaw[] = [
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: () => import('../views/platform/ContentConsumption.vue'), meta: { title: '内容消费大盘' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: () => import('../views/platform/DeviceOverview.vue'), meta: { title: '设备运行总览' } },
       { path: 'device-config', name: 'PlatformDeviceConfig', component: () => import('../views/platform/DeviceConfig.vue'), meta: { title: '设备配置管理' } },
+      // AI 店招运营
+      { path: 'ai-shop-sign', redirect: '/platform/ai-shop-sign/devices' },
+      { path: 'ai-shop-sign/devices', name: 'PlatformAiShopSignDevices', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '设备管理' } },
+      { path: 'ai-shop-sign/knowledge', name: 'PlatformAiShopSignKnowledge', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '知识库管理' } },
+      { path: 'ai-shop-sign/knowledge/:id', name: 'PlatformAiShopSignKnowledgeDetail', component: () => import('../views/platform/AiShopSignKnowledgeDetail.vue'), meta: { title: '知识库文章管理' } },
+      { path: 'ai-shop-sign/voice-cloning', name: 'PlatformAiShopSignVoiceCloning', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '声音复刻' } },
+      { path: 'ai-shop-sign/api-keys', name: 'PlatformAiShopSignApiKeys', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: 'API 密钥配置' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: () => import('../views/platform/FinanceOverview.vue'), meta: { title: '营收总览' } },
       { path: 'finance/platform-withdraw', name: 'PlatformFinanceWithdraw', component: () => import('../views/platform/PlatformWithdraw.vue'), meta: { title: '平台提现' } },
@@ -168,6 +175,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'store-list', name: 'ShopStoreList', component: () => import('../views/shop/ShopStoreList.vue'), meta: { title: '店铺列表' } },
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: () => import('../views/shop/OnDemandSettings.vue'), meta: { title: '待机画面' } },
       { path: 'devices', name: 'ShopDevices', component: () => import('../views/shop/Devices.vue'), meta: { title: '设备列表' } },
+      { path: 'ai-shop-sign', name: 'ShopAiShopSign', component: () => import('../views/platform/AiShopSign.vue'), props: { mode: 'merchant' }, meta: { title: '店招话术设置' } },
       { path: 'devices/control', name: 'ShopDevicesControl', component: () => import('../views/shop/Devices.vue'), meta: { title: '远程控制' } },
       { path: 'devices/bind', name: 'ShopDeviceBind', component: () => import('../views/shop/DeviceBind.vue'), meta: { title: '设备绑定管理' } },
       { path: 'devices/online-stats', name: 'ShopDeviceOnlineStats', component: () => import('../views/shop/DeviceOnlineStats.vue'), meta: { title: '设备在线统计' } },

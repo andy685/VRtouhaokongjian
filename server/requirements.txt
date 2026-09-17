@@ -1,0 +1,6 @@
+fastapi>=0.110
+uvicorn>=0.27
+requests>=2.31
+python-dotenv>=1.0
+alibabacloud_bailian20231229>=2.14.0
+alibabacloud_tea_openapi>=0.4.0

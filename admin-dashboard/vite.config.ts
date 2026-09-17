@@ -28,6 +28,13 @@ export default defineConfig({
   },
   server: {
     port: 9527,
+    // 百炼知识库代理服务（server/bailian_knowledge.py），前端不直连 OpenAPI
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:9610',
+        changeOrigin: true,
+      },
+    },
     fs: {
       strict: false,
     },
