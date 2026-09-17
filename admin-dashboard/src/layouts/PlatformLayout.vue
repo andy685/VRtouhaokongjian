@@ -302,6 +302,7 @@ const menuOptions: MenuOption[] = [
       { label: '设备管理', key: '/platform/ai-shop-sign/devices' },
       { label: '知识库管理', key: '/platform/ai-shop-sign/knowledge' },
       { label: '声音复刻', key: '/platform/ai-shop-sign/voice-cloning' },
+      { label: '背景管理', key: '/platform/ai-shop-sign/backgrounds' },
       { label: 'API 密钥配置', key: '/platform/ai-shop-sign/api-keys' },
     ]
   },

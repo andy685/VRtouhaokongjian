@@ -76,6 +76,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'ai-shop-sign/knowledge', name: 'PlatformAiShopSignKnowledge', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '知识库管理' } },
       { path: 'ai-shop-sign/knowledge/:id', name: 'PlatformAiShopSignKnowledgeDetail', component: () => import('../views/platform/AiShopSignKnowledgeDetail.vue'), meta: { title: '知识库文章管理' } },
       { path: 'ai-shop-sign/voice-cloning', name: 'PlatformAiShopSignVoiceCloning', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '声音复刻' } },
+      { path: 'ai-shop-sign/backgrounds', name: 'PlatformAiShopSignBackgrounds', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '背景管理' } },
       { path: 'ai-shop-sign/api-keys', name: 'PlatformAiShopSignApiKeys', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: 'API 密钥配置' } },
       // 平台财务
       { path: 'finance', name: 'PlatformFinance', component: () => import('../views/platform/FinanceOverview.vue'), meta: { title: '营收总览' } },
