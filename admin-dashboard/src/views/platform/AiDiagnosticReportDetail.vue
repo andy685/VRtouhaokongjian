@@ -45,7 +45,7 @@
 
       <section class="report-section game-diagnosis">
         <div class="section-title"><div><h2><n-icon class="section-icon" :component="GameControllerOutline" />内容与游戏诊断</h2><p>以点播、完成和收入贡献识别内容机会与风险</p></div></div>
-        <div class="game-grid"><article><span>核心贡献</span><h3>《星际营救》《奇幻赛车》</h3><p>合计贡献 46% 点播收入，完成率稳定在 84% 以上，适合纳入亲子套餐与导购推荐。</p></article><article><span>重点关注</span><h3>《深海探险》</h3><p>启动率较高但完成率仅 58%，建议优先检查设备适配和新手引导。</p></article><article><span>内容结构</span><h3>热门内容集中度偏高</h3><p>TOP 3 游戏收入占比 61%，尾部游戏占比 18%，建议调整推荐位并降低低效内容资源投入。</p></article></div>
+        <div class="game-grid"><article><span>核心贡献</span><h3>《星际营救》《奇幻赛车》</h3><p>合计贡献 46% 点播收入，完成率稳定在 84% 以上，适合纳入亲子套餐与导购推荐。</p></article><article><span>重点关注</span><h3>《深海探险》</h3><p>启动率较高但完成率仅 58%，建议优先检查设备适配和新手引导。</p></article><article><span>内容结构</span><h3>热门内容集中度偏高</h3><p>TOP5 游戏收入占比 61%，尾部游戏占比 18%，建议调整推荐位并降低低效内容资源投入。</p></article></div>
       </section>
 
       <section class="report-section">
@@ -60,7 +60,7 @@
         <div class="section-title"><div><h2>问题、机会与建议</h2><p>以下结论均基于本期数据快照</p></div></div>
         <div class="insight-grid">
           <article class="insight problem"><span>01</span><h3>主要问题</h3><p>工作日 18:00 后订单转化低于周末 31%，设备异常集中在高峰时段前后，影响客流承接。</p></article>
-          <article class="insight chance"><span>02</span><h3>增长机会</h3><p>亲子客群的客单价和复购表现突出，可将 TOP3 游戏组合为双人套餐，并用会员券提升转化。</p></article>
+          <article class="insight chance"><span>02</span><h3>增长机会</h3><p>亲子客群的客单价和复购表现突出，可将 TOP5 游戏组合为双人套餐，并用会员券提升转化。</p></article>
           <article class="insight action"><span>03</span><h3>优先动作</h3><p>将设备巡检前置至周五闭店前，并针对 30 天未消费会员投放定向满减券。</p></article>
         </div>
       </section>
@@ -130,13 +130,13 @@ function healthDescription(score: number) { return score >= 80 ? '本期经营�
 const gameMetricsGood = [
   { label: '点播总次数', value: '3,118', trend: '+8.4%' },
   { label: '点播总时长', value: '1,638 小时', trend: '+6.2%' },
-  { label: '游戏营收占比', value: '68.5%', trend: '+2.1%' },
+  { label: 'TOP5 游戏营收占比', value: '68.5%', trend: '+2.1%' },
   { label: '人均游玩时长', value: '8.6 分钟', trend: '+3.5%' },
 ]
 const gameMetricsRisk = [
   { label: '点播总次数', value: '2,304', trend: '-9.2%', down: true },
   { label: '点播总时长', value: '1,214 小时', trend: '-7.8%', down: true },
-  { label: '游戏营收占比', value: '59.6%', trend: '-3.4%', down: true },
+  { label: 'TOP5 游戏营收占比', value: '59.6%', trend: '-3.4%', down: true },
   { label: '人均游玩时长', value: '7.1 分钟', trend: '-2.6%', down: true },
 ]
 const gameMetrics = computed(() => (report.value.score < 70 ? gameMetricsRisk : gameMetricsGood))
@@ -165,7 +165,7 @@ const gameColumns = [
 ]
 function barColor(score: number) { return score >= 80 ? '#3B82F6' : score >= 70 ? '#F59E0B' : '#EF4444' }
 const metrics = [{ label: '营收', value: '¥826,500', trend: '+12.6%' }, { label: '支付订单', value: '3,182', trend: '+8.4%' }, { label: '客单价', value: '¥259.7', trend: '+3.9%' }, { label: '会员消费贡献率', value: '68.4%', trend: '+4.1%' }]
-const actions = [{ priority: 'P0', action: '周五闭店前完成头显巡检并登记异常', owner: '店长 / 设备负责人', metric: '高峰可用设备率 ≥ 96%' }, { priority: 'P1', action: '上线亲子双人套餐，主推 TOP3 游戏', owner: '店长', metric: '周末客单价提升 8%' }, { priority: 'P1', action: '对 30 天未消费会员定向发放满减券', owner: '店长 / 导购', metric: '沉睡会员回流 60 人' }]
+const actions = [{ priority: 'P0', action: '周五闭店前完成头显巡检并登记异常', owner: '店长 / 设备负责人', metric: '高峰可用设备率 ≥ 96%' }, { priority: 'P1', action: '上线亲子双人套餐，主推 TOP5 游戏', owner: '店长', metric: '周末客单价提升 8%' }, { priority: 'P1', action: '对 30 天未消费会员定向发放满减券', owner: '店长 / 导购', metric: '沉睡会员回流 60 人' }]
 const versionHistory = ref(baseReport.version === 'v2.0'
   ? [{ version: 'v2.0', generatedAt: '2026-09-05 10:24', reason: '数据更新', note: '已补充本期会员复购数据后更新报告。', status: '当前版本' }, { version: 'v1.0', generatedAt: '2026-09-01 03:12', reason: '首次生成', note: '', status: '历史版本' }]
   : [{ version: 'v1.0', generatedAt: baseReport.generatedAt, reason: '首次生成', note: '', status: '当前版本' }])

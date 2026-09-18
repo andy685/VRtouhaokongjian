@@ -91,7 +91,7 @@
 
 ### 2.6 游戏点播数据
 
-- 上：同款 4 张 KPI 卡（点播总次数 / 点播总时长 / 游戏营收占比 / 人均游玩时长）
+- 上：同款 4 张 KPI 卡（点播总次数 / 点播总时长 / TOP5 游戏营收占比 / 人均游玩时长）
 - 下：热门游戏 TOP 表格，列：游戏名称 ｜ 点播次数 ｜ 点播时长 ｜ 营收占比 ｜ 环比（胶囊） ｜ 表现（标签：明星=绿 / 稳定=琥珀 / 待优化=红）
 - 表格无边框，行 hover 高亮，表头吸顶
 
@@ -151,7 +151,7 @@ Page structure top to bottom:
 3. AI Summary card: section title "AI Summary", body text inside a light blue callout (#EFF6FF background, #1E3A8A text).
 4. Health status section: left status card (240px) with small label "Status", large tier text "Healthy Growth" (28px, green gradient card #ECFDF5 with #BBF7D0 border, #15803D text) and a short description; right side a list of 5 dimension progress bars (Revenue Growth, Traffic Activity, Member Quality, Content Appeal, Operation Execution) — 10px rounded bars, blue #3B82F6 fill, each row shows name, bar, score. Bar color turns amber #F59E0B for scores 70-79 and red #EF4444 below 70. Each dimension name has a small "?" tooltip showing data source description.
 5. Core metrics: 4 KPI cards in a row (Revenue ¥826,500, Orders 3,182, Avg ticket ¥259.7, Device availability 96.2%), each card shows label, big tabular number, and a trend pill (+ green pill / - red pill).
-6. Game data: 4 KPI cards (Total plays, Total hours, Game revenue share, Avg session) above a top-games table with columns Game, Plays, Hours, Revenue share, Trend pill, Performance tag (Star=green, Stable=amber, Needs work=red).
+6. Game data: 4 KPI cards (Total plays, Total hours, TOP5 game revenue share, Avg session) above a top-games table with columns Game, Plays, Hours, Revenue share, Trend pill, Performance tag (Star=green, Stable=amber, Needs work=red).
 7. Data sources table: Source, Snapshot time, Coverage. Note: report only uses locked data snapshots.
 8. Three insight cards in a row: "Problems" (orange background #FFF7ED), "Opportunities" (green background #F0FDF4), "Priority actions" (white), each numbered 01/02/03.
 9. Next-month action plan table: Priority tag (P0 red / P1 amber), Action, Owner, Target metric.
@@ -173,7 +173,7 @@ Interactions: 150-300ms transitions, card hover shadow lift, table row hover hig
 3. AI 总结卡：浅蓝引用块（#EFF6FF 底、#1E3A8A 字）展示本期结论。
 4. 经营健康度区：左侧 240px 状态卡（小标签「经营状态」+ 28px 状态大字「健康增长」+ 说明文字，绿渐变卡 #ECFDF5、边 #BBF7D0、字 #15803D），右侧 5 条维度进度条（营收增长力/客流活跃度/会员质量/内容吸引力/运营执行力），10px 圆角条蓝色填充，70-79 琥珀、<70 红；维度名带 ? tooltip 显示数据来源。
 5. 核心经营指标：4 张 KPI 卡（营收 ¥826,500、订单 3,182、客单价 ¥259.7、设备可用率 96.2%），含红/绿趋势胶囊。
-6. 游戏点播数据：4 张 KPI 卡（点播总次数/总时长/游戏营收占比/人均时长）+ 热门游戏表格（游戏、点播次数、时长、营收占比、环比胶囊、表现标签：明星绿/稳定琥珀/待优化红）。
+6. 游戏点播数据：4 张 KPI 卡（点播总次数/总时长/TOP5 游戏营收占比/人均时长）+ 热门游戏表格（游戏、点播次数、时长、营收占比、环比胶囊、表现标签：明星绿/稳定琥珀/待优化红）。
 7. 数据依据表格：数据来源、快照时间、覆盖内容。
 8. 三栏洞察卡：01 主要问题（橙底）、02 增长机会（绿底）、03 优先动作（白底）。
 9. 下月行动计划表：优先级标签（P0 红/P1 琥珀）、行动建议、负责人、验证指标。
