@@ -57,29 +57,43 @@
         <p class="form-hint dim-helper">维度结构和指标口径由产品/研发统一维护；运营侧仅调整名称、权重与商家侧说明。</p>
       </div>
     </section>
-    <section class="content-card benchmark-card">
-      <div class="section-head"><div><h2>评分基准策略</h2><p>按门店运营阶段计算评分基准，不引用商家自主设置的经营目标。</p></div></div>
-      <div class="benchmark-grid">
-        <div v-for="(stage, index) in benchmarkStages" :key="stage.key" class="benchmark-stage">
-          <div class="benchmark-stage-head"><strong>{{ stage.label }}</strong><span>{{ stagePeriodLabel(stage, index) }}</span></div>
-          <div class="benchmark-duration"><div class="benchmark-open-end"><span>开始运营月数</span><strong>{{ stageStartMonth(index) }} 月</strong></div><label v-if="stage.maxCycles !== null"><span>结束运营月数</span><n-input-number v-model:value="stage.maxCycles" :min="stageStartMonth(index)" :max="120" style="width:100%" /><em>月</em></label><div v-else class="benchmark-open-end"><span>结束运营月数</span><strong>无上限</strong></div></div>
-          <div v-if="stage.key === 'observe'" class="benchmark-observe">
-            <div class="observe-head"><strong>初始评分基准</strong><span>只配置会进入公式的基础基准值</span></div>
-            <div class="observe-thresholds">
-              <div v-for="item in initialBenchmarks" :key="item.key" class="observe-threshold-item">
-                <label><span>{{ item.label }}</span><n-input-number v-model:value="item.value" :min="0" :max="999999" style="width:100%" /><em>{{ item.unit }}</em></label>
-                <div class="threshold-usage"><strong>用于：{{ item.usage }}</strong><span>{{ item.formula }}</span></div>
-              </div>
-            </div>
-            <div class="missing-policy"><strong>口径说明</strong><span>这里不是商家经营目标，而是规则引擎的评分基准。百分比类指标按固定区间评分；缺少子指标时重归一化，但五个维度仍保留。</span></div>
+    <section class="content-card score-rule-card">
+      <div class="section-head"><div><h2>评分规则参数</h2><p>用于 STORE_HEALTH_V1 健康分计算；本页配置规则参数，不影响报告前端展示，历史报告按生成时快照保存。</p></div><n-tag type="info" size="small">STORE_HEALTH_V1</n-tag></div>
+      <div class="rule-version-card">
+        <div><span>当前规则版本</span><strong>STORE_HEALTH_V1</strong></div>
+        <div><span>状态</span><strong>启用中</strong></div>
+        <div><span>生效范围</span><strong>后续新报告</strong></div>
+        <div><span>快照策略</span><strong>历史报告不重算</strong></div>
+      </div>
+      <div class="score-rule-formula">
+        <strong>增长分规则（只读）</strong>
+        <span>增长分 = Clamp(60 + 2 × 增长率)；上期为 0 且本期 &gt; 0 记 80 分，本期和上期均为 0 记 0 分。</span>
+      </div>
+      <div class="rule-param-grid">
+        <div class="rule-param-panel">
+          <div class="rule-param-head"><strong>达标类目标</strong><span>用于目标比例型指标，支持后续调整。</span></div>
+          <div v-for="item in targetParams" :key="item.key" class="rule-param-row">
+            <div><strong>{{ item.label }}</strong><span>{{ item.usage }}</span></div>
+            <n-input-number v-model:value="item.value" :min="0" :max="100" style="width:120px" />
+            <em>%</em>
           </div>
-          <div v-else class="benchmark-fields"><label><span>本店历史占比</span><n-input-number v-model:value="stage.storeWeight" :min="0" :max="100" style="width:100%" /><em>%</em></label><label><span>同类门店占比</span><n-input-number v-model:value="stage.peerWeight" :min="0" :max="100" style="width:100%" /><em>%</em></label><label><span>基准调整</span><n-input-number v-model:value="stage.adjustment" :min="-30" :max="30" style="width:100%" /><em>%</em></label></div>
-          <div v-if="stage.key !== 'observe'" class="benchmark-scope"><label><span>中位数取值范围</span><n-select v-model:value="stage.scope" :options="benchmarkScopeOptions" /></label><label><span>样本不足时扩展至</span><n-select v-model:value="stage.fallbackScope" :options="fallbackScopeOptions(stage.scope)" /></label></div>
-          <p>{{ stage.note }}</p>
-          <div v-if="stage.key !== 'observe'" class="benchmark-formula">评分基准 =（本店历史中位数 × {{ stage.storeWeight }}% + 同类门店中位数 × {{ stage.peerWeight }}%）×（1 + {{ stage.adjustment }}%）</div>
+        </div>
+        <div class="rule-param-panel">
+          <div class="rule-param-head"><strong>风险类红线</strong><span>超过红线会显著拉低对应子指标分。</span></div>
+          <div v-for="item in riskParams" :key="item.key" class="rule-param-row">
+            <div><strong>{{ item.label }}</strong><span>{{ item.usage }}</span></div>
+            <n-input-number v-model:value="item.value" :min="0" :max="100" style="width:120px" />
+            <em>%</em>
+          </div>
         </div>
       </div>
-      <div class="benchmark-note"><strong>评分说明</strong><span>本规则由平台统一维护，但会按每家店自身运营时长自动匹配观察期、成长期或稳定期，无需逐店手工设置。观察期使用上方初始评分基准输出完整健康分；成长期和稳定期使用本店历史与同类门店中位数。中位数范围可选同城、同省、全国或全部同店型门店；样本不足时按配置逐级扩展。每个范围均只纳入相近店型、相近营业时长门店；最低样本数为 5 家。</span></div>
+      <div class="missing-policy-panel">
+        <div class="rule-param-head"><strong>缺失数据策略（只读）</strong><span>技术数据缺失必须标记异常，不按业务 0 分或满分处理。</span></div>
+        <div class="missing-policy-grid">
+          <div v-for="item in missingPolicies" :key="item.title"><strong>{{ item.title }}</strong><span>{{ item.desc }}</span></div>
+        </div>
+      </div>
+      <div class="benchmark-note"><strong>保存说明</strong><span>保存后仅影响后续生成的新报告；已生成报告继续使用生成时保存的规则版本和参数快照。若未来开放“保存为新规则版本”，可在这里扩展版本号、生效时间和审批记录。</span></div>
     </section>
     <section class="content-card">
       <div class="section-head"><div><h2>店长补充问题</h2><p>配置商家端「补充经营背景」抽屉中的问题清单（2~6 个），店长回答将作为 AI 分析依据。</p></div></div>
@@ -222,34 +236,23 @@ const weightTotal = computed(() => diagnosticDimensions.value.reduce((sum, item)
 const scoreModeNote = computed(() => scoreMode.value === 'average'
   ? '简单平均时五个维度按相同占比合成健康分，上方权重不参与计算。'
   : '按权重加权时使用上方权重合成健康分，权重合计必须为 100%。')
-const benchmarkStages = ref([
-  { key: 'observe', label: '观察期', minCycles: 0, maxCycles: 2, storeWeight: 0, peerWeight: 0, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营不足 3 个月，按初始评分基准输出健康分，同时建立本店基础数据。' },
-  { key: 'growth', label: '成长期', minCycles: 3, maxCycles: 12, storeWeight: 40, peerWeight: 60, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营 3–12 个月，结合本店历史与同城同店型中位数。' },
-  { key: 'stable', label: '稳定期', minCycles: 13, maxCycles: null, storeWeight: 70, peerWeight: 30, adjustment: 0, scope: 'city', fallbackScope: 'province', note: '运营超过 12 个月，以本店长期表现为主。' },
+const targetParams = ref([
+  { key: 'content_coverage', label: '内容覆盖率目标', value: 60, usage: '内容吸引力 / 内容覆盖率得分' },
+  { key: 'duration_achievement', label: '时长达成率目标', value: 80, usage: '内容吸引力 / 体验时长达成率得分' },
+  { key: 'content_replay', label: '内容复玩率目标', value: 30, usage: '内容吸引力 / 内容复玩率得分' },
 ])
-const initialBenchmarks = ref([
-  { key: 'revenue', label: '月实收营收基准', value: 200000, unit: '元', usage: '营收增长力 / 营收基准分', formula: '营收基准分 = C(100 × 本期实收营收 ÷ 月实收营收基准)' },
-  { key: 'traffic', label: '月支付订单基准', value: 800, unit: '单', usage: '客流活跃度 / 日均订单分', formula: '基准日均订单 = 月支付订单基准 ÷ 当月天数，再参与日均订单分计算' },
+const riskParams = ref([
+  { key: 'refund_rate', label: '退款率红线', value: 10, usage: '营收增长力 / 退款率得分' },
+  { key: 'cash_diff_rate', label: '现金差异率红线', value: 1, usage: '运营执行力 / 现金差异率得分' },
+  { key: 'exception_order_rate', label: '异常订单率红线', value: 5, usage: '运营执行力 / 异常订单率得分' },
+  { key: 'game_interrupt_rate', label: '游戏异常中断率红线', value: 10, usage: '运营执行力 / 游戏异常中断率得分' },
 ])
-function stageStartMonth(index: number) {
-  if (index === 0) return 0
-  return (benchmarkStages.value[index - 1].maxCycles ?? 0) + 1
-}
-function stagePeriodLabel(stage: { maxCycles: number | null }, index: number) {
-  const start = stageStartMonth(index)
-  return stage.maxCycles === null ? '运营 ' + start + ' 个月及以上' : '运营 ' + start + '–' + stage.maxCycles + ' 个月'
-}
-const benchmarkScopeOptions = [
-  { label: '同城同店型', value: 'city' },
-  { label: '同省同店型', value: 'province' },
-  { label: '全国同店型', value: 'national' },
-  { label: '全部同店型门店', value: 'all' },
+const missingPolicies = [
+  { title: '无会员消费', desc: '会员质量记 0，不用充值、等级、沉睡会员等展示指标补分。' },
+  { title: '无内容体验', desc: '内容覆盖率、时长达成率、内容复玩率均记 0。' },
+  { title: '无现金支付', desc: '剔除现金差异率，运营执行力剩余指标权重重归一化。' },
+  { title: '技术数据缺失', desc: '标记数据异常并阻断正式结论，不给业务 0 分或满分。' },
 ]
-function fallbackScopeOptions(scope: string) {
-  const order = ['city', 'province', 'national', 'all']
-  const index = order.indexOf(scope)
-  return benchmarkScopeOptions.filter((option) => order.indexOf(option.value) > index)
-}
 
 /* ===== 店长补充问题 ===== */
 const supplementQuestions = ref<SupplementQuestion[]>(loadSupplementQuestions())
@@ -344,12 +347,8 @@ function saveAll() {
   if (diagnosticDimensions.value.some((dim) => !dim.label.trim())) { message.warning('诊断维度名称不能为空'); return }
   const dimLabels = diagnosticDimensions.value.map((dim) => dim.label.trim())
   if (new Set(dimLabels).size !== dimLabels.length) { message.warning('诊断维度名称不能重复'); return }
-  for (let i = 0; i < benchmarkStages.value.length; i++) {
-    const stage = benchmarkStages.value[i]
-    if (stage.maxCycles !== null && stage.maxCycles < stageStartMonth(i)) { message.warning(stage.label + '的结束运营月数不能小于开始月数'); return }
-    if (stage.key !== 'observe' && stage.storeWeight + stage.peerWeight !== 100) { message.warning(stage.label + '的本店历史与同类门店占比合计必须为 100%'); return }
-  }
-  if (initialBenchmarks.value.some((item) => item.value === null || Number(item.value) < 0)) { message.warning('观察期初始评分基准不能小于 0'); return }
+  if (targetParams.value.some((item) => item.value === null || Number(item.value) <= 0)) { message.warning('达标类目标必须大于 0'); return }
+  if (riskParams.value.some((item) => item.value === null || Number(item.value) <= 0)) { message.warning('风险类红线必须大于 0'); return }
   if (scoreMode.value === 'weighted' && weightTotal.value !== 100) { message.warning('按权重加权模式下，权重合计必须为 100%'); return }
   if (supplementQuestions.value.some((q) => !q.title.trim())) { message.warning('店长补充问题标题不能为空'); return }
   saveDiagnosticDimensions(diagnosticDimensions.value)
@@ -368,4 +367,5 @@ function saveAll() {
 .benchmark-scope{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.benchmark-scope label>span{display:block;margin-bottom:5px;color:#64748b;font-size:12px}
 .benchmark-duration{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.benchmark-duration label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:center}.benchmark-duration label>span,.benchmark-open-end span{grid-column:1/-1;margin-bottom:2px;color:#64748b;font-size:12px}.benchmark-duration label>em{font-style:normal;color:#94a3b8;font-size:12px}.benchmark-open-end{display:flex;flex-direction:column;justify-content:center;padding:0 10px;border:1px dashed #cbd5e1;border-radius:8px}.benchmark-open-end strong{font-size:13px;color:#475569}
 .benchmark-observe{display:flex;flex-direction:column;gap:10px;margin:12px 0;padding:12px;border-radius:8px;background:#f1f5fb;color:#51627c;font-size:12px;line-height:1.6}.observe-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.observe-head strong{color:#1e3a8a}.observe-head span{color:#64748b}.observe-thresholds{display:grid;grid-template-columns:1fr;gap:10px}.observe-threshold-item{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:8px;background:#fff;border:1px solid #dbeafe}.observe-thresholds label{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,1.15fr) auto;gap:8px;align-items:center}.observe-thresholds label>span{color:#475569;font-weight:600}.observe-thresholds label>em{font-style:normal;color:#94a3b8}.threshold-usage{padding-top:8px;border-top:1px dashed #dbeafe}.threshold-usage strong,.threshold-usage span{display:block}.threshold-usage strong{color:#1d4ed8}.threshold-usage span{margin-top:2px;color:#64748b}.missing-policy{padding:10px;border-radius:7px;background:#fff;border:1px solid #dbeafe}.missing-policy strong,.missing-policy span{display:block}.missing-policy strong{margin-bottom:3px;color:#1d4ed8}.missing-policy span{color:#52657e}
+.rule-version-card{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.rule-version-card>div{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid #dbeafe;border-radius:10px;background:#f8fbff}.rule-version-card span{font-size:12px;color:#64748b}.rule-version-card strong{font-size:14px;color:#1e3a8a}.score-rule-formula{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;padding:12px 14px;border-radius:10px;background:#f6f9fd;border:1px solid #e2e8f0;color:#475569;line-height:1.6}.score-rule-formula strong{color:#0f172a}.rule-param-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rule-param-panel,.missing-policy-panel{padding:14px 16px;border:1px solid #e2e8f0;border-radius:10px;background:#fbfcfe}.rule-param-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}.rule-param-head strong{font-size:14px;color:#0f172a}.rule-param-head span{font-size:12px;color:#64748b;line-height:1.6}.rule-param-row{display:grid;grid-template-columns:minmax(0,1fr) 120px auto;gap:8px;align-items:center;padding:10px 0;border-top:1px dashed #e2e8f0}.rule-param-row:first-of-type{border-top:0}.rule-param-row strong,.rule-param-row span{display:block}.rule-param-row strong{font-size:13px;color:#1e293b}.rule-param-row span{margin-top:2px;font-size:12px;color:#64748b}.rule-param-row em{font-style:normal;color:#94a3b8}.missing-policy-panel{margin-top:12px}.missing-policy-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.missing-policy-grid>div{padding:12px;border-radius:8px;background:#fff;border:1px solid #e6edf5}.missing-policy-grid strong,.missing-policy-grid span{display:block}.missing-policy-grid strong{margin-bottom:5px;font-size:13px;color:#1d4ed8}.missing-policy-grid span{font-size:12px;line-height:1.7;color:#52657e}@media(max-width:900px){.rule-version-card,.rule-param-grid,.missing-policy-grid{grid-template-columns:1fr}}
 </style>
