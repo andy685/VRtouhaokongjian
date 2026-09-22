@@ -20,6 +20,7 @@
     <div class="filter-bar">
       <n-space :size="12" align="center">
         <n-select v-model:value="filterMerchant" placeholder="全部商家" :options="merchantOptions" size="small" style="width: 150px;" clearable />
+        <n-select v-model:value="filterStore" placeholder="开卡店铺" :options="storeOptions" size="small" style="width: 170px;" clearable />
         <n-select v-model:value="filterStatus" placeholder="会员状态" :options="statusOptions" size="small" style="width: 130px;" clearable />
         <n-input v-model:value="filterKeyword" placeholder="姓名 / 手机号" size="small" style="width: 180px;" clearable>
           <template #prefix><n-icon :component="SearchOutline" /></template>
@@ -97,6 +98,7 @@ const message = useMessage()
 
 // ===== 快捷筛选 =====
 const filterMerchant = ref<number | null>(null)
+const filterStore = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
 const filterKeyword = ref('')
 const filterDateRange = ref<[number, number] | null>(null)
@@ -285,11 +287,16 @@ function parseTime(timeStr: string): number {
 // 筛选后的数据
 const filteredData = computed(() => {
   let result = [...data]
-  const f = { merchant: filterMerchant.value, status: filterStatus.value, keyword: filterKeyword.value }
+  const f = { merchant: filterMerchant.value, store: filterStore.value, status: filterStatus.value, keyword: filterKeyword.value }
 
   // 商家
   if (f.merchant !== null) {
     result = result.filter(item => item.merchantId === f.merchant)
+  }
+
+  // 开卡店铺
+  if (f.store) {
+    result = result.filter(item => item.store === f.store)
   }
 
   // 状态
@@ -339,6 +346,7 @@ function handleSearch() {
 
 function handleReset() {
   filterMerchant.value = null
+  filterStore.value = null
   filterStatus.value = null
   filterKeyword.value = ''
   filterDateRange.value = null
@@ -363,6 +371,7 @@ function handleExport() {
 function applyDrawerFilter() {
   // 将抽屉筛选项同步到快捷筛选
   if (drawerFilter.value.merchant !== null) filterMerchant.value = drawerFilter.value.merchant
+  if (drawerFilter.value.store !== null) filterStore.value = drawerFilter.value.store
   if (drawerFilter.value.status !== null) filterStatus.value = drawerFilter.value.status
   if (drawerFilter.value.keyword) filterKeyword.value = drawerFilter.value.keyword
   showFilterDrawer.value = false

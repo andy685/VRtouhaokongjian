@@ -71,13 +71,8 @@
 
           </n-tab-pane>
 
-          <n-tab-pane name="account" tab="管理员账号">
-            <n-form-item label="管理员账号" path="username">
-              <n-input v-model:value="form.username" placeholder="请输入管理员登录账号" />
-            </n-form-item>
-            <n-form-item label="管理员密码" path="password">
-              <n-input v-model:value="form.password" type="password" show-password-on="click" placeholder="请输入管理员登录密码" />
-            </n-form-item>
+          <n-tab-pane v-if="!editingCp" name="account" tab="管理员账号">
+            <template v-if="!editingCp"><n-form-item label="管理员账号" path="username"><n-input v-model:value="form.username" placeholder="请输入管理员登录账号" /></n-form-item><n-form-item label="管理员密码" path="password"><n-input v-model:value="form.password" type="password" show-password-on="click" placeholder="请输入管理员登录密码" /></n-form-item></template>
           </n-tab-pane>
 
           <n-tab-pane name="bank" tab="结算账户">
@@ -158,6 +153,7 @@
               </n-radio-group>
             </n-form-item>
           </n-tab-pane>
+          <n-tab-pane v-if="editingCp" name="password" tab="修改密码"><n-form-item label="登录账号"><n-input :value="editingCp?.username || editingCp?.contact || `CP${String(editingCp?.id ?? '').padStart(5, '0')}`" disabled /></n-form-item><n-form-item label="新密码" :validation-status="cpPwdForm.password ? (cpPwdValid ? 'success' : 'error') : undefined" :feedback="cpPwdForm.password ? (cpPwdValid ? '密码强度符合要求' : '至少 8 位，需包含字母和数字') : ''"><n-input v-model:value="cpPwdForm.password" type="password" show-password-on="click" placeholder="请输入新密码" maxlength="32" /></n-form-item><n-form-item label="确认新密码" :validation-status="cpPwdForm.confirm ? (cpPwdForm.confirm === cpPwdForm.password ? 'success' : 'error') : undefined" :feedback="cpPwdForm.confirm ? (cpPwdForm.confirm === cpPwdForm.password ? '两次输入一致' : '两次输入不一致') : ''"><n-input v-model:value="cpPwdForm.confirm" type="password" show-password-on="click" placeholder="再次输入新密码" maxlength="32" /></n-form-item><n-alert type="warning" :bordered="false">修改密码后旧密码立即失效，请通过线下渠道告知供应商负责人。</n-alert><n-space justify="end" style="margin-top:16px"><n-button type="primary" :disabled="!cpPwdValid" @click="handleSaveCpPassword">确认修改密码</n-button></n-space></n-tab-pane>
         </n-tabs>
       </n-form>
       <template #footer>
@@ -240,7 +236,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, reactive, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NAlert, NButton, NInput, NInputNumber, NSelect, NTag, NIcon, NSpace, NModal, NForm, NFormItem,
@@ -275,6 +271,8 @@ const showDetail = ref(false)
 const editingCp = ref<any>(null)
 const detailCp = ref<any>(null)
 const formRef = ref()
+const cpPwdForm = reactive({ password: '', confirm: '' })
+const cpPwdValid = computed(() => cpPwdForm.password.length >= 8 && /[a-zA-Z]/.test(cpPwdForm.password) && /\d/.test(cpPwdForm.password) && cpPwdForm.password === cpPwdForm.confirm)
 const receiverAttachmentFiles = ref<Record<string, UploadFileInfo[]>>({})
 const settlementLocked = computed(() => isCpSettlementLocked(editingCp.value))
 const settlementDraftMode = ref(false)
@@ -423,6 +421,7 @@ function openAdd() {
 }
 function openEdit(row: any) {
   editingCp.value = row
+  Object.assign(cpPwdForm, { password: '', confirm: '' })
   settlementDraftMode.value = false
   const settlementSource = row.pendingSettlementDraft || row
   form.value = {
@@ -482,6 +481,7 @@ function handleReceiverAttachmentFiles(type: string, files: UploadFileInfo[]) {
 }
 function handleSave() {
   if (editingCp.value) {
+    const previousPassword = editingCp.value.password || ''
     const lockedSettlement = pickCpSettlementFields(editingCp.value)
     const nextSettlementDraft = settlementDraftMode.value
       ? {
@@ -494,6 +494,7 @@ function handleSave() {
     Object.assign(
       editingCp.value,
       form.value,
+      { password: form.value.password || previousPassword },
       { attachmentNames: buildAttachmentNames(receiverAttachmentFiles.value) },
       settlementLocked.value ? { ...lockedSettlement, pendingSettlementDraft: nextSettlementDraft } : {}
     )
@@ -514,6 +515,12 @@ function handleSave() {
     message.success('供应商已添加')
   }
   showModal.value = false
+}
+function handleSaveCpPassword() {
+  if (!editingCp.value || !cpPwdValid.value) return
+  editingCp.value.password = cpPwdForm.password
+  Object.assign(cpPwdForm, { password: '', confirm: '' })
+  message.success('供应商管理员密码已修改，旧密码立即失效')
 }
 function isCpSettlementLocked(cp: any) {
   return Boolean(

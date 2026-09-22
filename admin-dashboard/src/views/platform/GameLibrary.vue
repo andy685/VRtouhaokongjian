@@ -15,10 +15,6 @@
         <n-button size="small" :type="sortAsc ? 'default' : 'primary'" secondary @click="sortAsc = !sortAsc">
           <template #icon><n-icon :component="sortAsc ? ArrowUpOutline : ArrowDownOutline" /></template>
         </n-button>
-        <n-radio-group v-model:value="viewMode" size="small">
-          <n-radio-button value="waterfall">瀑布流</n-radio-button>
-          <n-radio-button value="list">列表</n-radio-button>
-        </n-radio-group>
         <n-button type="primary" @click="$router.push('/platform/games/add')">
           <template #icon><n-icon :component="AddOutline" /></template> 添加游戏
         </n-button>
@@ -65,115 +61,31 @@
       </div>
     </div>
 
-    <div v-if="viewMode === 'waterfall'" class="game-waterfall">
-      <div v-for="game in filteredGames" :key="game.id" class="waterfall-item">
-        <div class="game-card" :class="{ disabled: game.status === 'offline' }">
-          <div class="game-cover" :style="{ background: game.gradient }">
-            <span class="game-icon">{{ game.icon }}</span>
-            <div class="game-badge" :class="game.status">{{ game.statusText }}</div>
-            <div v-if="game.recommended" class="rec-badge">推荐</div>
-            <div class="cover-hover-actions">
-              <n-button size="tiny" :type="game.recommended ? 'warning' : 'default'" dashed @click.stop="toggleRecommend(game)" class="quick-rec-btn">
-                {{ game.recommended ? '取消推荐' : '设为推荐' }}
-              </n-button>
-            </div>
-          </div>
-          <div class="game-info">
-            <div class="game-title-row">
-              <h4>{{ game.name }}</h4>
-              <span class="sort-order">#{{ game.sortOrder }}</span>
-            </div>
-            <div class="game-meta">
-              <span class="meta-time">🕐 {{ game.duration }}分</span>
-              <span>🎮 {{ game.playCount }}人玩</span>
-              <span>🫘 {{ game.gameBeanCost ? `${game.gameBeanCost}豆/次` : '免费' }}</span>
-            </div>
-            <div class="game-rating">
-              <n-rate :value="game.rating" size="small" readonly />
-              <span>{{ game.rating }}</span>
-            </div>
-            <div class="game-meta-sub">
-              <span class="sub-tag" :class="game.runPlatform === 'allInOne' ? 'tag-allinone' : 'tag-host'">
-                {{ game.runPlatform === 'allInOne' ? '一体机' : '主机' }}
-              </span>
-              <span class="sub-tag" :class="game.gameType === 'online' ? 'tag-online' : 'tag-standalone'">
-                {{ game.gameType === 'online' ? '联机' : '单机' }}
-              </span>
-              <span class="sub-tag" :class="game.payMode === 'multi' ? 'tag-multi' : 'tag-single'">
-                {{ game.payMode === 'multi' ? '多人' : '单人' }}
-              </span>
-            </div>
-            <div class="game-tags waterfall-tags">
-              <n-tag v-for="cat in (game.categories || []).map(c => categoryLabelMap[c] || c)" :key="'wf-cat-'+cat" size="tiny" :bordered="false" class="sub-tag tag-category">{{ cat }}</n-tag>
-              <n-tag v-for="tag in getWaterfallTags(game).tags" :key="tag" size="tiny" :bordered="false" class="sub-tag tag-custom">{{ tag }}</n-tag>
-              <n-tag v-if="getWaterfallTags(game).overflow" size="tiny" :bordered="false" class="sub-tag more-tag" @click="$router.push(`/platform/games/${game.id}`)">更多</n-tag>
-            </div>
-            <div class="game-actions">
-              <n-button size="tiny" quaternary @click="$router.push(`/platform/games/${game.id}`)">详情</n-button>
-              <n-button size="tiny" secondary @click="$router.push(`/platform/games/${game.id}?edit=1`)">编辑资料</n-button>
-              <n-button
-                size="tiny"
-                type="primary"
-                :disabled="game.status === 'draft'"
-                @click="$router.push(`/platform/games/${game.id}?mode=update`)"
-              >
-                更新版本
-              </n-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div v-else class="game-list">
-      <div v-for="game in filteredGames" :key="game.id" class="game-list-card" :class="{ disabled: game.status === 'offline' }">
-        <div class="list-cover" :style="{ background: game.gradient }">
+    <!-- 紧凑游戏网格：一行两个 -->
+    <div class="game-grid">
+      <div v-for="game in filteredGames" :key="game.id" class="game-item" :class="{ disabled: game.status === 'offline' }">
+        <div class="game-thumb" :style="{ background: game.gradient }">
           <span class="game-icon">{{ game.icon }}</span>
           <div class="game-badge" :class="game.status">{{ game.statusText }}</div>
-          <div v-if="game.recommended" class="rec-badge">推荐</div>
         </div>
-        <div class="list-main">
-          <div class="game-title-row">
-            <h4>{{ game.name }}</h4>
-            <span class="sort-order">#{{ game.sortOrder }}</span>
-          </div>
-          <div class="game-meta">
-            <span class="meta-time">🕐 时长 {{ game.duration }} 分钟</span>
-            <span>🎮 {{ game.playCount }} 次体验</span>
-            <span>🫘 {{ game.gameBeanCost }} 豆/次</span>
-            <span class="cp-tag">{{ game.cpName }}</span>
-          </div>
+        <div class="game-item-main">
+          <h4 class="game-name" :title="game.name">{{ game.name }}</h4>
           <div class="game-rating">
-            <n-rate :value="game.rating" size="small" readonly />
+            <n-rate :value="game.rating" size="small" readonly allow-half />
             <span>{{ game.rating }}</span>
           </div>
-          <div class="game-meta-sub">
-            <span class="sub-tag" :class="game.runPlatform === 'allInOne' ? 'tag-allinone' : 'tag-host'">
-              {{ game.runPlatform === 'allInOne' ? '一体机' : '主机' }}
-            </span>
-            <span class="sub-tag" :class="game.gameType === 'online' ? 'tag-online' : 'tag-standalone'">
-              {{ game.gameType === 'online' ? '联机' : '单机' }}
-            </span>
-            <span class="sub-tag" :class="game.payMode === 'multi' ? 'tag-multi' : 'tag-single'">
-              {{ game.payMode === 'multi' ? '多人' : '单人' }}
-            </span>
+          <div class="game-bean">
+            {{ game.gameBeanCost ? `${game.gameBeanCost} 豆/次` : '免费' }}
           </div>
-          <div class="game-tags">
-            <n-tag v-for="cat in (game.categories || []).map(c => categoryLabelMap[c] || c)" :key="'cat-'+cat" size="tiny" :bordered="false" class="sub-tag tag-category">{{ cat }}</n-tag>
-            <n-tag v-for="tag in game.tags" :key="tag" size="tiny" :bordered="false" class="sub-tag tag-custom">{{ tag }}</n-tag>
+          <div class="game-cats">
+            <n-tag v-for="cat in (game.categories || []).map(c => categoryLabelMap[c] || c)" :key="cat" size="tiny" :bordered="false" class="sub-tag tag-category">{{ cat }}</n-tag>
           </div>
         </div>
-        <div class="list-side">
+        <div class="game-item-actions">
           <n-button size="tiny" quaternary @click="$router.push(`/platform/games/${game.id}`)">详情</n-button>
-          <n-button size="tiny" secondary @click="$router.push(`/platform/games/${game.id}?edit=1`)">编辑资料</n-button>
-          <n-button
-            size="tiny"
-            type="primary"
-            :disabled="game.status === 'draft'"
-            @click="$router.push(`/platform/games/${game.id}?mode=update`)"
-          >
-            更新版本
-          </n-button>
+          <n-button size="tiny" secondary @click="$router.push(`/platform/games/${game.id}?edit=1`)">编辑</n-button>
+          <n-button size="tiny" type="primary" :disabled="game.status === 'draft'" @click="$router.push(`/platform/games/${game.id}?mode=update`)">更新版本</n-button>
+          <n-button size="tiny" type="error" quaternary @click="deleteGame(game)">删除</n-button>
         </div>
       </div>
     </div>
@@ -183,7 +95,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
-  NButton, NInput, NSelect, NTag, NRate, NIcon, NSpace, useMessage, NRadioGroup, NRadioButton
+  NButton, NInput, NSelect, NTag, NRate, NIcon, NSpace, useMessage, useDialog
 } from 'naive-ui'
 import {
   SearchOutline, AddOutline, GameControllerOutline, CheckmarkCircleOutline,
@@ -194,9 +106,8 @@ const message = useMessage()
 const searchText = ref('')
 const filterStatus = ref<string | null>(null)
 const filterCp = ref<string | null>(null)
-const sortField = ref('sortOrder')
+const sortField = ref('id')
 const sortAsc = ref(true)
-const viewMode = ref<'waterfall' | 'list'>('list')
 
 const cpOptions = [
   { label: '极境互动科技', value: '极境互动科技' },
@@ -209,10 +120,11 @@ const cpOptions = [
 ]
 
 const sortOptions = [
-  { label: '排序号', value: 'sortOrder' },
   { label: '游戏名称', value: 'name' },
   { label: '体验次数', value: 'playCountNum' },
-  { label: '评分', value: 'rating' },
+  { label: '消耗游戏豆', value: 'gameBeanCost' },
+  { label: '游戏分类', value: 'category' },
+  { label: '星级', value: 'rating' },
   { label: '上架时间', value: 'id' },
 ]
 
@@ -240,24 +152,18 @@ function toggleRecommend(game: any) {
   message.success(game.recommended ? `「${game.name}」已设为推荐` : `「${game.name}」已取消推荐`)
 }
 
-function getWaterfallTags(game: any) {
-  const catLabels = (game.categories || []).map((c: string) => categoryLabelMap[c] || c)
-  const catChars = catLabels.reduce((sum: number, c: string) => sum + c.length, 0)
-  const maxChars = 14
-  const remaining = maxChars - catChars
-  if (remaining <= 0) return { tags: [] as string[], overflow: game.tags.length > 0 }
-  let used = 0
-  const visible: string[] = []
-  for (const tag of game.tags) {
-    if (used + tag.length <= remaining) {
-      visible.push(tag)
-      used += tag.length
-    } else {
-      visible.pop()
-      return { tags: visible, overflow: true }
-    }
-  }
-  return { tags: visible, overflow: false }
+const dialog = useDialog()
+function deleteGame(game: any) {
+  dialog.warning({
+    title: '删除游戏',
+    content: `确认删除游戏「${game.name}」？删除后该游戏将从游戏库移除，且不可恢复。`,
+    positiveText: '确认删除',
+    negativeText: '再想想',
+    onPositiveClick: () => {
+      games.value = games.value.filter(g => g.id !== game.id)
+      message.success(`「${game.name}」已删除`)
+    },
+  })
 }
 
 // 题材 code -> 中文（与 GameDetail.vue 的 categoryOptions 保持一致）
@@ -282,9 +188,13 @@ const filteredGames = computed(() => {
     data = data.filter(g => g.cpName === filterCp.value)
   }
   // Sort: recommended always first, then by selected field
+  const categoryLabel = (g: any) => categoryLabelMap[(g.categories || [])[0]] || (g.categories || [])[0] || g.name
   data.sort((a, b) => {
     if (a.recommended !== b.recommended) return a.recommended ? -1 : 1
     const dir = sortAsc.value ? 1 : -1
+    if (sortField.value === 'category') {
+      return dir * categoryLabel(a).localeCompare(categoryLabel(b), 'zh-CN')
+    }
     const field = sortField.value as keyof typeof a
     const av = a[field], bv = b[field]
     if (typeof av === 'string' && typeof bv === 'string') return dir * av.localeCompare(bv)
@@ -309,18 +219,19 @@ const filteredGames = computed(() => {
 .stat-content .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
 .stat-content .value.warning { color: #F59E0B; }
 
-.game-waterfall { display: grid; grid-template-columns: repeat(auto-fill, 250px); gap: 20px; justify-content: start; }
-.waterfall-item { min-width: 0; }
-.game-list { display: flex; flex-direction: column; gap: 16px; }
-.game-card { background: white; border-radius: 14px; border: 1px solid var(--border-color); transition: all 0.25s; }
-.game-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
-.game-card.disabled { opacity: 0.6; }
-.game-list-card { display: grid; grid-template-columns: 132px minmax(0, 1fr) 132px; gap: 18px; align-items: center; background: white; border-radius: 14px; border: 1px solid var(--border-color); padding: 16px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-.game-list-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.10); border-color: #c7d2fe; }
-.game-list-card.disabled { opacity: 0.55; }
-
-.game-cover { aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; position: relative; border-radius: 14px 14px 0 0; overflow: hidden; }
-.list-cover { aspect-ratio: 3 / 4; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+/* 紧凑游戏网格：一行两个 */
+.game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.game-item { display: flex; gap: 14px; background: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 12px; transition: border-color .2s, box-shadow .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.game-item:hover { border-color: #c7d2fe; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.game-item.disabled { opacity: 0.55; }
+.game-thumb { width: 84px; height: 112px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.game-thumb .game-icon { font-size: 32px; }
+.game-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.game-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.game-bean { font-size: 12px; color: #b45309; font-weight: 600; }
+.game-cats { display: flex; gap: 4px; flex-wrap: wrap; }
+.game-item-actions { display: flex; flex-direction: column; justify-content: center; gap: 6px; flex-shrink: 0; }
+.game-item-actions .n-button { justify-content: center; }
 .game-icon { font-size: 48px; }
 .game-badge { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: white; }
 .game-badge.online { background: rgba(16,185,129,0.9); }
@@ -363,13 +274,7 @@ const filteredGames = computed(() => {
 .detail-cover { aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 .detail-icon { font-size: 64px; }
 
-@media (max-width: 1100px) {
-  .game-list-card { grid-template-columns: 120px minmax(0, 1fr); }
-  .list-side { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; }
-}
-@media (max-width: 720px) {
-  .game-list-card { grid-template-columns: 1fr; }
-  .list-cover { max-width: 160px; }
-  .list-side { grid-column: auto; }
+@media (max-width: 900px) {
+  .game-grid { grid-template-columns: 1fr; }
 }
 </style>

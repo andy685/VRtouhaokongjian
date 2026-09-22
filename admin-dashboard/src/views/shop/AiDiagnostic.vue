@@ -1,6 +1,6 @@
 <template>
   <div class="diagnostic-page">
-    <section class="page-head">
+    <section v-if="viewMode === 'list'" class="page-head">
       <div><n-tag type="info" size="small" round>AI 店铺增长官</n-tag><h1>AI 店铺经营诊断</h1><p>查看月度经营诊断，并补充系统无法获取的本月经营背景。</p></div>
       <n-space>
         <n-select v-if="stores.length > 1" v-model:value="selectedStoreId" :options="storeOptions" style="width:190px" />

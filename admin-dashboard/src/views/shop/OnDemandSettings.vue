@@ -47,14 +47,16 @@
             </div>
           </template>
 
-          <div class="type-grid">
+          <div class="idle-enable-row"><div><strong>启用待机</strong><span>终端无操作后进入待机画面；关闭后终端将持续保持当前界面。</span></div><n-switch v-model:value="settings.idleEnabled" /></div>
+
+          <div class="type-grid" :class="{ 'is-disabled': !settings.idleEnabled }">
             <button
               v-for="option in idleContentOptions"
               :key="option.value"
               type="button"
               class="type-btn"
               :class="{ active: settings.idleContent === option.value }"
-              @click="settings.idleContent = option.value"
+              @click="settings.idleEnabled && (settings.idleContent = option.value)"
             >
               <div class="type-btn-icon">
                 <n-icon :component="option.icon" size="22" />
@@ -196,11 +198,13 @@
                   v-model:value="settings.idleSwitchInterval"
                   :min="10"
                   :max="300"
+                  :disabled="!settings.idleEnabled || settings.idleUnlimited"
                   size="small"
                   style="width: 130px;"
                 >
                   <template #suffix>秒</template>
                 </n-input-number>
+                <n-switch v-model:value="settings.idleUnlimited" :disabled="!settings.idleEnabled"><template #checked>无上限</template><template #unchecked>限时</template></n-switch>
                 <div class="timeout-chips">
                   <button
                     v-for="preset in timeoutPresets"
@@ -208,7 +212,8 @@
                     type="button"
                     class="chip"
                     :class="{ active: settings.idleSwitchInterval === preset }"
-                    @click="settings.idleSwitchInterval = preset"
+                    :disabled="!settings.idleEnabled || settings.idleUnlimited"
+                    @click="!settings.idleUnlimited && (settings.idleSwitchInterval = preset)"
                   >
                     {{ preset }}s
                   </button>
@@ -238,11 +243,11 @@
           <div class="preview-summary">
             <div class="summary-item">
               <span>待机内容</span>
-              <strong>{{ idleContentLabelMap[settings.idleContent] }}</strong>
+              <strong>{{ settings.idleEnabled ? idleContentLabelMap[settings.idleContent] : '未启用' }}</strong>
             </div>
             <div class="summary-item">
               <span>超时</span>
-              <strong>{{ settings.idleSwitchInterval }}s</strong>
+              <strong>{{ settings.idleEnabled ? (settings.idleUnlimited ? '无上限' : settings.idleSwitchInterval + 's') : '—' }}</strong>
             </div>
             <div class="summary-item">
               <span>适配策略</span>
@@ -319,6 +324,7 @@ import {
   NIcon,
   NInputNumber,
   NSelect,
+  NSwitch,
   NSpace,
   NTag,
   NUpload,
@@ -353,6 +359,8 @@ type ShopMeta = {
 }
 
 type ShopSettings = {
+  idleEnabled: boolean
+  idleUnlimited: boolean
   idleContent: IdleContent
   idleSwitchInterval: number
   orientationFallbackMode: FallbackMode
@@ -405,7 +413,7 @@ const fallbackModeLabelMap: Record<FallbackMode, string> = {
 
 // ── 工具函数 ──
 function createDefaultSettings(): ShopSettings {
-  return { idleContent: 'gamePreview', idleSwitchInterval: 30, orientationFallbackMode: 'autoFallback' }
+  return { idleEnabled: true, idleUnlimited: false, idleContent: 'gamePreview', idleSwitchInterval: 30, orientationFallbackMode: 'autoFallback' }
 }
 
 function cloneFiles(files: UploadFileInfo[]) {
@@ -442,7 +450,7 @@ function createShopDraft(seed?: Partial<ShopDraft>): ShopDraft {
 
 const shopDrafts = ref<Record<string, ShopDraft>>({
   '利民街小展厅': createShopDraft({
-    settings: { idleContent: 'poster', idleSwitchInterval: 20, orientationFallbackMode: 'sameOnly' },
+    settings: { idleEnabled: true, idleUnlimited: false, idleContent: 'poster', idleSwitchInterval: 20, orientationFallbackMode: 'sameOnly' },
     posterAssets: {
       landscape: [{ id: 'p1', name: 'lmin-01.png', status: 'finished', percentage: 100 }],
       portrait: [],
@@ -455,7 +463,7 @@ const shopDrafts = ref<Record<string, ShopDraft>>({
     },
   }),
   '卓远萧山区店': createShopDraft({
-    settings: { idleContent: 'gamePreview', idleSwitchInterval: 45, orientationFallbackMode: 'autoFallback' },
+    settings: { idleEnabled: true, idleUnlimited: false, idleContent: 'gamePreview', idleSwitchInterval: 45, orientationFallbackMode: 'autoFallback' },
     previewAssets: {
       landscape: [],
       portrait: [{ id: 'v3', name: 'xiaoshan-v-01.mp4', status: 'finished', percentage: 100 }],
@@ -468,7 +476,7 @@ const shopDrafts = ref<Record<string, ShopDraft>>({
     },
   }),
   '卓远文鼎路店': createShopDraft({
-    settings: { idleContent: 'qrCode', idleSwitchInterval: 60, orientationFallbackMode: 'autoFallback' },
+    settings: { idleEnabled: true, idleUnlimited: false, idleContent: 'qrCode', idleSwitchInterval: 60, orientationFallbackMode: 'autoFallback' },
   }),
 })
 
@@ -629,6 +637,7 @@ void loadShopDraft(currentShop.value)
 </script>
 
 <style scoped>
+.idle-enable-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 14px;margin-bottom:16px;border:1px solid #dbeafe;border-radius:8px;background:#f8fbff}.idle-enable-row strong,.idle-enable-row span{display:block}.idle-enable-row strong{font-size:14px;color:#1e3a8a}.idle-enable-row span{margin-top:3px;color:#64748b;font-size:12px}.type-grid.is-disabled{opacity:.5}.type-grid.is-disabled .type-btn{cursor:not-allowed}
 .page-container {
   padding: 24px;
 }

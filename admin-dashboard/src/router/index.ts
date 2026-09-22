@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
     component: Login,
     meta: { title: '登录' }
   },
-  // ===== 总运营后台（平台超管） =====
+  // ===== 官方运营后台 =====
   {
     path: '/platform',
     name: 'Platform',
@@ -68,6 +68,8 @@ const routes: RouteRecordRaw[] = [
 
       // 数据中心扩展
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: () => import('../views/platform/ContentConsumption.vue'), meta: { title: '内容消费大盘' } },
+      { path: 'film-revenue', name: 'PlatformFilmRevenue', component: () => import('../views/platform/FilmRevenue.vue'), meta: { title: '内容营收明细' } },
+      { path: 'brand-approvals', name: 'PlatformBrandApprovals', component: () => import('../views/platform/BrandApprovals.vue'), meta: { title: '门店品牌授权' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: () => import('../views/platform/DeviceOverview.vue'), meta: { title: '设备运行总览' } },
       { path: 'device-config', name: 'PlatformDeviceConfig', component: () => import('../views/platform/DeviceConfig.vue'), meta: { title: '设备配置管理' } },
       // AI 店招运营
@@ -165,7 +167,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'edit-balance-order', name: 'ShopEditBalanceOrder', component: () => import('../views/shop/EditBalanceOrder.vue'), meta: { title: '修改储值订单' } },
       { path: 'points-exchange-order', name: 'ShopPointsExchangeOrder', component: () => import('../views/shop/PointsExchangeOrder.vue'), meta: { title: '游戏币兑换订单' } },
       { path: 'gift-order', name: 'ShopGiftOrder', component: () => import('../views/shop/GiftOrder.vue'), meta: { title: '活动赠送订单' } },
-      { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '内容消耗明细' } },
+      { path: 'film-revenue', name: 'ShopFilmRevenue', component: () => import('../views/shop/FilmRevenue.vue'), meta: { title: '内容营收明细' } },
       { path: 'revenue-target', name: 'ShopRevenueTarget', component: () => import('../views/shop/RevenueTarget.vue'), meta: { title: '营收目标与完成率' } },
       { path: 'staff-ranking', name: 'ShopStaffRanking', component: () => import('../views/shop/StaffRanking.vue'), meta: { title: '员工销售排名' } },
       { path: 'ai-diagnostic', name: 'ShopAiDiagnostic', component: () => import('../views/shop/AiDiagnostic.vue'), meta: { title: 'AI 店铺经营诊断', breadcrumb: [{ label: '数据报表' }, { label: 'AI 店铺经营诊断' }] } },
@@ -175,6 +177,8 @@ const routes: RouteRecordRaw[] = [
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: () => import('../views/shop/ShopStoreList.vue'), meta: { title: '店铺列表' } },
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: () => import('../views/shop/OnDemandSettings.vue'), meta: { title: '待机画面' } },
+      { path: 'brand-settings', name: 'ShopBrandSettings', component: () => import('../views/shop/BrandOverview.vue'), meta: { title: '前台品牌 Logo' } },
+      { path: 'brand-settings/apply', name: 'ShopBrandSettingsApply', component: () => import('../views/shop/BrandSettings.vue'), meta: { title: '申请替换 Logo' } },
       { path: 'devices', name: 'ShopDevices', component: () => import('../views/shop/Devices.vue'), meta: { title: '设备列表' } },
       { path: 'ai-shop-sign', name: 'ShopAiShopSign', component: () => import('../views/platform/AiShopSign.vue'), props: { mode: 'merchant' }, meta: { title: '店招话术设置' } },
       { path: 'devices/control', name: 'ShopDevicesControl', component: () => import('../views/shop/Devices.vue'), meta: { title: '远程控制' } },

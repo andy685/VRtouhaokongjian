@@ -250,7 +250,7 @@ const menuOptions: MenuOption[] = [
       { label: '账户金额统计', key: '/shop/account-stats' },
       { label: '交接班记录', key: '/shop/shifts' },
       { label: '点播数据', key: '/shop/on-demand-records' },
-      { label: '内容消耗明细', key: '/shop/film-revenue' },
+      { label: '内容营收明细', key: '/shop/film-revenue' },
       { label: '营收目标与完成率', key: '/shop/revenue-target' },
       { label: '员工销售排名', key: '/shop/staff-ranking' },
       { label: 'AI 店铺经营诊断', key: '/shop/ai-diagnostic' },
@@ -301,6 +301,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
       { label: '待机画面', key: '/shop/on-demand-settings' },
+      { label: '前台品牌 Logo', key: '/shop/brand-settings' },
       {
         label: '收银设置',
         key: 'cashier-settings-group',

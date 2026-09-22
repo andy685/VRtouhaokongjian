@@ -12,7 +12,7 @@
           {{ formData.name.charAt(0) }}
         </n-avatar>
         <div class="avatar-info">
-          <span class="role-tag">平台超管</span>
+          <span class="role-tag">官方运营后台</span>
           <span class="account-id">账号 ID: {{ formData.accountId }}</span>
         </div>
       </div>

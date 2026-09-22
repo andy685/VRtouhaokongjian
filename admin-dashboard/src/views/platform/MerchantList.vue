@@ -283,6 +283,26 @@
             </n-form-item>
           </n-form>
         </n-tab-pane>
+
+        <n-tab-pane name="password" tab="修改密码">
+          <n-form label-placement="left" label-width="100">
+            <n-form-item label="登录账号">
+              <n-input :value="currentMerchant?.contact || currentMerchant?.phone || `MC${String(currentMerchant?.id ?? '').padStart(5, '0')}`" disabled />
+            </n-form-item>
+            <n-form-item label="新密码" :validation-status="pwdForm.password ? (pwdValid ? 'success' : 'error') : undefined" :feedback="pwdForm.password ? (pwdValid ? '密码强度符合要求' : '至少 8 位，需包含字母和数字') : ''">
+              <n-input v-model:value="pwdForm.password" type="password" show-password-on="click" placeholder="至少 8 位，包含字母和数字" maxlength="32" />
+            </n-form-item>
+            <n-form-item label="确认新密码" :validation-status="pwdForm.confirm ? (pwdForm.confirm === pwdForm.password ? 'success' : 'error') : undefined" :feedback="pwdForm.confirm ? (pwdForm.confirm === pwdForm.password ? '两次输入一致' : '两次输入不一致') : ''">
+              <n-input v-model:value="pwdForm.confirm" type="password" show-password-on="click" placeholder="再次输入新密码" maxlength="32" />
+            </n-form-item>
+            <n-alert type="warning" :bordered="false">
+              修改密码后该商家账号的旧密码立即失效，需使用新密码重新登录商家后台；请通过线下渠道告知商家负责人。
+            </n-alert>
+            <n-space justify="end" style="margin-top: 16px;">
+              <n-button type="primary" :disabled="!pwdValid" @click="handleSavePassword">确认修改密码</n-button>
+            </n-space>
+          </n-form>
+        </n-tab-pane>
       </n-tabs>
       <template #footer>
         <n-space justify="end">
@@ -369,7 +389,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NAlert, NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
@@ -716,6 +736,19 @@ function handleEdit() {
 }
 
 // 详情
+// 修改密码
+const pwdForm = reactive({ password: '', confirm: '' })
+const pwdValid = computed(() => {
+  const p = pwdForm.password
+  return p.length >= 8 && /[a-zA-Z]/.test(p) && /\d/.test(p) && p === pwdForm.confirm
+})
+function handleSavePassword() {
+  if (!pwdValid.value) return
+  ;(window as any).$message?.success(`密码已重置，请通知商家使用新密码登录`)
+  pwdForm.password = ''
+  pwdForm.confirm = ''
+}
+
 const showDetailModal = ref(false)
 
 function openDetail(row: any) {

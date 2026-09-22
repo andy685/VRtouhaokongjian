@@ -67,13 +67,14 @@
 import { ref, h } from 'vue'
 import {
   NButton, NDataTable, NTag, NSpace, NModal, NForm, NFormItem,
-  NInput, NTree, NIcon, NDescriptions, NDescriptionsItem, useMessage
+  NInput, NTree, NIcon, NDescriptions, NDescriptionsItem, useDialog, useMessage
 } from 'naive-ui'
 import {
   AddOutline, EyeOutline, CreateOutline, TrashOutline
 } from '@vicons/ionicons5'
 
 const message = useMessage()
+const dialog = useDialog()
 
 const columns = [
   { title: '角色名称', key: 'name', width: 140 },
@@ -103,6 +104,10 @@ const columns = [
           h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openEdit(row) }, {
             default: () => '编辑',
             icon: () => h(NIcon, { component: CreateOutline, size: 14 })
+          }),
+          h(NButton, { size: 'tiny', quaternary: true, type: 'error', disabled: row.permissions.includes('all'), onClick: () => confirmDelete(row) }, {
+            default: () => '删除',
+            icon: () => h(NIcon, { component: TrashOutline, size: 14 })
           }),
         ]
       })
@@ -242,6 +247,23 @@ function openDetail(row: any) {
 function openEditFromDetail() {
   showDetailModal.value = false
   openEdit(currentRole.value)
+}
+
+function confirmDelete(row: any) {
+  if (row.permissions.includes('all')) { message.warning('超级管理员角色不可删除'); return }
+  dialog.warning({
+    title: '确认删除角色',
+    content: row.count > 0
+      ? `角色“${row.name}”当前关联 ${row.count} 个账号。确认删除后，这些账号将不再关联该角色；此操作不可恢复。`
+      : `确定删除角色“${row.name}”吗？删除后不可恢复。`,
+    positiveText: '确认删除',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      roleData.value = roleData.value.filter(item => item.id !== row.id)
+      if (currentRole.value?.id === row.id) showDetailModal.value = false
+      message.success('角色已删除')
+    },
+  })
 }
 </script>
 

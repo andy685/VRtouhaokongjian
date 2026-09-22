@@ -54,7 +54,7 @@
             </n-avatar>
           </div>
           <div class="role-info">
-            <div class="role-name">平台超管</div>
+            <div class="role-name">官方运营后台</div>
             <div class="role-desc">全局管理权限</div>
           </div>
           <n-icon :component="SwapHorizontalOutline" size="16" class="switch-icon" />
@@ -212,12 +212,13 @@ import {
   NMenu, NButton, NIcon, NAvatar, NBadge, NBreadcrumb, NBreadcrumbItem,
   NInput, NDropdown, NModal, NTag, NPopover,
 } from 'naive-ui'
+import type { MenuOption } from 'naive-ui'
 import {
   GridOutline, StorefrontOutline, BusinessOutline, GameControllerOutline, WalletOutline,
-  SettingsOutline, ChevronBackOutline, ChevronForwardOutline,
+  ChevronBackOutline, ChevronForwardOutline,
   SwapHorizontalOutline, SearchOutline, NotificationsOutline,
   ServerOutline, LogOutOutline, PersonOutline, PeopleOutline,
-  GiftOutline, ConstructOutline, ReceiptOutline,
+  ReceiptOutline,
   PulseOutline, HelpCircleOutline, MegaphoneOutline,
   ShieldCheckmarkOutline, ChatbubbleOutline, ColorWandOutline
 } from '@vicons/ionicons5'
@@ -290,8 +291,21 @@ const menuOptions: MenuOption[] = [
       { label: '大屏看板', key: '/platform/dashboard' },
       { label: '数据报表', key: '/platform/reports' },
       { label: '内容消费大盘', key: '/platform/content-consumption' },
+      { label: '内容营收明细', key: '/platform/film-revenue' },
       { label: '设备运行总览', key: '/platform/device-overview' },
       { label: '设备配置管理', key: '/platform/device-config' },
+    ]
+  },
+  {
+    label: '身份授权管理',
+    key: 'stores-group',
+    icon: icon(StorefrontOutline),
+    children: [
+      { label: '商家管理', key: '/platform/merchants' },
+      { label: '店铺列表', key: '/platform/stores' },
+      { label: '门店品牌授权', key: '/platform/brand-approvals' },
+      { label: '代理商列表', key: '/platform/agents' },
+      { label: '供应商列表', key: '/platform/cps' },
     ]
   },
   {
@@ -313,31 +327,6 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '报告记录', key: '/platform/ai-diagnostic' },
       { label: '诊断报告配置', key: '/platform/ai-diagnostic/config' },
-    ]
-  },
-  {
-    label: '店铺管理',
-    key: 'stores-group',
-    icon: icon(StorefrontOutline),
-    children: [
-      { label: '商家管理', key: '/platform/merchants' },
-      { label: '店铺列表', key: '/platform/stores' },
-    ]
-  },
-  {
-    label: '代理商管理',
-    key: 'agents-group',
-    icon: icon(BusinessOutline),
-    children: [
-      { label: '代理商列表', key: '/platform/agents' },
-    ]
-  },
-  {
-    label: '游戏供应商管理',
-    key: 'cps-group',
-    icon: icon(GameControllerOutline),
-    children: [
-      { label: '供应商列表', key: '/platform/cps' },
     ]
   },
   {

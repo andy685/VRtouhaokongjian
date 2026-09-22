@@ -290,6 +290,16 @@
             </n-form-item>
           </n-form>
         </n-tab-pane>
+
+        <n-tab-pane name="password" tab="修改密码">
+          <n-form label-placement="left" label-width="100">
+            <n-form-item label="登录账号"><n-input :value="currentAgent?.username || currentAgent?.contact || `AG${String(currentAgent?.id ?? '').padStart(5, '0')}`" disabled /></n-form-item>
+            <n-form-item label="新密码" :validation-status="agentPwdForm.password ? (agentPwdValid ? 'success' : 'error') : undefined" :feedback="agentPwdForm.password ? (agentPwdValid ? '密码强度符合要求' : '至少 8 位，需包含字母和数字') : ''"><n-input v-model:value="agentPwdForm.password" type="password" show-password-on="click" placeholder="请输入新密码" maxlength="32" /></n-form-item>
+            <n-form-item label="确认新密码" :validation-status="agentPwdForm.confirm ? (agentPwdForm.confirm === agentPwdForm.password ? 'success' : 'error') : undefined" :feedback="agentPwdForm.confirm ? (agentPwdForm.confirm === agentPwdForm.password ? '两次输入一致' : '两次输入不一致') : ''"><n-input v-model:value="agentPwdForm.confirm" type="password" show-password-on="click" placeholder="再次输入新密码" maxlength="32" /></n-form-item>
+            <n-alert type="warning" :bordered="false">修改密码后旧密码立即失效，请通过线下渠道告知代理商负责人。</n-alert>
+            <n-space justify="end" style="margin-top:16px"><n-button type="primary" :disabled="!agentPwdValid" @click="handleSaveAgentPassword">确认修改密码</n-button></n-space>
+          </n-form>
+        </n-tab-pane>
       </n-tabs>
       <template #footer>
         <n-space justify="end">
@@ -381,7 +391,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h, nextTick } from 'vue'
+import { ref, reactive, computed, h, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NAlert, NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
@@ -742,18 +752,22 @@ function resetAddForm() {
 // ===== 编辑 =====
 const showEditModal = ref(false)
 const currentAgent = ref<any>(null)
+const agentPwdForm = reactive({ password: '', confirm: '' })
+const agentPwdValid = computed(() => agentPwdForm.password.length >= 8 && /[a-zA-Z]/.test(agentPwdForm.password) && /\d/.test(agentPwdForm.password) && agentPwdForm.password === agentPwdForm.confirm)
 const editReceiverAttachmentFiles = ref<Record<string, UploadFileInfo[]>>({})
 const editSettlementLocked = computed(() => isAgentSettlementLocked(currentAgent.value))
 const settlementDraftMode = ref(false)
 const settlementFieldsReadonly = computed(() => editSettlementLocked.value && !settlementDraftMode.value)
 const editForm = ref({
   name: '', contact: '', phone: '', region: '', commissionRate: 10, feeRate: 0.005, status: 'active',
+  username: '', password: '',
   accountKind: 'private', bankName: '', cardNo: '', accountName: '', idCard: '',
   licenseNo: '', licenseName: '', legalPersonName: '', legalPersonCertificateNo: '', attachmentsReady: false, profileConfirmed: false,
 })
 
 function openEdit(row: any) {
   currentAgent.value = row
+  Object.assign(agentPwdForm, { password: '', confirm: '' })
   settlementDraftMode.value = false
   const settlementSource = row.pendingSettlementDraft || row
   editForm.value = {
@@ -761,6 +775,7 @@ function openEdit(row: any) {
     region: row.region || '', commissionRate: row.commissionRate || 10,
     feeRate: row.feeRate || 0.005,
     status: row.status || 'active',
+    username: row.username || '', password: '',
     accountKind: settlementSource.accountKind || 'private',
     bankName: settlementSource.bankName || '', cardNo: settlementSource.cardNo || '',
     accountName: settlementSource.accountName || '', idCard: settlementSource.idCard || '',
@@ -816,6 +831,7 @@ function handleEdit() {
     agentData.value[idx] = {
       ...agentData.value[idx],
       ...editForm.value,
+      ...(editForm.value.password ? {} : { password: agentData.value[idx].password || '' }),
       attachmentNames: buildAttachmentNames(editReceiverAttachmentFiles.value),
       region: editRegionPath.value.join(' / '),
       ...(editSettlementLocked.value ? { ...lockedSettlement, pendingSettlementDraft: nextSettlementDraft } : {}),
@@ -823,6 +839,13 @@ function handleEdit() {
     message.success(settlementDraftMode.value ? '结算账户变更草稿已保存，当前生效资料未覆盖' : '代理商信息已更新')
   }
   showEditModal.value = false
+}
+
+function handleSaveAgentPassword() {
+  if (!currentAgent.value || !agentPwdValid.value) return
+  currentAgent.value.password = agentPwdForm.password
+  Object.assign(agentPwdForm, { password: '', confirm: '' })
+  message.success('代理商管理员密码已修改，旧密码立即失效')
 }
 
 function isAgentSettlementLocked(agent: any) {

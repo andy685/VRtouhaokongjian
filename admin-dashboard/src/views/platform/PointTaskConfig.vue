@@ -3,12 +3,12 @@
     <div class="page-header">
       <div>
         <h1>积分任务</h1>
-        <p class="header-desc">配置会员完成充值或消费后获得的积分奖励</p>
+        <p class="header-desc">配置会员完成一次性、日常与节日任务后获得的积分奖励</p>
       </div>
     </div>
 
     <n-alert type="info" :bordered="false" class="notice">
-      仅支付成功的充值订单和已完成的消费订单参与奖励；充值订单只使用“充值奖励”，消费订单只使用“消费奖励”。
+      任务配置原则：涉及数值的内容可自定义，包括充值金额、消费金额、奖励积分、连续天数、指定游戏和奖励周期等；具体参数根据任务描述生成。
     </n-alert>
 
     <div class="summary-row">
@@ -33,42 +33,43 @@
     <n-modal v-model:show="showModal" preset="card" :title="modalTitle" style="width: 620px" :bordered="false">
       <n-form label-placement="left" label-width="110">
         <n-form-item label="任务名称">
-          <n-input v-model:value="form.name" disabled />
+          <n-input v-model:value="form.name" :disabled="form.key !== 'winter_campaign'" />
         </n-form-item>
-        <n-form-item label="任务类型">
-          <n-radio-group v-model:value="form.type" disabled>
-            <n-space>
-              <n-radio value="recharge">充值送积分</n-radio>
-              <n-radio value="consumption">消费送积分</n-radio>
-            </n-space>
-          </n-radio-group>
+        <n-form-item label="任务分类">
+          <n-input :value="categoryLabel(form.category)" disabled />
         </n-form-item>
-        <n-form-item label="奖励方式">
-          <n-radio-group v-model:value="form.rewardMode">
-            <n-space>
-              <n-radio value="amount">按金额</n-radio>
-              <n-radio value="count">按次数</n-radio>
-            </n-space>
-          </n-radio-group>
+        <n-form-item label="任务描述">
+          <n-input :value="buildDescription(form)" type="textarea" :rows="2" disabled />
         </n-form-item>
-        <n-form-item v-if="form.rewardMode === 'amount'" label="金额兑换比例">
-          <n-input-number v-model:value="form.amountUnit" :min="0.01" :precision="2" style="width: 220px">
-            <template #suffix>元 = {{ form.pointsPerUnit }} 积分</template>
+        <n-form-item v-if="form.key === 'rookie_first_recharge'" label="首充金额">
+          <n-input-number v-model:value="form.rechargeAmount" :min="0" :precision="0" style="width: 220px">
+            <template #suffix>元</template>
           </n-input-number>
         </n-form-item>
-        <n-form-item v-if="form.rewardMode === 'amount'" label="每日上限">
-          <n-input-number v-model:value="form.dailyLimit" :min="0" :precision="0" style="width: 220px">
+        <n-form-item v-if="form.key === 'rookie_first_recharge'" label="消费门槛">
+          <n-input-number v-model:value="form.consumeAmount" :min="0" :precision="0" style="width: 220px">
+            <template #suffix>元</template>
+          </n-input-number>
+        </n-form-item>
+        <n-form-item v-if="form.key === 'continuous_cruise'" label="连续天数">
+          <n-input-number v-model:value="form.continuousDays" :min="1" :precision="0" style="width: 220px">
+            <template #suffix>天</template>
+          </n-input-number>
+        </n-form-item>
+        <n-form-item v-if="form.key === 'ace_route' || form.key === 'paituo_coop'" label="指定游戏">
+          <n-select v-model:value="form.gameName" filterable tag :options="gameOptions" placeholder="搜索或选择指定游戏" style="width: 320px" />
+        </n-form-item>
+        <n-form-item v-if="form.key === 'winter_campaign'" label="活动时间">
+          <n-date-picker v-model:value="form.activityRange" type="daterange" clearable style="width: 320px" />
+        </n-form-item>
+        <n-form-item v-if="form.key === 'winter_campaign'" label="积分倍率">
+          <n-input-number v-model:value="form.multiplier" :min="1" :precision="1" style="width: 220px">
+            <template #suffix>倍</template>
+          </n-input-number>
+        </n-form-item>
+        <n-form-item v-if="form.key !== 'winter_campaign'" label="奖励积分">
+          <n-input-number v-model:value="form.rewardPoints" :min="0" :precision="0" style="width: 220px">
             <template #suffix>积分</template>
-          </n-input-number>
-        </n-form-item>
-        <n-form-item v-if="form.rewardMode === 'count'" label="每次奖励积分">
-          <n-input-number v-model:value="form.pointsPerAction" :min="0" :precision="0" style="width: 220px">
-            <template #suffix>积分 / 次</template>
-          </n-input-number>
-        </n-form-item>
-        <n-form-item v-if="form.rewardMode === 'count'" label="每日上限">
-          <n-input-number v-model:value="form.dailyLimit" :min="0" :precision="0" style="width: 220px">
-            <template #suffix>次</template>
           </n-input-number>
         </n-form-item>
         <n-form-item label="任务状态">
@@ -89,22 +90,25 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import {
-  NAlert, NButton, NCard, NDataTable, NForm, NFormItem, NInput,
-  NInputNumber, NModal, NRadio, NRadioGroup, NSpace, NSwitch, NTag, useMessage,
+  NAlert, NButton, NCard, NDataTable, NDatePicker, NForm, NFormItem, NInput,
+  NInputNumber, NModal, NSelect, NSpace, NSwitch, NTag, useMessage,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
-type TaskType = 'recharge' | 'consumption'
-type RewardMode = 'amount' | 'count'
+type TaskCategory = 'once' | 'daily' | 'festival'
+type TaskKey = 'rookie_first_recharge' | 'continuous_cruise' | 'ace_route' | 'paituo_coop' | 'winter_campaign'
 interface PointTask {
   id: number
+  key: TaskKey
   name: string
-  type: TaskType
-  rewardMode: RewardMode
-  amountUnit: number
-  pointsPerUnit: number
-  pointsPerAction: number
-  dailyLimit: number
+  category: TaskCategory
+  rechargeAmount?: number
+  consumeAmount?: number
+  continuousDays?: number
+  gameName?: string
+  rewardPoints?: number
+  multiplier?: number
+  activityRange?: [number, number] | null
   enabled: boolean
   updatedAt: string
 }
@@ -112,25 +116,32 @@ interface PointTask {
 const message = useMessage()
 const showModal = ref(false)
 const editingId = ref<number | null>(null)
-const form = ref({
-  name: '', type: 'recharge' as TaskType, rewardMode: 'amount' as RewardMode,
-  amountUnit: 10, pointsPerUnit: 1, pointsPerAction: 10, dailyLimit: 1000,
-  enabled: true,
-})
+const form = ref<PointTask>(emptyTask())
 
 const tasks = ref<PointTask[]>([
-  { id: 1, name: '充值奖励', type: 'recharge', rewardMode: 'amount', amountUnit: 10, pointsPerUnit: 1, pointsPerAction: 20, dailyLimit: 1000, enabled: true, updatedAt: '2026-04-20 10:30' },
-  { id: 2, name: '消费奖励', type: 'consumption', rewardMode: 'amount', amountUnit: 10, pointsPerUnit: 1, pointsPerAction: 10, dailyLimit: 500, enabled: true, updatedAt: '2026-04-20 10:30' },
+  { id: 1, key: 'rookie_first_recharge', name: '新兵入伍礼', category: 'once', rechargeAmount: 100, consumeAmount: 30, rewardPoints: 500, enabled: true, updatedAt: '2026-09-21 10:30' },
+  { id: 2, key: 'continuous_cruise', name: '连续巡航', category: 'daily', continuousDays: 2, rewardPoints: 200, enabled: true, updatedAt: '2026-09-21 10:30' },
+  { id: 3, key: 'ace_route', name: '王牌航线', category: 'daily', gameName: '星际营救', rewardPoints: 150, enabled: true, updatedAt: '2026-09-21 10:30' },
+  { id: 4, key: 'paituo_coop', name: '派托合作任务', category: 'daily', gameName: '派托大空间', rewardPoints: 150, enabled: true, updatedAt: '2026-09-21 10:30' },
+  { id: 5, key: 'winter_campaign', name: '冬日作战月', category: 'festival', multiplier: 2, activityRange: [new Date(2026, 11, 1).getTime(), new Date(2026, 11, 31).getTime()], enabled: true, updatedAt: '2026-09-21 10:30' },
 ])
+
+const gameOptions = [
+  { label: '星际营救', value: '星际营救' },
+  { label: '奇幻赛车', value: '奇幻赛车' },
+  { label: '深海探险', value: '深海探险' },
+  { label: '派托大空间', value: '派托大空间' },
+  { label: '恐龙岛求生', value: '恐龙岛求生' },
+]
 
 const enabledCount = computed(() => tasks.value.filter(task => task.enabled).length)
 const modalTitle = computed(() => editingId.value ? '编辑积分任务' : '新增积分任务')
 
 const columns: DataTableColumns<PointTask> = [
   { title: '任务名称', key: 'name', width: 150 },
-  { title: '任务类型', key: 'type', width: 120, render: row => row.type === 'recharge' ? '充值送积分' : '消费送积分' },
-  { title: '奖励方式', key: 'rewardMode', width: 100, render: row => row.rewardMode === 'amount' ? '按金额' : '按次数' },
-  { title: '每日上限', key: 'dailyLimit', width: 110, render: row => row.rewardMode === 'amount' ? `${row.dailyLimit.toLocaleString()} 积分` : `${row.dailyLimit} 次` },
+  { title: '任务分类', key: 'category', width: 110, render: row => categoryLabel(row.category) },
+  { title: '任务描述', key: 'description', minWidth: 360, render: row => buildDescription(row) },
+  { title: '奖励配置', key: 'reward', width: 150, render: row => rewardSummary(row) },
   {
     title: '状态', key: 'enabled', width: 90, render: row => h(NTag, {
       size: 'small', bordered: false, type: row.enabled ? 'success' : 'default',
@@ -145,7 +156,7 @@ const columns: DataTableColumns<PointTask> = [
 
 function openEdit(task: PointTask) {
   editingId.value = task.id
-  form.value = { name: task.name, type: task.type, rewardMode: task.rewardMode, amountUnit: task.amountUnit, pointsPerUnit: task.pointsPerUnit, pointsPerAction: task.pointsPerAction, dailyLimit: task.dailyLimit, enabled: task.enabled }
+  form.value = { ...task }
   showModal.value = true
 }
 
@@ -154,11 +165,37 @@ function saveTask() {
     message.warning('请输入任务名称')
     return
   }
-  const data = { ...form.value, updatedAt: new Date().toLocaleString('zh-CN', { hour12: false }).replaceAll('/', '-') }
+  if ((form.value.key === 'ace_route' || form.value.key === 'paituo_coop') && !form.value.gameName?.trim()) {
+    message.warning('请输入指定游戏名称')
+    return
+  }
+  const data = { ...form.value, updatedAt: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') }
   const index = tasks.value.findIndex(task => task.id === editingId.value)
   if (index >= 0) tasks.value[index] = { ...tasks.value[index], ...data }
   message.success('任务已更新')
   showModal.value = false
+}
+
+function emptyTask(): PointTask {
+  return { id: 0, key: 'rookie_first_recharge', name: '', category: 'once', rewardPoints: 0, enabled: true, updatedAt: '' }
+}
+function categoryLabel(category: TaskCategory) {
+  return category === 'once' ? '一次性任务' : category === 'daily' ? '日常任务' : '节日任务'
+}
+function buildDescription(task: PointTask) {
+  if (task.key === 'rookie_first_recharge') return `会员注册当日完成首次充值${task.rechargeAmount ? `≥${task.rechargeAmount} 元` : ''}，且消费金额≥${task.consumeAmount ?? 0} 元，自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
+  if (task.key === 'continuous_cruise') return `连续 ${task.continuousDays ?? 0} 天在同一家店铺产生消费，完成后自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
+  if (task.key === 'ace_route') return `当日完成 1 局指定游戏“${task.gameName || '未配置'}”，完成后自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
+  if (task.key === 'paituo_coop') return `当日为指定游戏“${task.gameName || '未配置'}”的大空间多人局买单，完成后自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
+  return `${task.activityRange ? `${formatDate(task.activityRange[0])} 至 ${formatDate(task.activityRange[1])}` : '活动期间'}所有积分获取 ×${task.multiplier ?? 1}（被动增益，结算自动翻倍）。`
+}
+function rewardSummary(task: PointTask) {
+  if (task.key === 'winter_campaign') return `积分 ×${task.multiplier ?? 1}`
+  return `${task.rewardPoints ?? 0} 积分`
+}
+function formatDate(value: number) {
+  const date = new Date(value)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 </script>
 

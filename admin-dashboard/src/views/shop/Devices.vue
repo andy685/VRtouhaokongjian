@@ -7,7 +7,7 @@
     <n-tabs type="line" animated style="overflow:visible;">
       <!-- Tab 1: 主机设备 -->
       <n-tab-pane name="hosts" tab="🖥️ 主机设备" style="overflow:visible;">
-        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下主机由总运营平台分配。可在此绑定头显设备，输入头显 SN 码即可完成绑定。主机 Token 用于点播系统配置，不用于店员登录。</n-alert>
+        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下主机由总运营平台分配，头显绑定关系也由总运营后台统一设置，本页仅作查看。主机 Token 用于点播系统配置，不用于店员登录。</n-alert>
         <div class="filter-bar">
           <n-select v-model:value="hostFilterStore" :options="hostStoreOpts" placeholder="全部店铺" style="width:150px;" clearable size="small" />
           <n-select v-model:value="hostFilterStatus" :options="hostStatusOpts" placeholder="全部状态" style="width:120px;" clearable size="small" />
@@ -18,7 +18,7 @@
 
       <!-- Tab 2: 头显设备 -->
       <n-tab-pane name="headsets" tab="🥽 头显设备" style="overflow:visible;">
-        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下头显由总运营平台分配。SN 码为设备唯一序列号，可在此绑定到指定的主机。</n-alert>
+        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下头显由总运营平台分配并完成与主机的绑定，绑定关系以总运营后台设置为准，本页仅作查看。</n-alert>
         <div class="filter-bar">
           <n-select v-model:value="hsFilterStore" :options="hsStoreOpts" placeholder="全部店铺" style="width:150px;" clearable size="small" />
           <n-select v-model:value="hsFilterStatus" :options="hsStatusOpts" placeholder="全部状态" style="width:120px;" clearable size="small" />
@@ -39,67 +39,6 @@
       -->
     </n-tabs>
 
-    <!-- 主机绑定头显弹窗 -->
-    <n-modal v-model:show="showHostBindModal" preset="card" :title="`绑定头显 - ${bindHost?.name}`" style="width:480px;" :bordered="false">
-      <div style="padding:8px 0;">
-        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">输入头显的 SN 码，系统将自动匹配并完成绑定。</n-alert>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <n-input v-model:value="bindSnInput" placeholder="输入头显 SN 码，如 SN100001A" size="large" style="flex:1;" @keyup.enter="searchHeadsetBySn" />
-          <n-button type="primary" size="large" @click="searchHeadsetBySn">搜索</n-button>
-        </div>
-
-        <!-- 搜索到的头显 -->
-        <div v-if="foundHeadset" class="bind-result-card">
-          <div class="bind-result-header">
-            <span>🥽 {{ foundHeadset.name }}</span>
-            <n-tag size="small" type="info">{{ foundHeadset.sn }}</n-tag>
-          </div>
-          <div class="bind-result-body">
-            <span>型号: {{ foundHeadset.model }}</span>
-            <span>所属店铺: {{ foundHeadset.store }}</span>
-            <span>状态: <n-tag size="tiny" :type="foundHeadset.status === 'idle' ? 'success' : 'default'">{{ foundHeadset.status === 'idle' ? '空闲' : '使用中' }}</n-tag></span>
-          </div>
-          <div v-if="foundHeadset.boundHostName" class="bind-result-warn">
-            ⚠️ 该头显已绑定到「{{ foundHeadset.boundHostName }}」，重新绑定将覆盖原关系
-          </div>
-          <div v-if="storeMismatch" class="bind-result-error">
-            ❌ 该头显属于「{{ foundHeadset.store }}」，与主机「{{ bindHost?.store }}」不是同一店铺，无法绑定
-          </div>
-          <div style="margin-top:12px;text-align:center;">
-            <n-button type="primary" style="width:100%;" :disabled="storeMismatch" @click="confirmHostBind">确认绑定到「{{ bindHost?.name }}」</n-button>
-          </div>
-        </div>
-        <div v-else-if="bindSearchDone" style="text-align:center;padding:30px;color:#94a3b8;">
-          未找到匹配的头显，请检查 SN 码是否正确
-        </div>
-      </div>
-      <template #footer><n-space justify="center"><n-button @click="closeHostBind">关闭</n-button></n-space></template>
-    </n-modal>
-
-    <!-- 头显绑定主机弹窗 -->
-    <n-modal v-model:show="showHsBindModal" preset="card" :title="`绑定主机 - ${bindHeadset?.name}`" style="width:480px;" :bordered="false">
-      <div style="padding:8px 0;">
-        <n-alert type="info" :bordered="false" style="margin-bottom:16px;">
-          选择要绑定的主机。仅显示与头显同店铺（<strong>{{ bindHeadset?.store }}</strong>）的主机。
-        </n-alert>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:#64748b;">
-          <span>头显店铺: <n-tag size="tiny">{{ bindHeadset?.store }}</n-tag></span>
-          <span>可选主机: <n-tag size="tiny" type="info">{{ filteredHostBindOpts.length }} 台</n-tag></span>
-        </div>
-        <n-select v-model:value="hsBindHostId" :options="filteredHostBindOpts" placeholder="选择同店铺主机" size="large" filterable />
-        <div v-if="bindHeadset?.boundHostName" style="margin-top:8px;padding:8px 12px;background:#fef3c7;border-radius:6px;font-size:12px;color:#92400e;">
-          ⚠️ 该头显已绑定到「{{ bindHeadset.boundHostName }}」，重新绑定将覆盖原关系
-        </div>
-        <div v-if="filteredHostBindOpts.length === 0" style="margin-top:8px;padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:12px;color:#991b1b;">
-          ❌ 该店铺下没有可绑定的主机，请先在总运营后台为该店铺分配主机
-        </div>
-        <div style="margin-top:16px;text-align:center;">
-          <n-button type="primary" style="width:100%;" :disabled="!hsBindHostId || filteredHostBindOpts.length === 0" @click="confirmHsBind">确认绑定</n-button>
-        </div>
-      </div>
-      <template #footer><n-space justify="center"><n-button @click="closeHsBind">关闭</n-button></n-space></template>
-    </n-modal>
-
     <!-- 头显详情弹窗 -->
     <n-modal v-model:show="showDetailModal" preset="card" title="头显设备详情" style="width:640px;" :bordered="false">
       <n-descriptions v-if="currentDevice" label-placement="left" :column="2" bordered>
@@ -117,7 +56,7 @@
         </n-descriptions-item>
         <n-descriptions-item label="电量">{{ currentDevice.batteryLevel ? currentDevice.batteryLevel + '%' : '--' }}</n-descriptions-item>
         <n-descriptions-item label="瞳距(IPD)">{{ currentDevice.ipd ? currentDevice.ipd + 'mm' : '--' }}</n-descriptions-item>
-        <n-descriptions-item label="说明" :span="2">头显设备 SN 码为出厂唯一标识，绑定主机后在 PC 终端的「头显管理」中可远程管理。</n-descriptions-item>
+        <n-descriptions-item label="说明" :span="2">头显设备 SN 码为出厂唯一标识，绑定关系由总运营后台统一设置。</n-descriptions-item>
       </n-descriptions>
     </n-modal>
 
@@ -225,7 +164,6 @@ const hostColumns: DataTableColumns<ShopHost> = [
   { title: '状态', key: 'status', width: 70, align:'center' as const, render: (row: ShopHost) => h(NTag, { size:'small', type: row.status === 'online' ? 'success' : 'default' }, { default: () => row.status === 'online' ? '在线' : '离线' }) },
   { title: '绑定头显', key: 'boundHeadsetCount', width: 80, align:'center' as const, render: (row: ShopHost) => h(NTag, { size:'small', type:'info' }, { default: () => `${row.boundHeadsetCount}台` }) },
   { title: '操作', key: 'actions', width: 200, align:'center' as const, render: (row: ShopHost) => h(NSpace, { size:4 }, { default: () => [
-    h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openHostBind(row) }, { default: () => '绑定头显' }),
     h(NButton, { size:'tiny', text:true, type:'warning', onClick: () => openPwdModal(row) }, { default: () => '修改点播系统密码' }),
   ]}) },
 ]
@@ -263,90 +201,9 @@ const headsetColumns: DataTableColumns<ShopHeadset> = [
   { title: '绑定主机', key: 'boundHostName', width: 100, align:'center' as const, render: (row: ShopHeadset) => row.boundHostName ? h(NTag, { size:'small', type:'success' }, { default: () => row.boundHostName }) : h(NTag, { size:'small', type:'default' }, { default: () => '未绑定' }) },
   { title: '电量', key: 'batteryLevel', width: 70, align:'center' as const, render: (row: ShopHeadset) => row.batteryLevel ? h(NTag, { size:'small', type: row.batteryLevel > 50 ? 'success' : row.batteryLevel > 20 ? 'warning' : 'error' }, { default: () => `${row.batteryLevel}%` }) : h('span', { style:'color:#94a3b8' }, '--') },
   { title: '操作', key: 'actions', width: 120, align:'center' as const, render: (row: ShopHeadset) => h(NSpace, { size:4 }, { default: () => [
-    h(NButton, { size:'tiny', text:true, type:'primary', onClick: () => openHsBind(row) }, { default: () => '绑定主机' }),
     h(NButton, { size:'tiny', text:true, type:'info', onClick: () => { currentDevice.value = row; showDetailModal.value = true } }, { default: () => '详情' }),
   ]}) },
 ]
-
-// ── 主机绑定头显 ──────────────────────────────────
-const showHostBindModal = ref(false)
-const bindHost = ref<ShopHost | null>(null)
-const bindSnInput = ref('')
-const foundHeadset = ref<ShopHeadset | null>(null)
-const bindSearchDone = ref(false)
-
-function openHostBind(host: ShopHost) {
-  bindHost.value = host; bindSnInput.value = ''; foundHeadset.value = null; bindSearchDone.value = false
-  showHostBindModal.value = true
-}
-function closeHostBind() { showHostBindModal.value = false; bindHost.value = null; foundHeadset.value = null; bindSearchDone.value = false }
-
-const storeMismatch = computed(() => {
-  if (!bindHost.value || !foundHeadset.value) return false
-  return bindHost.value.store !== foundHeadset.value.store
-})
-
-function searchHeadsetBySn() {
-  bindSearchDone.value = true; foundHeadset.value = null
-  const sn = bindSnInput.value.trim().toUpperCase()
-  if (!sn) return
-  const hs = headsetDevices.value.find(h => h.sn.toUpperCase() === sn)
-  if (hs) foundHeadset.value = hs
-}
-
-function confirmHostBind() {
-  if (!bindHost.value || !foundHeadset.value || storeMismatch.value) return
-  const hs = foundHeadset.value
-  // 如果头显原来绑定到其他主机，减少旧主机的计数
-  if (hs.boundHostId) {
-    const oldHost = hostDevices.value.find(h => h.id === hs.boundHostId)
-    if (oldHost) oldHost.boundHeadsetCount = Math.max(0, oldHost.boundHeadsetCount - 1)
-  }
-  // 绑定到新主机
-  hs.boundHostName = bindHost.value.name
-  hs.boundHostId = bindHost.value.id
-  bindHost.value.boundHeadsetCount = headsetDevices.value.filter(h => h.boundHostId === bindHost.value!.id).length + 1
-  ;(window as any).$message?.success(`头显 ${hs.name} 已绑定到 ${bindHost.value.name}`)
-  closeHostBind()
-}
-
-// ── 头显绑定主机 ──────────────────────────────────
-const showHsBindModal = ref(false)
-const bindHeadset = ref<ShopHeadset | null>(null)
-const hsBindHostId = ref<number | null>(null)
-
-const hostBindOpts = computed(() => hostDevices.value.map(h => ({ label: `${h.name} (${h.serialNo} · ${h.store})`, value: h.id, store: h.store })))
-const filteredHostBindOpts = computed(() => {
-  if (!bindHeadset.value) return []
-  return hostBindOpts.value.filter(o => o.store === bindHeadset.value!.store)
-})
-
-function openHsBind(headset: ShopHeadset) {
-  bindHeadset.value = headset; hsBindHostId.value = null
-  showHsBindModal.value = true
-}
-function closeHsBind() { showHsBindModal.value = false; bindHeadset.value = null; hsBindHostId.value = null }
-
-function confirmHsBind() {
-  if (!bindHeadset.value || !hsBindHostId.value) return
-  const host = hostDevices.value.find(h => h.id === hsBindHostId.value)
-  const hs = bindHeadset.value
-  if (!host) return
-  // 同店铺校验
-  if (host.store !== hs.store) {
-    ;(window as any).$message?.error(`绑定失败：头显（${hs.store}）与主机（${host.store}）不在同一店铺`)
-    return
-  }
-  // 如果头显原来绑定到其他主机，减少旧主机的计数
-  if (hs.boundHostId) {
-    const oldHost = hostDevices.value.find(h => h.id === hs.boundHostId)
-    if (oldHost) oldHost.boundHeadsetCount = Math.max(0, oldHost.boundHeadsetCount - 1)
-  }
-  hs.boundHostName = host.name; hs.boundHostId = host.id
-  host.boundHeadsetCount = headsetDevices.value.filter(h => h.boundHostId === host.id).length + 1
-  ;(window as any).$message?.success(`${hs.name} 已绑定到 ${host.name}`)
-  closeHsBind()
-}
 
 // ── 第三方设备 ──────────────────────────────────
 interface ThirdPartyDevice { id: number; shop: string; name: string; token: string; status: 'enabled' | 'disabled'; onlineStatus: 'online' | 'offline'; price: number; points: number; payMethods: string[]; desc: string }

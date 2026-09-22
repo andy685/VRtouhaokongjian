@@ -3,7 +3,7 @@
     <div class="login-shell">
       <section class="visual-panel" aria-hidden="true">
         <div class="visual-brand">
-          <img :src="`${BASE_URL}login-brand-logo.png`" alt="" />
+          <img :src="`${BASE_URL}login-brand-strip.png`" alt="飞天云动 · 头号空间 · 琥珀金源" />
         </div>
         <div class="visual-fill" :style="heroBgStyle"></div>
       </section>
@@ -49,7 +49,7 @@
       <section class="login-panel" aria-label="店员登录">
         <div class="login-box">
           <div class="login-heading">
-            <h1>头号空间商户收银系统</h1>
+            <h1>头号掌柜</h1>
             <p class="login-subtitle">WELCOME ALPHA SPACE</p>
           </div>
 
@@ -91,11 +91,19 @@
           </el-form>
 
           <section class="demo-accounts" aria-label="演示账号">
-            <div class="demo-accounts-header">
+            <button
+              type="button"
+              class="demo-accounts-header panel-toggle"
+              :aria-expanded="demoAccountsOpen"
+              @click="demoAccountsOpen = !demoAccountsOpen"
+            >
               <span>演示账号（点击填入）</span>
-              <small>密码均为 123456</small>
-            </div>
-            <div class="demo-accounts-list">
+              <span class="panel-toggle-meta">
+                <small>{{ demoAccountsOpen ? '密码均为 123456' : `点击展开 ${demoAccounts.length} 个账号` }}</small>
+                <el-icon class="panel-toggle-icon"><ArrowRight /></el-icon>
+              </span>
+            </button>
+            <div v-show="demoAccountsOpen" class="demo-accounts-list">
               <button
                 v-for="item in demoAccounts"
                 :key="item.account"
@@ -120,11 +128,19 @@
           </section>
 
           <section class="system-portal" aria-label="系统切换入口">
-            <div class="system-portal-header">
+            <button
+              type="button"
+              class="system-portal-header panel-toggle"
+              :aria-expanded="systemPortalOpen"
+              @click="systemPortalOpen = !systemPortalOpen"
+            >
               <span>系统入口</span>
-              <small>临时切换</small>
-            </div>
-            <div class="system-portal-links">
+              <span class="panel-toggle-meta">
+                <small>{{ systemPortalOpen ? '临时切换' : '点击展开' }}</small>
+                <el-icon class="panel-toggle-icon"><ArrowRight /></el-icon>
+              </span>
+            </button>
+            <div v-show="systemPortalOpen" class="system-portal-links">
               <button
                 v-for="entry in systemEntries"
                 :key="entry.key"
@@ -300,7 +316,7 @@
 </template>
 
 <script setup>
-import { Close, Lock, MoreFilled, User } from '@element-plus/icons-vue'
+import { ArrowRight, Close, Lock, MoreFilled, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -327,7 +343,7 @@ const BASE_URL = import.meta.env.BASE_URL
 const router = useRouter()
 
 const heroBgStyle = computed(() => ({
-  background: `url('${BASE_URL}login-hero-body.jpg') center center / cover no-repeat`
+  background: `url('${BASE_URL}login-hero-city.jpg') left center / cover no-repeat`
 }))
 
 const menuOpen = ref(false)
@@ -377,6 +393,10 @@ const maskToken = (token) => {
 
 const demoAccounts = DEMO_LOGIN_ACCOUNTS
 
+// 演示账号、系统入口默认收起，避免登录表单被辅助信息挤压
+const demoAccountsOpen = ref(false)
+const systemPortalOpen = ref(false)
+
 const fillDemoAccount = (item) => {
   form.username = item.account
   form.password = item.password
@@ -392,7 +412,7 @@ const systemEntries = [
   { key: 'cashier', label: '收银工作台', path: '/login', external: false },
   { key: 'shop', label: '商家后台', path: '/login?role=shop', external: true },
   { key: 'agent', label: '代理商后台', path: '/login?role=agent', external: true },
-  { key: 'platform', label: '平台超管', path: '/login?role=platform', external: true },
+  { key: 'platform', label: '官方运营后台', path: '/login?role=platform', external: true },
   { key: 'cp', label: '供应商后台', path: '/login?role=cp', external: true }
 ]
 
@@ -610,17 +630,22 @@ onBeforeUnmount(() => {
 
 .visual-brand {
   position: absolute;
-  top: 18px;
-  left: 24px;
+  top: 1.5vh;
+  left: 1.5vw;
   z-index: 2;
-  width: 296px;
+  height: 7.5vh;
+  max-height: 84px;
+  width: auto;
   pointer-events: none;
 }
 
 .visual-brand img {
   display: block;
-  width: 100%;
-  height: auto;
+  width: auto;
+  height: 100%;
+  max-width: 70vw;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .visual-fill {
@@ -654,11 +679,12 @@ onBeforeUnmount(() => {
 }
 
 .login-heading {
-  min-height: 74px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 8px;
+  text-align: center;
   margin-bottom: 28px;
 }
 
@@ -677,6 +703,8 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
+  /* letter-spacing 会在末字符后多出一份间距，居中对齐时向左补偿 */
+  text-indent: 0.14em;
 }
 
 .login-heading + .login-form {
@@ -773,6 +801,41 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+
+.panel-toggle {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.panel-toggle-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel-toggle-meta small {
+  font-weight: 500;
+}
+
+.panel-toggle-icon {
+  font-size: 12px;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.panel-toggle[aria-expanded='true'] .panel-toggle-icon {
+  transform: rotate(90deg);
+}
+
+.demo-accounts-header.panel-toggle[aria-expanded='false'],
+.system-portal-header.panel-toggle[aria-expanded='false'] {
+  margin-bottom: 0;
 }
 
 .demo-accounts-header span {

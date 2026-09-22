@@ -13,6 +13,7 @@
       </div>
       <n-space>
         <n-button secondary @click="$router.push('/platform/games')">取消</n-button>
+        <n-button secondary :loading="saving" @click="handleSaveDraft">保存草稿</n-button>
         <n-button type="primary" :loading="saving" @click="handleSave">
           <template #icon><n-icon><SaveOutline /></n-icon></template>
           保存
@@ -83,7 +84,7 @@
             <div class="banner-grid">
               <div v-for="(banner, i) in gameData.bannerList" :key="i" class="banner-thumb">
                 <img :src="banner.url" />
-                <n-button size="tiny" quaternary type="error" class="banner-del" @click="removeBanner(i)">×</n-button>
+                <n-button size="tiny" type="error" class="banner-del" title="删除这张展位图" @click="removeBanner(i)">删除</n-button>
               </div>
               <div class="banner-add-placeholder">
                 <n-upload accept="image/*" :show-file-list="false" :max="1" @before-upload="handleBannerUpload" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
@@ -145,12 +146,6 @@
                 </div>
               </div>
             </div>
-            <div class="form-row-2">
-              <div class="form-group">
-                <label>游戏大小</label>
-                <n-input v-model:value="gameData.size" placeholder="如：256M / 2G" />
-              </div>
-            </div>
             <div class="form-group">
               <label>评分</label>
               <div class="inline-items">
@@ -160,10 +155,22 @@
             </div>
             <div class="form-group">
               <label>标签</label>
-              <div class="inline-items">
-                <n-dynamic-tags v-model:value="gameData.tags" />
-                <n-select v-if="showTagSelect" v-model:value="selectedTag" :options="tagOptions" placeholder="选择标签" filterable size="small" style="width:130px" @update:value="addTagFromSelect" />
-                <n-button v-else size="small" dashed @click="showTagSelect=true">+ 添加</n-button>
+              <div class="tag-editor">
+                <div v-if="gameData.tags.length" class="tag-chips">
+                  <n-tag v-for="(t, i) in gameData.tags" :key="t + i" size="small" closable @close="gameData.tags.splice(i, 1)">{{ t }}</n-tag>
+                </div>
+                <div class="inline-items">
+                  <n-input
+                    v-model:value="tagInput"
+                    placeholder="输入标签，支持 空格 / ，/ 、/ ；/ ｜ 自动拆分批量添加"
+                    @update:value="onTagInput"
+                    @blur="flushTagInput"
+                    @keydown.enter.prevent="flushTagInput"
+                  />
+                  <n-select v-if="showTagSelect" v-model:value="selectedTag" :options="tagOptions" placeholder="选择标签" filterable size="small" style="width:130px" @update:value="addTagFromSelect" />
+                  <n-button v-else size="small" dashed @click="showTagSelect=true">+ 添加</n-button>
+                </div>
+                <div class="upload-hint">输入时包含空格 / ，/ 、/ ；/ ｜ 等分隔符会自动拆分为多个标签；回车或失焦也会添加。</div>
               </div>
             </div>
             <div class="form-group">
@@ -191,13 +198,6 @@
               </div>
               <div class="form-row-2">
                 <div class="form-group">
-                  <label>排序号</label>
-                  <n-input-number v-model:value="gameData.sortOrder" :min="1" :max="999" style="width:100%" placeholder="数值越小越靠前">
-                    <template #suffix>号</template>
-                  </n-input-number>
-                </div>
-                <div class="form-group">
-                  <label>&nbsp;</label>
                   <n-checkbox v-model:checked="gameData.recommended">标记为推荐游戏</n-checkbox>
                 </div>
               </div>
@@ -210,32 +210,25 @@
           <div class="form-body">
             <n-input v-model:value="gameData.description" type="textarea" :rows="5" placeholder="介绍游戏玩法、特色内容..." />
 
-            <!-- 游戏介绍长图上传 -->
-            <div class="long-image-section">
-            <label class="long-image-label">游戏介绍长图</label>
-            <n-upload accept="image/*" :show-file-list="false" @before-upload="handleLongImageUpload">
-              <div v-if="gameData.longImageUrl" class="long-image-preview-wrapper">
-                <img :src="gameData.longImageUrl" class="long-image-preview" />
-                <div class="long-image-overlay">
-                  <n-icon size="20" color="#fff"><ImageOutline /></n-icon>
-                  <span>点击更换长图</span>
+            <!-- 游戏介绍图上传（多张） -->
+            <div class="intro-image-section">
+              <label class="intro-image-label">游戏介绍图</label>
+              <div class="banner-grid">
+                <div v-for="(img, i) in gameData.introImages" :key="i" class="banner-thumb">
+                  <img :src="img.url" />
+                  <n-button size="tiny" type="error" class="banner-del" title="删除这张介绍图" @click="removeIntroImage(i)">删除</n-button>
+                </div>
+                <div class="banner-add-placeholder">
+                  <n-upload accept="image/*" multiple :show-file-list="false" @before-upload="handleIntroImageUpload" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+                      <n-icon size="20" color="#aaa"><ImageOutline /></n-icon>
+                      <span style="font-size:10px;color:#999;">上传介绍图</span>
+                    </div>
+                  </n-upload>
                 </div>
               </div>
-              <div v-else class="long-image-upload-area">
-                <div class="long-image-upload-icon">
-                  <n-icon size="32" color="#bbb"><ImageOutline /></n-icon>
-                </div>
-                <div class="long-image-upload-text">
-                  <span class="long-image-upload-title">上传游戏介绍长图</span>
-                  <span class="long-image-upload-hint">支持 JPG/PNG 格式，≤10MB</span>
-                </div>
-              </div>
-            </n-upload>
-            <div v-if="gameData.longImageUrl" class="long-image-file-row">
-              <span class="file-name">{{ gameData.longImageName }}</span>
-              <n-button size="small" quaternary type="error" @click="removeLongImage">删除</n-button>
+              <span class="asset-hint">支持 JPG/PNG，单张 ≤10MB，数量不限，可一次选择多张</span>
             </div>
-          </div>
           </div>
         </section>
 
@@ -359,16 +352,7 @@
                 <label>安装目标</label>
                 <n-select v-model:value="gameData.installTarget" :options="installTargetOptions" placeholder="选择安装位置" />
               </div>
-              <div class="form-group">
-                <label>
-                  <template v-if="isPackageIdentifierRequired"><span class="required-mark">*</span> </template>包名 / 应用标识
-                  <n-text v-if="gameData.runtimeArchitecture === 'media_experience'" depth="3" style="font-size:11px;">（影视内容无需填写）</n-text>
-                </label>
-                <n-input
-                  v-model:value="gameData.packageIdentifier"
- :placeholder="isPackageIdentifierRequired ? '如 com.vendor.game（APK 包名，必填）' : '如 com.vendor.game 或 Steam AppID（选填）'"
-                />
-              </div>
+              <div class="form-group"><label>包名 / APK 信息</label><n-input :value="gameData.packageIdentifier || '上传 APK 后自动解析'" readonly><template #suffix>APK 大小：{{ gameData.resourceComponents.find(item => item.role === 'headset_client')?.fileSize || '—' }}</template></n-input><p class="field-hint">包名与 APK 大小由上传文件自动解析，当前版本无需手动填写。</p></div>
             </div>
 
             <div class="form-row-2">
@@ -435,7 +419,7 @@
                 <span class="required-mark">*</span> 预设销售金额
                 <n-text depth="3">（建议零售价）</n-text>
               </label>
-              <n-input-number v-model:value="gameData.presetPrice" :min="0.01" :max="9999" :precision="2" placeholder="请输入建议售价" style="width:100%">
+              <n-input-number v-model:value="gameData.presetPrice" :min="0" :max="9999" :precision="2" placeholder="请输入建议售价" style="width:100%">
                 <template #suffix>元/次</template>
               </n-input-number>
             </div>
@@ -572,7 +556,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  NButton, NInput, NRate, NIcon, NSpace, NDynamicTags, NTag, NSelect,
+  NButton, NInput, NRate, NIcon, NSpace, NTag, NSelect,
   NCheckbox, NInputNumber, NDatePicker, NBreadcrumb,
   NBreadcrumbItem, NSlider, NUpload, NRadioGroup, NRadioButton,
   NSwitch, NText, useMessage
@@ -592,6 +576,21 @@ const isPlaying = ref(false)
 const videoProgress = ref(0)
 const showTagSelect = ref(false)
 const selectedTag = ref<string | null>(null)
+// 标签输入：按 空格/，/、/；/｜ 自动拆分
+const tagInput = ref('')
+const tagSplitRegex = /[\s，、；;｜|]+/
+function onTagInput(v: string) {
+  if (tagSplitRegex.test(v)) addTagsFromString(v)
+}
+function flushTagInput() {
+  if (tagInput.value.trim()) addTagsFromString(tagInput.value)
+}
+function addTagsFromString(v: string) {
+  v.split(tagSplitRegex).map(s => s.trim()).filter(Boolean).forEach(t => {
+    if (!gameData.value.tags.includes(t)) gameData.value.tags.push(t)
+  })
+  tagInput.value = ''
+}
 const selectedResourceRole = ref<ResourceRole | null>(null)
 const saving = ref(false)
 const baselineVersion = ref('')
@@ -722,15 +721,6 @@ const runtimeArchitectureOptions: {
   runPlatform: 'host' | 'allInOne'
 }[] = [
   {
-    value: 'pcvr',
-    title: 'PCVR 主机运行',
-    description: '游戏安装在 Windows 主机，画面串流或直连到头显。',
-    icon: DesktopOutline,
-    tags: ['EXE/ZIP', 'PC'],
-    requiredRoles: ['pc_client'],
-    runPlatform: 'host',
-  },
-  {
     value: 'headset_native',
     title: '头显本地运行',
     description: '游戏直接安装在 Pico、Quest 等安卓头显内。',
@@ -738,6 +728,15 @@ const runtimeArchitectureOptions: {
     tags: ['APK', '头显'],
     requiredRoles: ['headset_client'],
     runPlatform: 'allInOne',
+  },
+  {
+    value: 'pcvr',
+    title: 'PCVR 主机运行',
+    description: '游戏安装在 Windows 主机，画面串流或直连到头显。',
+    icon: DesktopOutline,
+    tags: ['EXE/ZIP', 'PC'],
+    requiredRoles: ['pc_client'],
+    runPlatform: 'host',
   },
   {
     value: 'headset_with_pc_service',
@@ -990,9 +989,8 @@ const gameData = ref({
     createResourceComponent('pc_client', true),
   ] as ResourceComponent[],
 
-  // 游戏介绍长图
-  longImageUrl: '' as string,
-  longImageName: '' as string,
+  // 游戏介绍图（多张）
+  introImages: [] as { url: string; name: string }[],
 
   // 支持特性
   supportShooting: false,
@@ -1011,13 +1009,12 @@ const gameData = ref({
   videoUrl: '',
   videoCover: '',
   status: 'draft',
-  sortOrder: 10,
   recommended: false,
   cpName: '' as string,
-  presetPrice: null as number | null,
+  presetPrice: 0 as number,
 
   // ===== 运营配置（v1.5 新增） =====
-  runtimeArchitecture: 'pcvr' as RuntimeArchitecture,
+  runtimeArchitecture: 'headset_native' as RuntimeArchitecture,
   // 运行平台：host-主机游戏（串流到头显）, allInOne-VR头显一体机
   runPlatform: 'host',
   // 游戏豆消耗（个/次）
@@ -1035,7 +1032,7 @@ const gameData = ref({
   allowRenewal: false,
 
   // ===== 技术规格 =====
-  installTarget: 'windows_pc',
+  installTarget: 'android_headset',
   packageIdentifier: '',
   entryPoint: '',
   launchArgs: '',
@@ -1233,6 +1230,10 @@ function loadGameData(id: string) {
       url: `https://picsum.photos/seed/game${id}_banner${i}/900/600`,
       name: `banner_${i + 1}.jpg`,
     }))
+    gameData.value.introImages = Array.from({ length: 2 }).map((_, i) => ({
+      url: `https://picsum.photos/seed/game${id}_intro${i}/600/900`,
+      name: `intro_${i + 1}.jpg`,
+    }))
   }
 }
 
@@ -1314,28 +1315,31 @@ function handleResourceUpload(role: ResourceRole, options: UploadBeforeOptions) 
   target.fileName = file.name
   target.fileSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB'
   target.fileUrl = URL.createObjectURL(file)
+  if (role === 'headset_client' && file.name.toLowerCase().endsWith('.apk')) gameData.value.packageIdentifier = `com.upload.${file.name.replace(/\.apk$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '')}`
   message.success(`${meta.label}「${file.name}」上传成功（模拟）`)
   return false
 }
 
-// 游戏介绍长图上传
-function handleLongImageUpload(options: UploadBeforeOptions) {
+// 游戏介绍图上传（支持多张）
+function handleIntroImageUpload(options: UploadBeforeOptions) {
   const file = options.file.file
   if (!file) return false
   if (file.size > 10 * 1024 * 1024) {
-    message.warning('长图文件不能超过10MB')
+    message.warning('介绍图单张不能超过10MB')
     return false
   }
-  gameData.value.longImageUrl = URL.createObjectURL(file)
-  gameData.value.longImageName = file.name
-  message.success(`游戏介绍长图「${file.name}」上传成功（模拟）`)
+  gameData.value.introImages.push({
+    url: URL.createObjectURL(file),
+    name: file.name,
+  })
+  message.success(`介绍图「${file.name}」上传成功（模拟）`)
   return false
 }
 
-function removeLongImage() {
-  gameData.value.longImageUrl = ''
-  gameData.value.longImageName = ''
-  message.info('介绍长图已删除')
+function removeIntroImage(index: number) {
+  const img = gameData.value.introImages[index]
+  gameData.value.introImages.splice(index, 1)
+  message.info(`介绍图「${img.name}」已删除`)
 }
 
 function addTagFromSelect(value: string) {
@@ -1346,7 +1350,37 @@ function addTagFromSelect(value: string) {
   showTagSelect.value = false
 }
 
-// 保存
+// 保存草稿：只要有任意内容即可保存，不做任何必填/格式限制
+function hasAnyGameData(): boolean {
+  const d = gameData.value
+  return Boolean(
+    d.name?.trim() ||
+    d.description?.trim() ||
+    d.iconUrl || d.videoUrl ||
+    (d.tags && d.tags.length) ||
+    (d.introImages && d.introImages.length) ||
+    (d.presetPrice ?? 0) > 0 ||
+    (d.gameBeanCost ?? 0) > 0 ||
+    d.resourceComponents?.some(c => c.fileName)
+  )
+}
+
+async function handleSaveDraft() {
+  if (!hasAnyGameData()) {
+    message.warning('页面内容为空，请至少填写一些游戏信息后再保存草稿')
+    return
+  }
+  saving.value = true
+  try {
+    gameData.value.status = 'draft'
+    await new Promise(resolve => setTimeout(resolve, 600))
+    message.success('草稿已保存，可随时回来继续编辑')
+  } finally {
+    saving.value = false
+  }
+}
+
+// 保存（完整校验）
 async function handleSave() {
   if (!gameData.value.name) {
     message.warning('请填写游戏名称')
@@ -1366,10 +1400,6 @@ async function handleSave() {
   }
   if (!gameData.value.presetPrice || gameData.value.presetPrice <= 0) {
     message.warning('请填写预设销售金额')
-    return
-  }
-  if (isPackageIdentifierRequired.value && !gameData.value.packageIdentifier) {
-    message.warning('请填写包名/应用标识（安卓头显必填）')
     return
   }
   const missingResources = gameData.value.resourceComponents.filter(item => item.required && !item.fileName)
@@ -1399,6 +1429,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.field-hint{margin:6px 0 0;color:#64748b;font-size:12px;line-height:1.5}
 .page-root {
   max-width: 1400px;
   margin: 0 auto;
@@ -1613,16 +1644,22 @@ onMounted(() => {
 }
 .banner-del {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 20px;
-  height: 20px;
-  padding: 0;
+  top: 4px;
+  right: 4px;
+  height: 22px;
+  padding: 0 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 11px;
   line-height: 1;
+  background: rgba(239, 68, 68, 0.92);
+  color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.banner-del:hover {
+  background: #dc2626;
 }
 .banner-add-placeholder {
   aspect-ratio: 16/9;
@@ -1750,6 +1787,16 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+.tag-editor .tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.tag-editor .inline-items .n-input {
+  flex: 1;
+  min-width: 220px;
 }
 .rating-num {
   font-size: 15px;
@@ -2040,101 +2087,14 @@ onMounted(() => {
   transform: translateY(-8px);
 }
 
-/* 游戏介绍长图 */
-.long-image-section {
-  padding-top: 0;
-}
-.long-image-label {
+/* 游戏介绍图 */
+.intro-image-section { padding-top: 0; }
+.intro-image-label {
   display: block;
   font-size: 12px;
   font-weight: 500;
   color: var(--text-muted, #999);
   margin-bottom: 10px;
-}
-.long-image-preview-wrapper {
-  position: relative;
-  width: 100%;
-  max-height: 300px;
-  overflow: hidden;
-  border-radius: 10px;
-  border: 1px solid var(--border-color, #e8e8e8);
-  cursor: pointer;
-}
-.long-image-preview {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  background: var(--bg-secondary, #f5f5f5);
-  max-height: 300px;
-}
-.long-image-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  opacity: 0;
-  transition: opacity 0.25s;
-  color: #fff;
-  font-size: 13px;
-}
-.long-image-preview-wrapper:hover .long-image-overlay {
-  opacity: 1;
-}
-.long-image-upload-area {
-  width: 100%;
-  padding: 28px 20px;
-  border: 2px dashed #ddd;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--bg-secondary, #fafafa);
-}
-.long-image-upload-area:hover {
-  border-color: var(--primary-color, #3B82F6);
-  background: rgba(59,130,246,0.03);
-}
-.long-image-upload-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.long-image-upload-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.long-image-upload-title {
-  font-size: 13px;
-  color: var(--text-secondary, #666);
-  font-weight: 500;
-}
-.long-image-upload-hint {
-  font-size: 11px;
-  color: var(--text-muted, #999);
-}
-.long-image-file-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-  padding: 6px 10px;
-  background: var(--bg-secondary, #f5f5f5);
-  border-radius: 6px;
 }
 
 /* 响应式 */

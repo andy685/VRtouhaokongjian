@@ -342,6 +342,12 @@
           <div class="review-section">
             <h4>审核配置</h4>
             <n-form label-placement="left" label-width="110">
+              <n-form-item label="游戏星级" required>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <n-rate v-model:value="reviewForm.rating" allow-half clearable />
+                  <span style="font-size: 12px; color: var(--text-muted);">{{ reviewForm.rating ? reviewForm.rating.toFixed(1) + ' 星' : '未设置，审核通过前必须评分' }}</span>
+                </div>
+              </n-form-item>
               <n-form-item label="游戏豆定价" required>
                 <n-input-number v-model:value="reviewForm.gameBeanCost" :min="1" placeholder="每次消耗游戏豆数量" style="width: 200px;" />
                 <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">豆/次</span>
@@ -392,11 +398,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed, h, watch } from 'vue'
 import {
   NButton, NDataTable, NTag, NSelect, NIcon, NSpace, NTabs, NTabPane,
   NModal, NDescriptions, NDescriptionsItem, NForm, NFormItem, NInputNumber,
-  NInput, useMessage
+  NInput, NRate, useMessage
 } from 'naive-ui'
 import {
   TimeOutline, CheckmarkCircleOutline, CloseCircleOutline,
@@ -763,10 +769,10 @@ const pendingColumns = [
 
 // ========== 已审核数据 ==========
 const reviewedData = ref([
-  { id: 101, name: '恐怖医院', cpName: '极境互动科技', version: '1.8.5', result: 'passed', gameBeanCost: 25, costPerPlay: 8.75, salePrice: 48, reviewer: '管理员', reviewTime: '2026-05-18 15:30', comment: '内容质量优秀，通过' },
-  { id: 102, name: '末日求生', cpName: '极境互动科技', version: '0.9.1', result: 'rejected', gameBeanCost: 0, costPerPlay: 0, salePrice: 0, reviewer: '管理员', reviewTime: '2026-05-27 10:00', comment: '游戏描述与内容不符，请修改后重新提交' },
-  { id: 103, name: '极速赛车', cpName: '闪耀游戏工作室', version: '3.1.0', result: 'passed', gameBeanCost: 15, costPerPlay: 4.50, salePrice: 30, reviewer: '运营主管', reviewTime: '2026-05-15 14:00', comment: '品质优秀，定价15豆' },
-  { id: 104, name: '过山车VR', cpName: '极境互动科技', version: '2.3.2', result: 'passed', gameBeanCost: 20, costPerPlay: 6.00, salePrice: 38, reviewer: '管理员', reviewTime: '2026-05-20 11:30', comment: '热门游戏更新版本，保持原定价' },
+  { id: 101, name: '恐怖医院', cpName: '极境互动科技', version: '1.8.5', result: 'passed', rating: 4.7, gameBeanCost: 25, costPerPlay: 8.75, salePrice: 48, reviewer: '管理员', reviewTime: '2026-05-18 15:30', comment: '内容质量优秀，通过' },
+  { id: 102, name: '末日求生', cpName: '极境互动科技', version: '0.9.1', result: 'rejected', rating: 0, gameBeanCost: 0, costPerPlay: 0, salePrice: 0, reviewer: '管理员', reviewTime: '2026-05-27 10:00', comment: '游戏描述与内容不符，请修改后重新提交' },
+  { id: 103, name: '极速赛车', cpName: '闪耀游戏工作室', version: '3.1.0', result: 'passed', rating: 4.6, gameBeanCost: 15, costPerPlay: 4.50, salePrice: 30, reviewer: '运营主管', reviewTime: '2026-05-15 14:00', comment: '品质优秀，定价15豆' },
+  { id: 104, name: '过山车VR', cpName: '极境互动科技', version: '2.3.2', result: 'passed', rating: 4.9, gameBeanCost: 20, costPerPlay: 6.00, salePrice: 38, reviewer: '管理员', reviewTime: '2026-05-20 11:30', comment: '热门游戏更新版本，保持原定价' },
 ])
 
 const filteredReviewedData = computed(() => {
@@ -784,6 +790,12 @@ const reviewedColumns = [
       return h(NTag, { type: row.result === 'passed' ? 'success' : 'error', size: 'small', bordered: false }, () => row.result === 'passed' ? '通过' : '不通过')
     }
   },
+  { title: '星级', key: 'rating', width: 130, render: (row: any) => row.rating
+    ? h('div', { style: 'display:flex;align-items:center;gap:4px;' }, [
+        h(NRate, { value: row.rating, size: 'small', readonly: true, allowHalf: true }),
+        h('span', { style: 'font-size:12px;color:var(--text-muted);' }, String(row.rating)),
+      ])
+    : '-' },
   { title: '售价', key: 'salePrice', width: 90, render: (row: any) => row.salePrice ? `¥${row.salePrice}/次` : '-' },
   { title: '游戏豆', key: 'gameBeanCost', width: 90, render: (row: any) => row.gameBeanCost ? `${row.gameBeanCost} 豆/次` : '-' },
   { title: '分成成本', key: 'costPerPlay', width: 100, render: (row: any) => row.costPerPlay ? `¥${row.costPerPlay}/次` : '-' },
@@ -795,7 +807,13 @@ const reviewedColumns = [
 // ========== 审核弹窗 ==========
 const showReviewModal = ref(false)
 const currentGame = ref<ReviewGame | null>(null)
-const reviewForm = ref({ gameBeanCost: 20, costPerPlay: 6, salePrice: 0, comment: '' })
+const reviewForm = ref({ rating: 0 as number, gameBeanCost: 0, costPerPlay: 0, salePrice: 0, comment: '' })
+// 定价联动：游戏豆默认等同于单次成本，销售金额默认等同于游戏豆金额；成本为 0 时两者均为 0
+watch(() => reviewForm.value.costPerPlay, (cost) => {
+  const beans = Math.ceil(Math.max(cost || 0, 0))
+  reviewForm.value.gameBeanCost = beans
+  reviewForm.value.salePrice = beans
+})
 
 function runtimeMeta(value: RuntimeArchitecture) {
   return runtimeArchitectureOptions[value]
@@ -902,33 +920,36 @@ function downloadBanner(game: ReviewGame, banner: { name: string }) {
 function openReview(game: ReviewGame) {
   currentGame.value = game
   reviewForm.value = {
-    gameBeanCost: 20,
-    costPerPlay: 6,
-    salePrice: game.presetPrice ?? 0,
+    rating: (game as any).rating ?? 0,
+    gameBeanCost: 0,
+    costPerPlay: 0,
+    salePrice: 0,
     comment: '',
   }
   showReviewModal.value = true
 }
 
 function approveGame() {
-  if (!reviewForm.value.gameBeanCost || !reviewForm.value.costPerPlay) {
-    message.warning('请设置游戏豆定价和单次成本')
+  if (!reviewForm.value.rating) {
+    message.warning('请为游戏设置星级')
     return
   }
-  if (!reviewForm.value.salePrice) {
-    message.warning('请设置销售金额')
+  if (reviewForm.value.gameBeanCost == null || reviewForm.value.costPerPlay == null || reviewForm.value.salePrice == null) {
+    message.warning('请设置游戏豆定价、单次成本和销售金额')
     return
   }
   // 从待审核移除，加入已审核
-  const idx = pendingData.value.findIndex(g => g.id === currentGame.value.id)
+  const idx = pendingData.value.findIndex(g => g.id === currentGame.value!.id)
   if (idx > -1) {
     const game = pendingData.value.splice(idx, 1)[0]
+    ;(game as any).rating = reviewForm.value.rating
     reviewedData.value.unshift({
       id: game.id,
       name: game.name,
       cpName: game.cpName,
       version: game.version,
       result: 'passed',
+      rating: reviewForm.value.rating,
       gameBeanCost: reviewForm.value.gameBeanCost,
       costPerPlay: reviewForm.value.costPerPlay,
       salePrice: reviewForm.value.salePrice,
@@ -937,7 +958,7 @@ function approveGame() {
       comment: reviewForm.value.comment || '审核通过',
     })
   }
-  message.success(`「${currentGame.value.name}」审核通过，售价 ¥${reviewForm.value.salePrice}/次，消耗 ${reviewForm.value.gameBeanCost} 豆/次，分成 ¥${reviewForm.value.costPerPlay}/次`)
+  message.success(`「${currentGame.value!.name}」审核通过，星级 ${reviewForm.value.rating}，售价 ¥${reviewForm.value.salePrice}/次，消耗 ${reviewForm.value.gameBeanCost} 豆/次`)
   showReviewModal.value = false
 }
 
