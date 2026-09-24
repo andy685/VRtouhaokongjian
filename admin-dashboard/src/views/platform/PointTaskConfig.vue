@@ -183,11 +183,11 @@ function categoryLabel(category: TaskCategory) {
   return category === 'once' ? '一次性任务' : category === 'daily' ? '日常任务' : '节日任务'
 }
 function buildDescription(task: PointTask) {
-  if (task.key === 'rookie_first_recharge') return `会员注册当日完成首次充值${task.rechargeAmount ? `≥${task.rechargeAmount} 元` : ''}，且消费金额≥${task.consumeAmount ?? 0} 元，自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
-  if (task.key === 'continuous_cruise') return `连续 ${task.continuousDays ?? 0} 天在同一家店铺产生消费，完成后自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
-  if (task.key === 'ace_route') return `当日完成 1 局指定游戏“${task.gameName || '未配置'}”，完成后自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
-  if (task.key === 'paituo_coop') return `当日为指定游戏“${task.gameName || '未配置'}”的大空间多人局买单，完成后自动发放 ${task.rewardPoints ?? 0} 积分奖励。`
-  return `${task.activityRange ? `${formatDate(task.activityRange[0])} 至 ${formatDate(task.activityRange[1])}` : '活动期间'}所有积分获取 ×${task.multiplier ?? 1}（被动增益，结算自动翻倍）。`
+  if (task.key === 'rookie_first_recharge') return `注册当天充值满 ${task.rechargeAmount ?? 0} 元，且游戏点播消费满 ${task.consumeAmount ?? 0} 元。`
+  if (task.key === 'continuous_cruise') return `同一家店连续 ${task.continuousDays ?? 0} 天点播游戏`
+  if (task.key === 'ace_route') return `点播“${task.gameName || 'xxx'}”游戏（每日计 1 次）`
+  if (task.key === 'paituo_coop') return `点播“${task.gameName || 'xxx'}”游戏的大空间多人局（每日计 1 次）`
+  return `活动期间所有积分获取 ×${task.multiplier ?? 1}`
 }
 function rewardSummary(task: PointTask) {
   if (task.key === 'winter_campaign') return `积分 ×${task.multiplier ?? 1}`

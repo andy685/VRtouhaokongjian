@@ -13,26 +13,32 @@
       <div class="summary-card"><span>今日扣减</span><strong class="deduct">1,200</strong><small>积分</small></div>
     </div>
 
-    <n-card title="会员积分余额" :bordered="false" class="section-card">
-      <template #header-extra><n-input v-model:value="memberKeyword" clearable placeholder="搜索会员姓名/手机号" style="width: 230px" /></template>
-      <n-data-table :columns="memberColumns" :data="filteredMembers" :pagination="{ pageSize: 6 }" :single-line="false" />
-    </n-card>
-
-    <n-card title="积分变动明细" :bordered="false" class="section-card">
-      <template #header-extra>
-        <n-space>
-          <n-select v-model:value="sourceFilter" :options="sourceOptions" clearable placeholder="全部来源" style="width: 140px" />
-          <n-select v-model:value="changeFilter" :options="changeOptions" clearable placeholder="全部变动" style="width: 120px" />
-        </n-space>
-      </template>
-      <n-data-table :columns="ledgerColumns" :data="filteredLedger" :pagination="{ pageSize: 8 }" :single-line="false" />
+    <n-card :bordered="false">
+      <n-tabs v-model:value="activeTab" type="line" animated>
+        <n-tab-pane name="members" tab="会员积分余额">
+          <div class="toolbar">
+            <n-input v-model:value="memberKeyword" clearable placeholder="搜索会员姓名/手机号" style="width: 230px" />
+          </div>
+          <n-data-table :columns="memberColumns" :data="filteredMembers" :pagination="{ pageSize: 6 }" :single-line="false" />
+        </n-tab-pane>
+        <n-tab-pane name="ledger" tab="积分变动明细">
+          <div class="toolbar">
+            <n-date-picker v-model:value="dateRange" type="daterange" clearable style="width: 240px" />
+            <n-select v-model:value="memberFilter" :options="memberOptions" clearable filterable placeholder="全部会员" style="width: 170px" />
+            <n-select v-model:value="categoryFilter" :options="categoryOptions" clearable placeholder="全部分类" style="width: 120px" />
+            <n-select v-model:value="sourceFilter" :options="sourceOptions" clearable placeholder="全部来源" style="width: 140px" />
+            <n-select v-model:value="changeFilter" :options="changeOptions" clearable placeholder="全部变动" style="width: 120px" />
+          </div>
+          <n-data-table :columns="ledgerColumns" :data="filteredLedger" :pagination="{ pageSize: 8 }" :single-line="false" />
+        </n-tab-pane>
+      </n-tabs>
     </n-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
-import { NCard, NDataTable, NInput, NSelect, NSpace, NTag } from 'naive-ui'
+import { NCard, NDataTable, NDatePicker, NInput, NSelect, NTabPane, NTabs, NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
 interface MemberBalance { id: number; name: string; phone: string; points: number; earned: number; used: number; updatedAt: string }
@@ -41,6 +47,10 @@ interface LedgerItem { id: number; member: string; phone: string; change: number
 const memberKeyword = ref('')
 const sourceFilter = ref<string | null>(null)
 const changeFilter = ref<string | null>(null)
+const memberFilter = ref<string | null>(null)
+const categoryFilter = ref<string | null>(null)
+const dateRange = ref<[number, number] | null>(null)
+const activeTab = ref<'members' | 'ledger'>('members')
 const sourceOptions = [
   { label: '新兵入伍礼', value: '新兵入伍礼' },
   { label: '连续巡航', value: '连续巡航' },
@@ -50,6 +60,16 @@ const sourceOptions = [
   { label: '兑换扣减', value: '兑换扣减' },
 ]
 const changeOptions = [{ label: '增加', value: 'increase' }, { label: '扣减', value: 'deduct' }]
+const categoryOptions = ['一次性任务', '日常任务', '节日任务', '扣减'].map(value => ({ label: value, value }))
+const memberOptions = computed(() => {
+  const seen = new Set<string>()
+  return ledger.value.filter(item => {
+    const key = `${item.member}${item.phone}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  }).map(item => ({ label: `${item.member} ${item.phone}`, value: `${item.member}${item.phone}` }))
+})
 
 const members = ref<MemberBalance[]>([
   { id: 1, name: '张小明', phone: '138****1234', points: 1680, earned: 2260, used: 580, updatedAt: '2026-09-21 14:32' },
@@ -75,6 +95,12 @@ const filteredLedger = computed(() => ledger.value.filter(item => {
   if (sourceFilter.value && item.source !== sourceFilter.value) return false
   if (changeFilter.value === 'increase' && item.change < 0) return false
   if (changeFilter.value === 'deduct' && item.change >= 0) return false
+  if (memberFilter.value && `${item.member}${item.phone}` !== memberFilter.value) return false
+  if (categoryFilter.value && item.taskCategory !== categoryFilter.value) return false
+  if (dateRange.value) {
+    const time = new Date(item.createdAt.replace(/-/g, '/')).getTime()
+    if (time < dateRange.value[0] || time > dateRange.value[1] + 24 * 3600 * 1000 - 1) return false
+  }
   return true
 }))
 
@@ -109,6 +135,6 @@ const ledgerColumns: DataTableColumns<LedgerItem> = [
 .summary-card span, .summary-card small { display: block; color: #8b95a5; font-size: 13px; }
 .summary-card strong { display: inline-block; margin: 8px 6px 3px 0; color: #2563eb; font-size: 24px; }
 .summary-card strong.deduct { color: #dc2626; }
-.section-card { margin-bottom: 16px; }
+.toolbar { display: flex; justify-content: flex-start; gap: 10px; margin-bottom: 14px; }
 @media (max-width: 760px) { .summary-row { grid-template-columns: 1fr; } }
 </style>
