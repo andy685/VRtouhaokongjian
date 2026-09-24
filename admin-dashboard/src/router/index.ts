@@ -75,6 +75,8 @@ const routes: RouteRecordRaw[] = [
       // AI 店招运营
       { path: 'ai-shop-sign', redirect: '/platform/ai-shop-sign/devices' },
       { path: 'ai-shop-sign/devices', name: 'PlatformAiShopSignDevices', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '设备管理' } },
+      { path: 'ai-shop-sign/default-prompt', name: 'PlatformAiShopSignDefaultPrompt', component: () => import('../views/platform/AiShopSignDefaultPrompt.vue'), meta: { title: '人物默认配置' } },
+      { path: 'ai-shop-sign/datasets', name: 'PlatformAiShopSignDatasets', component: () => import('../views/platform/AiShopSignDatasets.vue'), meta: { title: '数据集管理' } },
       { path: 'ai-shop-sign/knowledge', name: 'PlatformAiShopSignKnowledge', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '知识库管理' } },
       { path: 'ai-shop-sign/knowledge/:id', name: 'PlatformAiShopSignKnowledgeDetail', component: () => import('../views/platform/AiShopSignKnowledgeDetail.vue'), meta: { title: '知识库文章管理' } },
       { path: 'ai-shop-sign/voice-cloning', name: 'PlatformAiShopSignVoiceCloning', component: () => import('../views/platform/AiShopSign.vue'), meta: { title: '声音复刻' } },

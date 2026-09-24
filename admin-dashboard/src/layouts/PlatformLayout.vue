@@ -314,6 +314,8 @@ const menuOptions: MenuOption[] = [
     icon: icon(ColorWandOutline),
     children: [
       { label: '设备管理', key: '/platform/ai-shop-sign/devices' },
+      { label: '人物默认配置', key: '/platform/ai-shop-sign/default-prompt' },
+      { label: '数据集管理', key: '/platform/ai-shop-sign/datasets' },
       { label: '知识库管理', key: '/platform/ai-shop-sign/knowledge' },
       { label: '声音复刻', key: '/platform/ai-shop-sign/voice-cloning' },
       { label: '背景管理', key: '/platform/ai-shop-sign/backgrounds' },

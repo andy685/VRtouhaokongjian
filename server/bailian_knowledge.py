@@ -15,7 +15,7 @@
     pip install -r requirements.txt
     python server/bailian_knowledge.py        # http://127.0.0.1:9610
 
-凭据优先级：请求体 > server/.env > bailian-setup/.env
+凭据来源：仅 server/.env > bailian-setup/.env
   ALIBABA_CLOUD_ACCESS_KEY_ID / ALIBABA_CLOUD_ACCESS_KEY_SECRET / WORKSPACE_ID
   DASHSCOPE_API_KEY（跨库检索使用）
 """
@@ -228,17 +228,20 @@ class MonitorPayload(Credentials):
 
 # ---------- 工具 ----------
 def _resolve(payload: Credentials):
-    ak = payload.accessKeyId or os.getenv("ALIBABA_CLOUD_ACCESS_KEY_ID", "")
-    sk = payload.accessKeySecret or os.getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET", "")
-    ws = payload.workspaceId or os.getenv("WORKSPACE_ID", "")
+    # This service is the trust boundary.  Do not accept cloud credentials from
+    # browser request bodies: doing so leaks long-lived RAM credentials through
+    # localStorage, DevTools and request logs.
+    ak = os.getenv("ALIBABA_CLOUD_ACCESS_KEY_ID", "")
+    sk = os.getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET", "")
+    ws = os.getenv("WORKSPACE_ID", "")
     if not ak or not sk:
         raise HTTPException(
             status_code=400,
-            detail="缺少阿里云 AccessKey：请在页面填写，或在 server/.env 配置 ALIBABA_CLOUD_ACCESS_KEY_ID / SECRET",
+            detail="服务端尚未配置 ALIBABA_CLOUD_ACCESS_KEY_ID / ALIBABA_CLOUD_ACCESS_KEY_SECRET",
         )
     if not ws:
         raise HTTPException(status_code=400, detail="缺少百炼业务空间 ID（WORKSPACE_ID）")
-    endpoint = (payload.endpoint or os.getenv("BAILIAN_ENDPOINT") or DEFAULT_ENDPOINT).strip()
+    endpoint = (os.getenv("BAILIAN_ENDPOINT") or DEFAULT_ENDPOINT).strip()
     for prefix in ("https://", "http://"):
         if endpoint.startswith(prefix):
             endpoint = endpoint[len(prefix):]
