@@ -1,6 +1,6 @@
 <template>
   <div class="page-container brand-page">
-    <div class="page-header"><div><h1>前台品牌 Logo</h1><p>收银系统与 PC 点播系统分别替换，作为同一份申请提交运营审核。</p></div><n-tag :type="statusType" round>{{ statusLabel }}</n-tag></div>
+    <div class="page-header"><div><h1>商家品牌 Logo</h1><p>商家统一替换收银系统与 PC 点播系统 Logo，作为一份申请提交运营审核。</p></div><n-tag :type="statusType" round>{{ statusLabel }}</n-tag></div>
     <n-alert :type="statusType" :bordered="false" class="status-alert">{{ statusHint }}</n-alert>
     <section class="logo-grid">
       <article v-for="item in logoTargets" :key="item.key" class="logo-card">
@@ -17,8 +17,8 @@ import { computed, reactive, ref } from 'vue'
 import { NAlert, NButton, NForm, NFormItem, NInput, NSpace, NTag, NUpload, useMessage } from 'naive-ui'
 type Key = 'cashierLogoUrl' | 'vodLogoUrl'
 type Brand = { status:string; cashierLogoUrl:string; vodLogoUrl:string; effectiveCashierLogoUrl:string; effectiveVodLogoUrl:string; note:string; requestAction?:'replace'|'restore_default'; rejectionReason?:string }
-const KEY='store-brand-config:hengran'; const message=useMessage()
-const brand=ref<Brand>({status:'draft',cashierLogoUrl:'',vodLogoUrl:'',effectiveCashierLogoUrl:'',effectiveVodLogoUrl:'',note:'',...(JSON.parse(localStorage.getItem(KEY)||'{}'))})
+const KEY='merchant-brand-config:hengran'; const LEGACY_KEY='store-brand-config:hengran'; const message=useMessage()
+const brand=ref<Brand>({status:'draft',cashierLogoUrl:'',vodLogoUrl:'',effectiveCashierLogoUrl:'',effectiveVodLogoUrl:'',note:'',...(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY)||'{}'))})
 if(brand.value.status==='not_authorized') brand.value.status='draft'; if(brand.value.requestAction==='restore_default'){brand.value.status='draft';brand.value.cashierLogoUrl='';brand.value.vodLogoUrl='';brand.value.note='';brand.value.requestAction='replace';localStorage.setItem(KEY,JSON.stringify(brand.value))}
 const form=reactive({cashierLogoUrl:brand.value.cashierLogoUrl,vodLogoUrl:brand.value.vodLogoUrl,note:brand.value.note})
 const statusLabel=computed(()=>({draft:'待提交',pending:'运营审批中',approved:'已生效',rejected:'已驳回'}[brand.value.status]||'待提交'))

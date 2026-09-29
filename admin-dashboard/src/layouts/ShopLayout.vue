@@ -301,7 +301,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '店铺列表', key: '/shop/store-list' },
       { label: '待机画面', key: '/shop/on-demand-settings' },
-      { label: '前台品牌 Logo', key: '/shop/brand-settings' },
+      { label: '商家品牌 Logo', key: '/shop/brand-settings' },
       {
         label: '收银设置',
         key: 'cashier-settings-group',

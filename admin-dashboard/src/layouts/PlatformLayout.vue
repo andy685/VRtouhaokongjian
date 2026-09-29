@@ -303,7 +303,7 @@ const menuOptions: MenuOption[] = [
     children: [
       { label: '商家管理', key: '/platform/merchants' },
       { label: '店铺列表', key: '/platform/stores' },
-      { label: '门店品牌授权', key: '/platform/brand-approvals' },
+      { label: '商家品牌授权', key: '/platform/brand-approvals' },
       { label: '代理商列表', key: '/platform/agents' },
       { label: '供应商列表', key: '/platform/cps' },
     ]

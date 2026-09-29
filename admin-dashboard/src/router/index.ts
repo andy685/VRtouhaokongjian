@@ -69,7 +69,7 @@ const routes: RouteRecordRaw[] = [
       // 数据中心扩展
       { path: 'content-consumption', name: 'PlatformContentConsumption', component: () => import('../views/platform/ContentConsumption.vue'), meta: { title: '内容消费大盘' } },
       { path: 'film-revenue', name: 'PlatformFilmRevenue', component: () => import('../views/platform/FilmRevenue.vue'), meta: { title: '内容营收明细' } },
-      { path: 'brand-approvals', name: 'PlatformBrandApprovals', component: () => import('../views/platform/BrandApprovals.vue'), meta: { title: '门店品牌授权' } },
+      { path: 'brand-approvals', name: 'PlatformBrandApprovals', component: () => import('../views/platform/BrandApprovals.vue'), meta: { title: '商家品牌授权' } },
       { path: 'device-overview', name: 'PlatformDeviceOverview', component: () => import('../views/platform/DeviceOverview.vue'), meta: { title: '设备运行总览' } },
       { path: 'device-config', name: 'PlatformDeviceConfig', component: () => import('../views/platform/DeviceConfig.vue'), meta: { title: '设备配置管理' } },
       // AI 店招运营
@@ -179,7 +179,7 @@ const routes: RouteRecordRaw[] = [
       // 系统设置
       { path: 'store-list', name: 'ShopStoreList', component: () => import('../views/shop/ShopStoreList.vue'), meta: { title: '店铺列表' } },
       { path: 'on-demand-settings', name: 'ShopOnDemandSettings', component: () => import('../views/shop/OnDemandSettings.vue'), meta: { title: '待机画面' } },
-      { path: 'brand-settings', name: 'ShopBrandSettings', component: () => import('../views/shop/BrandOverview.vue'), meta: { title: '前台品牌 Logo' } },
+      { path: 'brand-settings', name: 'ShopBrandSettings', component: () => import('../views/shop/BrandOverview.vue'), meta: { title: '商家品牌 Logo' } },
       { path: 'brand-settings/apply', name: 'ShopBrandSettingsApply', component: () => import('../views/shop/BrandSettings.vue'), meta: { title: '申请替换 Logo' } },
       { path: 'devices', name: 'ShopDevices', component: () => import('../views/shop/Devices.vue'), meta: { title: '设备列表' } },
       { path: 'ai-shop-sign', name: 'ShopAiShopSign', component: () => import('../views/platform/AiShopSign.vue'), props: { mode: 'merchant' }, meta: { title: '店招话术设置' } },
