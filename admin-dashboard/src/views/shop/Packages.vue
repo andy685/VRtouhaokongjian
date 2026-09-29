@@ -178,7 +178,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
+  NCard, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NInputNumber, NSwitch, NTabs, NTab, NGrid, NGi, NTag, NDropdown,
   NCheckbox, NCheckboxGroup, NSelect, NRadio, NRadioGroup, NDatePicker
 } from 'naive-ui'

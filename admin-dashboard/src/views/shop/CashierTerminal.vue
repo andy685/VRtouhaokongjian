@@ -244,7 +244,7 @@
 <script setup lang="ts">
 import { ref, computed, h, onMounted } from 'vue'
 import {
-  NCard, NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
+  NCard, NButton, NIcon, NModal, NForm, NFormItem,
   NInput, NSelect, NSwitch, NTag, NSpace,
   useMessage, useDialog,
 } from 'naive-ui'

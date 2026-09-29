@@ -115,7 +115,7 @@
 import { ref, h } from 'vue'
 import type { DataTableColumn, FormInst, FormRules, UploadFileInfo } from 'naive-ui'
 import {
-  NButton, NDataTable, NTag, NSpace, NModal, NForm, NFormItem,
+  NButton, NTag, NSpace, NModal, NForm, NFormItem,
   NInput, NIcon, NInputNumber, NSelect, NRadio, NRadioGroup,
   NSwitch, NUpload, NRow, NCol, NCard, useMessage, useDialog
 } from 'naive-ui'

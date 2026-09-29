@@ -400,7 +400,7 @@
 <script setup lang="ts">
 import { ref, computed, h, watch } from 'vue'
 import {
-  NButton, NDataTable, NTag, NSelect, NIcon, NSpace, NTabs, NTabPane,
+  NButton, NTag, NSelect, NIcon, NSpace, NTabs, NTabPane,
   NModal, NDescriptions, NDescriptionsItem, NForm, NFormItem, NInputNumber,
   NInput, NRate, useMessage
 } from 'naive-ui'

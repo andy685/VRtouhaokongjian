@@ -64,7 +64,7 @@
 import { computed, h, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  NButton, NDataTable, NDescriptions, NDescriptionsItem, NIcon, NInput, NModal,
+  NButton, NDescriptions, NDescriptionsItem, NIcon, NInput, NModal,
   NSelect, NSpace, NTabPane, NTabs, NTag, useMessage,
 } from 'naive-ui'
 import { SearchOutline } from '@vicons/ionicons5'

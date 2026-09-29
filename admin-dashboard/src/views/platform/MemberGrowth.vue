@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { h, ref } from 'vue'
-import { NDataTable, NTooltip, NIcon, NText } from 'naive-ui'
+import {  NTooltip, NIcon, NText } from 'naive-ui'
 import { HelpCircleOutline } from '@vicons/ionicons5'
 
 function renderTitle(label: string, tooltip: string, color: string) {

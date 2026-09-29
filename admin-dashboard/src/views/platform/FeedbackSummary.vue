@@ -20,7 +20,7 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NInput, NModal, NDescriptions, NDescriptionsItem, type DataTableColumns } from 'naive-ui'
+import {  NButton, NInput, NModal, NDescriptions, NDescriptionsItem, type DataTableColumns } from 'naive-ui'
 const filterKeyword = ref('')
 interface FeedbackItem { id:number; merchant:string; shop:string; user:string; type:string; content:string; status:'pending'|'processed'; notes?:string; time:string }
 const data = ref<FeedbackItem[]>([

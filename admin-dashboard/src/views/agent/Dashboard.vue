@@ -95,7 +95,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { NIcon, NTag, NButton, NDataTable } from 'naive-ui'
+import { NIcon, NTag, NButton } from 'naive-ui'
 import {
   PeopleOutline, StorefrontOutline, TrendingUpOutline, WalletOutline,
   ChevronUpOutline, ChevronDownOutline

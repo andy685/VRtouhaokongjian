@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NTag, NSpace, NInput, NIcon, NSelect, NDatePicker, NDivider } from 'naive-ui'
+import {  NTag, NSpace, NInput, NIcon, NSelect, NDatePicker, NDivider } from 'naive-ui'
 import { SearchOutline } from '@vicons/ionicons5'
 
 const merchantFilter = ref<string | null>(null)

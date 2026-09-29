@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { h, ref } from 'vue'
-import { NDataTable, NTag, NTooltip, NIcon } from 'naive-ui'
+import {  NTag, NTooltip, NIcon } from 'naive-ui'
 import { InformationCircleOutline } from '@vicons/ionicons5'
 
 // 模拟数据：每个内容的按天点播数据（最近14天，前7天 + 后7天）

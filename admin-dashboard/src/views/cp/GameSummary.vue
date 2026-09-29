@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NDatePicker, NSpace } from 'naive-ui'
+import {  NButton, NIcon, NDatePicker, NSpace } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { DownloadOutline } from '@vicons/ionicons5'
 

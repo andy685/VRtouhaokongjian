@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
+  NCard, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NSwitch, NTag, NDropdown, NSelect
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'

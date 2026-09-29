@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NButton, NDataTable, NTag, NSpace, NInput, NModal, NIcon, NDescriptions, NDescriptionsItem, useMessage } from 'naive-ui'
+import { NButton, NTag, NSpace, NInput, NModal, NIcon, NDescriptions, NDescriptionsItem, useMessage } from 'naive-ui'
 import { SearchOutline, AddOutline, TimeOutline, CheckmarkCircleOutline, EyeOutline } from '@vicons/ionicons5'
 
 const message = useMessage()

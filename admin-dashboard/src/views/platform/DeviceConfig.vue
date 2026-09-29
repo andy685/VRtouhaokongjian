@@ -267,7 +267,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NTabs, NTabPane, NDataTable, NButton, NIcon, NSpace, NInput,
+  NTabs, NTabPane, NButton, NIcon, NSpace, NInput,
   NModal, NForm, NFormItem, NSelect, NTag, NUpload, NDescriptions, NDescriptionsItem,
   NSwitch, NText, NAlert,
   type FormInst, type FormRules

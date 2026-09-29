@@ -200,7 +200,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NButton, NDataTable, NTag, NSpace, NModal, NTabs, NTabPane,
+  NButton, NTag, NSpace, NModal, NTabs, NTabPane,
   NIcon, NDescriptions, NDescriptionsItem, NInput,
   NTimeline, NTimelineItem, NDatePicker, NAlert, NUpload,
   NUploadDragger, NImage, useMessage

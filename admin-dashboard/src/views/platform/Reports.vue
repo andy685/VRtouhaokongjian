@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NButton, NSpace, NIcon, NDatePicker, NDataTable } from 'naive-ui'
+import { NButton, NSpace, NIcon, NDatePicker } from 'naive-ui'
 import { DownloadOutline } from '@vicons/ionicons5'
 
 const dateRange = ref(null)

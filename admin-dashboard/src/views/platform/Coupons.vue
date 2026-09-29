@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import {
-  NButton, NCard, NDataTable, NTag, NSpace, NTabs, NTabPane,
+  NButton, NCard, NTag, NSpace, NTabs, NTabPane,
   NAlert, NIcon, NSelect
 } from 'naive-ui'
 import {

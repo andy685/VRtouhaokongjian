@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
-import { NCard, NDataTable, NDatePicker, NInput, NSelect, NTabPane, NTabs, NTag } from 'naive-ui'
+import { NCard, NDatePicker, NInput, NSelect, NTabPane, NTabs, NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
 interface MemberBalance { id: number; name: string; phone: string; points: number; earned: number; used: number; updatedAt: string }

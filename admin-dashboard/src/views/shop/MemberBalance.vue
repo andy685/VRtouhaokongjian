@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NInput, NIcon, NTabs, NTab,
+  NCard, NButton, NSpace, NInput, NIcon, NTabs, NTab,
   NDatePicker, NSelect, NTag
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'

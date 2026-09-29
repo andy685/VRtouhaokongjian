@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NSpace, NInput, NIcon, NTabs, NTab, NDatePicker, NSelect, NTag } from 'naive-ui'
+import {  NSpace, NInput, NIcon, NTabs, NTab, NDatePicker, NSelect, NTag } from 'naive-ui'
 import { SearchOutline, ArrowUpCircleOutline, ArrowDownCircleOutline, WalletOutline, PeopleOutline } from '@vicons/ionicons5'
 
 const changeType = ref(null)

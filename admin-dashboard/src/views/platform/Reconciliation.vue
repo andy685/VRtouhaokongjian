@@ -95,7 +95,6 @@
 import { computed, h, ref } from 'vue'
 import {
   NButton,
-  NDataTable,
   NDescriptions,
   NDescriptionsItem,
   NDivider,

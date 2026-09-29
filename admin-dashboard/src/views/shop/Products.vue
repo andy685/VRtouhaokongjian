@@ -236,7 +236,7 @@
 import { ref, h, computed, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  NButton, NTabs, NTabPane, NDataTable, NTag, NSpace, NInput,
+  NButton, NTabs, NTabPane, NTag, NSpace, NInput,
   NSelect, NIcon, NModal, NInputNumber, NForm, NFormItem, useMessage
 } from 'naive-ui'
 import {

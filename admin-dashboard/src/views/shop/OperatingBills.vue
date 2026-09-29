@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NButton, NIcon, NTabs, NTabPane, NDataTable, NDrawer, NDrawerContent, NForm, NFormItem, NSelect, NDatePicker } from 'naive-ui'
+import { NButton, NIcon, NTabs, NTabPane, NDrawer, NDrawerContent, NForm, NFormItem, NSelect, NDatePicker } from 'naive-ui'
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
 
 const activeTab = ref('all')

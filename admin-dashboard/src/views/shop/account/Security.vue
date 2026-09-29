@@ -98,7 +98,7 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { NIcon, NButton, NDataTable, NModal, NForm, NFormItem, NInput, NSpace, useMessage, type FormInst, type FormRules } from 'naive-ui'
+import { NIcon, NButton, NModal, NForm, NFormItem, NInput, NSpace, useMessage, type FormInst, type FormRules } from 'naive-ui'
 import { LaptopOutline, PhonePortraitOutline } from '@vicons/ionicons5'
 
 const message = useMessage()

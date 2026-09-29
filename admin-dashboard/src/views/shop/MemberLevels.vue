@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { ref, h, computed } from 'vue'
 import {
-  NButton, NIcon, NDataTable, NTag,
+  NButton, NIcon, NTag,
   NModal, NForm, NFormItem, NInputNumber, NSpace,
   NRadioGroup, NRadio,
 } from 'naive-ui'

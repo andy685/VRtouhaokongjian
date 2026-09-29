@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NButton, NIcon, NDataTable, NDrawer, NDrawerContent,
+  NButton, NIcon, NDrawer, NDrawerContent,
   NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag,
   NModal, NDescriptions, NDescriptionsItem, NInput,
 } from 'naive-ui'

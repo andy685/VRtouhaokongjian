@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NButton, NDataTable, NTag, NSpace, NInput, NSelect, NIcon, NTooltip } from 'naive-ui'
+import { NButton, NTag, NSpace, NInput, NSelect, NIcon, NTooltip } from 'naive-ui'
 import { SearchOutline, StorefrontOutline, CheckmarkCircleOutline, TrendingUpOutline, HardwareChipOutline, HelpCircleOutline } from '@vicons/ionicons5'
 
 const searchText = ref('')

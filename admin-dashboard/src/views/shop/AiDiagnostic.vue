@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue'
-import { NButton, NDataTable, NDrawer, NDrawerContent, NIcon, NInput, NProgress, NSelect, NSpace, NTag, NTooltip, useMessage } from 'naive-ui'
+import { NButton, NDrawer, NDrawerContent, NIcon, NInput, NProgress, NSelect, NSpace, NTag, NTooltip, useMessage } from 'naive-ui'
 import { BarChartOutline, PulseOutline, SparklesOutline } from '@vicons/ionicons5'
 import reportHeroBackground from '../../assets/ai-report/vr-space-report-hero.png'
 import { loadDiagnosticDimensions, loadSupplementQuestions } from '../../constants/aiDiagnosticConfig'

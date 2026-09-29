@@ -51,7 +51,7 @@
 </template>
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { NDataTable, NButton, NIcon, NSpace, NModal, NForm, NFormItem, NInput, NSelect, NAlert, NTag, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
+import {  NButton, NIcon, NSpace, NModal, NForm, NFormItem, NInput, NSelect, NAlert, NTag, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
 import { AddOutline } from '@vicons/ionicons5'
 
 interface IcCard { id:number; cardNo:string; employee:string; role:string; status:'bound'|'unbound'; bindTime:string; notes:string }

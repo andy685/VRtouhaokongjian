@@ -38,7 +38,7 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NSpace, NSelect, NModal, NForm, NFormItem, NInput, NDescriptions, NDescriptionsItem, NTag, NAlert, type DataTableColumns } from 'naive-ui'
+import {  NButton, NSpace, NSelect, NModal, NForm, NFormItem, NInput, NDescriptions, NDescriptionsItem, NTag, NAlert, type DataTableColumns } from 'naive-ui'
 const filterShop = ref<string | null>(null)
 const filterStatus = ref<string | null>(null)
 const shopOptions = [{ label:'全部店铺',value:'' },{ label:'利民街小展厅',value:'利民街小展厅' },{ label:'恒然科技园店',value:'恒然科技园店' }]

@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
-import { NDataTable, NTag, NSelect, NInput, NIcon, NTabs, NTabPane } from 'naive-ui'
+import {  NTag, NSelect, NInput, NIcon, NTabs, NTabPane } from 'naive-ui'
 import { StorefrontOutline, CheckmarkCircleOutline, AlertCircleOutline, HardwareChipOutline, SearchOutline } from '@vicons/ionicons5'
 
 // ─── 公共 ──────────────────────────────────────────

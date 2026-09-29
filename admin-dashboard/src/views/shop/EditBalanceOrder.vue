@@ -92,7 +92,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NDataTable, NButton, NIcon, NModal, NForm, NFormItem, NSelect, NInput,
+   NButton, NIcon, NModal, NForm, NFormItem, NSelect, NInput,
   NDatePicker, NSpace, NTag
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'

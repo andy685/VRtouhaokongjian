@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NIcon, NSelect, NDatePicker, NInput, NDataTable, NDrawer, NDrawerContent, NForm, NFormItem } from 'naive-ui'
+import { NButton, NIcon, NSelect, NDatePicker, NInput, NDrawer, NDrawerContent, NForm, NFormItem } from 'naive-ui'
 import { FilterOutline, DownloadOutline, ArrowBackOutline } from '@vicons/ionicons5'
 
 const route = useRoute()

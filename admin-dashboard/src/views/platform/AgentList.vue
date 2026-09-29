@@ -394,7 +394,7 @@
 import { ref, reactive, computed, h, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  NAlert, NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
+  NAlert, NButton, NTag, NSpace, NInput, NSelect, NModal,
   NForm, NFormItem, NRadioGroup, NRadio, NIcon, NDescriptions, NDescriptionsItem,
   useMessage, type FormInst, type FormRules, NInputNumber, NTabs, NTabPane, NEmpty, NCascader, NUpload
 } from 'naive-ui'

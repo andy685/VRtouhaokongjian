@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { ref, h, computed, watch, onMounted } from 'vue'
 import {
-  NCard, NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
+  NCard, NButton, NIcon, NModal, NForm, NFormItem,
   NInput, NTag, NSpace, NCheckbox, NCheckboxGroup
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'

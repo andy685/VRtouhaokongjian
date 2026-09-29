@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h, onMounted, watch } from 'vue'
-import { NDataTable, NButton, NIcon, NSpace, NModal, NForm, NFormItem, NInput, NSelect, NSwitch, NTag, NQrCode, useMessage, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
+import {  NButton, NIcon, NSpace, NModal, NForm, NFormItem, NInput, NSelect, NSwitch, NTag, NQrCode, useMessage, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
 import { AddOutline } from '@vicons/ionicons5'
 import { saveShopStaffRegistry, removeShopStaff } from '../../constants/shopAccessSystems'
 import { FEATURE_IC_CARD_ENABLED } from '../../constants/featureFlags'

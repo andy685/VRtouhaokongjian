@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { ref, h, computed } from 'vue'
 import {
-  NButton, NIcon, NDataTable, NDrawer, NDrawerContent,
+  NButton, NIcon, NDrawer, NDrawerContent,
   NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag, NAlert,
 } from 'naive-ui'
 import { FilterOutline, DownloadOutline, ChevronForwardOutline } from '@vicons/ionicons5'

@@ -133,7 +133,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NIcon, NDatePicker,
+  NCard, NButton, NSpace, NIcon, NDatePicker,
   NSelect, NTag, NModal, NAvatar
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'

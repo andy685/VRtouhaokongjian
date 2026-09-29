@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NIcon, NButton, NDataTable, NTag, NModal, NForm, NFormItem, NInput, NSpace, useMessage, type DataTableColumns } from 'naive-ui'
+import { NIcon, NButton, NTag, NModal, NForm, NFormItem, NInput, NSpace, useMessage, type DataTableColumns } from 'naive-ui'
 import { LaptopOutline, PhonePortraitOutline, DesktopOutline } from '@vicons/ionicons5'
 
 const message = useMessage()

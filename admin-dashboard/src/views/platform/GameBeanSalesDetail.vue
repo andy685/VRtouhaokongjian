@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NDataTable, NButton, NSpace, NSelect, NDatePicker, NDivider, useMessage } from 'naive-ui'
+import {  NButton, NSpace, NSelect, NDatePicker, NDivider, useMessage } from 'naive-ui'
 
 const message = useMessage()
 

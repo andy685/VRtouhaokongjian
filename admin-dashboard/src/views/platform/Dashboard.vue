@@ -141,7 +141,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, h } from 'vue'
 import {
   NButton, NIcon, NTag, NDatePicker, NRadioGroup,
-  NRadioButton, NInput, NDataTable
+  NRadioButton, NInput
 } from 'naive-ui'
 import * as echarts from 'echarts/core'
 import { LineChart, PieChart, BarChart } from 'echarts/charts'

@@ -241,7 +241,7 @@
 <script setup lang="ts">
 import { h, ref, computed, onMounted, nextTick, watch } from 'vue'
 import {
-  NButton, NInputNumber, NDatePicker, NDataTable, NModal,
+  NButton, NInputNumber, NDatePicker, NModal,
   NRadioGroup, NRadioButton, NPopconfirm, NEmpty, NIcon,
   useMessage,
 } from 'naive-ui'

@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
-import { NDataTable, NTag, NSelect, NTabs, NTabPane, NInput, NTooltip } from 'naive-ui'
+import {  NTag, NSelect, NTabs, NTabPane, NInput, NTooltip } from 'naive-ui'
 
 // ─── 公共数据 ──────────────────────────────────────
 const merchantNames = ['恒然集团', '利民街商家', '党建馆集团', '华东展厅', '卓远科技']

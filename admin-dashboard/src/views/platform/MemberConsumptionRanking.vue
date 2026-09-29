@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NTag, NSpace, NDatePicker, NSelect, NIcon } from 'naive-ui'
+import {  NTag, NSpace, NDatePicker, NSelect, NIcon } from 'naive-ui'
 import { TrophyOutline } from '@vicons/ionicons5'
 
 const dateRange = ref<[number, number] | null>(null)

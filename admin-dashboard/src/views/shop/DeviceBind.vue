@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NTabs, NTabPane, NDataTable, NButton, NIcon, NSpace, NModal, NTag, NInput, NSelect, NAlert, type DataTableColumns } from 'naive-ui'
+import { NTabs, NTabPane, NButton, NIcon, NSpace, NModal, NTag, NInput, NSelect, NAlert, type DataTableColumns } from 'naive-ui'
 import { LinkOutline } from '@vicons/ionicons5'
 
 // ── 模拟数据 ──────────────────────────────────────

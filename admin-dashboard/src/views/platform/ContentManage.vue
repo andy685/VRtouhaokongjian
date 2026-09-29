@@ -145,7 +145,7 @@
 import { ref, h } from 'vue'
 import {
   NButton, NIcon, NSpace, NTabs, NTabPane, NGrid, NGi,
-  NDataTable, NTag, NInput, NSelect, NRate, NRadioGroup, NRadioButton
+   NTag, NInput, NSelect, NRate, NRadioGroup, NRadioButton
 } from 'naive-ui'
 import {
   SearchOutline, GameControllerOutline, CloudUploadOutline,

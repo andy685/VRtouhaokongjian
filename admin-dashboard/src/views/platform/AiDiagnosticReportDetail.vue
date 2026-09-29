@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NDataTable, NDropdown, NFormItem, NIcon, NInput, NModal, NSelect, NSpace, NTag, useMessage } from 'naive-ui'
+import { NButton, NDropdown, NFormItem, NIcon, NInput, NModal, NSelect, NSpace, NTag, useMessage } from 'naive-ui'
 import { BarChartOutline, GameControllerOutline, PulseOutline, SparklesOutline } from '@vicons/ionicons5'
 import reportHeroBackground from '../../assets/ai-report/vr-space-report-hero.png'
 const route = useRoute()

@@ -199,7 +199,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
+  NCard, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NInputNumber, NSwitch, NTabs, NTab, NTag, NDropdown,
   NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup, NDatePicker,
   useMessage

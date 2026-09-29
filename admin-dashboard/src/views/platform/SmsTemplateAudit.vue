@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NCard, NDataTable, NButton, NSpace, NIcon, NTag, NModal, NForm, NFormItem, NInput, NSelect, NRadioGroup, NRadio, NDivider, useMessage } from 'naive-ui'
+import { NCard, NButton, NSpace, NIcon, NTag, NModal, NForm, NFormItem, NInput, NSelect, NRadioGroup, NRadio, NDivider, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { CheckmarkOutline, CloseOutline } from '@vicons/ionicons5'
 

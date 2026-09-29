@@ -150,7 +150,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NCard, NTabs, NTabPane, NInputNumber, NDataTable, NSlider,
+  NCard, NTabs, NTabPane, NInputNumber, NSlider,
   NButton, NIcon, NTag, NModal, NDivider, NTimeline,
   NTimelineItem, NSelect, NForm, NFormItem, NInput, NSpace,
   useMessage, useDialog

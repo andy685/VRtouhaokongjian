@@ -163,7 +163,7 @@ import { ref, h, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   NButton, NIcon, NSpace, NTabs, NTabPane, NGrid, NGi,
-  NDataTable, NTag, NInput, NSelect, NDatePicker
+   NTag, NInput, NSelect, NDatePicker
 } from 'naive-ui'
 import {
   ServerOutline, HardwareChipOutline, CloudOutline,

@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NModal, NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
+import {  NButton, NIcon, NModal, NForm, NFormItem, NSelect, NDatePicker, NSpace, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { FilterOutline, DownloadOutline } from '@vicons/ionicons5'
 import { useExceptionOrders } from '@/composables/useExceptionOrders'

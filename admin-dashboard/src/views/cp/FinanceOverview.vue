@@ -130,7 +130,7 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { NButton, NDataTable, NTag, NIcon } from 'naive-ui'
+import { NButton, NTag, NIcon } from 'naive-ui'
 import { TimeOutline, CheckmarkCircleOutline, WalletOutline, GameControllerOutline } from '@vicons/ionicons5'
 
 const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4']

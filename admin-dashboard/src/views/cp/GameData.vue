@@ -135,7 +135,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import { useRoute } from 'vue-router'
-import { NButton, NIcon, NTag, NSelect, NSpace, NDataTable } from 'naive-ui'
+import { NButton, NIcon, NTag, NSelect, NSpace } from 'naive-ui'
 import { ArrowBackOutline, TrendingUpOutline, WalletOutline, BarChartOutline, CashOutline } from '@vicons/ionicons5'
 
 const route = useRoute()

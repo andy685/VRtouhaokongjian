@@ -164,7 +164,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NModal, NSelect, NInput, NDatePicker, NSpace, NTabs, NTabPane, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
+import {  NButton, NIcon, NModal, NSelect, NInput, NDatePicker, NSpace, NTabs, NTabPane, NTag, NDescriptions, NDescriptionsItem } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { DownloadOutline, PlayOutline, TimeOutline, CashOutline, PeopleOutline, GridOutline, TrendingUpOutline } from '@vicons/ionicons5'
 

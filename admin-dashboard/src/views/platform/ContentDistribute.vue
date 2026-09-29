@@ -285,8 +285,9 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
+import SortableDataTable from '../../components/SortableDataTable.vue'
 import {
-  NButton, NDataTable, NTag, NSpace, NSelect, NModal, NForm, NFormItem,
+  NButton, NTag, NSpace, NSelect, NModal, NForm, NFormItem,
   NInput, NIcon, NDescriptions, NDescriptionsItem, NTabs, NTabPane,
   NRadio, NRadioGroup, useMessage, useDialog
 } from 'naive-ui'
@@ -732,7 +733,7 @@ const storeGameInnerColumns = [
 ]
 
 const storeGameColumns = [
-  { type: 'expand' as const, renderExpand: (row: StoreGameRow) => h(NDataTable, {
+  { type: 'expand' as const, renderExpand: (row: StoreGameRow) => h(SortableDataTable, {
       columns: storeGameInnerColumns,
       data: row.games,
       size: 'small',

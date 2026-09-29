@@ -1240,7 +1240,6 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   NAlert,
   NButton,
-  NDataTable,
   NDescriptions,
   NDescriptionsItem,
   NForm,

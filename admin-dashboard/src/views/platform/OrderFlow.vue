@@ -227,7 +227,7 @@
 import { ref, computed, h } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  NDataTable, NButton, NIcon, NModal, NForm, NFormItem,
+   NButton, NIcon, NModal, NForm, NFormItem,
   NSelect, NInput, NDatePicker, NSpace, NTag,
   NDescriptions, NDescriptionsItem, useMessage,
 } from 'naive-ui'

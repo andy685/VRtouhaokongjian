@@ -351,7 +351,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NForm,
+  NCard, NButton, NSpace, NInput, NIcon, NModal, NForm,
   NFormItem, NInputNumber, NTabs, NTab, NGrid, NGi, NTag, NDropdown,
   NDatePicker, NSelect, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup,
   NAlert, NSwitch,

@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue'
-import { NDataTable, NTag, NSelect, NInput, NTabs, NTabPane, NTooltip } from 'naive-ui'
+import {  NTag, NSelect, NInput, NTabs, NTabPane, NTooltip } from 'naive-ui'
 
 // ─── 主机 ──────────────────────────────────────────
 const hostData = ref([

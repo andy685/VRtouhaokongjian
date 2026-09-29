@@ -240,7 +240,7 @@ import { ref, reactive, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NAlert, NButton, NInput, NInputNumber, NSelect, NTag, NIcon, NSpace, NModal, NForm, NFormItem,
-  NDataTable, NDescriptions, NDescriptionsItem,
+   NDescriptions, NDescriptionsItem,
   NTabs, NTabPane, NEmpty, NRadioGroup, NRadio, NUpload,
   useMessage
 } from 'naive-ui'

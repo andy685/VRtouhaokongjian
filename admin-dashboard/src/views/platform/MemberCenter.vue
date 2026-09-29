@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { h } from 'vue'
-import { NDataTable, NTooltip, NIcon } from 'naive-ui'
+import {  NTooltip, NIcon } from 'naive-ui'
 import { HelpCircleOutline } from '@vicons/ionicons5'
 
 const columns = [

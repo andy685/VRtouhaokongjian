@@ -158,7 +158,7 @@
 
 <script setup lang="ts">
 import { computed, h, reactive, ref } from 'vue'
-import { NButton, NCheckbox, NColorPicker, NDataTable, NFormItem, NInput, NInputNumber, NModal, NProgress, NRadio, NRadioGroup, NSelect, NSpace, NTabPane, NTabs, NTag, NTimePicker, NUpload, useMessage } from 'naive-ui'
+import { NButton, NCheckbox, NColorPicker, NFormItem, NInput, NInputNumber, NModal, NProgress, NRadio, NRadioGroup, NSelect, NSpace, NTabPane, NTabs, NTag, NTimePicker, NUpload, useMessage } from 'naive-ui'
 import {
   loadDiagnosticDimensions, saveDiagnosticDimensions,
   loadDiagnosticScoreMode, saveDiagnosticScoreMode,

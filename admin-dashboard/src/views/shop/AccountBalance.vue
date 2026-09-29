@@ -410,7 +410,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
-  NTabs, NTabPane, NButton, NTag, NDataTable, 
+  NTabs, NTabPane, NButton, NTag,
   NModal, NSelect, NInput, NForm, NFormItem, NEmpty, NDescriptions, NSpace,
   NDescriptionsItem, NInputGroup, NAlert, NResult, NStatistic, NCountdown,
   NTimeline, NTimelineItem, NCollapse, NCollapseItem, NRadioGroup, NRadio, NUpload,

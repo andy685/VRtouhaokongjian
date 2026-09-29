@@ -239,7 +239,7 @@ import { useRouter } from 'vue-router'
 import {
   NButton, NIcon, NInput, NForm, NFormItem, NRadio, NRadioGroup,
   NSpace, NAlert, NCascader, NSwitch, NDatePicker, NModal,
-  NDataTable, NUpload, NSelect, NGrid, NGi, type UploadFileInfo
+   NUpload, NSelect, NGrid, NGi, type UploadFileInfo
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { ArrowBackOutline } from '@vicons/ionicons5'

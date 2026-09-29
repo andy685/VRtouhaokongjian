@@ -144,7 +144,7 @@
 import { ref, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  NButton, NIcon, NDataTable, NTag, NDrawer, NDrawerContent,
+  NButton, NIcon, NTag, NDrawer, NDrawerContent,
   NForm, NFormItem, NSelect, NInput,
 } from 'naive-ui'
 import {

@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { NDataTable, NButton } from 'naive-ui'
+import {  NButton } from 'naive-ui'
 
 const metrics = {
   totalSales: 2568000,

@@ -173,7 +173,7 @@ import { ref, onMounted, onUnmounted, nextTick, h } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NButton, NIcon, NRadioGroup, NRadioButton,
-  NDataTable, NTag, NSpace, useMessage
+   NTag, NSpace, useMessage
 } from 'naive-ui'
 import * as echarts from 'echarts/core'
 import { LineChart, BarChart } from 'echarts/charts'

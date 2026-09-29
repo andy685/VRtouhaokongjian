@@ -76,7 +76,7 @@
 import { ref, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  NCard, NDataTable, NButton, NSpace, NInput, NIcon, NModal, NTag,
+  NCard, NButton, NSpace, NInput, NIcon, NModal, NTag,
   NSelect, NDatePicker, NAlert, NDescriptions, NDescriptionsItem,
   NTabs, NTabPane
 } from 'naive-ui'

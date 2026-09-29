@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NDataTable, NButton, NIcon, NSpace, NSelect, NModal, NForm, NFormItem, NInput, NInputNumber, NTag, NDescriptions, NDescriptionsItem, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox, NTabs, NTabPane, NAlert, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
+import {  NButton, NIcon, NSpace, NSelect, NModal, NForm, NFormItem, NInput, NInputNumber, NTag, NDescriptions, NDescriptionsItem, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox, NTabs, NTabPane, NAlert, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
 import { AddOutline } from '@vicons/ionicons5'
 
 // ── 主机设备 ──────────────────────────────────────

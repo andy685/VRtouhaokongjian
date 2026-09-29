@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import {
-  NAlert, NButton, NCard, NDataTable, NDatePicker, NForm, NFormItem, NInput,
+  NAlert, NButton, NCard, NDatePicker, NForm, NFormItem, NInput,
   NInputNumber, NModal, NSelect, NSpace, NSwitch, NTag, useMessage,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'

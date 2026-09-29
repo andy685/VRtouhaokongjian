@@ -105,7 +105,7 @@
 import { ref, h } from 'vue'
 import {
   NButton, NIcon, NTag, NModal, NForm, NFormItem, NInput,
-  NCard, NDataTable, NSpace, NSwitch, NInputNumber, NSelect, useMessage
+  NCard, NSpace, NSwitch, NInputNumber, NSelect, useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { QrCodeOutline } from '@vicons/ionicons5'

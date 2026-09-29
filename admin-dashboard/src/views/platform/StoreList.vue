@@ -256,7 +256,7 @@
 import { ref, computed, h, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  NButton, NDataTable, NTag, NSpace, NInput, NSelect, NModal,
+  NButton, NTag, NSpace, NInput, NSelect, NModal,
   NForm, NFormItem, NInputNumber,
   NIcon, NDescriptions, NDescriptionsItem, useMessage,
   type FormInst, type FormRules, NDivider, NSwitch,

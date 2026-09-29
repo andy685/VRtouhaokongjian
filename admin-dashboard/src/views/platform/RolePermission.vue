@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import {
-  NButton, NDataTable, NTag, NSpace, NModal, NForm, NFormItem,
+  NButton, NTag, NSpace, NModal, NForm, NFormItem,
   NInput, NTree, NIcon, NDescriptions, NDescriptionsItem, useDialog, useMessage
 } from 'naive-ui'
 import {

@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NDataTable, NDropdown, NIcon, NInput, NSelect, NSpace, NTag, useMessage } from 'naive-ui'
+import { NButton, NDropdown, NIcon, NInput, NSelect, NSpace, NTag, useMessage } from 'naive-ui'
 import { SearchOutline } from '@vicons/ionicons5'
 
 type Report = { id: number; title: string; store: string; merchant: string; month: string; periodType: '周度' | '月度' | '季度'; periodLabel: string; periodRange: string; version: string; score: number | null; status: string; merchantVisible: boolean; generatedAt: string; dataCutoff: string; summary: string; highlights: string[]; failureReason?: string }

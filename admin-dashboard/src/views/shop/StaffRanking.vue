@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
 import {
-  NButton, NIcon, NDataTable, NSelect, NDatePicker, NAlert, NTag, useMessage,
+  NButton, NIcon, NSelect, NDatePicker, NAlert, NTag, useMessage,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { DownloadOutline, TrophyOutline, MedalOutline } from '@vicons/ionicons5'

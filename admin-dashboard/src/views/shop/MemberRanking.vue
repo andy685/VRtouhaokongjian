@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import {
-  NCard, NDataTable, NButton, NSpace, NIcon, NTag, NDatePicker, NSelect, useMessage
+  NCard, NButton, NSpace, NIcon, NTag, NDatePicker, NSelect, useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { TrophyOutline, MedalOutline } from '@vicons/ionicons5'

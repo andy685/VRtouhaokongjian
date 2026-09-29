@@ -226,7 +226,6 @@ import {
   NAlert,
   NButton,
   NCard,
-  NDataTable,
   NForm,
   NFormItem,
   NIcon,

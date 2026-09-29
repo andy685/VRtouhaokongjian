@@ -22,7 +22,7 @@
 </template>
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
-import { NButton, NDataTable, NDescriptions, NDescriptionsItem, NInput, NModal, NSpace, NTabPane, NTabs, NTag, useMessage } from 'naive-ui'
+import { NButton, NDescriptions, NDescriptionsItem, NInput, NModal, NSpace, NTabPane, NTabs, NTag, useMessage } from 'naive-ui'
 type Row = { id:number; merchant:string; status:string; cashierLogoUrl:string; vodLogoUrl:string; note:string; reviewNote?:string; requestAction?:'replace'|'restore_default' }
 const KEY = 'merchant-brand-config:hengran'; const LEGACY_KEY = 'store-brand-config:hengran'; const message = useMessage()
 const current = { authorized:true, status:'draft', cashierLogoUrl:'', vodLogoUrl:'', note:'', ...(JSON.parse(localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY) || '{}')) }

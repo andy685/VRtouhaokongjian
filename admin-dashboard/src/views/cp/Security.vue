@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { NButton, NDataTable, NTag, NSpace, NModal, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
+import { NButton, NTag, NSpace, NModal, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
 
 const message = useMessage()
 const passwordFormRef = ref()

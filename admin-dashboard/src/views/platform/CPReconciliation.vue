@@ -75,7 +75,7 @@
 import { ref, computed, h } from 'vue'
 import {
   NButton, NSelect, NTag, NIcon, NSpace, NTabs, NTabPane,
-  NDatePicker, NDataTable, useMessage
+  NDatePicker, useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import {
