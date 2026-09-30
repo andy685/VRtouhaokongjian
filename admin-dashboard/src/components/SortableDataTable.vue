@@ -52,7 +52,7 @@ function getValue(row: Record<string, unknown>, key: string): unknown {
 }
 
 const sortableColumns = computed(() => props.columns.map((column) => {
-  if (!column || typeof column !== 'object' || column.type || column.sorter || column.key == null) return column
+  if (!column || typeof column !== 'object' || column.type || 'sorter' in column || column.key == null) return column
 
   const key = String(column.key)
   const title = typeof column.title === 'string' ? column.title.trim() : ''

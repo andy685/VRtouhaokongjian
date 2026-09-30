@@ -23,7 +23,7 @@
         <div><h2>报告列表</h2><span>共 {{ filteredReports.length }} 份报告</span></div>
         <span class="format-note">默认格式：HTML</span>
       </div>
-      <n-data-table :columns="columns" :data="filteredReports" :pagination="{ pageSize: 10 }" :bordered="false" :scroll-x="1480" />
+      <n-data-table :columns="columns" :data="filteredReports" :pagination="{ pageSize: 10 }" :bordered="false" :scroll-x="1685" />
     </section>
   </div>
 </template>

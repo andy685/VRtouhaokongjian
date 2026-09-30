@@ -174,7 +174,7 @@ applyRoleFromQuery()
 const loginContainerStyle = computed(() => {
   const heroImage = loginRole.value === 'platform' ? loginHeroPoster : loginRobotCity
   return {
-    backgroundImage: `linear-gradient(90deg, rgba(2, 10, 30, .1) 0%, rgba(2, 10, 30, .02) 48%, rgba(2, 10, 30, .5) 100%), url(${heroImage})`
+    backgroundImage: `linear-gradient(90deg, rgba(2, 10, 30, .1) 0%, rgba(2, 10, 30, .02) 48%, rgba(2, 10, 30, .5) 100%), linear-gradient(rgba(0, 0, 0, .4), rgba(0, 0, 0, .4)), url(${heroImage})`
   }
 })
 
