@@ -520,7 +520,7 @@ const hsOnlineCount = computed(() => headsets.value.filter(d => d.status !== 'of
 const hsIdleCount = computed(() => headsets.value.filter(d => d.status === 'idle').length)
 const hsInUseCount = computed(() => headsets.value.filter(d => d.status === 'in_use').length)
 const hsFilterMerchant = ref<string | null>(null); const hsFilterStore = ref<string | null>(null); const hsFilterStatus = ref<string | null>(null); const hsFilterKeyword = ref('')
-const hsStatusOpts = [{ label: '空闲', value: 'idle' }, { label: '使用中', value: 'in_use' }, { label: '充电中', value: 'charging' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
+const hsStatusOpts = [{ label: '待分配', value: 'unassigned' }, { label: '空闲', value: 'idle' }, { label: '使用中', value: 'in_use' }, { label: '充电中', value: 'charging' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
 const hsStoreOpts = computed(() => {
   if (!hsFilterMerchant.value) return []
   return [...new Set(headsets.value.filter(d => d.merchant === hsFilterMerchant.value).map(d => d.store))].filter(Boolean).map(s => ({ label: s, value: s }))
@@ -529,7 +529,8 @@ const filteredHeadsets = computed(() => {
   let list = headsets.value
   if (hsFilterMerchant.value) list = list.filter(d => d.merchant === hsFilterMerchant.value)
   if (hsFilterStore.value) list = list.filter(d => d.store === hsFilterStore.value)
-  if (hsFilterStatus.value) list = list.filter(d => d.status === hsFilterStatus.value)
+  if (hsFilterStatus.value === 'unassigned') list = list.filter(d => !d.merchant || d.merchant === '--')
+  else if (hsFilterStatus.value) list = list.filter(d => d.status === hsFilterStatus.value)
   if (hsFilterKeyword.value) { const kw = hsFilterKeyword.value.toLowerCase(); list = list.filter(d => d.name.toLowerCase().includes(kw) || d.sn.toLowerCase().includes(kw)) }
   return list
 })
