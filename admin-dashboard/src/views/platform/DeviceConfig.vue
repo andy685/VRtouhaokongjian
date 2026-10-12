@@ -48,6 +48,7 @@
         <div class="filter-bar">
           <n-select v-model:value="hsFilterMerchant" :options="merchantOpts" placeholder="所属商家" style="width:150px;" clearable size="small" @update:value="hsFilterStore = null" />
           <n-select v-model:value="hsFilterStore" :options="hsStoreOpts" placeholder="所属店铺" style="width:150px;" size="small" :disabled="hsFilterMerchant === null" />
+          <n-select v-model:value="hsFilterAllocation" :options="hsAllocationOpts" placeholder="分配状态" style="width:130px;" clearable size="small" />
           <n-select v-model:value="hsFilterStatus" :options="hsStatusOpts" placeholder="状态" style="width:120px;" clearable size="small" />
           <n-input v-model:value="hsFilterKeyword" placeholder="搜索头显名称/SN码" style="width:220px;" clearable size="small" />
           <div class="filter-actions"><n-button size="small" @click="resetHsFilter">重置</n-button></div>
@@ -519,8 +520,9 @@ const headsets = ref<HeadsetDevice[]>(genHeadsets())
 const hsOnlineCount = computed(() => headsets.value.filter(d => d.status !== 'offline' && d.status !== 'fault').length)
 const hsIdleCount = computed(() => headsets.value.filter(d => d.status === 'idle').length)
 const hsInUseCount = computed(() => headsets.value.filter(d => d.status === 'in_use').length)
-const hsFilterMerchant = ref<string | null>(null); const hsFilterStore = ref<string | null>(null); const hsFilterStatus = ref<string | null>(null); const hsFilterKeyword = ref('')
-const hsStatusOpts = [{ label: '待分配', value: 'unassigned' }, { label: '空闲', value: 'idle' }, { label: '使用中', value: 'in_use' }, { label: '充电中', value: 'charging' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
+const hsFilterMerchant = ref<string | null>(null); const hsFilterStore = ref<string | null>(null); const hsFilterAllocation = ref<'unassigned' | 'assigned' | null>(null); const hsFilterStatus = ref<string | null>(null); const hsFilterKeyword = ref('')
+const hsAllocationOpts = [{ label: '待分配', value: 'unassigned' }, { label: '已分配', value: 'assigned' }]
+const hsStatusOpts = [{ label: '空闲', value: 'idle' }, { label: '使用中', value: 'in_use' }, { label: '充电中', value: 'charging' }, { label: '离线', value: 'offline' }, { label: '故障', value: 'fault' }]
 const hsStoreOpts = computed(() => {
   if (!hsFilterMerchant.value) return []
   return [...new Set(headsets.value.filter(d => d.merchant === hsFilterMerchant.value).map(d => d.store))].filter(Boolean).map(s => ({ label: s, value: s }))
@@ -529,12 +531,13 @@ const filteredHeadsets = computed(() => {
   let list = headsets.value
   if (hsFilterMerchant.value) list = list.filter(d => d.merchant === hsFilterMerchant.value)
   if (hsFilterStore.value) list = list.filter(d => d.store === hsFilterStore.value)
-  if (hsFilterStatus.value === 'unassigned') list = list.filter(d => !d.merchant || d.merchant === '--')
-  else if (hsFilterStatus.value) list = list.filter(d => d.status === hsFilterStatus.value)
+  if (hsFilterAllocation.value === 'unassigned') list = list.filter(d => !d.merchant || d.merchant === '--')
+  else if (hsFilterAllocation.value === 'assigned') list = list.filter(d => Boolean(d.merchant) && d.merchant !== '--')
+  if (hsFilterStatus.value) list = list.filter(d => d.status === hsFilterStatus.value)
   if (hsFilterKeyword.value) { const kw = hsFilterKeyword.value.toLowerCase(); list = list.filter(d => d.name.toLowerCase().includes(kw) || d.sn.toLowerCase().includes(kw)) }
   return list
 })
-function resetHsFilter() { hsFilterMerchant.value = null; hsFilterStore.value = null; hsFilterStatus.value = null; hsFilterKeyword.value = '' }
+function resetHsFilter() { hsFilterMerchant.value = null; hsFilterStore.value = null; hsFilterAllocation.value = null; hsFilterStatus.value = null; hsFilterKeyword.value = '' }
 
 const hsStatusRender = (s: string) => {
   const m = statusTagMap[s] || { type:'default', label:'未知' }
