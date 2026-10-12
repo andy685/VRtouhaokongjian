@@ -125,7 +125,7 @@
     <!-- 弹窗：录入头显 -->
     <n-modal v-model:show="showAddHeadsetModal" preset="card" title="录入头显设备" style="width:520px;" :bordered="false">
       <n-form ref="addHeadsetFormRef" :model="addHeadsetForm" :rules="headsetRules" label-placement="left" label-width="120">
-        <n-form-item label="头显名称" path="name"><n-input v-model:value="addHeadsetForm.name" placeholder="如：Pico 4 #01" /></n-form-item>
+        <n-form-item label="头显名称" path="name"><n-input v-model:value="addHeadsetForm.name" placeholder="如：Pico4U #01" /></n-form-item>
         <n-form-item label="设备型号" path="model"><n-select v-model:value="addHeadsetForm.model" :options="headsetModelOpts" placeholder="选择型号" /></n-form-item>
         <n-form-item label="SN 码" path="sn"><n-input v-model:value="addHeadsetForm.sn" placeholder="设备唯一序列号" /></n-form-item>
         <n-form-item label="固件版本" path="firmware"><n-input v-model:value="addHeadsetForm.firmware" placeholder="如：v5.4.1" /></n-form-item>
@@ -502,8 +502,8 @@ function handleAllocHost() {
 
 // ─── 头显管理 ──────────────────────────────────────
 interface HeadsetDevice { id: number; name: string; model: string; sn: string; firmware: string; status: 'idle' | 'in_use' | 'charging' | 'offline' | 'fault'; merchant: string; store: string; boundHostId: number | null; batteryLevel: number; ipd: number; createdAt: string }
-// 当前仅开放以下两款头显型号，后续型号由运营后台统一扩充。
-const headsetModels = ['PICO 4 Ultra（消费级，2024）', 'PICO 4 Ultra Enterprise（企业版，2024）']
+// 当前开放的头显型号由平台运营统一维护。
+const headsetModels = ['Pico4UE', 'Pico4U', 'PicoNeo3企业版']
 const headsetModelOpts = headsetModels.map(m => ({ label: m, value: m }))
 function genHeadsets(): HeadsetDevice[] {
   const r: HeadsetDevice[] = []; const statuses = ['idle','in_use','idle','charging','offline','in_use','fault'] as const
