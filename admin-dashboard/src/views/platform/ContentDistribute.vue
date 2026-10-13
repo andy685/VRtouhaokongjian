@@ -90,12 +90,12 @@
                 </div>
                 <n-tag size="small" type="info" :bordered="false">{{ group.games.length }} 款游戏</n-tag>
               </div>
-              <div class="group-game-tags">
-                <n-tag v-for="game in group.games" :key="game" size="small" :bordered="false">{{ game }}</n-tag>
-              </div>
               <div class="group-item-footer">
                 <span>更新时间：{{ group.updatedAt }}</span>
-                <n-button text type="primary" size="small" @click="openGroupModal(group)">编辑分组</n-button>
+                <div class="group-footer-actions">
+                  <n-button v-if="group.games.length > 4" class="view-all-games-button" text type="primary" size="small" @click="openGroupGames(group)">游戏明细</n-button>
+                  <n-button class="group-action-button" text type="primary" size="small" @click="openGroupModal(group)">编辑分组</n-button>
+                </div>
               </div>
             </div>
           </div>
@@ -199,6 +199,14 @@
       </template>
     </n-modal>
 
+    <n-modal v-model:show="showGroupGamesModal" preset="card" :title="activeGameGroup ? `${activeGameGroup.name} · 游戏清单` : '游戏清单'" style="width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 64px);" :bordered="false" content-style="max-height: calc(100vh - 160px); overflow-y: auto;">
+      <div class="group-games-toolbar">
+        <span>共 {{ activeGameGroup?.games.length || 0 }} 款游戏</span>
+        <n-input v-model:value="groupGamesSearch" placeholder="搜索游戏名称" clearable style="width: 240px" />
+      </div>
+      <n-data-table :columns="groupGameColumns" :data="filteredGroupGames" :pagination="{ pageSize: 10 }" :bordered="false" size="small" />
+    </n-modal>
+
     <!-- 游戏分组编辑弹窗 -->
     <n-modal v-model:show="showGroupModal" preset="card" :title="groupModalTitle" style="width: 560px;" :bordered="false">
       <n-form label-placement="left" label-width="100">
@@ -214,13 +222,20 @@
           />
         </n-form-item>
         <n-form-item label="包含游戏" required>
-          <n-select
-            v-model:value="groupForm.games"
-            :options="gameOptions"
-            multiple
-            filterable
-            placeholder="请选择游戏，可搜索"
-          />
+          <div class="group-game-picker">
+            <n-input v-model:value="groupGamePickerSearch" placeholder="搜索游戏名称" clearable />
+            <div class="group-game-picker-toolbar">
+              <span>已选 {{ groupForm.games.length }} 款 · 当前结果 {{ filteredGroupGameOptions.length }} 款</span>
+              <n-space size="small">
+                <n-button text type="primary" size="tiny" @click="selectFilteredGroupGames">全选当前结果</n-button>
+                <n-button text size="tiny" :disabled="groupForm.games.length === 0" @click="groupForm.games = []">清空</n-button>
+              </n-space>
+            </div>
+            <n-checkbox-group v-model:value="groupForm.games" class="group-game-picker-list">
+              <n-checkbox v-for="game in filteredGroupGameOptions" :key="game.value" :value="game.value">{{ game.label }}</n-checkbox>
+            </n-checkbox-group>
+            <n-empty v-if="filteredGroupGameOptions.length === 0" description="没有匹配的游戏" size="small" />
+          </div>
         </n-form-item>
       </n-form>
       <template #footer>
@@ -525,7 +540,7 @@ function fuzzyFilter(pattern: string, option: any) {
   return true
 }
 
-const gameOptions = [
+const baseGameOptions = [
   { label: '过山车VR', value: '过山车VR' },
   { label: '恐怖医院', value: '恐怖医院' },
   { label: '极速赛车', value: '极速赛车' },
@@ -533,13 +548,19 @@ const gameOptions = [
   { label: '恐龙王国', value: '恐龙王国' },
   { label: '太空探险', value: '太空探险' },
 ]
+// 本地演示数据：用于直观看到大分组的搜索和分页表现。
+const demoGameOptions = Array.from({ length: 194 }, (_, index) => {
+  const name = `示例游戏${String(index + 1).padStart(3, '0')}`
+  return { label: name, value: name }
+})
+const gameOptions = [...baseGameOptions, ...demoGameOptions]
 
 const gameGroups = ref<GameGroup[]>([
   {
     id: 1,
     name: '亲子轻松组',
     description: '适合亲子、低刺激、轻体验门店优先分发',
-    games: ['海洋世界', '恐龙王国', '太空探险'],
+    games: [...baseGameOptions.map(game => game.value), ...demoGameOptions.map(game => game.value)],
     updatedAt: '2026-04-21',
   },
   {
@@ -558,6 +579,26 @@ const gameGroups = ref<GameGroup[]>([
   },
 ])
 
+const showGroupGamesModal = ref(false)
+const activeGameGroup = ref<GameGroup | null>(null)
+const groupGamesSearch = ref('')
+const filteredGroupGames = computed(() => {
+  const games = activeGameGroup.value?.games || []
+  const keyword = groupGamesSearch.value.trim().toLowerCase()
+  return games
+    .filter(name => !keyword || name.toLowerCase().includes(keyword))
+    .map((name, index) => ({ id: index + 1, name }))
+})
+const groupGameColumns = [
+  { title: '游戏名称', key: 'name' },
+]
+
+function openGroupGames(group: GameGroup) {
+  activeGameGroup.value = group
+  groupGamesSearch.value = ''
+  showGroupGamesModal.value = true
+}
+
 const groupOptions = computed(() =>
   gameGroups.value.map(group => ({ label: group.name, value: group.id }))
 )
@@ -573,7 +614,18 @@ const groupForm = ref({
   description: '',
   games: [] as string[],
 })
+const groupGamePickerSearch = ref('')
+const filteredGroupGameOptions = computed(() => {
+  const keyword = groupGamePickerSearch.value.trim().toLowerCase()
+  return gameOptions.filter(game => !keyword || game.label.toLowerCase().includes(keyword))
+})
 const groupModalTitle = computed(() => editingGroupId.value ? '编辑游戏分组' : '新增游戏分组')
+
+function selectFilteredGroupGames() {
+  const selected = new Set(groupForm.value.games)
+  filteredGroupGameOptions.value.forEach(game => selected.add(game.value))
+  groupForm.value.games = [...selected]
+}
 
 function formatToday() {
   const date = new Date()
@@ -584,6 +636,7 @@ function formatToday() {
 }
 
 function openGroupModal(group?: GameGroup) {
+  groupGamePickerSearch.value = ''
   if (group) {
     editingGroupId.value = group.id
     groupForm.value = {
@@ -1242,6 +1295,8 @@ function revokeByGame(row: any) {
 }
 
 .game-group-item {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 14px;
@@ -1260,6 +1315,9 @@ function revokeByGame(row: any) {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .group-item-header p {
@@ -1267,24 +1325,33 @@ function revokeByGame(row: any) {
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.5;
+  min-height: 36px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.group-game-tags,
 .release-preview-games {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
-.group-game-tags {
-  margin-top: 12px;
-}
+.group-games-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; color: var(--text-muted); font-size: 13px; }
+.group-footer-actions { display: flex; align-items: center; gap: 12px; }
+.view-all-games-button,
+.group-action-button { font-size: 12px; }
+.group-game-picker { width: 100%; }
+.group-game-picker-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 8px 0; color: var(--text-muted); font-size: 12px; }
+.group-game-picker-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; max-height: 240px; overflow-y: auto; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; }
 
 .group-item-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
+  margin-top: auto;
   padding-top: 10px;
   border-top: 1px solid var(--border-color);
   font-size: 12px;
