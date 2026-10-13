@@ -150,26 +150,36 @@
         </n-form-item>
         <n-form-item label="分发内容">
           <div class="release-preview">
-            <div class="release-preview-main">
-              <span class="release-preview-label">{{ distributeForm.targetType === 'group' ? '分组版本预览' : '可分发版本' }}</span>
+            <div v-if="distributeForm.targetType === 'group'" class="distribution-group-summary">
+              <div class="distribution-group-info">
+                <strong>{{ selectedGroup?.name || '请先选择游戏分组' }}</strong>
+                <n-tag v-if="selectedGroup" size="small" type="info" :bordered="false">{{ selectedGroup.games.length }} 款游戏</n-tag>
+              </div>
+              <n-button v-if="selectedGroup" class="group-action-button" text type="primary" size="small" @click="openGroupGames(selectedGroup)">查看游戏</n-button>
+            </div>
+            <div v-else class="release-preview-main">
+              <span v-if="distributeForm.targetType === 'game'" class="release-preview-label">可分发版本</span>
               <strong>{{ distributeVersionDisplay }}</strong>
             </div>
-            <div v-if="distributeForm.targetType === 'group' && selectedGroup" class="release-preview-games">
-              <n-tag
-                v-for="game in selectedGroupGames"
-                :key="game.id"
-                size="small"
-                :type="game.latestReleaseVersion ? 'success' : 'default'"
-                :bordered="false"
-              >
-                {{ game.gameName }} · {{ game.latestReleaseVersion || '暂无可分发版本' }}
-              </n-tag>
-            </div>
-            <p class="release-preview-tip">{{ distributeVersionHint }}</p>
+            <p v-if="distributeForm.targetType === 'game'" class="release-preview-tip">{{ distributeVersionHint }}</p>
+            <p v-else-if="selectedGroup && selectedDistributableGroupGames.length === 0" class="release-preview-tip">该分组暂无可分发版本。</p>
           </div>
         </n-form-item>
         <n-form-item label="目标店铺" required>
-          <n-select v-model:value="distributeForm.stores" :options="storeOptions" multiple placeholder="请选择目标店铺" />
+          <div class="store-picker">
+            <n-input v-model:value="storePickerSearch" placeholder="搜索店铺名称" clearable />
+            <div class="group-game-picker-toolbar">
+              <span>已选 {{ distributeForm.stores.length }} 家 · 当前结果 {{ filteredStoreOptions.length }} 家</span>
+              <n-space size="small">
+                <n-button text type="primary" size="tiny" @click="selectFilteredStores">全选当前结果</n-button>
+                <n-button text size="tiny" :disabled="distributeForm.stores.length === 0" @click="distributeForm.stores = []">清空</n-button>
+              </n-space>
+            </div>
+            <n-checkbox-group v-model:value="distributeForm.stores" class="group-game-picker-list">
+              <n-checkbox v-for="store in filteredStoreOptions" :key="store.value" :value="store.value">{{ store.label }}</n-checkbox>
+            </n-checkbox-group>
+            <n-empty v-if="filteredStoreOptions.length === 0" description="没有匹配的店铺" size="small" />
+          </div>
         </n-form-item>
         <n-form-item label="分发方式" required>
           <n-radio-group v-model:value="distributeForm.distributeMode" name="distributeMode">
@@ -810,6 +820,17 @@ const storeOptions = [
   { label: '北京朝阳店', value: '4' },
   { label: '上海浦东店', value: '5' },
 ]
+const storePickerSearch = ref('')
+const filteredStoreOptions = computed(() => {
+  const keyword = storePickerSearch.value.trim().toLowerCase()
+  return storeOptions.filter(store => !keyword || store.label.toLowerCase().includes(keyword))
+})
+
+function selectFilteredStores() {
+  const selected = new Set(distributeForm.value.stores)
+  filteredStoreOptions.value.forEach(store => selected.add(store.value))
+  distributeForm.value.stores = [...selected]
+}
 
 const columns = [
   { title: '批次号', key: 'batchNo', width: 150 },
@@ -1133,6 +1154,7 @@ function confirmDistribute() {
 
 function openBatchDistribute() {
   distributeForm.value = defaultDistributeForm()
+  storePickerSearch.value = ''
   showDistributeModal.value = true
 }
 
@@ -1147,6 +1169,7 @@ function openDetail(row: any) {
 
 // 重试分发（从列表）
 function retryDistribute(row: any) {
+  storePickerSearch.value = ''
   const failedStoreNames = row.storeList?.filter((s: any) => s.status === 'failed').map((s: any) => s.storeName) || []
   const storeValueMap = new Map(storeOptions.map((opt: any) => [opt.label, opt.value]))
   const failedStoreValues = failedStoreNames.map((name: string) => storeValueMap.get(name)).filter(Boolean)
@@ -1230,6 +1253,7 @@ function revokeStore(store: any) {
 
 // 打开游戏分发弹窗（从游戏列表）
 function openGameDistribute(row: any) {
+  storePickerSearch.value = ''
   const mode = (row.distributeStatus === '有更新' || row.distributeStatus === '未分发') ? 'smart' : 'full'
   distributeForm.value = {
     targetType: 'game',
@@ -1332,18 +1356,12 @@ function revokeByGame(row: any) {
   overflow: hidden;
 }
 
-.release-preview-games {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
 .group-games-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; color: var(--text-muted); font-size: 13px; }
 .group-footer-actions { display: flex; align-items: center; gap: 12px; }
 .view-all-games-button,
 .group-action-button { font-size: 12px; }
-.group-game-picker { width: 100%; }
+.group-game-picker,
+.store-picker { width: 100%; }
 .group-game-picker-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 8px 0; color: var(--text-muted); font-size: 12px; }
 .group-game-picker-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; max-height: 240px; overflow-y: auto; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; }
 
@@ -1406,9 +1424,9 @@ function revokeByGame(row: any) {
   text-align: right;
 }
 
-.release-preview-games {
-  margin-top: 10px;
-}
+.distribution-group-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 28px; }
+.distribution-group-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.distribution-group-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
 .release-preview-tip {
   margin: 10px 0 0;
