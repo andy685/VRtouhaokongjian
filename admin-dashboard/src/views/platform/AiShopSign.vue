@@ -774,7 +774,10 @@ const DEFAULT_BGS:BgItem[]=[
 ];
 const backgrounds=ref<BgItem[]>((cachedBgList()));
 function cachedBgList():BgItem[]{try{const c=JSON.parse(localStorage.getItem(KEY)||'{}');return (c.backgrounds||DEFAULT_BGS).map((b:any)=>({...b}))}catch{return DEFAULT_BGS.map((b:any)=>({...b}))}}
-function persistBg(){const c=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}})();c.backgrounds=backgrounds.value;localStorage.setItem(KEY,JSON.stringify(c))}
+function cachedCurrentBgId():string{try{return String(JSON.parse(localStorage.getItem(KEY)||'{}').currentBackgroundId||'')}catch{return ''}}
+const currentBackgroundId=ref(cachedCurrentBgId());
+function persistBg(){const c=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}})();c.backgrounds=backgrounds.value;c.currentBackgroundId=currentBackgroundId.value;localStorage.setItem(KEY,JSON.stringify(c))}
+function setCurrentBg(r:BgItem){if(!r.enabled)return message.warning('请先启用该背景，再设为当前背景');currentBackgroundId.value=r.id;persistBg();message.success(`「${r.name}」已设为当前背景`)}
 function moveBg(i:number,dir:number){const j=i+dir;if(j<0||j>=backgrounds.value.length)return;const list=[...backgrounds.value];[list[i],list[j]]=[list[j],list[i]];backgrounds.value=list;persistBg()}
 const bgColumns=[
   {title:'排序',key:'sort',width:120,render:(r:BgItem,i:number)=>h('div',{class:'table-actions'},[
@@ -794,9 +797,10 @@ const bgColumns=[
   {title:'名称',key:'name',minWidth:170},
   {title:'类型',key:'type',width:90,render:(r:BgItem)=>h(NTag,{size:'small',type:r.type==='image'?'info':'warning',bordered:false},{default:()=>r.type==='image'?'图片':'视频'})},
   {title:'文件大小',key:'size',width:100},
-  {title:'启用',key:'enabled',width:80,align:'center' as const,render:(r:BgItem)=>h(NSwitch,{size:'small',value:r.enabled,'onUpdate:value':(v:boolean)=>{r.enabled=v;persistBg()}},{})},
+  {title:'启用',key:'enabled',width:80,align:'center' as const,render:(r:BgItem)=>h(NSwitch,{size:'small',value:r.enabled,'onUpdate:value':(v:boolean)=>{r.enabled=v;if(!v&&currentBackgroundId.value===r.id)currentBackgroundId.value='';persistBg()}},{})},
   {title:'更新时间',key:'updatedAt',width:160},
-  {title:'操作',key:'actions',width:120,render:(r:BgItem)=>h('div',{class:'table-actions'},[
+  {title:'操作',key:'actions',width:240,render:(r:BgItem)=>h('div',{class:'table-actions'},[
+    r.id===currentBackgroundId.value?h(NTag,{size:'small',type:'success',bordered:false},{default:()=>'当前背景'}):h(NButton,{text:true,type:'primary',size:'small',disabled:!r.enabled,onClick:()=>setCurrentBg(r)},{default:()=>'设为当前背景'}),
     h(NButton,{text:true,type:'primary',size:'small',onClick:()=>openBgModal(r)},{default:()=>'编辑'}),
     h(NButton,{text:true,type:'error',size:'small',onClick:()=>deleteBg(r)},{default:()=>'删除'}),
   ])},
@@ -807,11 +811,11 @@ function openBgModal(r?:BgItem){bgEditing.value=r||null;Object.assign(bgForm,r?{
 function saveBg(){
   if(!bgForm.name.trim())return message.warning('请输入背景名称');
   const stamp=new Date().toLocaleString('zh-CN',{hour12:false});
-  if(bgEditing.value){const t=backgrounds.value.find(b=>b.id===bgEditing.value!.id);if(t)Object.assign(t,{name:bgForm.name.trim(),type:bgForm.type,url:bgForm.url,size:bgForm.size,enabled:bgForm.enabled,updatedAt:stamp})}
+  if(bgEditing.value){const t=backgrounds.value.find(b=>b.id===bgEditing.value!.id);if(t)Object.assign(t,{name:bgForm.name.trim(),type:bgForm.type,url:bgForm.url,size:bgForm.size,enabled:bgForm.enabled,updatedAt:stamp});if(!bgForm.enabled&&currentBackgroundId.value===bgEditing.value.id)currentBackgroundId.value=''}
   else{backgrounds.value.unshift({id:`bg-${Date.now()}`,name:bgForm.name.trim(),type:bgForm.type,url:bgForm.url,size:bgForm.size||'—',enabled:bgForm.enabled,updatedAt:stamp})}
   persistBg();bgModal.value=false;message.success(bgEditing.value?'背景已更新':'背景已新增')
 }
-function deleteBg(r:BgItem){if(!window.confirm(`确认删除背景「${r.name}」？`))return;backgrounds.value=backgrounds.value.filter(b=>b.id!==r.id);persistBg();message.success('背景已删除')}
+function deleteBg(r:BgItem){if(!window.confirm(`确认删除背景「${r.name}」？`))return;backgrounds.value=backgrounds.value.filter(b=>b.id!==r.id);if(currentBackgroundId.value===r.id)currentBackgroundId.value='';persistBg();message.success('背景已删除')}
 function onBgFile(options:any){const f=options.file?.file as File|undefined;if(!f)return;bgForm.url=URL.createObjectURL(f);bgForm.size=(f.size/1024/1024).toFixed(1)+' MB';if(!bgForm.name)bgForm.name=f.name.replace(/\.[^.]+$/,'')}
 function coverSvg(name:string,type:string){
   const [c1,c2]=type==='image'?['#93c5fd','#6366f1']:['#fcd34d','#f59e0b'];
