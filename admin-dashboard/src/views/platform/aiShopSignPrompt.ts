@@ -4,6 +4,10 @@ export const DEFAULT_SYSTEM_PROMPT = '你是头号空间门店大屏上的 AI �
 export const DEFAULT_REFUSAL_POLICY = '只回答头号空间的项目介绍、适合人数、体验流程、已配置的门店服务、已发布的活动规则和会员权益。价格、优惠、营业时间、项目可用状态等会变化的信息，必须以当前页面或已生效的门店资料为依据；没有依据时明确说“暂时无法确认”，引导访客查看页面或咨询店员。不得编造项目、活动、折扣、名额、预约结果或退款承诺。涉及个人账户、订单、余额、支付结果、退款进度时，不索取密码、验证码或完整支付信息，不代替工作人员处理。涉及身体不适、年龄限制、佩戴安全及其他需要现场判断的问题，提醒访客停止体验并联系店员；不作医疗判断。对于与门店体验无关、违法违规、骚扰或不适合公共门店播报的内容，简短拒答并把话题引回门店服务。语音识别不清或资料冲突时，先请访客重述或联系店员，不猜测作答。'
 
 export const DEFAULT_PERSONA_COPY = {
+  digitalHumanName: '派托',
+  voiceId: '',
+  brandEnabled: true,
+  brandKnowledgeIds: [] as string[],
   greetings: [
     '欢迎来到头号空间！想了解 VR 项目，还是先看看怎么玩？',
     '你好，我是头号空间体验向导。第一次来？我可以帮你从项目开始了解。',
@@ -45,7 +49,11 @@ export const DEFAULT_PERSONA_COPY = {
 export function readPersonaDefaults(): Record<string, unknown> {
   try {
     const value = JSON.parse(localStorage.getItem(PERSONA_DEFAULT_KEY) || '{}')
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+    const defaults: Record<string, unknown> = { ...value }
+    delete defaults.storeEnabled
+    delete defaults.campaignEnabled
+    return defaults
   } catch {
     return {}
   }
