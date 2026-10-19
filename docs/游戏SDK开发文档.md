@@ -13,6 +13,9 @@
 1. [文档目标](#1-文档目标)
 2. [SDK定位与边界](#2-sdk定位与边界)
 3. [整体架构](#3-整体架构)
+   - [3.1 模块图](#31-模块图)
+   - [3.2 数据流](#32-数据流)
+   - [3.3 Launcher 与游戏 SDK 通信约定](#33-launcher-与游戏-sdk-通信约定)
 4. [核心能力清单](#4-核心能力清单)
    - [4.1 会话管理](#41-会话管理)
    - [4.2 启动与加载](#42-启动与加载)
@@ -92,7 +95,7 @@ SDK 不应该做以下事情：
 
 ### 3.1 模块图
 
-SDK 采用双通道通信架构：**MQTT** 承载实时设备指令（低延迟），**HTTP** 承载业务数据上报。
+端到端通信分三段：**后端↔头显端 Launcher 使用 MQTT 接收设备指令、HTTPS 上报进程级事件；Launcher↔游戏 SDK 使用 Pico 本机受控 IPC 交换本次启动上下文与生命周期状态；游戏 SDK↔后端使用 HTTPS 上报会话业务事件**。本机 IPC 不能替代后端状态落库，SDK 也不能越过 Launcher 自行拉起或关闭进程。
 
 ```mermaid
 flowchart TB
@@ -108,13 +111,16 @@ flowchart TB
         S3["Heartbeat 心跳"]
         S4["Exception 异常上报"]
         S5["Offline Queue 离线队列"]
-        S6["HTTP Transport<br/>业务数据"]
-        S7["MQTT Client<br/>实时指令"]
+        S6["HTTPS Client<br/>Session/业务事件"]
+        S7["Launcher IPC Adapter<br/>启动上下文/进程协作"]
+    end
+
+    subgraph Headset["Pico头显"]
+        L1["头显端 Launcher<br/>进程监控/设备指令"]
     end
 
     subgraph Backend["平台后端"]
         B1["HTTP API<br/>事件接收/统计"]
-        B2["MQTT Broker<br/>指令推送"]
         B3["统计聚合"]
         B4["告警中心"]
         B5["看板查询"]
@@ -129,7 +135,9 @@ flowchart TB
     S2 --> S5
     S5 --> S6
     S6 --> B1
-    S7 <--> B2
+    S7 <--> L1
+    L1 --> B1
+    L1 <--> B6["MQTT Broker<br/>指令推送"]
     B1 --> B3
     B3 --> B4
     B3 --> B5
@@ -139,21 +147,45 @@ flowchart TB
 
 ```mermaid
 sequenceDiagram
+    participant PC as PC点播终端
+    participant API as 平台后端
+    participant Launcher as Pico头显Launcher
     participant Game as VR游戏
     participant SDK as 游戏SDK
-    participant API as 平台后端
 
-    Game->>SDK: init(token, deviceInfo)
-    SDK->>API: registerDevice / createSession
-    API-->>SDK: sessionId / config
-    Game->>SDK: startSession()
+    PC->>API: 支付成功/分配设备/创建待启动Session
+    API->>Launcher: MQTT launch_game(launch_id, session_id, 短时凭证)
+    Launcher->>Launcher: 校验命令并拉起游戏进程
+    Launcher->>API: HTTPS process_started / process_failed
+    Launcher->>SDK: 本机IPC传递启动上下文
+    SDK->>Launcher: 本机IPC sdk_initialized
+    SDK->>API: HTTPS sdk_initialized
+    Game->>SDK: 游戏进入可玩状态
+    SDK->>Launcher: 本机IPC game_ready
+    SDK->>API: HTTPS game_ready
+    API->>PC: Session进入履约中
     loop 每60秒
-        SDK->>API: heartbeat(event)
+        Launcher->>API: 设备/进程心跳
+        SDK->>API: Session/游戏状态心跳
     end
-    Game->>SDK: reportEvent(launch_success / exception)
-    Game->>SDK: endSession()
-    SDK->>API: endSession + flush queue
+    API->>Launcher: MQTT force_stop（需要结束时）
+    Launcher->>SDK: 本机IPC force_stop请求
+    SDK->>API: HTTPS session_ended（尽力上报）
+    Launcher->>API: HTTPS process_exited / stop_result
 ```
+
+### 3.3 Launcher 与游戏 SDK 通信约定
+
+Launcher 与 SDK 必须直接交换少量本机消息，避免仅靠两条独立后端连接关联启动状态；同时两边仍各自把自己负责的事实事件上报后端。
+
+- **启动上下文下发**：Launcher 拉起游戏时，通过系统启动参数/Intent Extra 传递短时启动凭证、`launch_id`、`session_id`、`device_id`、`game_id` 和 API 地址。凭证需限定设备、游戏、会话和有效期，不传长期商家密钥。两种引擎可以使用各自平台原生参数入口，但字段语义一致。
+- **本机 IPC 通道**：推荐 Android Bound Service/AIDL（或经 Pico 目标系统验证后的等效受控 Binder IPC）。禁止将本机控制服务暴露到门店 Wi-Fi；仅允许签名/白名单应用访问，并校验调用包名、签名、会话绑定和消息序号。
+- **SDK→Launcher 消息**：`sdk_initialized`、`game_ready`、`session_paused`、`session_resumed`、`session_ended`、可观测的 `game_error`。SDK 消息带 `launch_id`、`session_id`、`event_id`、单调序号、时间戳和 SDK 版本。
+- **Launcher→SDK 消息**：启动上下文确认、`force_stop`、`shutdown_deadline` 及可用的设备佩戴/系统状态变化。SDK 必须将强制结束当作请求处理并回 ACK；最终是否进程退出由 Launcher 观察确认。
+- **可靠性语义**：IPC 采用请求 ACK、有限重试和幂等 `event_id`；断连后 SDK 可继续直连后端 HTTPS 并本地缓存，Launcher 继续独立监控进程。IPC 恢复后补发状态；后端按 `event_id` 去重、按 `launch_id + session_id` 合并。IPC/网络均失败时，由 Launcher 进程事实与后端超时收敛，不能把缺失 ACK 当成游戏失败的明确根因。
+- **游戏从 Launcher 外启动**：没有有效启动上下文或 IPC 身份绑定时，SDK 不得自行创建可计费 Session；应上报 `unbound_launch`（若网络可用）并保持未绑定状态，由后端/门店策略拒绝或进入人工处理。
+
+Pico Android 上 Bound Service/AIDL 是否可由第三方游戏与常驻 Launcher 稳定跨进程使用，需先在目标机型和 OS 版本上做权限、后台存活和杀进程验证；若系统限制该方案，替代通道必须满足同等的本机隔离、鉴权、ACK/重试和消息关联要求，不能退化成门店局域网开放端口。
 
 ---
 

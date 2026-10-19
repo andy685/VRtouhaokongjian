@@ -1328,7 +1328,7 @@ stateDiagram-v2
 | **启动方式** | 守护进程模式，常驻运行，游戏进程由Launcher fork/exec |
 | **待机功耗** | 极低模式 (< 15% 功耗)，仅维持心跳+网络连接 |
 | **OTA升级** | 待机时后台静默下载安装，下次重启生效 |
-| **与PC终端通信** | 与PC终端处于同一WiFi网络环境，业务指令通过后端(HTTP+MQTT)间接下发，非本地直连控制 |
+| **与PC终端通信** | PC点播终端与头显不直接控制；业务命令通过后端MQTT下发。头显端Launcher与游戏内SDK在Pico本机通过受控IPC协作，SDK和Launcher分别通过HTTPS上报各自负责的状态 |
 
 #### 4.4.6 多平台适配策略
 
@@ -1379,8 +1379,9 @@ stateDiagram-v2
      ├─ 原生: 启动对应Android Activity/包名
      └─ 启动API失败/包不存在/权限不足: 立即上报PROCESS_START_FAILED并切换Error
   → 进程创建后上报process_started，Launcher进入后台监控模式
-  → 游戏内SDK初始化后携带launch_id/session_id上报sdk_initialized
-  → 游戏达到可玩状态后SDK上报game_ready；后端收到后才确认启动成功、Session进入履约中
+  → Launcher通过Pico本机受控IPC（优先Android Bound Service/AIDL，需真机验证）向游戏SDK提供本次启动上下文并绑定launch_id/session_id
+  → 游戏内SDK初始化后通过本机IPC向Launcher回报sdk_initialized，同时SDK通过HTTPS向后端上报
+  → 游戏达到可玩状态后SDK通过本机IPC通知Launcher，并通过HTTPS上报game_ready；后端收到后才确认启动成功、Session进入履约中
   → 等待SDK确认期间若游戏进程退出，Launcher立即上报process_exited（根因未知时不猜测）
   → SDK确认或启动阶段超时均上报/推断并由后端收敛；进程退出后Launcher按最终指令展示GameEnded或Error
 ```
@@ -1400,6 +1401,8 @@ stateDiagram-v2
 
 所有启动事件必须携带`launch_id`、`session_id`、`device_id`、`game_id`、`event_id`、时间戳、来源组件及版本。`process_started`不是启动成功；无`game_ready`时，按阶段超时记录`startup_unconfirmed`/`launch_timeout`，不得伪装为SDK确认的具体错误。进程事件和游戏SDK事件由后端按`event_id`去重并按`launch_id + session_id`收敛，迟到事件只补证据，不得重开已结束Session。P-Sensor、温度、存储等系统能力须按具体Pico型号、OS版本和第三方应用权限实测后再指定采集端；不可即时观测的断电/系统崩溃由后端标记为推断异常。
 
+**Launcher 与游戏内 SDK 通信约定**：双方必须通过 Pico 头显本机受控 IPC 直接协作，不能只依赖各自独立连接后端。Launcher 拉起 Unity/Unreal 游戏时，通过系统启动参数或 Intent Extra 传递短时启动凭证及`launch_id`、`session_id`、`device_id`、`game_id`、API地址；字段语义统一，不同引擎使用各自原生读取方式。IPC 推荐 Android Bound Service/AIDL，且必须在目标 Pico 型号/OS 真机上验证可用性。IPC 服务仅允许受信任 Launcher/游戏包访问并校验签名、包名、会话绑定、消息序号；禁止暴露到门店 Wi-Fi。SDK通过IPC向Launcher回报初始化、`game_ready`、暂停/恢复、结束及可观测游戏异常；Launcher通过IPC向SDK发送启动上下文、强制结束请求和可用的系统状态变化。所有IPC请求需ACK、有限重试和幂等`event_id`。SDK和Launcher仍分别通过HTTPS向后端上报各自负责的事实，后端是Session/订单状态权威来源。IPC或网络中断时，SDK本地缓存并可直连后端补报，Launcher继续监控进程；两路都不可用时由后端超时推断，根因标为未知。没有有效启动上下文/IPC绑定的游戏不得创建可计费Session，按`unbound_launch`上报或拒绝启动。若 Pico 系统不支持稳定的跨进程 Bound Service/AIDL，须选择经验证且同等安全的本机IPC，不得改用开放局域网端口。
+
 **其他MQTT命令**：
 
 | 命令 | 说明 | 触发方 |
@@ -1409,6 +1412,8 @@ stateDiagram-v2
 | `reboot` | 重启Launcher | 后端(远程维护) |
 | `update_config` | 更新配置参数 | 后端(远程配置) |
 | `fetch_logs` | 上传日志文件 | 后端(远程诊断) |
+
+设备 MQTT 指令只由头显端 Launcher 订阅和执行；游戏内 SDK 不订阅设备命令 Topic，也不负责进程启停。Launcher 与 SDK 之间使用头显本机受控 IPC，不经过 PC 点播终端或门店 Wi-Fi。
 
 #### 4.4.8 暂停计费与异常恢复策略（v1.3 新增）
 
