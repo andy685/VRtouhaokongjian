@@ -37,6 +37,10 @@
         <n-data-table :columns="hostColumns" :data="filteredHosts" :bordered="false" size="small" striped :row-key="(row:any)=>row.id" @update:checked-row-keys="selectedHostIds = $event" />
       </n-tab-pane>
 
+      <n-tab-pane name="pads" tab="📱 Pad管理" style="overflow:visible;">
+        <PadManagement :merchant-store-map="merchantStoreMap" />
+      </n-tab-pane>
+
       <!-- ========== Tab 3: 头显管理 ========== -->
       <n-tab-pane name="headsets" tab="🥽 头显管理" style="overflow:visible;">
         <div class="stats-row">
@@ -266,6 +270,7 @@
 </template>
 
 <script setup lang="ts">
+import PadManagement from '../../components/device/PadManagement.vue'
 import { ref, computed, h } from 'vue'
 import {
   NTabs, NTabPane, NButton, NIcon, NSpace, NInput,
