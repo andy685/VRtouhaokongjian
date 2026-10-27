@@ -29,28 +29,23 @@
 </template>
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
+import { usePadDevices, type Pad } from '../../composables/usePadDevices'
 import { NButton, NTag, useMessage } from 'naive-ui'
 import type { DataTableColumns, FormInst, FormRules } from 'naive-ui'
-interface Pad { token:string; tokenStatus:'active'|'none'; id:string; serialNo:string; name:string; model:string; sn:string; specs:string; osVersion:string; macAddress:string; notes:string; runtimeStatus:'online'|'offline'; isFault:boolean; merchant:string; store:string; createdAt:string }
 const props = defineProps<{merchantStoreMap:Record<string,string[]>}>()
-const message = useMessage(), storageKey = 'vr-platform-pads-v1'
+const message = useMessage()
 const fields = [
   {key:'serialNo',label:'Pad编号',placeholder:'如：PAD-001'}, {key:'name',label:'Pad名称',placeholder:'如：大厅控制Pad #01'},
   {key:'model',label:'设备型号',placeholder:'如：华为 MatePad 11'}, {key:'sn',label:'SN码',placeholder:'设备唯一序列号'},
   {key:'specs',label:'硬件配置',placeholder:'如：8GB / 128GB'}, {key:'osVersion',label:'系统版本',placeholder:'如：Android 14'},
   {key:'macAddress',label:'MAC地址',placeholder:'如：00:1A:2B:3C:4D:5E'}, {key:'notes',label:'备注',placeholder:'补充设备信息'},
 ] as const
-function load(): Pad[] {
-  try {
-    const value = JSON.parse(localStorage.getItem(storageKey) || '[]')
-    return Array.isArray(value) ? value.filter(p => p && ['id','merchant','store','createdAt',...fields.map(f=>f.key)].every(k=>typeof p[k]==='string') && ['online','offline'].includes(p.runtimeStatus) && typeof p.isFault==='boolean').map(p => ({...p, token: p.merchant && p.tokenStatus === 'active' && typeof p.token === 'string' ? p.token : '', tokenStatus: p.merchant && p.tokenStatus === 'active' && typeof p.token === 'string' && p.token ? 'active' : 'none'})) : []
-  } catch { return [] }
-}
-const pads = ref<Pad[]>(load())
-function commit(next:Pad[]) {
-  try { localStorage.setItem(storageKey,JSON.stringify(next)); pads.value=next; return true }
+const { pads, savePads } = usePadDevices()
+function commit(next: Pad[]) {
+  try { savePads(next); return true }
   catch { message.error('保存失败，请检查浏览器存储空间后重试'); return false }
 }
+
 const merchants = computed(()=>Object.keys(props.merchantStoreMap).map(value=>({label:value,value})))
 const stores = (merchant:string|null)=>(props.merchantStoreMap[merchant || ''] || []).map(value=>({label:value,value}))
 const statuses = [{label:'在线',value:'online'},{label:'离线',value:'offline'},{label:'故障',value:'fault'}]

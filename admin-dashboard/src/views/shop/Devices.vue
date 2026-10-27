@@ -16,6 +16,10 @@
         <n-data-table :columns="hostColumns" :data="filteredHostDevices" :pagination="{pageSize:10}" :bordered="false" striped size="small" />
       </n-tab-pane>
 
+      <n-tab-pane name="pads" tab="📱 Pad设备" style="overflow:visible;">
+        <ShopPadDevices />
+      </n-tab-pane>
+
       <!-- Tab 2: 头显设备 -->
       <n-tab-pane name="headsets" tab="🥽 头显设备" style="overflow:visible;">
         <n-alert type="info" :bordered="false" style="margin-bottom:16px;">以下头显由总运营平台分配并完成与主机的绑定，绑定关系以总运营后台设置为准，本页仅作查看。</n-alert>
@@ -103,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+import ShopPadDevices from '../../components/device/ShopPadDevices.vue'
 import { ref, computed, h } from 'vue'
 import {  NButton, NIcon, NSpace, NSelect, NModal, NForm, NFormItem, NInput, NInputNumber, NTag, NDescriptions, NDescriptionsItem, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox, NTabs, NTabPane, NAlert, type DataTableColumns, type FormInst, type FormRules } from 'naive-ui'
 import { AddOutline } from '@vicons/ionicons5'
